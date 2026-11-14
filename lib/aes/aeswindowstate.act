@@ -111,6 +111,9 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
 
   EXEC.Forbid()
   IF refresh<>0 THEN
+    IF moved<>0 AND client.geometryEpoch<>0 THEN
+      A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@view.bounds),8)
+    FI
     A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
   FI

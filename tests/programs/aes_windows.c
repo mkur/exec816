@@ -17,13 +17,13 @@ static volatile UWORD extraReady, extraDone;
 static ULONG extraWake[2];
 static struct Task *extraTasks[2];
 
-static void check(BOOL okay)
+static void check(BOOL okay,UWORD line)
 {
     Forbid(); ++AESChecks;
-    if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure = AESChecks; }
+    if (!okay) { ++AESFailures; if (!AESFirstFailure) AESFirstFailure = line; }
     Permit();
 }
-#define CHECK(t) check((t) != 0)
+#define CHECK(t) check((t) != 0,__LINE__)
 
 void AESClientOne(void)
 {
@@ -90,7 +90,7 @@ static void geometry(WORD handle, WORD field, WORD x, WORD y, WORD w, WORD h)
 
 UWORD AESRun(void)
 {
-    WORD id, handle, replacement, reserve[2], a, b, c, d, message[8];
+    WORD id, handle, replacement, reserve[3], a, b, c, d, message[8];
     WORD control[5] = {108, 6, 5, 0, 0}, global[15], in[6], out[5];
     AESPB pb = {control, global, in, out, NULL, NULL};
     char title[66];
@@ -177,7 +177,7 @@ UWORD AESRun(void)
     aes_call(&pb);CHECK(out[0]==peerHandle);
     control[0]=108;control[1]=6;control[2]=5;
     /* Hidden sibling windows also consume the six-window bound. */
-    for (i=0;i<2;++i) { reserve[i]=wind_create(AES_WINDOW_KIND,9,9,200,120);CHECK(reserve[i]>0); }
+    for (i=0;i<3;++i) { reserve[i]=wind_create(AES_WINDOW_KIND,9,9,200,120);CHECK(reserve[i]>0); }
     for (i = 0; i < 2; ++i) {
         extraTasks[i] = CreateTask("AES capacity peer", 1, (APTR)AESClientTwo, 1024UL);
         CHECK(extraTasks[i] != NULL);
@@ -185,7 +185,7 @@ UWORD AESRun(void)
     }
     for (i = 0; i < 2; ++i) Signal(extraTasks[i], extraWake[i]);
     while (extraDone != 2) Wait(wake);
-    for (i=0;i<2;++i) CHECK(wind_delete(reserve[i]));
+    for (i=0;i<3;++i) CHECK(wind_delete(reserve[i]));
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
     /* Restore the peer above the root through its own caller. */
     command = 5; Signal(peer, peerWake);
@@ -230,16 +230,23 @@ UWORD AESRun(void)
     AESPhysical = 30;
     while (AESPhysicalGo != 30) ExecYield();
     geometry(handle, WF_CXYWH, 8, 9, 200, 120);
+    geometry(handle, WF_FULLXYWH, 8, 9, 200, 120);
+    geometry(handle, WF_PREVXYWH, 8, 9, 200, 120);
     CHECK(wind_update(BEG_UPDATE));
     geometry(handle, WF_FIRSTXYWH, 0, 0, 0, 0);
     CHECK(wind_update(END_UPDATE));
     CHECK(wind_set(handle, WF_CXYWH, 11, 13, 200, 120));
     geometry(handle, WF_CXYWH, 10, 13, 200, 120);
+    geometry(handle, WF_PREVXYWH, 8, 9, 200, 120);
     CHECK(wind_set(handle, WF_TOP, 0, 0, 0, 0));
     AESPhysical = 31;
     while (AESPhysicalGo != 31) ExecYield();
+    geometry(handle, WF_PREVXYWH, 8, 9, 200, 120);
+    geometry(handle, WF_FULLXYWH, 8, 9, 200, 120);
     CHECK(wind_close(handle));
     CHECK(wind_open(handle, 9, 9, 200, 120));
+    geometry(handle,WF_PREVXYWH,8,9,200,120);
+    geometry(handle,WF_FULLXYWH,8,9,200,120);
     AESPhysical = 7;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_get(handle, WF_FIRSTXYWH, &a, &b, &c, &d));

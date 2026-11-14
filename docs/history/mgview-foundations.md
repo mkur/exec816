@@ -20,3 +20,29 @@ three imports; source clients and resident providers must be rebuilt together.
 executed layout/API probes, physical pixel check and host suite. This is
 development coverage, not hosted-system release qualification. The original
 MGVIEW application and its mouse calls remain separate work.
+
+## MV2: full and previous geometry
+
+The shared view retains the creation full rectangle and previous normal
+geometry. Publication captures the old bounds only when committed normal
+bounds change; open initializes previous geometry to the accepted rectangle.
+This also covers hidden/iconified changes and copied system moves without
+duplicating mutation policy in the C wrapper.
+
+The view grows by sixteen upper-heap bytes per live window. Fixed, root,
+kernel, idle and per-public-Task bank-zero reservations grow by zero, including
+guards, alignment and spare capacity. Loaded C ABI 42 and AES protocol 21
+require rebuilt consumers. [Window provenance](../../ports/gem4xe/window-reference.json)
+records the donor behavior and source hashes.
+
+[MV2 development evidence](../development/mgview-foundations-mv2.json) records
+the raw/optimized layout access, optimized geometry, physical lifecycle and
+host checks. These checks do not establish release qualification.
+
+The unchanged MV1 worktree reproduces the old window fixture's capacity
+assertion and reset-required exit. The fixture now reserves all six slots
+before expecting exhaustion and drains pending frame/directory work before
+asserting idle. The corrected geometry/window fixtures complete with their
+original pixel, deferred-input, guard, heap and OS-restoration checks enabled.
+Creation also retains the original first-publication path: initializing
+previous geometry must not suppress initial external-area publication.

@@ -1,0 +1,359 @@
+{
+  "slice": "MV2",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "c_app_abi": 42,
+  "aes_version": 21,
+  "cases": [
+    {
+      "path": "build/mgview-foundation/mv2-layout-raw/results.json",
+      "sha256": "a6a7428177f50d46b154b76370ef6ba85977cbea214d0dd67b55d8f2091603b0",
+      "status": "pass",
+      "checks": null,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 233,
+          "untouched_above_floor": 1047
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 158,
+          "untouched_above_floor": 898
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 324,
+          "untouched_above_floor": 732
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 328,
+          "untouched_above_floor": 728
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 744,
+          "untouched_above_floor": 1560
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "physical": {}
+    },
+    {
+      "path": "build/mgview-foundation/mv2-layout-opt/results.json",
+      "sha256": "3775575b1b85e1a06d4e8ec86e33108ba97c9470d4bbaa891e96ffd217b594ce",
+      "status": "pass",
+      "checks": null,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 227,
+          "untouched_above_floor": 1053
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 316,
+          "untouched_above_floor": 740
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 319,
+          "untouched_above_floor": 737
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 709,
+          "untouched_above_floor": 1595
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 21,
+          "untouched_above_floor": 235
+        }
+      ],
+      "physical": {}
+    },
+    {
+      "path": "build/mgview-foundation/mv2-geometry-final/results.json",
+      "sha256": "4b3b273c002a75df7308c8ee0b8b51559f551c37e2f71bdf3009e12517013ab1",
+      "status": "pass",
+      "checks": 121,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 613,
+          "untouched_above_floor": 667
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 128,
+          "untouched_above_floor": 928
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 533,
+          "untouched_above_floor": 523
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 716,
+          "untouched_above_floor": 1588
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "physical": {}
+    },
+    {
+      "path": "build/mgview-foundation/mv2-windows-final/results.json",
+      "sha256": "6a2f09113bcc3e1e5031e37c8274f1cec3c0d6a16bdecd239f033eed39dd7b66",
+      "status": "pass",
+      "checks": 300,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 696,
+          "untouched_above_floor": 584
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 138,
+          "untouched_above_floor": 918
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 470,
+          "untouched_above_floor": 586
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 489,
+          "untouched_above_floor": 567
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 255,
+          "untouched_above_floor": 801
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 719,
+          "untouched_above_floor": 1585
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 117,
+          "untouched_above_floor": 139
+        }
+      ],
+      "physical": {
+        "physical_requests": {
+          "top": "deferred",
+          "move": [
+            24,
+            20,
+            200,
+            120
+          ],
+          "close": "deferred",
+          "scene_token": 0,
+          "outline_pixels": "exact",
+          "copied_title_bytes": 65
+        },
+        "gadgets": {
+          "resize": [
+            32,
+            32,
+            280,
+            184
+          ],
+          "escape_cancel": true,
+          "deferred_geometry": true,
+          "arrow_pages": [
+            2,
+            3,
+            0,
+            1
+          ],
+          "slider_endpoints": [
+            0,
+            1000
+          ],
+          "deferred_slider": true,
+          "scene_token": 0,
+          "title_pixels": 4880,
+          "frame_pixels": 2768,
+          "outline_pixels": "exact"
+        },
+        "iconification": {
+          "empty_visible_region": true,
+          "normal_geometry": true,
+          "hidden_move": true,
+          "wf_top_restore": true,
+          "close_reopen": true
+        }
+      }
+    }
+  ],
+  "host_suite": {
+    "tests": 715,
+    "skipped": 5,
+    "status": "pass"
+  },
+  "upper_heap_growth_bytes_per_window": 16,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "includes": "guards, alignment and unused capacity"
+  },
+  "source_inputs": {
+    "abi/aes-server.json": "5aceafacbe6fed5f224e8091cb514c408ea82014a6f0a16a34c6fe42ca9b0f83",
+    "abi/c-program.json": "2b0da8c5afa5d3ca48d6fe1ebfca80df872c9dbcf8a803f50c54c2e8a8f6e555",
+    "lib/aes/aeswindow.act": "8deacb3e023a38abf9952207f9ca500a8ddb40049eecd3b59cae3a0d9825a90c",
+    "lib/aes/aeswindowstate.act": "7560fab7edee85e9f3aa8f5e38a6104ef027bc74165cd6edd03712e00045c398",
+    "c/calypsi/aes-windows.c": "0bb301407464164bc0f1d22847b57fa6bfa4e7119991e6e52d5aa79ec9108b78",
+    "ports/gem4xe/window-reference.json": "74545e24ef0602288409bcc1d03eba1c1906242727e6dd21b735ae3abb719e02",
+    "tests/programs/aes_geometry.c": "a85842554a5a2cd53509c85c1a3e5717dbd097291ec89357d4eb750400b75640",
+    "tests/programs/aes_windows.c": "def18f6f3aec376adaadc7b42f3741703182deb73d86ff23ad4b53e811e9679d",
+    "tools/test_aes_server.py": "57349051a82c32f8d61491ee948f28a6b8c91eab77d8dbc7b7d21017f647c107"
+  },
+  "baseline_fixture_audit": {
+    "revision": "7644528e",
+    "path": "build/mgview-foundation/mv1-baseline-source/build/mv1-baseline-windows/results.json",
+    "sha256": "11acac74ebb765326b7a72dc2a6bef7c842af99b058f4d3c52cb0014b66e554b",
+    "status": "fail",
+    "AESFirstFailure": 95,
+    "error": "Unexpected termination: {'status': 65427, 'native_nmi_count': 2795, 'native_irq_count': 14796, 'os_busy': 0, 'return_s': 0, 'return_d': 0, 'return_p': 0, 'fault_required': 0, 'fault_s': 0, 'clock_start': 82, 'clock_end': 0, 'return_dbr': 0, 'return_e': 0}",
+    "repair": "Reserve three hidden siblings so the extra-window case exceeds six slots; settle deferred frame and directory work before checking idle and shutdown. Existing physical assertions and ownership/stack checks remain enabled."
+  }
+}

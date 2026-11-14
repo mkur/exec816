@@ -108,6 +108,8 @@ const UWORD AESLayout[] = {
     offsetof(struct AESWindowView, vsize),
     offsetof(struct AESWindowView, revision),
     offsetof(struct AESWindowView, bounds),
+    offsetof(struct AESWindowView, full),
+    offsetof(struct AESWindowView, previous),
     offsetof(struct AESWindowView, work),
     offsetof(struct AESWindowView, visibleCount),
     offsetof(struct AESWindowView, visible),

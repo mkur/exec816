@@ -288,6 +288,8 @@ WORD ExecAESWindowGet(struct ExecAESContext *c, WORD handle, WORD field, WORD *o
     case WF_KIND: *o1 = v->kind; break;
     case WF_WXYWH: rect = &v->work; break;
     case WF_CXYWH: rect = &v->bounds; break;
+    case WF_PXYWH: rect = &v->previous; break;
+    case WF_FXYWH: rect = &v->full; break;
     case WF_FIRSTXYWH:
     case WF_NEXTXYWH:
         if (!v->updates) { c->diagnostic = AES_BUSY; break; }

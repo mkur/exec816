@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/slaapliedje/gem4xe",
+  "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "role": "Behavioral reference; Exec native window policy and bindings are independently implemented.",
+  "files": {
+    "src/aes/wind.c": "d621c0d8a48991dfa79f001d62745ab9a13b2f7d7c4d5a982c5961347328a527",
+    "src/aes/ctrl.c": "a95d381789d917b68561469adc1a3cbd2b8fec776cb4cad19e94e3e710c5d450"
+  },
+  "selected_semantics": [
+    "creation full rectangle and previous normal geometry",
+    "horizontal bar layout, slider range and WM_HSLID/WM_ARROWED messages"
+  ],
+  "adaptation": "Exec frame metrics, caller/system scene publication, UPDATE ownership, asynchronous physical effects and application-acknowledged input."
+}

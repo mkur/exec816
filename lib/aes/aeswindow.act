@@ -137,6 +137,8 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         view.kind=kind
         view.vslide=0
         view.vsize=1000
+        A816MEMORY.Move(BYTE POINTER(@view.full),BYTE POINTER(@bounds),8)
+        A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@bounds),8)
         DESKGEOMETRY.Slider(window,@bounds,0,1000)
         view.updates=IF service.updateOwner=client.id THEN service.updates
             ELSE CARD(0) FI
@@ -168,6 +170,7 @@ PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
   FI
   AESWINDOWSTATE.Geometry(item,0)
+  A816MEMORY.Move(BYTE POINTER(@item.view.previous),BYTE POINTER(bounds),8)
   AESWINDOWSTATE.Sync()
 
 RETURN

@@ -396,7 +396,13 @@ or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
 top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 16;
 SIZER increases the bottom inset to 11. INFO adds a 10-pixel information line
 below the title, raising the top inset to 21. `wind_calc` converts border/work rectangles locally; `wind_get`
-provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH` and `WF_TOP` from published state.
+provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH`, `WF_PXYWH`, `WF_FXYWH` and
+`WF_TOP` from published state. `WF_FXYWH` (`WF_FULLXYWH`) is the accepted
+rectangle supplied at creation. `WF_PXYWH` (`WF_PREVXYWH`) is initialized to
+the accepted open rectangle and thereafter records the previous committed
+normal geometry. Rejected/no-op mutations, focus changes and iconification
+preserve it; changing normal geometry while iconified updates it. Reopening
+initializes it again. Both queries are caller-local, including AESPB calls.
 Use those accepted rectangles after open/set; `wind_calc` itself remains an
 unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.
 `WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and

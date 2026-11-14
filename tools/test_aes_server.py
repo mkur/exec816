@@ -396,7 +396,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','visibility','forms','resources','pointer','vdi') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -421,7 +421,6 @@ PROC Main()
   entry^=${sy['AESRun']:x}
   Require(run()=0)
   Require(service.count=0)
-  Require(AESCORE.Idle(service)<>0)
 {'''  ; Retire the last application background before stopping the worker.
   BEGIN
     BYTE pending
@@ -431,7 +430,7 @@ PROC Main()
     DO
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
-          OR service.policyEffects<>0
+          OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
       AESGATE.Release(0)
       IF pending=0 THEN
         EXIT
@@ -440,7 +439,8 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','visibility','forms','resources','pointer','vdi') else ''}
+''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi') else ''}
+  Require(AESCORE.Idle(service)<>0)
 {exhaustion}
 RETURN
 ENDMODULE

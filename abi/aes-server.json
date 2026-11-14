@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 20,
+  "version": 21,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -127,7 +127,11 @@
     "CHANGE_RECT": 1,
     "CHANGE_DECLARED": 2,
     "CHANGE_UNDECLARED": 4,
-    "INVALIDATION_REPORTS": 8
+    "INVALIDATION_REPORTS": 8,
+    "WF_PXYWH": 6,
+    "WF_FXYWH": 7,
+    "WF_PREVXYWH": 6,
+    "WF_FULLXYWH": 7
   },
   "records": {
     "MenuObject": [
@@ -525,6 +529,14 @@
         "Rect"
       ],
       [
+        "full",
+        "Rect"
+      ],
+      [
+        "previous",
+        "Rect"
+      ],
+      [
         "work",
         "Rect"
       ],
@@ -734,6 +746,10 @@
     "WM_FULLED",
     "WM_UNTOPPED",
     "WM_ONTOP",
-    "WF_EXEC_FOCUS"
+    "WF_EXEC_FOCUS",
+    "WF_PXYWH",
+    "WF_FXYWH",
+    "WF_PREVXYWH",
+    "WF_FULLXYWH"
   ]
 }

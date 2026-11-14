@@ -25,6 +25,19 @@ static void check(BOOL okay,UWORD line)
 }
 #define CHECK(t) check((t)!=0,__LINE__)
 
+static void rectangle(WORD handle,WORD field,WORD x,WORD y,WORD w,WORD h,BOOL pb)
+{
+    WORD a,b,d,e,control[5]={AES_OP_GET,2,5,0,0},global[15],in[2],out[5];
+    AESPB block={control,global,in,out,NULL,NULL};
+    ULONG sequence=ExecAESContext()->sequence;
+    if (pb) {
+        in[0]=handle;in[1]=field;aes_call(&block);
+        CHECK(out[0]);a=out[1];b=out[2];d=out[3];e=out[4];
+    } else CHECK(wind_get(handle,field,&a,&b,&d,&e));
+    CHECK(a==x && b==y && d==w && e==h);
+    CHECK(ExecAESContext()->sequence==sequence);
+}
+
 static void lookup(WORD x,WORD y,WORD expected,WORD pb)
 {
     struct ExecAESContext *c=ExecAESContext();
@@ -110,6 +123,8 @@ void AESClientOne(void)
         } else if (code==3) {
             CHECK(wind_update(BEG_UPDATE));
             bounds(peerWindow,96,72,240,128,1,AES_OK);
+            rectangle(peerWindow,WF_PREVXYWH,80,64,240,128,TRUE);
+            rectangle(peerWindow,WF_FULLXYWH,80,64,240,128,FALSE);
             top(peerWindow,0,AES_OK);
             CHECK(wind_update(END_UPDATE));
         } else break;
@@ -139,6 +154,9 @@ UWORD AESRun(void)
     rootWindow=wind_create(AES_WINDOW_KIND|SIZER,32,32,240,160);
     CHECK(rootWindow>0);CHECK(wind_open(rootWindow,32,32,240,160));
     hiddenWindow=wind_create(AES_WINDOW_KIND,360,32,120,64);CHECK(hiddenWindow>0);
+    rectangle(rootWindow,WF_FULLXYWH,32,32,240,160,FALSE);
+    rectangle(rootWindow,WF_PREVXYWH,32,32,240,160,TRUE);
+    rectangle(hiddenWindow,WF_PXYWH,360,32,120,64,FALSE);
     peer=CreateTask("geometry peer",0,AESClientOne,1024);CHECK(peer!=NULL);
     while (!AESReady) Wait(wake);
     lookup(100,80,peerWindow,0);lookup(40,40,rootWindow,1);
@@ -153,12 +171,18 @@ UWORD AESRun(void)
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_get(rootWindow,WF_FIRSTXYWH,&a,&b,&d,&e));
     bounds(rootWindow,48,40,240,160,0,AES_OK);
+    rectangle(rootWindow,WF_PREVXYWH,32,32,240,160,TRUE);
     CHECK(!wind_get(rootWindow,WF_NEXTXYWH,&a,&b,&d,&e));
     CHECK(ExecAESDiagnostic()==AES_BUSY);
     CHECK(wind_get(rootWindow,WF_FIRSTXYWH,&a,&b,&d,&e));
     bounds(rootWindow,48,40,248,168,1,AES_OK);
     bounds(rootWindow,-1,40,248,168,0,AES_MALFORMED);
+    rectangle(rootWindow,WF_PREVXYWH,48,40,240,160,FALSE);
+    CHECK(wind_set(rootWindow,WF_CXYWH,48,40,248,168));
+    rectangle(rootWindow,WF_PXYWH,48,40,240,160,TRUE);
     bounds(hiddenWindow,361,40,120,64,1,AES_OK);
+    rectangle(hiddenWindow,WF_PREVXYWH,360,32,120,64,TRUE);
+    rectangle(hiddenWindow,WF_FULLXYWH,360,32,120,64,FALSE);
     top(rootWindow,0,AES_OK);top(rootWindow,1,AES_OK);
     top(hiddenWindow,0,AES_MALFORMED);
     CHECK(wind_update(END_UPDATE));
@@ -170,6 +194,8 @@ UWORD AESRun(void)
     (*(volatile UBYTE *)GeoBusy)=1;finished=0;command=2;Signal(peer,peerWake);
     sequence=c->sequence;
     CHECK(wind_set(rootWindow,WF_CXYWH,48,40,256,176));
+    rectangle(rootWindow,WF_PREVXYWH,48,40,248,168,TRUE);
+    rectangle(rootWindow,WF_FULLXYWH,32,32,240,160,FALSE);
     CHECK(c->sequence==sequence);
     while (finished!=2) Wait(wake);
     sequence=c->sequence;
