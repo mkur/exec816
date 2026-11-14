@@ -578,7 +578,6 @@ WORD vst_effects(WORD handle, WORD effects);
 WORD vst_point(WORD handle, WORD point, WORD *char_width, WORD *char_height, WORD *cell_width, WORD *cell_height);
 void vsl_ends(WORD handle, WORD beg_style, WORD end_style);
 void vr_trnfm(WORD handle, const MFDB *src, const MFDB *dst);
-void vsc_form(WORD handle, const WORD *form);
 void vsf_udpat(WORD handle, const WORD *pattern, WORD planes);
 void vsl_udsty(WORD handle, WORD pattern);
 void vqin_mode(WORD handle, WORD dev, WORD *mode);

@@ -198,6 +198,14 @@ launch; new save geometry is adopted after completion. Faults use the same
 quiescent/reset-required policy as other drawing. This does not add a hardware
 queue or asynchronous cursor lifetime; pending scroll work retains the arena.
 
+Custom GEM mouse forms retain those same save/mask VRAM reservations. Form
+replacement restores the old save before uploading new parity masks and
+redrawing, including at unchanged logical coordinates. The hotspot is
+subtracted before screen clipping; drawing/copy intersection checks use the
+clipped saved rectangle, including adjacent byte nibbles. Queries return the
+logical hotspot position. AES application forms and VDI device state follow
+the [mouse-call contract](aes.md) and [raw VDI contract](gem-vdi.md#mouse-device-calls).
+
 ## Bitmap rectangle copies
 
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.

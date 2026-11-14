@@ -1,0 +1,246 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GM2",
+  "abi": {
+    "c_app": 45,
+    "aes": 24,
+    "console_bitmap": 15
+  },
+  "cases": [
+    {
+      "path": "build/gem-mouse/gm2-forms/results.json",
+      "sha256": "81684e3f7ca4cd4c091e1977d78f189a545c19f4d820bf235aabb9f9eeaad8f5",
+      "status": "pass",
+      "AESChecks": 371,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 793,
+          "remaining_above_floor": 487
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 138,
+          "remaining_above_floor": 918
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 49,
+          "remaining_above_floor": 1007
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 331,
+          "remaining_above_floor": 725
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 694,
+          "remaining_above_floor": 1610
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "cursor_pixels": 133
+    },
+    {
+      "path": "build/gem-mouse/gm2-policy-raw/results.json",
+      "sha256": "2cf48e5aca4279c8782565c4eccbfbfce93797727c4bb14825bdd5c05e1c55f7",
+      "status": "pass",
+      "checks": 29
+    },
+    {
+      "path": "build/gem-mouse/gm2-policy-opt/results.json",
+      "sha256": "bb97b12c90840842dabeea253c87e2610ed38393d2faf23bba253e615af8328a",
+      "status": "pass",
+      "checks": 29
+    },
+    {
+      "path": "build/gem-mouse/gm2-context-raw/results.json",
+      "sha256": "55ad2b1cdc27631676094bc23cdce4ea0e74339696f4f0727461944a066c4975",
+      "status": "pass",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    {
+      "path": "build/gem-mouse/gm2-context-opt/results.json",
+      "sha256": "714463de35788e50c16c769754069f16ba237956c6f109fb0a04a421d4330448",
+      "status": "pass",
+      "client_checks": [
+        1081,
+        1081
+      ]
+    },
+    {
+      "path": "build/gem-mouse/gm2-form-raw/results.json",
+      "sha256": "ede5cb165295347da413b1565d32ec10229fda08e0b1e4ffcb029bba29b2f802",
+      "status": "pass",
+      "checks": 68
+    },
+    {
+      "path": "build/gem-mouse/gm2-form-opt/results.json",
+      "sha256": "ef92023850c8811ab73259089605c3a7cb79ccb4753eebfdddb80f388e72eeef",
+      "status": "pass",
+      "checks": 68
+    },
+    {
+      "path": "build/gem-mouse/gm2-routing/results.json",
+      "sha256": "08ed98a9ddfdb0c64918f04fcd134c5a61608de93ca4cf020607c87f741bfd5f",
+      "status": "pass",
+      "checks": 22
+    },
+    {
+      "path": "build/gem-mouse/gm2-backend/results.json",
+      "sha256": "de942fbfb19c89decd091f1ffa33be8ec322b09537efa18a73f205217a9655dc",
+      "status": "pass",
+      "checks": 39,
+      "failures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 161,
+          "remaining_above_floor": 1119
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 332,
+          "remaining_above_floor": 1972
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "cases": 62
+    },
+    {
+      "path": "build/gem-mouse/gm2-vdi-abi/results.json",
+      "sha256": "bee6c2412270be93608abf2b87c15fa5c9986ea3d63e919e3c7f8a5f4590856d",
+      "status": "pass",
+      "checks": 27
+    },
+    {
+      "path": "build/gem-mouse/gm2-raster-abi/results.json",
+      "sha256": "f6e9ec0f927f065205594008b80ca6729230f25293a2f7aa3d3de81d2be02221",
+      "status": "pass",
+      "checks": 20
+    }
+  ],
+  "host": {
+    "path": "build/gem-mouse-host-gm2-final.log",
+    "checks": 715,
+    "skipped": 5
+  },
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0,
+      "includes": "guards, alignment and unused reserved capacity"
+    },
+    "upper_structure_growth": {
+      "request_embedded_in_context": 74,
+      "c_context": 74,
+      "native_client_embedded_in_service": 76,
+      "service": 384,
+      "renderer_cached_form": 76,
+      "renderer_saved_rectangle": 4
+    },
+    "rounded_allocation_growth": {
+      "c_context": 72,
+      "service": 384,
+      "note": "8-byte heap rounding: context604->678 reserves608->680; service1332->1716 reserves1336->1720. Request/current form are embedded, no separate allocation or per-call effect allocation."
+    },
+    "readonly_forms_bytes": 74,
+    "removed_readonly_masks_bytes": 1024,
+    "cursor_vram_growth": 0
+  },
+  "scope": "Pinned AltirraOS/AltirraSDL development checks; no QED execution, no release qualification; one final demo refresh remains GM5."
+}

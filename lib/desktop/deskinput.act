@@ -414,6 +414,12 @@ RETURN
 PUBLIC PROC Present()
   BYTE drawn
 
+  BEGIN
+    LET service=AESSTATE.Get()
+    IF service<>NULL THEN
+      AESCURSOR.Select(service)
+    FI
+  END
   IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
     IF MouseReady()=0 AND DESKDRAG.Application()=0 THEN
       DESKDRAG.Suspend()

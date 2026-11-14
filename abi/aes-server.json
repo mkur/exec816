@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 23,
+  "version": 24,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -161,7 +161,8 @@
     "M_SAVE": 258,
     "M_RESTORE": 259,
     "M_PREVIOUS": 260,
-    "M_FORCE": 32768
+    "M_FORCE": 32768,
+    "MFORM_WORDS": 37
   },
   "records": {
     "MenuObject": [
@@ -466,6 +467,17 @@
         "CARD"
       ]
     ],
+    "MouseForm": [
+      [
+        "kind",
+        "INT"
+      ],
+      [
+        "words",
+        "INT",
+        "MFORM_WORDS"
+      ]
+    ],
     "MouseState": [
       [
         "x",
@@ -502,6 +514,10 @@
       [
         "visible",
         "CARD"
+      ],
+      [
+        "form",
+        "MouseForm"
       ]
     ],
     "Directory": [
@@ -775,6 +791,11 @@
       [
         "mouseWait",
         "LONGCARD"
+      ],
+      [
+        "mouseForm",
+        "INT",
+        "MFORM_WORDS"
       ]
     ]
   },

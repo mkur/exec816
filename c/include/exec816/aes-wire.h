@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 23
+#define AES_VERSION 24
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -163,6 +163,7 @@
 #define AES_M_RESTORE 259
 #define AES_M_PREVIOUS 260
 #define AES_M_FORCE 32768
+#define AES_MFORM_WORDS 37
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -326,6 +327,13 @@ struct AESEndpoint {
 #define AES_ENDPOINT_OFFSET_MENUEPOCH 40
 #define AES_ENDPOINT_OFFSET_MENUCONSUMED 44
 #define AES_ENDPOINT_OFFSET_MENUNORMAL 46
+struct AESMouseForm {
+    WORD kind;
+    WORD words[AES_MFORM_WORDS];
+};
+#define AES_MOUSEFORM_SIZE 76
+#define AES_MOUSEFORM_OFFSET_KIND 0
+#define AES_MOUSEFORM_OFFSET_WORDS 2
 struct AESMouseState {
     WORD x;
     WORD y;
@@ -336,8 +344,9 @@ struct AESMouseState {
     ULONG completed;
     UWORD status;
     UWORD visible;
+    struct AESMouseForm form;
 };
-#define AES_MOUSESTATE_SIZE 24
+#define AES_MOUSESTATE_SIZE 100
 #define AES_MOUSESTATE_OFFSET_X 0
 #define AES_MOUSESTATE_OFFSET_Y 2
 #define AES_MOUSESTATE_OFFSET_BUTTONS 4
@@ -347,6 +356,7 @@ struct AESMouseState {
 #define AES_MOUSESTATE_OFFSET_COMPLETED 16
 #define AES_MOUSESTATE_OFFSET_STATUS 20
 #define AES_MOUSESTATE_OFFSET_VISIBLE 22
+#define AES_MOUSESTATE_OFFSET_FORM 24
 struct AESDirectory {
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
@@ -356,7 +366,7 @@ struct AESDirectory {
     struct AESEndpoint endpoints[AES_CLIENTS];
     struct AESMouseState mouse;
 };
-#define AES_DIRECTORY_SIZE 228
+#define AES_DIRECTORY_SIZE 304
 #define AES_DIRECTORY_OFFSET_OWNER 0
 #define AES_DIRECTORY_OFFSET_OWNERPAD 3
 #define AES_DIRECTORY_OFFSET_MASK 4
@@ -458,8 +468,9 @@ struct AESRequest {
     UWORD invalidationCount;
     struct AESPaintReport invalidations[AES_INVALIDATION_REPORTS];
     ULONG mouseWait;
+    WORD mouseForm[AES_MFORM_WORDS];
 };
-#define AES_REQUEST_SIZE 344
+#define AES_REQUEST_SIZE 418
 #define AES_REQUEST_OFFSET_MESSAGE 0
 #define AES_REQUEST_OFFSET_VERSION 16
 #define AES_REQUEST_OFFSET_BYTES 18
@@ -490,5 +501,6 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_INVALIDATIONCOUNT 226
 #define AES_REQUEST_OFFSET_INVALIDATIONS 228
 #define AES_REQUEST_OFFSET_MOUSEWAIT 340
+#define AES_REQUEST_OFFSET_MOUSEFORM 344
 #define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE || (op)==AES_OP_MENU || (op)==AES_OP_DRAG_OUTLINE)
 #endif

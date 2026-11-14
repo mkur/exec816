@@ -5,12 +5,16 @@ USE EXEC
 USE AESTYPES
 USE AESSTATE
 USE AESWAIT
+USE AESMOUSE
+USE A816MEMORY
 
 PUBLIC PROC Init(AESSTATE.Service POINTER service)
 
   service.directory.mouse.x=320
   service.directory.mouse.y=120
   service.cursorHides=0
+  service.cursorOwner=0
+  service.directory.mouse.form.kind=AESTYPES.ARROW
   service.directory.mouse.depth=0
   service.directory.mouse.revision=0
   service.directory.mouse.completed=0
@@ -18,6 +22,64 @@ PUBLIC PROC Init(AESSTATE.Service POINTER service)
   service.directory.mouse.visible=1
 
 RETURN
+
+; Called with Forbid held. A form revision names an owned immutable target,
+; never a caller pointer. Equal device pixels need no physical transition.
+CARD FUNC Install(AESSTATE.Service POINTER service INT kind INT POINTER words)
+  BYTE index,changed
+
+  LET mouse=@service.directory.mouse
+  changed=(mouse.form.kind<>kind)
+  IF kind=AESTYPES.USER_DEF AND changed=0 THEN
+    FOR index=0 TO AESTYPES.MFORM_WORDS-1 DO
+      IF mouse.form.words(index)<>words(index) THEN
+        changed=1
+      FI
+    OD
+  FI
+  IF changed=0 THEN
+    RETURN(AESTYPES.OK)
+  FI
+  IF mouse.revision=$ffffffff THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+  IF kind=AESTYPES.USER_DEF THEN
+    A816MEMORY.Move(BYTE POINTER(@mouse.form.words),BYTE POINTER(words),
+        AESTYPES.MFORM_WORDS*2)
+  FI
+  mouse.form.kind=kind
+  mouse.revision==+1
+
+RETURN(AESTYPES.OK)
+
+; Recipient changes install a registration's current form, or system ARROW.
+; Raw VDI installations survive ordinary motion and CPU scheduling.
+PUBLIC CARD FUNC Select(AESSTATE.Service POINTER service)
+  CARD status
+
+  status=AESTYPES.OK
+  EXEC.Forbid()
+  LET recipient=AESMOUSE.CursorRecipient()
+  IF recipient<>service.cursorOwner THEN
+    BEGIN
+      LET client=AESSTATE.Find(service,recipient)
+      IF client=NULL OR client.endpoint=NULL
+          OR client.endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING THEN
+        status=Install(service,AESTYPES.ARROW,NULL)
+        IF status=AESTYPES.OK THEN
+          service.cursorOwner=0
+        FI
+      ELSE
+        status=Install(service,client.currentForm.kind,@client.currentForm.words)
+        IF status=AESTYPES.OK THEN
+          service.cursorOwner=recipient
+        FI
+      FI
+    END
+  FI
+  EXEC.Permit()
+
+RETURN(status)
 
 ; Return before any mutation if a new physical target cannot be identified.
 CARD FUNC SetDepth(AESSTATE.Service POINTER service LONGCARD depth)
@@ -46,6 +108,11 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
   depth=service.directory.mouse.depth
   status=AESTYPES.OK
   EXEC.Forbid()
+  status=Select(service)
+  IF status<>AESTYPES.OK THEN
+    EXEC.Permit()
+    RETURN(status)
+  FI
   IF request.intin(1)=0 THEN
     IF mode=AESTYPES.M_OFF THEN
       IF client.mouseHides=$ffff OR service.cursorHides=$ffffffff
@@ -70,9 +137,22 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
           service.cursorHides==-1
         FI
       FI
-    ELSEIF mode<>AESTYPES.ARROW THEN
+    ELSEIF mode=AESTYPES.ARROW OR mode=AESTYPES.USER_DEF THEN
+      IF service.cursorOwner=client.id AND client.id<>0 THEN
+        status=Install(service,INT(mode),@request.mouseForm)
+      FI
+      IF status=AESTYPES.OK THEN
+        client.currentForm.kind=INT(mode)
+        IF mode=AESTYPES.USER_DEF THEN
+          A816MEMORY.Move(BYTE POINTER(@client.currentForm.words),
+              BYTE POINTER(@request.mouseForm),AESTYPES.MFORM_WORDS*2)
+        FI
+      FI
+    ELSE
       status=AESTYPES.UNSUPPORTED
     FI
+  ELSEIF mode=111 THEN
+    status=Install(service,AESTYPES.USER_DEF,@request.mouseForm)
   ELSEIF mode=123 THEN
     IF depth=$ffffffff THEN
       status=AESTYPES.OVERFLOW
@@ -142,6 +222,15 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
 
   status=AESTYPES.OK
   EXEC.Forbid()
+  IF service.cursorOwner=client.id AND client.id<>0 THEN
+    status=Install(service,AESTYPES.ARROW,NULL)
+    IF status=AESTYPES.OK THEN
+      service.cursorOwner=0
+    FI
+  ELSE
+    status=Select(service)
+  FI
+  request.mouseWait=service.directory.mouse.revision
   IF client.mouseHides<>0 THEN
     IF service.cursorHides=LONGCARD(client.mouseHides)
         AND service.directory.mouse.depth<>0 THEN

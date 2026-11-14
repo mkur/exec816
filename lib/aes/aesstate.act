@@ -36,6 +36,7 @@ PUBLIC TYPE Client=[
   AESTYPES.Request POINTER pending
   Menu POINTER menu
   CARD mouseHides
+  AESTYPES.MouseForm currentForm
   DESKTYPES.GuiPending gui
   BYTE guiNext,windowWaiting,closeRequested,windowLocks,waitMode
 ]
@@ -62,6 +63,7 @@ PUBLIC TYPE Service=[
   LONGCARD updateOwner,mouseOwner
   CARD updates,mouseHolds
   LONGCARD cursorHides
+  LONGCARD cursorOwner
   INT updateWindow
   BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
   BYTE lockCount

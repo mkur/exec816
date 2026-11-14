@@ -69,6 +69,31 @@ PUBLIC AESTYPES.InputRecord POINTER FUNC PointerSample()
 
 RETURN(@latest)
 
+; The routed work recipient owns form selection, independently of Task
+; scheduling and UPDATE admission. Explicit MCTRL can select a windowless app.
+PUBLIC LONGCARD FUNC CursorRecipient()
+  LONGCARD recipient
+  AESSNAPSHOT.WindowRoute route
+
+  recipient=0
+  EXEC.Forbid()
+  IF manager=0 AND nativePending=0 THEN
+    IF owner<>0 AND needRelease=0 THEN
+      recipient=owner
+    ELSEIF AESSNAPSHOT.Select(AESSNAPSHOT.POINTER_HIT,0,
+        latest.x,latest.y,@route)<>0 THEN
+      IF route.iconified=0 AND latest.x>=route.work.left
+          AND latest.x<route.work.right AND latest.y>=route.work.top
+          AND latest.y<route.work.bottom THEN
+        recipient=route.client
+      FI
+      AESSNAPSHOT.Drop(route.endpoint)
+    FI
+  FI
+  EXEC.Permit()
+
+RETURN(recipient)
+
 PUBLIC PROC Cancel(LONGCARD client)
 
   AESSTATE.mouseDirty=1

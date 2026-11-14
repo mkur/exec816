@@ -5,8 +5,9 @@ using the large-code/huge-data ABI. It is separate from the
 [native o65 contract](program-loading.md). Its constants and import ordinals
 are defined in [abi/c-program.json](../../abi/c-program.json).
 
-Current APP ABI 44 adds `graf_mouse`, `v_hide_c`, `v_show_c` and `vq_mouse`,
-paired with the shared native cursor policy and 604-byte caller context.
+Current APP ABI 45 adds `vsc_form` and owned custom mouse forms to the shared
+native cursor policy and 678-byte caller context. The provider also exports
+graf_mouse, v_hide_c, v_show_c and vq_mouse.
 Rebuild C providers and APPs together; earlier APP ABI versions are
 rejected. The runtime invocation record and runtime contract version stay 1.
 
@@ -87,7 +88,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 44 |
+| 6 | 2 | APP ABI version, 45 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

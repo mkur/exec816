@@ -7,6 +7,12 @@
       "local": "upstream/gemdata.py",
       "selection": "MFORMS; ARROW in GM1, remaining forms in GM3",
       "git_blob": "bdd817ed2d6105a7ab1a8902158c9bb09732f058"
+    },
+    "src/vdi/dev_vbxe.c": {
+      "sha256": "cc892a674e3635229ab52ecf9209fc6b8f642166b47a9e52d14b7035cbe89ea0",
+      "selection": "pointer form expansion, lines 387\u2013463; adapted in gem-vbxe.c",
+      "local": "upstream/cursor-vbxe.c",
+      "selected_sha256": "841df37d4d2cf1ddbc8f4d5f98ed81026793f585c157e19ec681a0c8c192e011"
     }
   },
   "provenance": "MFORM artwork transcribed by GEM4XE from EmuTOS aes/mforms.c (GPLv2); preserve upstream module notices."

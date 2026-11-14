@@ -1,0 +1,164 @@
+MODULE CURSORROUTETEST
+USE EXEC
+USE HEAPCORE
+USE AESSTATE
+USE AESTYPES
+USE AESCURSOR
+USE AESMOUSE
+USE AESSNAPSHOT
+USE DESKSTATE
+USE DESKTYPES
+USE INPUT
+USE REGIONS
+CARD checks
+AESTYPES.Request binding
+AESTYPES.InputInbox ARRAY inboxes(2)
+INPUT.Event sample
+AESTYPES.WindowView ARRAY views(2)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE index
+
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(DESKTYPES.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL AND desktop<>NULL)
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(index)=@desktop.windows(index)
+  OD
+  AESSTATE.Bind(service)
+  DESKSTATE.Bind(desktop)
+  AESCURSOR.Init(service)
+  service.live=1
+  service.count=2
+  desktop.scene.count=2
+  desktop.focus=11
+  FOR index=0 TO 1 DO
+    BEGIN
+      LET client=@service.clients(index)
+      LET window=@desktop.windows(index)
+      LET layer=@desktop.scene.items(index)
+      client.id=LONGCARD(index)+1
+      client.binding=@binding
+      client.endpoint=@service.directory.endpoints(index)
+      client.endpoint.id=client.id
+      client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+      client.endpoint.input=@inboxes(index)
+      inboxes(index).windowEpoch=LONGCARD(index)+1
+      inboxes(index).keyEpoch=1
+      inboxes(index).buttonEpoch=1
+      client.currentForm.kind=AESTYPES.USER_DEF
+      client.currentForm.words(3)=INT(index)+2
+      window.owner=client.id
+      window.id=(LONGCARD(index)+1)*11
+      window.layer=(LONGCARD(index)+1)*100
+      desktop.scene.order(index)=index
+      layer.id=window.layer
+      layer.shown=1
+      REGIONS.Assign(@layer.bounds,INT(index)*200,20,INT(index)*200+180,180)
+    END
+  OD
+  ; Give the windows independent views without allocating a real renderer.
+  BEGIN
+    FOR index=0 TO 1 DO
+      views(index).epoch=LONGCARD(index)+1
+      views(index).handle=INT(index)+1
+      service.windows(index).view=@views(index)
+    OD
+    AESMOUSE.Reset()
+    AESSNAPSHOT.Invalidate()
+    Require(AESSNAPSHOT.Publish()<>0)
+    sample.kind=INPUT.EVENT_POINTER
+    sample.x=50
+    sample.y=50
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=1)
+    Require(AESCURSOR.Select(service)=AESTYPES.OK)
+    Require(service.directory.mouse.form.words(3)=2)
+    ; An UPDATE-only owner is not the pointer's input recipient.
+    service.updateOwner=2
+    service.mouseOwner=2
+    service.updates=1
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    Require(AESMOUSE.CursorRecipient()=1)
+    AESCURSOR.Select(service)
+    Require(service.directory.mouse.form.words(3)=2)
+    ; A work press captures that app through motion across another window.
+    sample.kind=INPUT.EVENT_BUTTON
+    sample.buttons=INPUT.LEFT
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=1)
+    sample.kind=INPUT.EVENT_POINTER
+    sample.x=250
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=1)
+    sample.kind=INPUT.EVENT_BUTTON
+    sample.buttons=0
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=0)
+    desktop.focus=22
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    Require(AESMOUSE.CursorRecipient()=2)
+    AESCURSOR.Select(service)
+    Require(service.directory.mouse.form.words(3)=3)
+    service.directory.mouse.form.words(3)=9
+    EXEC.Yield()
+    AESCURSOR.Select(service)
+    Require(service.directory.mouse.form.words(3)=9)
+    ; Windowless MCTRL still selects its registration's current form.
+    service.mouseOwner=1
+    service.mouseHolds=1
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    Require(AESMOUSE.CursorRecipient()=1)
+    AESCURSOR.Select(service)
+    Require(service.directory.mouse.form.words(3)=2)
+    DESKSTATE.menuActive=1
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    Require(AESMOUSE.CursorRecipient()=0)
+    AESCURSOR.Select(service)
+    Require(service.directory.mouse.form.kind=AESTYPES.ARROW)
+    DESKSTATE.menuActive=0
+    service.mouseHolds=0
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    ; Native title capture keeps system ARROW until physical release.
+    sample.x=250
+    sample.y=24
+    sample.buttons=INPUT.LEFT
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=0)
+    sample.kind=INPUT.EVENT_POINTER
+    sample.y=50
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=0)
+    sample.kind=INPUT.EVENT_BUTTON
+    sample.buttons=0
+    AESMOUSE.Route(@sample)
+    Require(AESMOUSE.CursorRecipient()=2)
+    AESMOUSE.Lost()
+    Require(service.clients(0).mouseHides=0 AND service.clients(1).mouseHides=0)
+    AESSTATE.Bind(NULL)
+    DESKSTATE.Bind(NULL)
+    AESSNAPSHOT.Publish()
+  END
+  Require(service.directory.endpoints(0).holds=0
+      AND service.directory.endpoints(1).holds=0)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+  EXEC.FreeMem(BYTE POINTER(desktop),SIZEOF(DESKTYPES.Service))
+
+RETURN
+ENDMODULE

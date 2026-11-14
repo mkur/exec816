@@ -25,9 +25,9 @@ PROC Main()
   LET first=@service.clients(0)
   LET second=@service.clients(1)
   LET mouse=@service.directory.mouse
-  Require(SIZEOF(AESTYPES.MouseState)=24)
-  Require(SIZEOF(AESTYPES.Request)=344)
-  Require(SIZEOF(AESSTATE.Client)=148 AND SIZEOF(AESSTATE.Service)=1332)
+  Require(SIZEOF(AESTYPES.MouseState)=100)
+  Require(SIZEOF(AESTYPES.Request)=418)
+  Require(SIZEOF(AESSTATE.Client)=224 AND SIZEOF(AESSTATE.Service)=1716)
   Require(mouse.x=320 AND mouse.y=120 AND mouse.visible=1)
   request.intin(0)=AESTYPES.M_OFF
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)

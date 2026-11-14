@@ -271,6 +271,7 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
     case 100: words=11; break;
     case 101: case 38: case 123: case 124: break;
     case 122: words=1; break;
+    case 111: words=AES_MFORM_WORDS; break;
     case 39: words=2; break;
     case 114: pairs=2; break;
     case 8: pairs=1; words=pb->contrl[3]; break;
@@ -287,6 +288,10 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
     }
     if (op==100) { open_virtual(c,pb); return; }
     if (!w || pb->contrl[6]!=w->handle) { c->diagnostic=AES_IDENTITY; return; }
+    if (op==111) {
+        if (ExecAESMouseCopy(c,pb->intin)) ExecAESMouseControl(c,111,1,0);
+        return;
+    }
     if (op==122 || op==123) {
         ExecAESMouseControl(c,op,1,op==122 ? pb->intin[0]:0);
         return;
@@ -384,6 +389,7 @@ void v_opnvwk(WORD *input,WORD *handle,WORD *output)
 }
 void v_clsvwk(WORD h) { call(101,0,0,0,h,NULL,NULL); }
 void v_hide_c(WORD h) { call(123,0,0,0,h,NULL,NULL); }
+void vsc_form(WORD h,const WORD *form) { call(111,0,0,AES_MFORM_WORDS,h,NULL,form); }
 void v_show_c(WORD h,WORD reset) { call(122,0,0,1,h,NULL,&reset); }
 void vq_mouse(WORD h,WORD *buttons,WORD *x,WORD *y)
 {

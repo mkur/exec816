@@ -31,6 +31,7 @@ WORD graf_handle(WORD *wchar, WORD *hchar, WORD *wbox, WORD *hbox);
 WORD graf_mkstate(WORD *x, WORD *y, WORD *buttons, WORD *qualifiers);
 WORD graf_mouse(WORD mode, const MFORM *form);
 void v_hide_c(WORD handle);
+void vsc_form(WORD handle, const WORD *form);
 void v_show_c(WORD handle, WORD reset);
 void vq_mouse(WORD handle, WORD *buttons, WORD *x, WORD *y);
 void v_opnvwk(WORD *work_in, WORD *handle, WORD *work_out);

@@ -24,6 +24,7 @@ WORD ExecAESGrafHandle(struct ExecAESContext *c, WORD *cw,WORD *ch,WORD *bw,WORD
 WORD ExecAESMouseState(struct ExecAESContext *,WORD *,WORD *,WORD *,WORD *);
 WORD ExecAESMouseControl(struct ExecAESContext *,WORD,WORD,WORD);
 WORD ExecAESMouseForm(struct ExecAESContext *,WORD,const MFORM *);
+BOOL ExecAESMouseCopy(struct ExecAESContext *,const WORD *);
 BOOL ExecAESMenus(struct ExecAESContext *,AESPB *);
 BOOL ExecAESObjects(struct ExecAESContext *,AESPB *);
 BOOL ExecAESForms(struct ExecAESContext *,AESPB *);

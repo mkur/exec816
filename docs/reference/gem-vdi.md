@@ -97,6 +97,14 @@ are development results.
 
 ## Mouse device calls
 
+`vsc_form(handle,words)` (VDI 111, 37 integer inputs and no outputs) installs
+an owned copy of the conventional 74-byte MFORM. It supports one plane,
+hotspots 0..15 and logical pens 0..15. Data bits select foreground, mask-only
+bits select background, and neither leaves the pixel unchanged. Invalid form
+formats fail without replacing the device form. Installation changes no AES
+current form and survives ordinary motion/Task scheduling until an AES
+installation or recipient change. The pointer ignores workstation clipping.
+
 `v_hide_c(handle)` (VDI 123, no inputs/outputs), `v_show_c(handle,reset)`
 (122, one integer input, no outputs) and `vq_mouse(handle,buttons,x,y)`
 (124, one integer output and one point output) use a valid private workstation.

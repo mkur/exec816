@@ -38,11 +38,23 @@ frozen per-context event samples do not replace this shared observation.
 These are the latest presenter-published values, rather than a hardware read.
 
 `graf_mouse(mode,form)` and AESPB opcode 78 (one input/result word and one
-address input) currently implement ARROW, M_OFF and M_ON. Other selectors fail
+address input) currently implement ARROW, USER_DEF, M_OFF and M_ON. Other selectors fail
 with AES_UNSUPPORTED. M_FORCE is accepted and stripped as in MagiC; it does not
 override the input recipient. The 74-byte MFORM declaration and standard selector
-constants are public, but USER_DEF and saved/previous forms are not yet admitted.
-The form pointer is ignored for the supported selectors.
+constants are public; saved/previous and the remaining named forms are not yet
+admitted. USER_DEF accepts one plane, hotspots 0..15 and logical pens 0..15.
+It copies all 37 words before a wait and retains no application form pointer.
+Other modes ignore that pointer. Unsupported formats fail without mutation.
+
+Each registration retains its current form. The routed work recipient or
+explicit MCTRL owner selects the installed device form; capture retains the
+recipient through release. Frame/menu interaction selects system ARROW.
+Ordinary CPU scheduling, disk I/O and UPDATE-only admission do not select forms.
+Inactive changes update the caller's current form without replacing a peer's
+installed form. Raw vsc_form changes only device state and survives ordinary
+motion until an AES installation or recipient change. Form changes while
+stationary erase and repaint the pointer; queries still return its logical
+hotspot position. Rendering clips against the screen independently of VDI clip.
 
 Each registration owns its nested AES hide contribution. Only the shared
 aggregate's outer transitions add/balance a VDI device hide. M_ON at local zero
@@ -573,7 +585,7 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 23 has a 344-byte request. Init, exit, cold display delegation,
+profile: version 24 has a 418-byte request. Init, exit, cold display delegation,
 menu publication, session mouse preferences and application outline admission
 use the RPC endpoint. Window mutations, UPDATE and cursor policy use caller
 entries; `wind_find` uses the caller scene query.
@@ -967,8 +979,8 @@ Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
 uses registered, shown window lifetimes independently of keyboard/pointer wait
 interest. Iconified windows remain in the menu and cycling skips them.
 
-The private C context is 604 bytes and the current APP ABI is 44. Rebuild
-bindings and applications together. The server request is 344 bytes; all
+The private C context is 678 bytes and the current APP ABI is 45. Rebuild
+bindings and applications together. The server request is 418 bytes; all
 bank-zero reservations are unchanged.
 
 Synchronous form calls can return `AES_PENDING` when another owned window has

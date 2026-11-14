@@ -11,6 +11,8 @@ static struct Task *controller,*peer;
 static ULONG wake,peerWake;
 static volatile ULONG heartbeat;
 static volatile UWORD heartbeatStop,heartbeatDone;
+static volatile UWORD formPeer,formStage;
+static MFORM peerForm;
 
 static void check(BOOL okay,UWORD line)
 {
@@ -32,6 +34,16 @@ void AESClientOne(void)
     peerWake=1UL<<bit;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     CHECK(appl_init()>0);
+    if (formPeer) {
+        CHECK(graf_mouse(USER_DEF,&peerForm));
+        formStage=1;Signal(controller,wake);Wait(peerWake);
+        CHECK(wind_update(BEG_MCTRL));
+        CHECK(graf_mouse(USER_DEF,&peerForm));
+        formStage=2;Signal(controller,wake);Wait(peerWake);
+        CHECK(ExecAESDetach());
+        FreeSignal(bit);
+        Forbid();formStage=3;Signal(controller,wake);RemTask(NULL);
+    }
     CHECK(graf_mouse(M_OFF,NULL));
     AESReady=1;Signal(controller,wake);
     Wait(peerWake);
@@ -151,6 +163,73 @@ UWORD AESRun(void)
         CHECK(heartbeat!=before);
     }
     CHECK(wind_update(END_UPDATE));
+    {
+        static const WORD positions[8][2]={{0,0},{1,0},{639,0},{0,239},
+            {639,239},{321,121},{320,120},{638,238}};
+        ULONG allocation=(ULONG)AllocMem(65610UL,MEMF_PUBLIC|MEMF_LINEAR);
+        MFORM *form=(MFORM *)(((allocation+65536UL)&0xffff0000UL)-32);
+        WORD pen,pos,row,phase=6;
+        ULONG prior;
+        if ((ULONG)form<allocation) form=(MFORM *)((ULONG)form+65536UL);
+        CHECK(allocation!=0);
+        if (!allocation) return AESFailures;
+        CHECK(((ULONG)form&65535UL)+sizeof(MFORM)>65536UL);
+        CHECK(wind_update(BEG_UPDATE));CHECK(wind_update(BEG_MCTRL));
+        CHECK(graf_mouse(M_OFF,NULL));observe(5);
+        for (pen=0;pen<16;++pen) for (pos=0;pos<8;++pos) {
+            form->mf_xhot=(pen+pos)&15;form->mf_yhot=(15-pen+pos)&15;
+            form->mf_nplanes=1;form->mf_bg=pen;form->mf_fg=(pen+5)&15;
+            for (row=0;row<16;++row) {
+                form->mf_mask[row]=(WORD)((row&1) ? 0xaaaa:0x5555);
+                form->mf_data[row]=(WORD)((pos&1) ? 0xcccc:0x3333);
+            }
+            Forbid();mouse->x=positions[pos][0];mouse->y=positions[pos][1];Permit();
+            CHECK(graf_mouse(USER_DEF,form));
+            /* Reuse the source before scanout; only the owned copy may survive. */
+            for (row=0;row<37;++row) ((WORD *)form)[row]=0;
+            if (phase==6) CHECK(graf_mouse(M_ON,NULL));
+            CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==pen);
+            observe(phase++);
+        }
+        prior=mouse->revision;
+        CHECK(!graf_mouse(USER_DEF,NULL) && ExecAESDiagnostic()==AES_MALFORMED);
+        form->mf_nplanes=2;
+        CHECK(!graf_mouse(USER_DEF,form) && ExecAESDiagnostic()==AES_UNSUPPORTED);
+        CHECK(mouse->revision==prior);
+        form->mf_nplanes=1;form->mf_xhot=16;
+        CHECK(!graf_mouse(USER_DEF,form));CHECK(mouse->revision==prior);
+        form->mf_xhot=0;form->mf_fg=-1;
+        CHECK(!graf_mouse(USER_DEF,form));CHECK(mouse->revision==prior);
+        form->mf_fg=1;form->mf_bg=9;form->mf_yhot=0;
+        for (row=0;row<16;++row) { form->mf_mask[row]=-1;form->mf_data[row]=0; }
+        vsc_form(h,(const WORD *)form);
+        CHECK(ExecAESDiagnostic()==AES_OK && mouse->form.words[3]==9);
+        observe(134);
+        Forbid();mouse->x=121;mouse->y=89;++mouse->revision;Permit();
+        CHECK(graf_mouse(M_ON,NULL));CHECK(mouse->form.words[3]==9);
+        observe(135);
+        CHECK(graf_mouse(ARROW,NULL));CHECK(mouse->form.kind==ARROW);
+        observe(136);
+        CHECK(graf_mouse(M_OFF,NULL));observe(137);
+        CHECK(graf_mouse(M_ON,NULL));
+        FreeMem((APTR)allocation,65610UL);
+        peerForm.mf_xhot=7;peerForm.mf_yhot=6;peerForm.mf_nplanes=1;
+        peerForm.mf_fg=1;peerForm.mf_bg=9;
+        for (row=0;row<16;++row) { peerForm.mf_mask[row]=-1;peerForm.mf_data[row]=0; }
+        formPeer=1;
+        peer=CreateTask("Inactive cursor peer",1,(APTR)AESClientOne,1024UL);
+        CHECK(peer!=NULL);while (formStage<1) Wait(wake);
+        CHECK(mouse->form.kind==ARROW);
+        CHECK(wind_update(END_MCTRL));CHECK(wind_update(END_UPDATE));
+        Signal(peer,peerWake);while (formStage<2) Wait(wake);
+        CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
+        CHECK(graf_mouse(ARROW,NULL));
+        CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
+        CHECK(graf_mouse((WORD)(M_FORCE|ARROW),NULL));
+        CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
+        Signal(peer,peerWake);while (formStage<3) Wait(wake);
+        CHECK(mouse->form.kind==ARROW);
+    }
     CHECK(graf_mouse(M_OFF,NULL));
     v_clsvwk(h);CHECK(!mouse->visible && mouse->depth==1);
     CHECK(appl_exit());CHECK(mouse->visible && mouse->depth==0);

@@ -53,11 +53,27 @@ WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
     }
 }
 
+/* Owned request copy precedes any policy wait; no application pointer escapes. */
+BOOL ExecAESMouseCopy(struct ExecAESContext *c,const WORD *form)
+{
+    UWORD i;
+    WORD *words=c->request.mouseForm;
+    if (!form) { c->diagnostic=AES_MALFORMED; return FALSE; }
+    for (i=0;i<AES_MFORM_WORDS;++i) words[i]=form[i];
+    if ((UWORD)words[0]>15 || (UWORD)words[1]>15 || words[2]!=1 ||
+        (UWORD)words[3]>15 || (UWORD)words[4]>15) {
+        c->diagnostic=AES_UNSUPPORTED; return FALSE;
+    }
+    return TRUE;
+}
+
 WORD ExecAESMouseForm(struct ExecAESContext *c,WORD mode,const MFORM *form)
 {
     WORD result;
-    (void)form;
     if (!c || !ExecAESEnter(c)) return 0;
+    if ((mode&0x7fff)==USER_DEF && !ExecAESMouseCopy(c,(const WORD *)form)) {
+        c->busy=0; return 0;
+    }
     result=ExecAESMouseControl(c,mode,0,0);
     c->busy=0;
     return result;

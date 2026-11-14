@@ -41,6 +41,12 @@ void EXEC_CALL FreeMem(APTR p,ULONG n) { (void)p;(void)n;++unexpected; }
 BYTE EXEC_CALL AllocSignal(BYTE n) { (void)n;++unexpected;return -1; }
 void EXEC_CALL FreeSignal(BYTE n) { (void)n;++unexpected; }
 WORD ExecAESSubmit(struct ExecAESContext *c,UWORD op) { (void)c;(void)op;++unexpected;return 0; }
+BOOL ExecAESMouseCopy(struct ExecAESContext *c,const WORD *p)
+{ (void)c;(void)p;++unexpected;return FALSE; }
+WORD ExecAESMouseControl(struct ExecAESContext *c,WORD m,WORD r,WORD z)
+{ (void)c;(void)m;(void)r;(void)z;++unexpected;return 0; }
+void EXEC_CALL Forbid(void) { ++unexpected; }
+void EXEC_CALL Permit(void) { ++unexpected; }
 UWORD DisplayGrantClose(struct DisplayGrant *g) { (void)g;++unexpected;return 0; }
 UWORD GemSolidRows(UWORD l,UWORD r) { (void)l;(void)r;return 240; }
 UWORD GemDrawingSolidBorrow(struct DisplayGrant *g,UWORD l,UWORD t,UWORD r,UWORD b,UWORD p)

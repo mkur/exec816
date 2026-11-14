@@ -352,6 +352,13 @@
       "point_pairs": 0,
       "intout": 1,
       "point_results": 1
+    },
+    "vsc_form": {
+      "opcode": 111,
+      "intin": 37,
+      "point_pairs": 0,
+      "intout": 0,
+      "point_results": 0
     }
   }
 }

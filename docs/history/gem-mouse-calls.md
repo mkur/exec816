@@ -39,3 +39,35 @@ MFORM declaration is 74 bytes without allocating a form per client in GM1.
 Fixed, root, kernel, idle and every public Task reserve zero additional
 bank-zero bytes, including guards, alignment and unused capacity. The existing
 256-byte cursor-save and 1,024-byte mask VRAM reservations are unchanged.
+
+## GM2: owned custom forms and hotspot rendering
+
+USER_DEF and raw VDI 111/vsc_form share a validated 37-word request copy.
+The per-registration current form is separate from the installed device form;
+raw VDI changes no AES state. Recipient selection reuses published routing,
+work capture, explicit MCTRL and native/menu gesture state. UPDATE-only owners
+and ordinary CPU scheduling do not change the installed form.
+
+The renderer adapts the pinned GEM4XE mask/data expansion, maps both pens and
+subtracts the hotspot before screen clipping. It restores old saved pixels
+before replacing masks, including stationary changes, and uses the clipped
+saved rectangle for drawing intersection checks. Both parity strips are packed
+in the existing protected upper buffer. The old 1,024-byte readonly ARROW masks
+are replaced with 74 readonly MFORM bytes; VRAM reservations stay unchanged.
+
+APP ABI 45 and AES protocol 24 replace GM1's wire layouts. The request grows
+74 upper bytes (418 total), each C context likewise (678), each native client
+76 (224), and the service 384 (1,716, including four clients, shared device form
+and recipient identity). Eight-byte rounding increases each context allocation
+by 72 bytes and the service allocation by 384. Form/request copies are embedded;
+there is no per-call allocation. The renderer adds 76 cached-form bytes and
+four saved-rectangle bytes in upper static storage. Fixed, root, kernel, idle and every public Task add
+zero reserved bank-zero bytes, including guards, alignment and unused capacity.
+
+The [GM2 development record](../development/gem-mouse-gm2.json) records both-mode
+layout/field probes, exact custom-form pixels for sixteen pens and eight
+positions, source reuse after return, a form crossing a CPU-bank boundary,
+stationary replacement and raw VDI motion. Native routing checks cover work
+capture through release, UPDATE-only admission, windowless MCTRL, menus, title
+capture and endpoint holds. The two-registration application checks inactive
+selection, M_FORCE stripping and owner exit under normal preemption.

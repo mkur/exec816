@@ -561,9 +561,36 @@ void blit_text_fill(uint32_t font,uint16_t x,uint16_t y,const uint8_t *text,
 #define CURSOR_OR   0x37200UL
 #define CURSOR_PARITY_BYTES 512UL
 static UWORD cursorX, cursorY, cursorVisible, cursorDrawn, cursorBytes, cursorRows;
+static UWORD cursorLeft,cursorTop;
 static ULONG cursorAddress;
 static UWORD cursorMasksReady;
-#include "gem-cursor-masks.h"
+static struct AESMouseForm cursorForm;
+#include "gem-cursor-forms.h"
+
+/* GEM4XE's mask/data interpretation: data selects foreground even outside
+ * mask; mask alone selects background; neither leaves the pixel untouched.
+ * Expand both destination parities in the protected upper-RAM page. */
+static void cursor_pack(const WORD *form)
+{
+    UWORD parity,row,col,bit,offset,shift,mask,data;
+    UBYTE color;
+    for (parity=0;parity<2;++parity) {
+        memset(page+parity*512,255,256);
+        memset(page+parity*512+256,0,256);
+        for (row=0;row<16;++row) {
+            mask=(UWORD)form[5+row];data=(UWORD)form[21+row];
+            for (col=0;col<16;++col) {
+                bit=0x8000U>>col;
+                if (!((mask|data)&bit)) continue;
+                color=map_col[form[(data&bit) ? 4:3]];
+                offset=parity*512+row*16+(parity+col)/2;
+                shift=((parity+col)&1) ? 0:4;
+                page[offset]&=(UBYTE)~(15U<<shift);
+                page[offset+256]|=(UBYTE)(color<<shift);
+            }
+        }
+    }
+}
 
 
 /* Only the admitted cursor operation calls this producer. Fixed private VRAM
@@ -592,7 +619,10 @@ static void cursor_submit(UWORD count)
 static void cursor_render(UWORD x,UWORD y,UWORD draw)
 {
     UWORD width=0,bytes=0,rows=0,count=0;
-    ULONG address=0,parity;
+    UWORD left=0,top=0,skipLeft=0,skipRows=0;
+    WORD originX,originY;
+    ULONG address=0,parity,source;
+    const WORD *form=cursorForm.kind==AES_USER_DEF ? cursorForm.words:cursorForms[0];
     if (fault) return;
     if ((!draw && !cursorDrawn) || (draw && cursorDrawn && x==cursorX && y==cursorY)) {
         cursorX=x; cursorY=y;
@@ -601,14 +631,16 @@ static void cursor_render(UWORD x,UWORD y,UWORD draw)
     flush();
     if (fault) return;
     if (draw) {
-        width=640-x;
-        if (width>16) width=16;
-        rows=240-y;
-        if (rows>16) rows=16;
-        bytes=((x&1)+width+1)/2;
-        address=GemScreenRows[y]+x/2;
+        originX=(WORD)x-form[0];originY=(WORD)y-form[1];
+        left=originX<0 ? 0:(UWORD)originX;
+        top=originY<0 ? 0:(UWORD)originY;
+        skipLeft=left-originX;skipRows=top-originY;
+        width=16-skipLeft;if (width>640-left) width=640-left;
+        rows=16-skipRows;if (rows>240-top) rows=240-top;
+        bytes=((left&1)+width+1)/2;
+        address=GemScreenRows[top]+left/2;
         if (!cursorMasksReady) {
-            memcpy(page,cursorMasks,1024);
+            cursor_pack(form);
             latch(VbxeOwnerWrite(&display,CURSOR_AND,page,1024));
             if (fault) return;
             cursorMasksReady=1;
@@ -617,15 +649,17 @@ static void cursor_render(UWORD x,UWORD y,UWORD draw)
     if (cursorDrawn)
         cursor_record(count++,CURSOR_SAVE,16,cursorAddress,320,cursorBytes,cursorRows,0);
     if (draw) {
-        parity=(x&1)*CURSOR_PARITY_BYTES;
+        parity=(originX&1)*CURSOR_PARITY_BYTES;
+        source=parity+skipRows*16+(skipLeft+(originX&1))/2;
         cursor_record(count++,address,320,CURSOR_SAVE,16,bytes,rows,0);
-        cursor_record(count++,CURSOR_AND+parity,16,address,320,bytes,rows,4);
-        cursor_record(count++,CURSOR_OR+parity,16,address,320,bytes,rows,3);
+        cursor_record(count++,CURSOR_AND+source,16,address,320,bytes,rows,4);
+        cursor_record(count++,CURSOR_OR+source,16,address,320,bytes,rows,3);
     }
     cursor_submit(count);
     if (fault) return;
     cursorX=x; cursorY=y; cursorDrawn=draw;
     cursorAddress=address; cursorBytes=bytes; cursorRows=rows;
+    cursorLeft=left&~1U;cursorTop=top;
 }
 static void cursor_hide(void)
 { cursor_render(cursorX,cursorY,0); }
@@ -638,11 +672,22 @@ static UWORD draw_Mouse(struct AESMouseState *mouse)
 {
     UWORD x,y,visible;
     ULONG revision;
+    struct AESMouseForm *target=(struct AESMouseForm *)(page+1024);
     if (display.operationPending) return DISPLAY_BUSY;
+    flush();
+    if (fault) return DISPLAY_DEVICE_FAULT;
     Forbid();
     x=mouse->x; y=mouse->y; visible=mouse->visible;
     revision=mouse->revision;
+    memcpy(target,&mouse->form,sizeof(*target));
     Permit();
+    if (cursorForm.kind!=target->kind || (target->kind==AES_USER_DEF &&
+        memcmp(cursorForm.words,target->words,sizeof(target->words)))) {
+        cursor_hide();
+        if (fault) return DISPLAY_DEVICE_FAULT;
+        memcpy(&cursorForm,target,sizeof(cursorForm));
+        cursorMasksReady=0;
+    }
     cursor_render(x,y,visible);
     if (!fault) cursorVisible=visible;
     Forbid();
@@ -703,8 +748,8 @@ static UWORD cursor_intersects(const struct GemCommand *cmd,const WORD *points)
         if (left>right) { swap=left; left=right; right=swap; }
         if (top>bottom) { swap=top; top=bottom; bottom=swap; }
     } else return 1;
-    return !(right<(LONG)(cursorX&~1U) || left>(LONG)((cursorX+15)|1U) ||
-             bottom<(LONG)cursorY || top>(LONG)cursorY+15);
+    return !(right<(LONG)cursorLeft || left>=(LONG)cursorLeft+cursorBytes*2 ||
+             bottom<(LONG)cursorTop || top>=(LONG)cursorTop+cursorRows);
 }
 static UWORD command_backend(void *context,const struct GemCommand *cmd,
     const WORD *points,const WORD *ints,WORD *reply)
@@ -830,6 +875,7 @@ static void pointer_reset(void)
     cursorX=cursorY=cursorVisible=cursorDrawn=cursorBytes=cursorRows=0;
     cursorAddress=0;
     cursorMasksReady=0;
+    cursorForm.kind=AES_ARROW;
     outlineVisible=outlineDrawn=0;
     stripActive=stripRedirect=0;
 }
@@ -842,8 +888,8 @@ static void pointer_erase(UWORD left,UWORD top,UWORD right,UWORD bottom)
         cursor_hide();
         outline_hide();
     }
-    if (cursorDrawn && left<(cursorX&~1U)+cursorBytes*2 && right>(cursorX&~1U) &&
-        top<cursorY+cursorRows && bottom>cursorY) cursor_hide();
+    if (cursorDrawn && left<cursorLeft+cursorBytes*2 && right>cursorLeft &&
+        top<cursorTop+cursorRows && bottom>cursorTop) cursor_hide();
 }
 
 static UWORD draw_Pointer(UWORD x,UWORD y,UWORD visible)

@@ -8,8 +8,13 @@ source; its MFORM artwork was transcribed from EmuTOS `aes/mforms.c` (GPLv2),
 as its module notice records. Preserve that provenance with generated artwork.
 The alert artwork in this source is not selected by the mouse generator.
 
-`tools/generate_gem_cursor.py` selects the ARROW planes and pre-packs the existing
-even/odd AND/OR strips. The shared native AES policy owns application hide
+`tools/generate_gem_cursor.py` selects the immutable ARROW MFORM words.
+`upstream/cursor-vbxe.c` preserves the pinned form-expansion selection, with
+original and selection hashes in `inputs.json`. The adapted renderer packs
+even/odd AND/OR strips dynamically in existing upper scratch, maps logical pens
+and uses clipped saved geometry after hotspot subtraction. It retains the
+256-byte save and 1,024-byte mask VRAM reservations.
+The shared native AES policy owns application hide
 contributions; the screen device owns its separate VDI hide counter. Input and
 hardware ownership continue through Exec's existing drivers and display grants.
 
