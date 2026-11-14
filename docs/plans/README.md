@@ -2,7 +2,9 @@
 
 - [GEM mouse calls](gem4xe/gem-mouse-plan.md): proposed GM1–GM5 slices for
   conventional AES/VDI cursor calls, GEM4XE forms/rendering, application
-  ownership, nested hide/show and small-app acceptance.
+  ownership, nested hide/show and small-app acceptance. The
+  [MagiC cross-check](../history/gem-mouse-magic-review.md) corrects the AES/VDI
+  boundaries and establishes the multitasking adaptation.
 
 - [MGVIEW drawing and window foundations](gem4xe/mgview-foundation-plan.md):
   three executable slices for VDI alignment/inquiry/fill, full/previous window

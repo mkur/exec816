@@ -2,8 +2,12 @@
 
 The [GEM mouse plan](gem-mouse-plan.md) delivers standard AES/VDI cursor and
 state calls using GEM4XE's forms and rendering algorithms, adapted to Exec's
-application ownership, display grants and cleanup. It starts with real hide/show
-for MGVIEW and ends with saved forms and small-app package acceptance.
+application ownership, display grants and cleanup. The
+[MagiC cross-check](../../history/gem-mouse-magic-review.md) establishes the
+multitasking adaptation: per-registration AES forms/contributions above shared
+VDI device state, recipient changes independent of CPU scheduling and no forced
+form override. The plan starts with real hide/show for MGVIEW and ends with
+saved forms and small-app package acceptance.
 
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before
