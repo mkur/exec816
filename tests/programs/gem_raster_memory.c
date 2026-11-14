@@ -8,6 +8,8 @@
 static struct VbxeDisplay display;
 static ULONG GemScreenRows[240];
 static UWORD fault,unexpected;
+static UWORD packing;
+static UBYTE recorded[21];
 static UBYTE scratch[642],original[160],expected[160];
 volatile UWORD RasterChecks;
 UWORD DisplayEnter(struct DisplayGrant *g) { (void)g;++unexpected;return DISPLAY_DEVICE_FAULT; }
@@ -21,6 +23,12 @@ UWORD VbxeOwnerRead(struct VbxeDisplay *d,ULONG a,void *p,UWORD n)
 { (void)d;(void)a;(void)p;(void)n;++unexpected;return DISPLAY_DEVICE_FAULT; }
 UWORD VbxeOwnerWrite(struct VbxeDisplay *d,ULONG a,const void *p,UWORD n)
 { (void)d;(void)a;(void)p;(void)n;++unexpected;return DISPLAY_DEVICE_FAULT; }
+UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *p,UWORD n)
+{
+    UWORD i;(void)d;
+    if (packing && n==1) { for (i=0;i<21;++i) recorded[i]=p[i];return DISPLAY_OK; }
+    ++unexpected;return DISPLAY_DEVICE_FAULT;
+}
 #include "raster-backend.inc"
 #define CHECK(c) do { ++RasterChecks;if (!(c)) return __LINE__; } while (0)
 static UWORD pixel(const UBYTE *p,UWORD x,UWORD y)
@@ -36,12 +44,26 @@ static UWORD operation(UWORD m,UWORD s,UWORD d)
     case 12:return ~s;case 13:return ~s|d;case 14:return ~(s&d);default:return 15;
     }
 }
+LONG RasterPackingProbe(void)
+{
+    UWORD i;
+    const UBYTE wanted[21]={0x6f,0x69,0,0xc0,0xfe,0xff,0x7b,0x78,0,0xc0,0xfe,0xff,6,0,7,0,0,0,0,0,0};
+    for (i=0;i<240;++i) GemScreenRows[i]=(ULONG)i*320;
+    packing=1;
+    CHECK(raster_move(210,77,234,89,7,8,GemRasterRecipes[0])==DISPLAY_OK);
+    for (i=0;i<21;++i) CHECK(recorded[i]==wanted[i]);
+    packing=0;
+    return 0;
+}
+
 LONG RasterProbe(void)
 {
     UBYTE *allocation,*source,*destination;
     ULONG boundary;
     struct GemRasterCopy p;
     UWORD i,x,y,same,mode,value;
+    LONG result=RasterPackingProbe();
+    if (result) return result;
     allocation=AllocMem(196608UL,MEMF_PUBLIC|MEMF_LINEAR);
     CHECK(allocation!=NULL);
     boundary=((ULONG)allocation+65536UL)&0xffff0000UL;

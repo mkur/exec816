@@ -104,6 +104,16 @@ clips and D_ONLY (5) do no hardware work. Identical source/destination is a
 no-op for S_ONLY (3); XOR and inversion still change those pixels. Raster modes
 operate on packed hardware pixel bits and are independent of vswr_mode.
 
+Same-parity screen logical modes use the selected GEM4XE one/two-pass blitter
+recipes. Modes 2 and 11 use the row fallback when source and destination
+overlap, because their first pass would otherwise change source pixels.
+Modes 8 and 14 invert after the combining pass. Packed source and destination
+edge bytes are staged before writes; outside nibbles are preserved. Every
+physical unit retains the sixteen-row and 8,192 estimated raster-access limits,
+including edge work and each combining/inversion pass. Memory forms and
+different-parity copies use private row buffers. A completed call retains no
+DMA or borrowed pointer, and never yields ownership with shared scratch live.
+
 Memory MFDBs require fd_stand=0, fd_nplanes=4, positive dimensions and a
 sufficient positive word stride. Pitch is fd_wdwidth×8 bytes, at most 65,535.
 Rows contain packed hardware pixels, high nibble first; padding and outside

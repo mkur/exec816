@@ -19,7 +19,10 @@ RC3 is implemented: memory-only copies acquire no hardware access, the
 optimized production row-path probe passes across real CPU-bank boundaries,
 and raw/optimized form-admission probes pass. RC4 is implemented: all sixteen
 modes pass the emitted bank-crossing probe, admission/no-op checks and a
-32-transfer physical scene at both pixel parities. RC5–RC6 remain pending.
+32-transfer physical scene at both pixel parities. RC5 is implemented: host
+pixel/work/fault checks and the accelerated physical scene pass, including
+pointer overlays and a forced yield after record packing under the grant.
+The native packing probe checks all 21 bytes explicitly. RC6 remains pending.
 
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware

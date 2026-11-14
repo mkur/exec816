@@ -310,6 +310,15 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             instrument(out,alerts=suite=='alerts',file_selector=suite=='fsel')
         if vdi:
             from test_vdi_client import extract_with_preemption
+            adapter_source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
+            # The included logical-mode encoder remains production source.
+            # Substitute its submission callback at this test-only call site.
+            adapter_source=adapter_source.replace('#include "../raster/screen.h"',
+                'extern void VDIRasterYield(void);\n'
+                'static UWORD VDIRasterSubmit(struct VbxeDisplay *d,const UBYTE *p,UWORD n)\n'
+                '{ VDIRasterYield(); return VbxeOwnerSubmit(d,p,n); }\n'
+                '#define VbxeOwnerSubmit VDIRasterSubmit\n#include "../raster/screen.h"\n#undef VbxeOwnerSubmit')
+            renderer=out/'gem-vbxe.c';renderer.write_text(adapter_source)
             bitmap_builder.extract=extract_with_preemption
         try:
             foreign = drawing(out, True, desktop_style=True, fault=borrowed, renderer_source=renderer,

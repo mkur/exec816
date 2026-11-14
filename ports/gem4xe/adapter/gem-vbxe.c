@@ -1298,6 +1298,8 @@ static UWORD raster_span(const struct GemRasterSurface *s,UWORD x,UWORD y,
     return VbxeOwnerRead(&display,GemScreenRows[y]+(x>>1),bytes,count);
 }
 
+#include "../raster/screen.h"
+
 UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCopy *p,
     UBYTE *scratch)
 {
@@ -1308,6 +1310,10 @@ UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCo
     UWORD backY=same && dy>sy,backX=same && dx>sx;
     UWORD left=height,first,n,k,y,limit=16,status=DISPLAY_OK;
     UWORD remaining,span,column,sn,dn;
+    if (p->mode==D_ONLY) return DISPLAY_OK;
+    if (!p->source.address && !p->destination.address && !((sx^dx)&1) && p->mode!=S_ONLY &&
+        !((GemRasterRecipes[p->mode]>>5)==1 && sx<dx+width && dx<sx+width && sy<dy+height && dy<sy+height))
+        return raster_logic(grant,p,scratch);
     if (hardware) {
         sn=((sx&1)+width+1)>>1;dn=((dx&1)+width+1)>>1;
         limit=(UWORD)VBXE_LIST_WORK/(sn+dn*2);

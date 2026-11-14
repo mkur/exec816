@@ -196,6 +196,7 @@ def physical(b,p,foreign,report):
     atascii(0,l+9,t+72,l,l+384);atascii(128,l+17,t+72,l,l+384)
     r.apply(8,(l+25,t+78),b'B')
     report['atascii_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+    position=schedule(b,p,position,(235,94));frames(8)
     b.poke16(sy['VDIGo'],40);phase(41);frames(8)
     r.clip=(l,t,l+383,t+126);r.fill=5;r.apply(11,(l,t,l+383,t+126))
     operations=(lambda s,d:0,lambda s,d:s&d,lambda s,d:s&~d,lambda s,d:s,
@@ -214,4 +215,6 @@ def physical(b,p,foreign,report):
                 at=(dy+yy)*640+dx+xx
                 r.pixels[at]=operations[i//2](before[(source_y+yy)*640+sx+xx],before[at])&15
     report['raster_mode_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+    report['raster_submission_yields']=b.peek16(sy['VDIRasterSwitches'])
+    require(report['raster_submission_yields']>0,'Logical modes did not execute the instrumented blitter path')
     b.poke16(sy['VDIGo'],41);b.bp_clear_all()

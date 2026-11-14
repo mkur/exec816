@@ -9,6 +9,7 @@ volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD VDIPhase,VDIGo,VDIStage[2],VDICommand[2],VDIUnits[2],VDITextUnits[2];
 volatile UWORD VDIGlyphUnits[2],VDIClipNative[12],VDIClipGlyphs[12];
 volatile UWORD VDIModeUnits[2];
+volatile UWORD VDIRasterSwitches;
 static struct Task *root,*tasks[2];
 static ULONG wake,starts[2];
 static char longText[193];
@@ -50,6 +51,12 @@ void VDIGlyphProbe(void)
     struct Task *task=FindTask(NULL);
     if (task==tasks[0]) ++VDIGlyphUnits[0];
     else if (task==tasks[1]) ++VDIGlyphUnits[1];
+}
+
+/* Test-only yield after a logical blit record is packed under its grant. */
+void VDIRasterYield(void)
+{
+    if (++VDIRasterSwitches==1) ExecYield();
 }
 
 /* x offset, clip left/right (half-open), native runs, device glyph calls.

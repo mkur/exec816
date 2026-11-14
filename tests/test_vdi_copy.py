@@ -24,9 +24,12 @@ class CopyPixels(unittest.TestCase):
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 typedef uint8_t UBYTE;
 typedef uint16_t UWORD;
 typedef uint32_t ULONG;
+typedef int32_t LONG;
 struct DisplayGrant { int active; };
 struct Surface { ULONG offset; UWORD pitch,width,height; };
 struct VbxeCopy { struct Surface source,destination;
@@ -35,14 +38,18 @@ struct VbxeCopy { struct Surface source,destination;
 #define DISPLAY_DEVICE_FAULT 5
 #define EXEC_VDI_STRIP_ROWS 16
 #define VBXE_LIST_WORK 8192
+#define S_ONLY 3
+#define D_ONLY 5
+#define D_INVERT 10
 static UBYTE vram[524288],original[76800],expected[76800];
 static ULONG GemScreenRows[240];
 static UWORD fault,display,outlineVisible,outlineDrawn;
-static unsigned transfers,failAt,enters,leaves;
+static unsigned transfers,failAt,enters,leaves,work;
+static unsigned rasterMode=3;
 static UWORD DisplayEnter(struct DisplayGrant *g)
-{ assert(!g->active);g->active=1;++enters;return 0; }
+{ assert(!g->active);g->active=1;++enters;work=0;return 0; }
 static UWORD DisplayLeave(struct DisplayGrant *g)
-{ assert(g->active);g->active=0;++leaves;return 0; }
+{ assert(g->active);if(RASTER)assert(work<=8192);g->active=0;++leaves;return 0; }
 static void pointer_erase(UWORD l,UWORD t,UWORD r,UWORD b)
 { assert(l<r && t<b && r<=640 && b<=240); }
 static void outline_toggle(void) {}
@@ -51,9 +58,9 @@ static void latch(UWORD s) { if(s)fault=s; }
 static UWORD fence_owner(void) { return fault ? 5:0; }
 static int transfer(void) { if(++transfers==failAt) {fault=5;return 0;}return 1; }
 static UWORD VbxeOwnerRead(UWORD *d,ULONG a,UBYTE *p,UWORD n)
-{ (void)d;if(!transfer())return 5;assert(a+n<=sizeof(vram));memcpy(p,vram+a,n);return 0; }
+{ (void)d;work+=n;if(!transfer())return 5;assert(a+n<=sizeof(vram));memcpy(p,vram+a,n);return 0; }
 static UWORD VbxeOwnerWrite(UWORD *d,ULONG a,const UBYTE *p,UWORD n)
-{ (void)d;if(!transfer())return 5;assert(a+n<=sizeof(vram));memcpy(vram+a,p,n);return 0; }
+{ (void)d;work+=n;if(!transfer())return 5;assert(a+n<=sizeof(vram));memcpy(vram+a,p,n);return 0; }
 static void blit_mask(ULONG s,UWORD ss,ULONG d,UWORD ds,UWORD w,UWORD h,
     UBYTE am,UBYTE xm,UBYTE mode)
 {
@@ -68,6 +75,27 @@ static void blit_mask(ULONG s,UWORD ss,ULONG d,UWORD ds,UWORD w,UWORD h,
 }
 static void blit_and(ULONG d,UWORD ds,UWORD w,UWORD h,UBYTE v)
 { blit_mask(0,0,d,ds,w,h,0,v,4); }
+static UWORD VbxeOwnerSubmit(UWORD *d,const UBYTE *p,UWORD count)
+{
+    ULONG s=p[0]|((ULONG)p[1]<<8)|((ULONG)p[2]<<16),a=p[6]|((ULONG)p[7]<<8)|((ULONG)p[8]<<16);
+    int16_t ss=(int16_t)(p[3]|p[4]<<8),ds=(int16_t)(p[9]|p[10]<<8);
+    int8_t sx=(int8_t)p[5],dx=(int8_t)p[11];
+    UWORD bytes=(p[12]|p[13]<<8)+1,rows=p[14]+1,x,y;(void)d;
+    work+=bytes*rows*(p[20] ? 3:2);
+    if(!transfer())return 5;
+    assert(count==1 && rows<=16 && bytes<=320);
+    for(y=0;y<rows;y++)for(x=0;x<bytes;x++) {
+        LONG sr=(LONG)s+y*(LONG)ss+x*(LONG)sx,dr=(LONG)a+y*(LONG)ds+x*(LONG)dx;
+        UBYTE v;
+        assert(sr>=0 && dr>=0 && sr<76800 && dr<76800);
+        v=(vram[sr]&p[15])^p[16];
+        if(p[20]==0)vram[dr]=v;
+        else if(p[20]==3)vram[dr]|=v;
+        else if(p[20]==4)vram[dr]&=v;
+        else {assert(p[20]==5);vram[dr]^=v;}
+    }
+    return 0;
+}
 static UWORD VbxeOwnerCopyRect(UWORD *d,const struct VbxeCopy *c)
 {
     UBYTE snapshot[76800];UWORD y;(void)d;
@@ -85,6 +113,13 @@ static UBYTE pixel(const UBYTE *p,UWORD x,UWORD y)
 { UBYTE v=p[y*320+x/2];return x&1 ? v&15:v>>4; }
 static void put(UBYTE *p,UWORD x,UWORD y,UBYTE v)
 { ULONG a=y*320+x/2;if(x&1)p[a]=(p[a]&0xf0)|v;else p[a]=(p[a]&15)|(v<<4); }
+static UBYTE operation(unsigned m,unsigned s,unsigned d)
+{
+    switch(m){case 0:return 0;case 1:return s&d;case 2:return s&~d;case 3:return s;
+    case 4:return ~s&d;case 5:return d;case 6:return s^d;case 7:return s|d;
+    case 8:return ~(s|d);case 9:return ~(s^d);case 10:return ~d;case 11:return s|~d;
+    case 12:return ~s;case 13:return ~s|d;case 14:return ~(s&d);default:return 15;}
+}
 static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
 {
     struct DisplayGrant g={0};struct VbxeCopy c={{0,320,640,240},{0,320,640,240},sx,sy,sx+dx,sy+dy,w,h};
@@ -92,15 +127,17 @@ static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
     memcpy(vram,original,76800);memcpy(expected,original,76800);
     transfers=enters=leaves=fault=0;failAt=fail;
     edges[642]=0xab;edges[643]=0xcd;
-    for(y=0;y<h;++y)for(x=0;x<w;++x)put(expected,sx+dx+x,sy+dy+y,pixel(original,sx+x,sy+y));
+    for(y=0;y<h;++y)for(x=0;x<w;++x)put(expected,sx+dx+x,sy+dy+y,
+        operation(rasterMode,pixel(original,sx+x,sy+y),pixel(original,sx+dx+x,sy+dy+y))&15);
 #if RASTER
-    {struct GemRasterCopy p={{0,320,640,240},{0,320,640,240},{sx,sy,sx+dx,sy+dy,w,h},3};
+    {struct GemRasterCopy p={{0,320,640,240},{0,320,640,240},{sx,sy,sx+dx,sy+dy,w,h},rasterMode};
     result=GemDrawingRasterBorrow(&g,&p,edges);}
 #else
     result=GemDrawingCopyBorrow(&g,&c,edges);
 #endif
     assert(!g.active && enters==leaves && edges[642]==0xab && edges[643]==0xcd);
-    if(!fail || transfers<fail) {assert(!result);assert(!memcmp(vram,expected,76800));}
+    if(!fail || transfers<fail) {assert(!result);if(memcmp(vram,expected,76800)) {
+        fprintf(stderr,"mode=%u sx=%u sy=%u w=%u h=%u dx=%d dy=%d\n",rasterMode,sx,sy,w,h,dx,dy);abort();}}
     else assert(result==5);
 }
 int main(void)
@@ -113,6 +150,13 @@ int main(void)
             check(40+parity,20,w,h,dx,dy,0);
     check(1,0,638,232,0,8,0);check(1,8,638,232,0,-8,0);
     for(i=1;i<=70;++i)check(41,20,400,177,RASTER ? 1:8,8,i);
+#if RASTER
+    for(rasterMode=0;rasterMode<16;rasterMode++)for(parity=0;parity<2;parity++)
+        for(w=1;w<=320;w+=53)for(h=1;h<=64;h+=21)
+            for(dx=-8;dx<=8;dx+=4)for(dy=-8;dy<=8;dy+=4)
+                check(40+parity,20,w,h,dx,dy,0);
+    for(rasterMode=0;rasterMode<16;rasterMode++)for(i=1;i<=70;++i)check(41,20,240,80,8,8,i);
+#endif
     return 0;
 }
 '''
@@ -123,8 +167,9 @@ int main(void)
             prelude+='struct GemRasterCopy {struct GemRasterSurface source,destination;struct GemRasterRect rect;UWORD mode;};\n'
             p=Path(directory);(p/'copy.c').write_text(prelude+source+checks)
             subprocess.run(['cc','-std=c99','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-Wno-unused-variable',
-                '-DRASTER='+str(int(raster)),str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
-            subprocess.run([str(p/'copy')],check=True,capture_output=True)
+                '-I',str(ROOT/'ports/gem4xe/adapter'),'-DRASTER='+str(int(raster)),str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
+            result=subprocess.run([str(p/'copy')],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
 
 
 if __name__=='__main__':unittest.main()
