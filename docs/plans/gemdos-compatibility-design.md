@@ -142,6 +142,26 @@ an open-handle query in the [GEMDOS/MagiC reference](https://freemint.github.io/
 The current native public interface exposes Examine/ExamineExact on locks,
 but no corresponding open-file operation.
 
+SpartaDOS provides a useful precedent for the underlying operation. Original
+SpartaDOS's `XIO 39` returns the currently open channel's 24-bit file length on
+SpartaDOS-formatted disks; see the
+[Construction Set manual, Get File Length](https://www.atarimania.com/documents/atari-8bit-spartados-construction-set-owners-manual.pdf).
+SpartaDOS X exposes `FILELENG` with an open handle in `file_id` and the length
+returned in `addpos`, separately from FTELL/FSEEK; see the
+[Programming Guide, section 8.6](https://sdx.atari8.info/sdx_files/4.50/SDX450_Programming_Guide.pdf).
+The native foundation is an open-file query; GEMDOS's Fcntl command selector
+belongs at the compatibility boundary.
+
+Exec's [SDX adapter](../../lib/dos/sdxfiles.act) already implements FILELENG in
+`Length`, dispatched by [sdxservice.act](../../lib/dos/sdxservice.act).
+It returns the session's cached `fileSizes` entry, captured from resolved
+metadata during read-open. It does not query the live native handle or provide
+a general public metadata operation. Reuse this consumer knowledge when
+building the native operation below. A later, explicit SDX migration can use
+the same foundation as GEMDOS FSTAT, retaining SDX's 24-bit result convention,
+error mapping and admitted application profiles at its boundary. Do not expose
+the SDX session/cache to the C runtime or expand the first extraction slice.
+
 Add a reusable public DOS operation with the Amiga-shaped name
 `ExamineFH(file, info)`, available to ordinary native Tasks and the C binding.
 Its selected contract is:
