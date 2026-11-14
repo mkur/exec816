@@ -6,6 +6,7 @@ from gem_render_oracle import DESKTOP_PALETTE,PENS
 from test_gem_interactive import pixels
 from test_gem_cursor import overlay
 from generate_aes_server import layout
+from generate_gem_cursor import DONOR
 
 
 def form_overlay(background,point,words):
@@ -47,13 +48,13 @@ def physical(bridge,program,foreign,report):
         cropped=b''.join(raw[y*frame.stride+64:y*frame.stride+2624] for y in range(240))
         return bytearray(colors[cropped[i:i+3]] for i in range(0,len(cropped),4))
     previous=None
-    for phase in range(1,138):
+    for phase in range(1,147):
         reach(phase)
         address=int.from_bytes(bridge.memdump(sy['AESMouse'],4),'little')
         raw=bridge.memdump(address,layout()['MouseState']['size'])
         word=lambda n:int.from_bytes(raw[state[n]:state[n]+2],'little')
         point=(word('x'),word('y'))
-        visible=phase in (2,4) or 6<=phase<=136
+        visible=phase in (2,4) or 6<=phase<=136 or phase>=138
         require(bool(word('visible'))==visible,'Wrong logical visibility')
         folder=out/f'cursor-phase-{phase}'
         actual=capture(folder)
@@ -75,6 +76,11 @@ def physical(bridge,program,foreign,report):
                 expected=form_overlay(previous,point,words)
             elif phase in (134,135):
                 expected=form_overlay(previous,point,[0,0,1,9,1]+[65535]*16+[0]*16)
+            elif phase>=138:
+                names=['ARROW','TEXT_CRSR','HOURGLASS','POINT_HAND',
+                       'FLAT_HAND','THIN_CROSS','THICK_CROSS','OUTLN_CROSS']
+                name=names[phase-138] if phase<=145 else 'HOURGLASS'
+                expected=form_overlay(previous,point,DONOR['mform_words'](name))
             else: expected=overlay(SimpleNamespace(pixels=previous),point)
             digest=pixels(bridge,folder,expected,palette=DESKTOP_PALETTE)
             records.append(dict(phase=phase,position=point,sha256=digest))

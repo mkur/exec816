@@ -97,7 +97,7 @@ UWORD AESRun(void)
     CHECK(graf_mouse(M_ON,NULL));CHECK(!mouse->depth);
     CHECK(c->request.sequence==sequence);
     revision=mouse->revision;
-    CHECK(!graf_mouse(TEXT_CRSR,NULL) && ExecAESDiagnostic()==AES_UNSUPPORTED);
+    CHECK(!graf_mouse(8,NULL) && ExecAESDiagnostic()==AES_UNSUPPORTED);
     CHECK(mouse->revision==revision);
     CHECK(graf_mouse(ARROW,NULL));
     in[0]=M_OFF;aes_call(&pb);CHECK(out[0]==1 && !mouse->visible);
@@ -212,6 +212,17 @@ UWORD AESRun(void)
         observe(136);
         CHECK(graf_mouse(M_OFF,NULL));observe(137);
         CHECK(graf_mouse(M_ON,NULL));
+        for (i=ARROW;i<=OUTLN_CROSS;++i) {
+            CHECK(graf_mouse(i,NULL));CHECK(mouse->form.kind==i);
+            observe(138+i);
+        }
+        prior=mouse->revision;
+        CHECK(graf_mouse((WORD)(M_FORCE|OUTLN_CROSS),NULL));
+        CHECK(mouse->revision==prior);
+        CHECK(graf_mouse(BUSYBEE,NULL));CHECK(mouse->form.kind==HOURGLASS);
+        observe(146);
+        CHECK(graf_mouse(BUSY_BEE,NULL));CHECK(mouse->form.kind==HOURGLASS);
+        CHECK(graf_mouse(ARROW,NULL));
         FreeMem((APTR)allocation,65610UL);
         peerForm.mf_xhot=7;peerForm.mf_yhot=6;peerForm.mf_nplanes=1;
         peerForm.mf_fg=1;peerForm.mf_bg=9;
@@ -223,9 +234,9 @@ UWORD AESRun(void)
         CHECK(wind_update(END_MCTRL));CHECK(wind_update(END_UPDATE));
         Signal(peer,peerWake);while (formStage<2) Wait(wake);
         CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
-        CHECK(graf_mouse(ARROW,NULL));
+        CHECK(graf_mouse(TEXT_CRSR,NULL));
         CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
-        CHECK(graf_mouse((WORD)(M_FORCE|ARROW),NULL));
+        CHECK(graf_mouse((WORD)(M_FORCE|HOURGLASS),NULL));
         CHECK(mouse->form.kind==USER_DEF && mouse->form.words[3]==9);
         Signal(peer,peerWake);while (formStage<3) Wait(wake);
         CHECK(mouse->form.kind==ARROW);

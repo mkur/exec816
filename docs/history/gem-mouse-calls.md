@@ -71,3 +71,21 @@ stationary replacement and raw VDI motion. Native routing checks cover work
 capture through release, UPDATE-only admission, windowless MCTRL, menus, title
 capture and endpoint holds. The two-registration application checks inactive
 selection, M_FORCE stripping and owner exit under normal preemption.
+
+## GM3: standard forms and flags
+
+All eight pinned standard forms now use the custom-form pipeline, including
+HOURGLASS's BUSYBEE/BUSY_BEE aliases. The common dispatcher strips M_FORCE
+before selecting or updating the caller's form. It introduces no forced-owner
+state and cannot replace an active peer's form from an inactive registration.
+Stationary selection uses the same erase/install/redraw path as USER_DEF.
+
+Readonly forms grow from 74 to 592 upper bytes, a 518-byte increase. Structure
+sizes, allocations, cursor VRAM and public ABI are unchanged. Reserved bank-zero
+growth is zero for fixed, root, kernel, idle and every public Task, including
+guards, alignment and unused capacity. Saved/previous operations remain GM4.
+
+[GM3 development evidence](../development/gem-mouse-gm3.json) records 394 API
+checks, all standard-form scanouts and the 22 native routing assertions.
+The 715 host checks pass with five skips. Guards, heap ownership and OS
+restoration remain enabled; these checks do not establish release qualification.

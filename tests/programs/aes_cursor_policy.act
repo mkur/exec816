@@ -66,7 +66,7 @@ PROC Main()
   mouse.revision=$ffffffff
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OVERFLOW)
   Require(first.mouseHides=0 AND mouse.depth=0 AND mouse.visible=1)
-  request.intin(0)=AESTYPES.TEXT_CRSR
+  request.intin(0)=8
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.UNSUPPORTED)
   Require(first.mouseHides=0 AND mouse.depth=0)
   request.intin(0)=INT(AESTYPES.M_FORCE OR AESTYPES.ARROW)

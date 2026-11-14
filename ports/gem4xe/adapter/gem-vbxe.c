@@ -622,7 +622,7 @@ static void cursor_render(UWORD x,UWORD y,UWORD draw)
     UWORD left=0,top=0,skipLeft=0,skipRows=0;
     WORD originX,originY;
     ULONG address=0,parity,source;
-    const WORD *form=cursorForm.kind==AES_USER_DEF ? cursorForm.words:cursorForms[0];
+    const WORD *form=cursorForm.kind==AES_USER_DEF ? cursorForm.words:cursorForms[cursorForm.kind];
     if (fault) return;
     if ((!draw && !cursorDrawn) || (draw && cursorDrawn && x==cursorX && y==cursorY)) {
         cursorX=x; cursorY=y;

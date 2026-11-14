@@ -137,7 +137,7 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
           service.cursorHides==-1
         FI
       FI
-    ELSEIF mode=AESTYPES.ARROW OR mode=AESTYPES.USER_DEF THEN
+    ELSEIF mode<=AESTYPES.OUTLN_CROSS OR mode=AESTYPES.USER_DEF THEN
       IF service.cursorOwner=client.id AND client.id<>0 THEN
         status=Install(service,INT(mode),@request.mouseForm)
       FI

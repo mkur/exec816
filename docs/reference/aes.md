@@ -38,11 +38,13 @@ frozen per-context event samples do not replace this shared observation.
 These are the latest presenter-published values, rather than a hardware read.
 
 `graf_mouse(mode,form)` and AESPB opcode 78 (one input/result word and one
-address input) currently implement ARROW, USER_DEF, M_OFF and M_ON. Other selectors fail
+address input) implement ARROW, TEXT_CRSR, HOURGLASS (BUSYBEE/BUSY_BEE),
+POINT_HAND, FLAT_HAND, THIN_CROSS, THICK_CROSS, OUTLN_CROSS, USER_DEF,
+M_OFF and M_ON. Other selectors fail
 with AES_UNSUPPORTED. M_FORCE is accepted and stripped as in MagiC; it does not
 override the input recipient. The 74-byte MFORM declaration and standard selector
-constants are public; saved/previous and the remaining named forms are not yet
-admitted. USER_DEF accepts one plane, hotspots 0..15 and logical pens 0..15.
+constants are public; saved/previous forms are not yet admitted.
+USER_DEF accepts one plane, hotspots 0..15 and logical pens 0..15.
 It copies all 37 words before a wait and retains no application form pointer.
 Other modes ignore that pointer. Unsupported formats fail without mutation.
 

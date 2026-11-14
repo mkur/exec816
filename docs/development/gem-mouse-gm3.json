@@ -1,0 +1,108 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GM3",
+  "abi": {
+    "c_app": 45,
+    "aes": 24
+  },
+  "cases": [
+    {
+      "path": "build/gem-mouse/gm3-forms/results.json",
+      "sha256": "660e88c58e50a62628e2343a5c13d05c2d2e41b96d97a42bf53dbb9b7a921b82",
+      "status": "pass",
+      "AESChecks": 394,
+      "AESFailures": 0,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 790,
+          "remaining_above_floor": 490
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 142,
+          "remaining_above_floor": 914
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 62,
+          "remaining_above_floor": 994
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 348,
+          "remaining_above_floor": 708
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 716,
+          "remaining_above_floor": 1588
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 285,
+          "remaining_above_floor": 995
+        }
+      },
+      "visible_pixel_checkpoints": 142
+    },
+    {
+      "path": "build/gem-mouse/gm3-routing/results.json",
+      "sha256": "2c19e7a30446a07b8e2bd32c3da9d15eee1bf2ef66fa871971c907f7c41c9d3c",
+      "status": "pass",
+      "checks": 22
+    }
+  ],
+  "host": {
+    "path": "build/gem-mouse-host-gm3.log",
+    "checks": 715,
+    "skipped": 5
+  },
+  "memory": {
+    "upper_readonly_forms": 592,
+    "upper_readonly_growth": 518,
+    "structural_allocation_growth": 0,
+    "cursor_vram_growth": 0,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0,
+      "includes": "guards, alignment and spare capacity"
+    }
+  },
+  "scope": "Eight standard forms, aliases and M_FORCE through existing custom-form and recipient pipeline; native routing and optimized two-app/pixel/preemption checks; no QED execution or release qualification."
+}

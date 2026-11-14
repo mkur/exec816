@@ -8,7 +8,8 @@ source; its MFORM artwork was transcribed from EmuTOS `aes/mforms.c` (GPLv2),
 as its module notice records. Preserve that provenance with generated artwork.
 The alert artwork in this source is not selected by the mouse generator.
 
-`tools/generate_gem_cursor.py` selects the immutable ARROW MFORM words.
+`tools/generate_gem_cursor.py` selects all eight immutable standard MFORMs
+(592 upper readonly bytes).
 `upstream/cursor-vbxe.c` preserves the pinned form-expansion selection, with
 original and selection hashes in `inputs.json`. The adapted renderer packs
 even/odd AND/OR strips dynamically in existing upper scratch, maps logical pens
