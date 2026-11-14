@@ -7,7 +7,11 @@ Exec816 identity inspired by GEM and Workbench.
 Panel, Calculator, Text and Counter launch on demand. No prime Task is started.
 SYS:C/MOUSE.APP is a small, sixteen-step mouse-form and scrolling probe. Launch
 it from Files beside a Counter to watch the shared mouse and drawing path.
-It is an SDK example; the original MagiC MGVIEW application is not included.
+It is an SDK example. RUN C:MGVIEW.APP SYS:MGVIEW.TXT opens the original
+MagiC text viewer rebuilt for Exec. It reads ASCII LF/CRLF/CR files; native
+ATASCII text uses a different encoding. Cursor keys and gadgets scroll both
+axes; digits 0..9 set tabs, Ctrl-W cycles its documents, Ctrl-U closes one and
+Ctrl-Q quits. No arguments exits without a window. TXT still uses C:TEXT.APP.
 The XEX includes Desktop and its icons. Startup creates RAM:DESKTOP.APP and
 RAM:DESKTOP.RSC, then launches Desktop through the ordinary program loader.
 The other applications and their resources remain on the system disk.

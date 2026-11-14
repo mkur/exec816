@@ -5,9 +5,11 @@
 
 Include `<compat/gemdos.h>` and select `--gemdos` with
 `tools/build_c_program.py`. This opts a rebuilt Calypsi C APP into the shared
-source library. The current APP ABI is 40; declarations and constants come
-from [gemdos-compat.json](../../abi/gemdos-compat.json). QED selects the same
-library automatically. This is a source subset, without TOS binary execution,
+source library. The current APP ABI is declared in
+[c-program.json](../../abi/c-program.json); declarations and constants come
+from [gemdos-compat.json](../../abi/gemdos-compat.json). QED and the
+[original MGVIEW port](../guides/mgview.md) select the same library
+automatically. This is a source subset, without TOS binary execution,
 TRAP dispatch, basepages or a second filesystem.
 
 ## Supported calls

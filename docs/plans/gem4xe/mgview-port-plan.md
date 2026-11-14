@@ -6,7 +6,7 @@
 [Window foundations](mgview-foundation-plan.md) ·
 [Mouse delivery](../../history/gem-mouse-calls.md)
 
-Status: MP1–MP5 implemented; MP6 pending, 2026-11-14. Implement in order and commit each passing
+Status: MP1–MP6 implemented at development scope, 2026-11-14. Commit each passing
 executable slice separately. This plan ports the original MGVIEW application;
 the existing Exec Text application and Mouse probe remain separate programs.
 Planning records no new executable qualification.
@@ -15,6 +15,10 @@ The [execution record](../../history/mgview-port.md) records development scope.
 MP5 delivers the paired functional baseline; quantitative timings are deferred.
 Implementation uses minimal checks at the user's request, not the full optional
 failure/timing inventory below; this is not a release.
+The user reiterated that builds must also stay minimal: ordinary iterations
+build MGVIEW only and reuse Counter/provider. The completed demo/QED rebuild
+exceeded that scope; cold-boot verification was stopped. The larger inventory
+below is not an instruction to repeat those builds/checks.
 
 ## Outcome and scope
 

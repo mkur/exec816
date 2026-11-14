@@ -1,8 +1,10 @@
 # Implementation plans
 
-- [Original MagiC MGVIEW port](gem4xe/mgview-port-plan.md): proposed MP1–MP6
+- [Original MagiC MGVIEW port](gem4xe/mgview-port-plan.md): MP1–MP6
   executable slices for the original-source viewer, bounded loader/lifetime,
-  copy/strip scrolling, window interaction, paired MagiC measurements and delivery.
+  copy/strip scrolling, window interaction, paired MagiC checks and delivery.
+  The [execution record](../history/mgview-port.md) distinguishes the minimal
+  development checks from deferred performance normalization.
 
 - [GEM mouse calls](gem4xe/gem-mouse-plan.md): implemented GM1–GM5 slices for
   conventional AES/VDI cursor calls, GEM4XE forms/rendering, application

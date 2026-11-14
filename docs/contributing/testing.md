@@ -140,6 +140,13 @@ or permission to skip a required regression. If a change needs a long targeted
 case, explain why and run that case without automatically expanding every axis.
 Avoid large trace-based fixtures for changes that a smaller native test covers.
 
+For ordinary MGVIEW changes, build only `tools/build_mgview.py` and reuse the
+unchanged Counter/provider with `tools/test_mgview.py --reuse`. Do not rebuild
+QED, every desktop application, the full demo or boot transports by default.
+Those builds/checks require a relevant shared-interface change or an explicit
+delivery/qualification request. A package audit is host-only unless cold boot
+is explicitly selected.
+
 During iteration, rerun the failing or affected case first. Once it passes,
 finish the selected development checks. Do not repeat passing checks unless
 their inputs changed, a failure revealed broader impact, or a concern remains

@@ -237,8 +237,10 @@ wrappers over the common C runtime and provides native ExamineFH plus the
 size/type FSTAT profile for MGVIEW-style loading. The
 [implementation plan](plans/gemdos-compatibility-implementation-plan.md) records
 the executable slices and consumer checks. The
-[original MGVIEW port plan](plans/gem4xe/mgview-port-plan.md) now orders the
-application port using the completed window, raster and mouse foundations.
+[original-source MGVIEW port](guides/mgview.md) opens native command-line files
+and uses the completed window, raster and mouse foundations. Its
+[plan](plans/gem4xe/mgview-port-plan.md) and
+[development record](history/mgview-port.md) retain the executable slices.
 The SDX FILELENG consumer migration remains separate work.
 
 The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) is implemented
@@ -248,7 +250,8 @@ contains packaged development acceptance and timing. Reusing GEM4XE's dedicated
 S_ONLY byte/nibble-shift path first reduced the matched different-parity sample
 to about 625 ms. The subsequent [mapped VRAM path](history/gem-raster-mapped.md)
 reduces it to 149–150 ms using 16 KiB VRAM through the existing 4 KiB aperture.
-Bitmap workstations and the complete MGVIEW port remain separate work.
+Bitmap workstations remain separate work. MGVIEW reuses the screen-copy path
+with UPDATE ownership across visible enumeration, copying and strip redraw.
 
 The proposed [GEM-first GUI design](plans/gem4xe/gem-first-gui-design.md) replaces
 the native/GEM graphical interface split with one AES window model. It retains

@@ -112,3 +112,49 @@ No latency/CPU/RPC benchmark or speed ratio was run under the user's minimal
 check scope. Quantitative normalization and the larger timing inventory remain
 follow-up work. Source/compiler policy, drawing limits and all fixed/per-Task
 bank-zero reservations are unchanged.
+
+## MP6: delivery and narrowed build scope
+
+The common APP/demo build includes original-source `MGVIEW.APP`, byte-preserved
+ASCII `SYS:MGVIEW.TXT`, usage guidance and original MagiC licence/provenance.
+The ordinary Text association and OF816/default startup behavior are retained.
+The generated ZIP contains only boot images, short guides, licences and checksums.
+
+The full demo and QED rebuild completed, which exceeded the user's requested
+minimal development scope. QED was not executed. The cold ATR boot check was
+interrupted when the user reiterated that builds and testing must stay minimal;
+it does not establish native-entry or hosted qualification for this package.
+Future ordinary MGVIEW iterations build only that APP and reuse the unchanged
+Counter/provider. Full demo, QED and cold-boot runs are opt-in work.
+
+Completed checks: 14 packaging host tests, committed donor byte/hash checks,
+current generated QED declarations and local documentation links. The host-only
+`build/gem-mgview/delivery/results.json` audit verifies all ZIP checksums,
+16 current-ABI SYS APP headers, original MagiC notices, exact 6,862-byte sample
+and packaged MGVIEW/Counter identity against the focused loaded checks.
+It requires no QED build or execution. The tool defaults to host audit only;
+`--cold-boot` is an explicit longer check.
+
+Final MGVIEW is 29,521 serialized bytes; upper code is 25,399 bytes, initialized
+data 270 and BSS 1,020, including the 273-byte draw scratch. Loaded span is
+66,826 bytes, including its bank gap. The largest observed touched 1,312-byte
+public pool is 884 bytes in the scroll fixture, leaving 172 bytes above the
+256-byte interrupt floor. Reserved bank-zero changes remain **0 fixed, 0 root,
+0 kernel, 0 private idle and 0 for every public Task**, including guards,
+alignment and unused reserved capacity. No new Task or ABI operation was added.
+
+Artifacts:
+
+- `build/gem-mgview/demo/exec816-demo.zip`
+- `build/gem-mgview/demo/launch-altirra.command`
+- ZIP SHA-256: `8ac09519db970d0c2011beea80a404aed8ffa679fe5608ee54bfe381e9a89aa3`
+- MGVIEW APP SHA-256: `432d17cb7a03ef402e109eabe4c1f1891e90c07cee60d85add2624ff453a83e5`
+
+Run `RUN C:MGVIEW.APP SYS:MGVIEW.TXT`. The
+[usage guide](../guides/mgview.md) lists controls, bounds and omitted protocols.
+For a source-only iteration with unchanged ABI:
+
+```sh
+python3 tools/build_mgview.py --output build/mgview-dev/smoke/apps/mgview
+python3 tools/test_mgview.py --output build/mgview-dev/smoke --reuse --scroll
+```

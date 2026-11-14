@@ -17,16 +17,28 @@ and event dispatch. The patch adapts Pure C 16-bit integers to `WORD`, rectangle
 overloads to explicit helpers, and event arguments to the shared GEM binding.
 Native glue replaces the `gemut_mt.o` workstation/error helpers and the CR/LF
 scanner. It omits grow/shrink animation, VA_START/AV_STARTED and drag/drop pipes.
-There is no RSC or file selector in this command-line helper.
+There is no RSC or file selector in this command-line helper. The donor's empty
+iconify/uniconify callbacks are outside the admitted window controls.
 
 The native C profile keeps optimization and disables inlining uniformly, as QED
 already does for Calypsi 5.18. The clean loaded pixel probe covers this profile;
 temporary diagnostic stores are not part of the shipped viewer.
 
-The initial loader bounds file payloads to 65,519 bytes and the four-byte line
+The loader bounds file payloads to 65,519 bytes and the four-byte line
 index to 16,380 entries, including clean empty-file and acquisition rollback.
 The 273-byte draw scratch is private to each loaded image in upper BSS.
 Existing Task stacks and all fixed/per-Task bank-zero reservations are unchanged.
+
+The original copy/strip path holds UPDATE across model publication, stable
+visible rectangles, S_ONLY copying, exposed-strip drawing and honest completion.
+Tabs stage their width calculation outside UPDATE, then publish the change under
+ownership. Accepted keyboard events retain their owning document. Native reads
+and indexing do not hold the drawing owner.
+
+Run `RUN C:MGVIEW.APP SYS:MGVIEW.TXT` in the demo Terminal. The bundled
+`sample.txt` is staged as binary `SYS:MGVIEW.TXT` so its ASCII CRLF bytes survive
+native media construction. See the [usage guide](../../../docs/guides/mgview.md)
+for keys, resource limits and omitted desktop protocols.
 
 See the [implementation plan](../../../docs/plans/gem4xe/mgview-port-plan.md)
 and [execution record](../../../docs/history/mgview-port.md).

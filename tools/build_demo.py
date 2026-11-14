@@ -9,7 +9,7 @@ from pathlib import Path
 from build_command import compile_command
 from build_of816 import build as build_monitor
 from make_data_disk import make
-from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,GEMARC_NOTICES,pointer_description,ide_only_guide,bootable_guide
+from package_demo import package,GEM_NOTICES,CALCULATOR_NOTICES,G4BENCH_NOTICES,GEMARC_NOTICES,MGVIEW_NOTICES,pointer_description,ide_only_guide,bootable_guide
 from library_paths import read_source
 from launch_demo import write_launcher
 from native_program import ROOT, build, compiler, read_build, require, sha256
@@ -157,6 +157,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     workspace.mkdir(exist_ok=True)
     if gem_desktop:
         (media/'VIEW.TXT').write_bytes((ROOT/'examples/gem-text/VIEW.TXT').read_bytes())
+        (media/'MGVIEW.TXT').write_bytes((ROOT/'ports/magic/mgview/sample.txt').read_bytes())
+        binary_names.add('MGVIEW.TXT')
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
         'Copy this ATR before experimenting. Mount it in drive D8.\n',encoding='ascii')
     if qed:
@@ -239,6 +241,18 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
     if gem_desktop:
+        mgview=ROOT/'ports/magic/mgview'
+        shutil.copyfile(mgview/'upstream/LICENSE',output/MGVIEW_NOTICES[0])
+        selection=json.loads((mgview/'inputs.json').read_text())
+        (output/MGVIEW_NOTICES[1]).write_text(
+            'Original MagiC MGVIEW, by Andreas Kromke, rebuilt for Exec816.\n'
+            'Upstream: '+selection['repository']+'\nRevision: '+selection['revision']+'\n'
+            'Licence: upstream GPLv3; see MGVIEW-COPYING.txt.\n'
+            'Corresponding native sources: ports/magic/mgview/ in the Exec816 source tree,\n'
+            'including immutable originals, inputs.json, native.patch and native glue.\n'
+            'Build with tools/build_mgview.py and the common C runtime/headers.\n'
+            'Source repository: https://github.com/mkur/exec816-public\n'
+            'Native patch SHA-256: '+sha256(mgview/'native.patch')+'\n')
         for name in program['build']['gem_applications']:
             if name=='desktop':continue
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
@@ -431,7 +445,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             record['source_inputs'].update({str(p.relative_to(ROOT)):sha256(p)
                 for p in [ROOT/'examples/gem-basic'/name for name in
                     ('main.c','basic.c','basic.h','editor.c','editor-paint.c','editor.h','document.c','document.h','files.c','files.h','file-ui.c','file-ui.h','assist.c','assist.h','assist-ui.c','assist-ui.h','build.c','build.h','build-job.h')]})
-        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES})
+        record['artifacts'].update({name:sha256(output/name) for name in CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES+MGVIEW_NOTICES})
         record['calculator']=provenance
         record['g4bench']=benchmark_provenance
         record['gemarc']=archive_provenance
@@ -447,6 +461,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             ROOT/'tools/build_calculator.py',ROOT/'tools/prepare_calculator.py',
             ROOT/'tools/build_g4bench.py',ROOT/'tools/prepare_g4bench.py',
             ROOT/'tools/build_gemarc.py',ROOT/'tools/prepare_gemarc.py',
+            ROOT/'tools/build_mgview.py',ROOT/'tools/prepare_mgview.py',
+            ROOT/'c/compat/gem/rect.c',ROOT/'c/include/compat/gem-rect.h',
+            *(p for p in (ROOT/'ports/magic/mgview').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/gemarc').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})

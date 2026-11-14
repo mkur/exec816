@@ -26,10 +26,11 @@ G4BENCH_NOTICES = ('G4BENCH-COPYING.txt','G4BENCH-COPYING.LIB.txt',
                   'G4BENCH-LICENSING.md','G4BENCH-PROVENANCE.txt')
 GEMARC_NOTICES = ('GEMARC-COPYING.txt','GEMARC-COPYING.LIB.txt',
                   'GEMARC-LICENSING.md','GEMARC-PROVENANCE.txt')
+MGVIEW_NOTICES = ('MGVIEW-COPYING.txt','MGVIEW-NOTICE.txt')
 QED_NOTICES = ('QED-NOTICE.txt','QED-TERMS.txt','QED-COPYING.LIB.txt',
                'QED-APACHE-2.0.txt','QED-PROVENANCE.txt')
 ROOT_NOTICES = {*LICENSE_FILES, *GEM_NOTICES, *CALCULATOR_NOTICES,
-                *G4BENCH_NOTICES, *GEMARC_NOTICES, *QED_NOTICES, 'OF816-LICENSE.txt',
+                *G4BENCH_NOTICES, *GEMARC_NOTICES, *MGVIEW_NOTICES, *QED_NOTICES, 'OF816-LICENSE.txt',
                 'FASTBASIC-COPYING.txt', 'FASTBASIC-NOTICES.txt',
                 'SDX-UTILITIES-NOTICE.txt'}
 
@@ -66,7 +67,13 @@ back, and Q exits. Drag or cover/expose the window to check repainting.
 RUN C:MOUSE.APP cycles through mouse forms and a small scrolling pattern for
 sixteen steps, then closes. Move the pointer into its window to inspect forms.
 It can run beside one Counter while Desktop and Terminal occupy the other two
-AES registrations. This is an SDK probe; original MagiC MGVIEW is not included.
+AES registrations. This is an SDK probe.
+
+RUN C:MGVIEW.APP SYS:MGVIEW.TXT opens the original MagiC text viewer, rebuilt
+for Exec. Use cursor keys and scroll gadgets, digits 0..9 for tab width, Ctrl-W
+to cycle its documents, Ctrl-U to close a document and Ctrl-Q to quit. Files
+must use ASCII LF, CR or CRLF; native ATASCII text is a separate encoding.
+No arguments exits without a window. TXT associations still use C:TEXT.APP.
 
 Terminal displays 64 by 20 cells. Its tabs select two independent shell sessions;
 + creates a session and NEWSHELL starts one in the current directory. SESSION 1
@@ -176,7 +183,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         if demo.get('qed'):
             from qed_demo import verify
             verify(demo,bitmap_shell)
-        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES if demo.get('gem_desktop') else ()):
+        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES+MGVIEW_NOTICES if demo.get('gem_desktop') else ()):
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')

@@ -25,6 +25,8 @@ def build_apps(out,basic_workbench=False,widget_sample=False):
         probes=[(ROOT/'tests/programs/gem_raster_layout.c',__import__('raster_model').LAYOUT)])
     applications['mouse']=application(out/'apps/mouse',[ROOT/'examples/gem-mouse/main.c'],
         minimum_stack=ABI['stack_floor_bytes'])
+    from build_mgview import build as mgview
+    applications['mgview']=mgview(out/'apps/mgview')
     applications['calc']=calculator(out/'apps/calc')
     from build_g4bench import build as g4bench
     applications['g4bench']=g4bench(out/'apps/g4bench')
@@ -81,8 +83,9 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
         if not files:(media/'DESKTOP.RSC').write_bytes(desktop_resource)
         (media/'GEMARC.RSC').write_bytes((out/'apps/gemarc/GEMARC.RSC').read_bytes())
         (media/'CALC.RSC').write_bytes((out/'apps/calc/CALC.RSC').read_bytes())
+        (media/'MGVIEW.TXT').write_bytes((ROOT/'ports/magic/mgview/sample.txt').read_bytes())
         make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
-             binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC','GEMARC.RSC'}|
+             binary_names={*(f'C/{name.upper()}.APP' for name in disk_apps),'CALC.RSC','GEMARC.RSC','MGVIEW.TXT'}|
                           (set() if files else {'DESKTOP.RSC'}))
         mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)]
         if files: mounts.append(dict(alias='RAM',format=3))

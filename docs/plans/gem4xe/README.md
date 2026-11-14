@@ -1,9 +1,10 @@
 # GEM as a client of an Exec-like kernel
 
-The [original MGVIEW port plan](mgview-port-plan.md) proposes MP1–MP6: a first
+The [original MGVIEW port plan](mgview-port-plan.md) orders MP1–MP6: a first
 source-built viewer, loader/lifetime checks, original copy/strip scrolling,
 complete interaction, paired MagiC observations and the final demo. It reuses
-the implemented GEMDOS, drawing/window and mouse foundations below.
+the implemented GEMDOS, drawing/window and mouse foundations below. See the
+[usage guide](../../guides/mgview.md) and [execution record](../../history/mgview-port.md).
 
 The [GEM mouse plan](gem-mouse-plan.md) delivers standard AES/VDI cursor and
 state calls using GEM4XE's forms and rendering algorithms, adapted to Exec's
