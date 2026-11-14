@@ -62,3 +62,13 @@ local result and 280 temporary upper heap bytes including the runtime prefix
 and rounding. Descriptor and allocation bookkeeping are reused. Selected loader
 stack observations leave at least 355 bytes above the existing application
 floor; these samples are not a worst-case bound.
+
+## Workspace cleanup
+
+The [cleanup record](../development/gemdos-cleanup.json) records eleven obsolete
+generated build groups archived with verified member lists and gzip integrity
+before their original trees were removed. Net free-space gain is 17.7 GiB,
+leaving 24.3 GiB available. Archives and their manifest are under
+`build/cleanup-2026-11-14/`. Two groups containing Git checkouts were preserved,
+along with pinned tools, MagiC assets, the current demo and validation evidence.
+The demo ZIP/SYS audit and focused host contract checks pass after cleanup.

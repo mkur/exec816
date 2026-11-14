@@ -1,0 +1,160 @@
+{
+  "status": "pass",
+  "repository": "/Users/michalkurcewicz/action/exec816-public",
+  "before": {
+    "total": 494384795648,
+    "used": 487277854720,
+    "free": 7106940928
+  },
+  "groups": [
+    {
+      "source": "build/gem-first-gui",
+      "archive": "build/cleanup-2026-11-14/gem-first-gui.tar.gz",
+      "sha256": "2851403e3fe477f77be66ed3289f559abcd3e7077de4a8dcb14417f087caaf97",
+      "members": 84535,
+      "source_file_bytes": 10335763332,
+      "archive_bytes": 1512541997,
+      "verified": true,
+      "removed": true,
+      "seconds": 81.89
+    },
+    {
+      "source": "build/gui-baseline",
+      "archive": "build/cleanup-2026-11-14/gui-baseline.tar.gz",
+      "sha256": "78316e89bd241d051e7e258ab00cd6f2eb7faffe1a3ab20478781691524fc6a4",
+      "members": 2541,
+      "source_file_bytes": 2397142481,
+      "archive_bytes": 467146103,
+      "verified": true,
+      "removed": true,
+      "seconds": 15.59
+    },
+    {
+      "source": "build/terminal-idle",
+      "archive": "build/cleanup-2026-11-14/terminal-idle.tar.gz",
+      "sha256": "a159ca6db5ad347ffbcf444c954107bc31791e7e7038927d2a0015ea1c21745e",
+      "members": 5957,
+      "source_file_bytes": 2312527611,
+      "archive_bytes": 374864338,
+      "verified": true,
+      "removed": true,
+      "seconds": 20.31
+    },
+    {
+      "source": "build/gui-route-reuse",
+      "archive": "build/cleanup-2026-11-14/gui-route-reuse.tar.gz",
+      "sha256": "16b795750425525a27f235b0e06e3a362389d969dd65dbf341c5fd00360b4d3c",
+      "members": 3494,
+      "source_file_bytes": 1767287047,
+      "archive_bytes": 330825684,
+      "verified": true,
+      "removed": true,
+      "seconds": 15.02
+    },
+    {
+      "source": "build/terminal-wake",
+      "archive": "build/cleanup-2026-11-14/terminal-wake.tar.gz",
+      "sha256": "61c256db3d5f8ff5cc420bf1a0fc07a660e4d056784a481a2543b93eafa5233b",
+      "members": 2566,
+      "source_file_bytes": 1385719806,
+      "archive_bytes": 251617259,
+      "verified": true,
+      "removed": true,
+      "seconds": 8.99
+    },
+    {
+      "source": "build/input-snapshot-copy",
+      "archive": "build/cleanup-2026-11-14/input-snapshot-copy.tar.gz",
+      "sha256": "89f4711e0bc4f33d586aed5b597b14a8db9f58b21899f9c841ffbad65e7f37c6",
+      "members": 2269,
+      "source_file_bytes": 1193606850,
+      "archive_bytes": 228074748,
+      "verified": true,
+      "removed": true,
+      "seconds": 8.21
+    },
+    {
+      "source": "build/viewer-wait-audit",
+      "archive": "build/cleanup-2026-11-14/viewer-wait-audit.tar.gz",
+      "sha256": "8633556d2a9fc0be92b7c44d695e71bde8bf4802813903f96fc866776386afc1",
+      "members": 244,
+      "source_file_bytes": 960793156,
+      "archive_bytes": 189768313,
+      "verified": true,
+      "removed": true,
+      "seconds": 6.01
+    },
+    {
+      "source": "build/gem-raster",
+      "archive": "build/cleanup-2026-11-14/gem-raster.tar.gz",
+      "sha256": "6d425699fb34a8c77ce5ed35faa756f157dc7a1f911bd8965f1eb049ade906e5",
+      "members": 4902,
+      "source_file_bytes": 862833086,
+      "archive_bytes": 153436972,
+      "verified": true,
+      "removed": true,
+      "seconds": 9.5
+    },
+    {
+      "source": "build/gem-raster-fast",
+      "archive": "build/cleanup-2026-11-14/gem-raster-fast.tar.gz",
+      "sha256": "1d38fa000dcd1a723075904c68ad719b424892053d0a95003238101d2880286b",
+      "members": 2475,
+      "source_file_bytes": 513749511,
+      "archive_bytes": 91729559,
+      "verified": true,
+      "removed": true,
+      "seconds": 5.85
+    },
+    {
+      "source": "build/gem-drawing-simplification",
+      "archive": "build/cleanup-2026-11-14/gem-drawing-simplification.tar.gz",
+      "sha256": "590fbaad8a092e0a6a2c7a4da6a792f2a06e64a5e44024fc32a41ab938a91f0f",
+      "members": 1204,
+      "source_file_bytes": 430038230,
+      "archive_bytes": 69295382,
+      "verified": true,
+      "removed": true,
+      "seconds": 2.58
+    },
+    {
+      "source": "build/aes-drawing-profile",
+      "archive": "build/cleanup-2026-11-14/aes-drawing-profile.tar.gz",
+      "sha256": "20b66fc87e61866b6f97b3f9b374b17dce054fed22aa84bfaa37558e13135afc",
+      "members": 982,
+      "source_file_bytes": 250103822,
+      "archive_bytes": 44641419,
+      "verified": true,
+      "removed": true,
+      "seconds": 1.77
+    }
+  ],
+  "preserved": [
+    "tracked files",
+    "compiler/emulator/firmware pins and source caches",
+    "MagiC images and source models",
+    "current GEMDOS demo and validation",
+    "previous mapped-raster demo",
+    "previous cleanup records"
+  ],
+  "after": {
+    "total": 494384795648,
+    "used": 468314243072,
+    "free": 26070552576
+  },
+  "free_bytes_change": 18963611648,
+  "skipped": [
+    {
+      "source": "build/window-backing",
+      "reason": "Contains a Git checkout; preserve source work"
+    },
+    {
+      "source": "build/aes-windows",
+      "reason": "Contains a Git checkout; preserve source work"
+    }
+  ],
+  "tier": "workspace-maintenance",
+  "qualification": false,
+  "current_demo_sha256": "4a8c526dd5b18fa90de8989142a9e626a1a985b1c46a317425282a708350f521",
+  "counter_app_sha256": "eaa0d504d43a316804b15c4cbd8385544249f6b69813ac7f401a850de8edcb7e"
+}
