@@ -1,0 +1,977 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "source_baseline": "79ce2423",
+  "tier": "development",
+  "qualification": false,
+  "builds_run": 0,
+  "capture_directory": "build/mgview-presenter-audit",
+  "inputs": {
+    "native_xex_sha256": "d8421453e970971b9a4c3efa7d1f9578ff68a7498e8a03dfcd64c492f4ab0f8a",
+    "app_sha256": {
+      "mgview": "432d17cb7a03ef402e109eabe4c1f1891e90c07cee60d85add2624ff453a83e5",
+      "counter": "425dba4899f8492859bed640f4d37dfbc04f7e577a601f113baeff6f04a29e81"
+    },
+    "rom": "AltirraOS 3.44 for 65C816",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "platform_pin": "toolchain/altirra-gem-vdi.json",
+    "app_abi": 45,
+    "aes_abi": 24,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "base_clock_hz": 1773447.5,
+    "cpu_multiplier": 8,
+    "document_bytes": 56746,
+    "document_lines": 901,
+    "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+    "work_xywh": [
+      8,
+      22,
+      488,
+      200
+    ],
+    "font_cell": [
+      8,
+      8
+    ],
+    "copy_wh": [
+      488,
+      192
+    ],
+    "copy_pixels": 93696,
+    "copy_packed_bytes": 46848,
+    "exposed_wh": [
+      488,
+      8
+    ]
+  },
+  "measurement": {
+    "trace_events": 797615,
+    "selected_presenter_pcs": 4799,
+    "trace_log_bytes": 53466411,
+    "trace_log_sha256": "c34f81bbd7e9cf8bc2d264f2fd971c6d472afd91121703f212ff9e0b743045e8",
+    "definition_sha256": "f7bea7acaf8660061fa5a9e38cc8318b0861865daf7ff9eed417fcbc0d81b43b",
+    "owned_core_scope": "ExecAESBeginUpdate return to END wind_update entry: UPDATE is already owned throughout.",
+    "phase_scope": "Exclusive presenter CPU by outermost selected native phase; clipped calls included; IRQ/NMI separate.",
+    "timing_and_pixels_identical_to_previous_capture": true,
+    "guest_instrumentation": false
+  },
+  "samples": [
+    {
+      "action": "down",
+      "observed_complete_ms": 220.72319592206705,
+      "windows": {
+        "whole_shift": {
+          "duration_ms": 243.95147022959517,
+          "presenter_cpu_ms": 92.27634311136924,
+          "presenter_context_interrupt_ms": 20.20844992592112,
+          "exclusive_cpu_ms": {
+            "loop_other": 5.059002310471552,
+            "input": 64.83515863875304,
+            "painting": 0.2286506930709818,
+            "controls": 0.9807874211105769,
+            "console": 0.12630765782466072,
+            "events": 0.13039574049978925,
+            "settlement": 1.220927036182351,
+            "readiness": 7.048559373762122,
+            "cache": 0.3942180414136871,
+            "stop_check": 0.23753170026177828,
+            "scene_publication": 2.7149098013896658,
+            "scene_admission": 9.061587670342652,
+            "signals": 0.0907836290614749,
+            "completion_poll": 0.06308334472827642,
+            "menu_continuation": 0.08444005249662027
+          },
+          "routine_costs": {
+            "DESKINPUT_PRESENT": {
+              "calls": 14,
+              "starts": 14,
+              "completions": 13,
+              "cpu_ms": 60.827780354366276,
+              "returns": {
+                "16": 13
+              }
+            },
+            "CONSOLEBITMAP_RUN": {
+              "calls": 11,
+              "starts": 11,
+              "completions": 10,
+              "cpu_ms": 42.16871376231887,
+              "returns": {
+                "1": 10
+              }
+            },
+            "DESKINPUT_SERVICE": {
+              "calls": 8,
+              "starts": 8,
+              "completions": 8,
+              "cpu_ms": 12.354608749342736,
+              "returns": {
+                "206": 2,
+                "12": 4,
+                "136": 2
+              }
+            },
+            "DESKPAINT_PUMP": {
+              "calls": 5,
+              "starts": 5,
+              "completions": 5,
+              "cpu_ms": 0.2286506930709818,
+              "returns": {
+                "0": 5
+              }
+            },
+            "DESKPAINT_READY": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.29102919595871884,
+              "returns": {
+                "0": 4
+              }
+            },
+            "AESHOST_PUMP": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.16634267436729872,
+              "returns": {
+                "0": 4
+              }
+            },
+            "AESHOST_RUNNABLE": {
+              "calls": 19,
+              "starts": 19,
+              "completions": 19,
+              "cpu_ms": 1.7406774093961057,
+              "returns": {
+                "0": 19
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 6,
+              "starts": 6,
+              "completions": 6,
+              "cpu_ms": 4.382142691001566,
+              "returns": {
+                "0": 6
+              }
+            },
+            "DISPLAY_BLOCKED": {
+              "calls": 58,
+              "starts": 58,
+              "completions": 58,
+              "cpu_ms": 0.2853904612344036,
+              "returns": {
+                "0": 43,
+                "1": 15
+              }
+            },
+            "DISPLAY_OWNERENTER": {
+              "calls": 11,
+              "starts": 11,
+              "completions": 11,
+              "cpu_ms": 1.5118857479570162,
+              "returns": {
+                "0": 11
+              }
+            },
+            "DISPLAY_OWNERDROP": {
+              "calls": 11,
+              "starts": 11,
+              "completions": 11,
+              "cpu_ms": 4.20670755689131,
+              "returns": {
+                "0": 11
+              }
+            },
+            "AESGATE_RECLAIM": {
+              "calls": 17,
+              "starts": 17,
+              "completions": 16,
+              "cpu_ms": 20.830754786933362,
+              "returns": {
+                "202": 10,
+                "16": 6
+              }
+            },
+            "AESGATE_TRYOWNER": {
+              "calls": 21,
+              "starts": 21,
+              "completions": 21,
+              "cpu_ms": 3.140704757259519,
+              "returns": {
+                "1": 16,
+                "0": 5
+              }
+            },
+            "AESHOST_SETTLE": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 1.220927036182351,
+              "returns": {
+                "16": 4
+              }
+            }
+          },
+          "turns_intersecting": 7,
+          "quiet_turns_intersecting": 2,
+          "complete_turns": 5,
+          "presenter_task": 136596,
+          "presenter_signal_counts": [
+            {
+              "caller": "AESGATE_ENTERTASK",
+              "mask": 524288,
+              "count": 2
+            },
+            {
+              "caller": "AESGATE_RELEASE",
+              "mask": 524288,
+              "count": 4
+            },
+            {
+              "caller": "DISPLAY_LEAVE",
+              "mask": 65536,
+              "count": 3
+            }
+          ],
+          "wait_returns_inside": [
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 524288,
+              "count": 3
+            },
+            {
+              "caller": "AESGATE_RECLAIM",
+              "bits": 524288,
+              "count": 3
+            },
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 65536,
+              "count": 3
+            }
+          ],
+          "mouse_call_return_status_counts": {
+            "0": 11
+          },
+          "cursor_decisions": {
+            "CONSOLEBITMAP_CHANGED": {
+              "1": 11
+            },
+            "AESCURSOR_PENDING": {},
+            "CONSOLEBITMAP_MOUSE": {
+              "1": 10
+            }
+          },
+          "c_routines": {
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "cpu_ms": 0.0375680701007501
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "cpu_ms": 0.22082694864099445
+            }
+          }
+        },
+        "owned_core": {
+          "duration_ms": 183.378631168952,
+          "presenter_cpu_ms": 63.47009144618039,
+          "presenter_context_interrupt_ms": 13.88848556272458,
+          "exclusive_cpu_ms": {
+            "loop_other": 4.200082043590237,
+            "scene_publication": 0.9459682341879305,
+            "scene_admission": 8.895879353631837,
+            "input": 42.48243886554295,
+            "stop_check": 0.18424565711699953,
+            "signals": 0.07541807693771595,
+            "readiness": 4.003924559368124,
+            "cache": 0.26910861471794345,
+            "completion_poll": 0.06308334472827642,
+            "menu_continuation": 0.08444005249662027,
+            "controls": 0.9770517593557182,
+            "painting": 0.18431614130105345,
+            "console": 0.09473074336849555,
+            "events": 0.09811398420308466,
+            "settlement": 0.9112900156333921
+          },
+          "routine_costs": {
+            "DESKINPUT_PRESENT": {
+              "calls": 11,
+              "starts": 11,
+              "completions": 10,
+              "cpu_ms": 39.255531951185475,
+              "returns": {
+                "16": 10
+              }
+            },
+            "CONSOLEBITMAP_RUN": {
+              "calls": 8,
+              "starts": 8,
+              "completions": 7,
+              "cpu_ms": 24.044199222136548,
+              "returns": {
+                "1": 7
+              }
+            },
+            "DESKINPUT_SERVICE": {
+              "calls": 6,
+              "starts": 6,
+              "completions": 6,
+              "cpu_ms": 7.188611447477301,
+              "returns": {
+                "206": 2,
+                "12": 4
+              }
+            },
+            "DESKPAINT_PUMP": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.18431614130105345,
+              "returns": {
+                "0": 4
+              }
+            },
+            "DESKPAINT_READY": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.16387572792541083,
+              "returns": {
+                "0": 3
+              }
+            },
+            "AESHOST_PUMP": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.16634267436729872,
+              "returns": {
+                "0": 4
+              }
+            },
+            "AESHOST_RUNNABLE": {
+              "calls": 13,
+              "starts": 13,
+              "completions": 13,
+              "cpu_ms": 0.7273967794366624,
+              "returns": {
+                "0": 13
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 2.1804282337086383,
+              "returns": {
+                "0": 4
+              }
+            },
+            "DISPLAY_BLOCKED": {
+              "calls": 43,
+              "starts": 43,
+              "completions": 43,
+              "cpu_ms": 0.21737322362235148,
+              "returns": {
+                "0": 28,
+                "1": 15
+              }
+            },
+            "DISPLAY_OWNERENTER": {
+              "calls": 8,
+              "starts": 8,
+              "completions": 8,
+              "cpu_ms": 1.0975092299039018,
+              "returns": {
+                "0": 8
+              }
+            },
+            "DISPLAY_OWNERDROP": {
+              "calls": 8,
+              "starts": 8,
+              "completions": 7,
+              "cpu_ms": 3.769423679020665,
+              "returns": {
+                "0": 7
+              }
+            },
+            "AESGATE_RECLAIM": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 10.088119326904236,
+              "returns": {
+                "16": 5,
+                "202": 7
+              }
+            },
+            "AESGATE_TRYOWNER": {
+              "calls": 14,
+              "starts": 14,
+              "completions": 14,
+              "cpu_ms": 2.1059969353476777,
+              "returns": {
+                "0": 2,
+                "1": 12
+              }
+            },
+            "AESHOST_SETTLE": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.9112900156333921,
+              "returns": {
+                "16": 3
+              }
+            }
+          },
+          "turns_intersecting": 6,
+          "quiet_turns_intersecting": 2,
+          "complete_turns": 4,
+          "presenter_task": 136596,
+          "presenter_signal_counts": [
+            {
+              "caller": "AESGATE_RELEASE",
+              "mask": 524288,
+              "count": 3
+            },
+            {
+              "caller": "DISPLAY_LEAVE",
+              "mask": 65536,
+              "count": 3
+            }
+          ],
+          "wait_returns_inside": [
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 524288,
+              "count": 2
+            },
+            {
+              "caller": "AESGATE_RECLAIM",
+              "bits": 524288,
+              "count": 1
+            },
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 65536,
+              "count": 3
+            }
+          ],
+          "mouse_call_return_status_counts": {
+            "0": 7
+          },
+          "cursor_decisions": {
+            "CONSOLEBITMAP_CHANGED": {
+              "1": 8
+            },
+            "AESCURSOR_PENDING": {},
+            "CONSOLEBITMAP_MOUSE": {
+              "1": 7
+            }
+          },
+          "c_routines": {
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "cpu_ms": 0.0375680701007501
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "cpu_ms": 0.22082694864099445
+            }
+          }
+        }
+      }
+    },
+    {
+      "action": "up",
+      "observed_complete_ms": 200.21173448889803,
+      "windows": {
+        "whole_shift": {
+          "duration_ms": 194.41293018259634,
+          "presenter_cpu_ms": 62.67996374293572,
+          "presenter_context_interrupt_ms": 13.503571433606012,
+          "exclusive_cpu_ms": {
+            "loop_other": 3.528085832819974,
+            "input": 49.99527755966839,
+            "painting": 0.18375226782862192,
+            "controls": 0.7397315116461017,
+            "console": 0.14533838751922457,
+            "events": 0.1296204144751959,
+            "settlement": 1.2393938924044834,
+            "readiness": 4.7255416357123625,
+            "cache": 0.2503598217595953,
+            "stop_check": 0.1429419252613906,
+            "scene_publication": 0.9361004484203789,
+            "scene_admission": 0.5093187139737715,
+            "signals": 0.04503939361046774,
+            "completion_poll": 0.05131248599126842,
+            "menu_continuation": 0.05814945184450061
+          },
+          "routine_costs": {
+            "DESKINPUT_PRESENT": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 46.859929600396974,
+              "returns": {
+                "16": 12
+              }
+            },
+            "CONSOLEBITMAP_RUN": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 30.907244223468695,
+              "returns": {
+                "1": 11,
+                "0": 1
+              }
+            },
+            "DESKINPUT_SERVICE": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 1.5217535337245673,
+              "returns": {
+                "12": 3
+              }
+            },
+            "DESKPAINT_PUMP": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.18375226782862192,
+              "returns": {
+                "0": 4
+              }
+            },
+            "DESKPAINT_READY": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 0.37060583975561723,
+              "returns": {
+                "0": 4
+              }
+            },
+            "AESHOST_PUMP": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.12525039506385163,
+              "returns": {
+                "0": 3
+              }
+            },
+            "AESHOST_RUNNABLE": {
+              "calls": 13,
+              "starts": 13,
+              "completions": 13,
+              "cpu_ms": 1.4169435520363585,
+              "returns": {
+                "0": 13
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 3.1774270171516217,
+              "returns": {
+                "0": 4
+              }
+            },
+            "DISPLAY_BLOCKED": {
+              "calls": 48,
+              "starts": 48,
+              "completions": 48,
+              "cpu_ms": 0.23379603850691943,
+              "returns": {
+                "0": 39,
+                "1": 9
+              }
+            },
+            "DISPLAY_OWNERENTER": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 1.6901402494294306,
+              "returns": {
+                "0": 11,
+                "1": 1
+              }
+            },
+            "DISPLAY_OWNERDROP": {
+              "calls": 11,
+              "starts": 11,
+              "completions": 11,
+              "cpu_ms": 2.887525568137766,
+              "returns": {
+                "0": 11
+              }
+            },
+            "AESGATE_RECLAIM": {
+              "calls": 15,
+              "starts": 15,
+              "completions": 15,
+              "cpu_ms": 2.567668340900985,
+              "returns": {
+                "202": 12,
+                "16": 3
+              }
+            },
+            "AESGATE_TRYOWNER": {
+              "calls": 15,
+              "starts": 15,
+              "completions": 15,
+              "cpu_ms": 2.2756523663655113,
+              "returns": {
+                "1": 15
+              }
+            },
+            "AESHOST_SETTLE": {
+              "calls": 4,
+              "starts": 4,
+              "completions": 4,
+              "cpu_ms": 1.2393938924044834,
+              "returns": {
+                "16": 4
+              }
+            }
+          },
+          "turns_intersecting": 4,
+          "quiet_turns_intersecting": 0,
+          "complete_turns": 2,
+          "presenter_task": 136596,
+          "presenter_signal_counts": [
+            {
+              "caller": "AESGATE_RELEASE",
+              "mask": 524288,
+              "count": 3
+            },
+            {
+              "caller": "DISPLAY_LEAVE",
+              "mask": 65536,
+              "count": 1
+            },
+            {
+              "caller": "DISPLAY_NEXT",
+              "mask": 65536,
+              "count": 1
+            }
+          ],
+          "wait_returns_inside": [
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 524288,
+              "count": 1
+            },
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 65536,
+              "count": 2
+            }
+          ],
+          "mouse_call_return_status_counts": {
+            "0": 11,
+            "1": 1
+          },
+          "cursor_decisions": {
+            "CONSOLEBITMAP_CHANGED": {
+              "1": 11
+            },
+            "AESCURSOR_PENDING": {},
+            "CONSOLEBITMAP_MOUSE": {
+              "1": 11,
+              "0": 1
+            }
+          },
+          "c_routines": {
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "cpu_ms": 0.037356617548588274
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "cpu_ms": 0.21991065424829323
+            }
+          }
+        },
+        "owned_core": {
+          "duration_ms": 157.51847742884976,
+          "presenter_cpu_ms": 48.52779684766535,
+          "presenter_context_interrupt_ms": 10.511094915411931,
+          "exclusive_cpu_ms": {
+            "loop_other": 2.736971350998549,
+            "scene_admission": 0.5093187139737715,
+            "input": 38.44179204628273,
+            "stop_check": 0.12475700577547404,
+            "signals": 0.04503939361046774,
+            "readiness": 3.6608780355775967,
+            "completion_poll": 0.05131248599126842,
+            "menu_continuation": 0.05814945184450061,
+            "controls": 0.7359958498912429,
+            "painting": 0.1392767476905857,
+            "console": 0.10769983323442053,
+            "events": 0.0974796265465992,
+            "settlement": 0.9291225141990389,
+            "cache": 0.1877698663196965,
+            "scene_publication": 0.7022339257294056
+          },
+          "routine_costs": {
+            "DESKINPUT_PRESENT": {
+              "calls": 9,
+              "starts": 9,
+              "completions": 9,
+              "cpu_ms": 36.03884524351581,
+              "returns": {
+                "16": 9
+              }
+            },
+            "CONSOLEBITMAP_RUN": {
+              "calls": 9,
+              "starts": 9,
+              "completions": 9,
+              "cpu_ms": 23.540589727071143,
+              "returns": {
+                "1": 8,
+                "0": 1
+              }
+            },
+            "DESKINPUT_SERVICE": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 1.5217535337245673,
+              "returns": {
+                "12": 3
+              }
+            },
+            "DESKPAINT_PUMP": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.1392767476905857,
+              "returns": {
+                "0": 3
+              }
+            },
+            "DESKPAINT_READY": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.24366382427447106,
+              "returns": {
+                "0": 3
+              }
+            },
+            "AESHOST_PUMP": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.12525039506385163,
+              "returns": {
+                "0": 3
+              }
+            },
+            "AESHOST_RUNNABLE": {
+              "calls": 10,
+              "starts": 10,
+              "completions": 10,
+              "cpu_ms": 1.2509532985893297,
+              "returns": {
+                "0": 10
+              }
+            },
+            "DESKHOST_RUNNABLE": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 2.417114123761769,
+              "returns": {
+                "0": 3
+              }
+            },
+            "DISPLAY_BLOCKED": {
+              "calls": 37,
+              "starts": 37,
+              "completions": 37,
+              "cpu_ms": 0.1882632556080741,
+              "returns": {
+                "0": 28,
+                "1": 9
+              }
+            },
+            "DISPLAY_OWNERENTER": {
+              "calls": 9,
+              "starts": 9,
+              "completions": 9,
+              "cpu_ms": 1.275411310456047,
+              "returns": {
+                "0": 8,
+                "1": 1
+              }
+            },
+            "DISPLAY_OWNERDROP": {
+              "calls": 8,
+              "starts": 8,
+              "completions": 8,
+              "cpu_ms": 2.460038991850619,
+              "returns": {
+                "0": 8
+              }
+            },
+            "AESGATE_RECLAIM": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 2.0517241136261433,
+              "returns": {
+                "16": 3,
+                "202": 9
+              }
+            },
+            "AESGATE_TRYOWNER": {
+              "calls": 12,
+              "starts": 12,
+              "completions": 12,
+              "cpu_ms": 1.8184919485916553,
+              "returns": {
+                "1": 12
+              }
+            },
+            "AESHOST_SETTLE": {
+              "calls": 3,
+              "starts": 3,
+              "completions": 3,
+              "cpu_ms": 0.9291225141990389,
+              "returns": {
+                "16": 3
+              }
+            }
+          },
+          "turns_intersecting": 4,
+          "quiet_turns_intersecting": 0,
+          "complete_turns": 2,
+          "presenter_task": 136596,
+          "presenter_signal_counts": [
+            {
+              "caller": "AESGATE_RELEASE",
+              "mask": 524288,
+              "count": 2
+            },
+            {
+              "caller": "DISPLAY_LEAVE",
+              "mask": 65536,
+              "count": 1
+            },
+            {
+              "caller": "DISPLAY_NEXT",
+              "mask": 65536,
+              "count": 1
+            }
+          ],
+          "wait_returns_inside": [
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 524288,
+              "count": 1
+            },
+            {
+              "caller": "AESSYSTEM_RUN",
+              "bits": 65536,
+              "count": 2
+            }
+          ],
+          "mouse_call_return_status_counts": {
+            "0": 8,
+            "1": 1
+          },
+          "cursor_decisions": {
+            "CONSOLEBITMAP_CHANGED": {
+              "1": 8
+            },
+            "AESCURSOR_PENDING": {},
+            "CONSOLEBITMAP_MOUSE": {
+              "1": 8,
+              "0": 1
+            }
+          },
+          "c_routines": {
+            "VbxeOwnerFence": {
+              "calls": 2,
+              "cpu_ms": 0.037356617548588274
+            },
+            "VbxeOwnerSubmit": {
+              "calls": 1,
+              "cpu_ms": 0.21991065424829323
+            }
+          }
+        }
+      }
+    }
+  ],
+  "validation": {
+    "status": "pass",
+    "native_status": 0,
+    "guards": "intact",
+    "ownership_restored": true,
+    "fixture_lifetimes": 4,
+    "counter_progress_including_post_settle": 2,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0
+    }
+  },
+  "limits": [
+    "Two directional observations, not a latency distribution.",
+    "Owned core excludes BEGIN execution and END execution; boundary-crossing routine CPU is clipped.",
+    "Signals are hints, not one-to-one wakeups; only decoded presenter-target packets are counted as presenter posts.",
+    "Native procedures do not have meaningful return values; interpret return histograms only for the documented BYTE getters.",
+    "Fixture supervisor busy-yields; no production scheduler or drawing limits were changed.",
+    "No no-trace timing replay, matched MagiC timing, cold boot or release qualification."
+  ]
+}

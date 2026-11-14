@@ -1,5 +1,9 @@
 # Historical records
 
+- [MGVIEW presenter work and wake reasons](mgview-presenter-audit.md): traced
+  scene/display notifications during owned UPDATE, repeated mouse submissions
+  and a retained drawing-changed hint; no drawing-limit changes or builds.
+
 - [MGVIEW scrolling audit](mgview-scroll-audit.md): two physical line-scroll
   samples, verified copy/strip path, hardware-strip counts and presenter CPU
   attribution, with zero builds.

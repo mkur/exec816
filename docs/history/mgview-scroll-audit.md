@@ -123,6 +123,9 @@ work. These are source-level candidates, not a proven cause of every measured
 turn. Capture the relevant boundaries before removing wakes or enlarging
 drawing quanta. No drawing limits or production behavior changed in this audit.
 
+The subsequent [presenter trace](mgview-presenter-audit.md) identifies the
+executed wake branches and repeated mouse presentation during owned UPDATE.
+
 ## Inputs, reproduction and validation scope
 
 The audit reused optimized `build/mgview-dev/smoke` provider, native fixture,

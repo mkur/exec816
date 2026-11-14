@@ -155,7 +155,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out):
+def run(cache,out,presenter=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview','counter')}
@@ -165,6 +165,10 @@ def run(cache,out):
     disk=Audit((out/'system.atr').read_bytes());disk.sdfs();content=disk.files['VIEW.TXT']
     for name,app in apps.items():require(hashlib.sha256(disk.files[name.upper()+'.APP']).hexdigest()==app['sha256'],'Cached disk APP differs: '+name)
     d=definition(cache,p,foreign,apps['mgview'])
+    if presenter:
+        import mgview_presenter_trace
+        d['presenter']=mgview_presenter_trace.definition(p)
+        d['pcs']=sorted(set(d['pcs'])|set(d['presenter']['pcs']))
     (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
     at=lambda name:next(r['address'] for r in p['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in r['name'])
     report=dict(status='running',tier='development',qualification=False,builds_run=0,samples=[],
@@ -259,6 +263,8 @@ def run(cache,out):
             report['runtime'],_=execute(b,p,before_run=before,timeout=300,frame_limit=30000)
             ownership(b,p,p['output']);require(number(at('completed'))==4,'Incomplete cleanup')
         report['audit']=analyze(out,d,report['loaded_base'],report['samples'])
+        if presenter:
+            report['presenter']=mgview_presenter_trace.analyze(out,d,report['audit'],foreign,cache/'drawing')
         report['status']='pass'
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
@@ -277,8 +283,15 @@ def reanalyze(cache,out):
     app=json.loads((cache/'apps/mgview/app.json').read_text())
     require(sha256(p['xex'])==r['native_sha256'] and app['sha256']==r['app_sha256']['mgview'],'Captured binaries changed')
     d=definition(cache,p,foreign,app)
+    recorded=json.loads((out/'definition.json').read_text())
+    if 'presenter' in recorded:
+        import mgview_presenter_trace
+        d['presenter']=mgview_presenter_trace.definition(p)
+        d['pcs']=sorted(set(d['pcs'])|set(d['presenter']['pcs']))
     require(json.loads(json.dumps(d))==json.loads((out/'definition.json').read_text()),'Captured markers changed')
     r['audit']=analyze(out,d,r['loaded_base'],r['samples'])
+    if 'presenter' in d:
+        r['presenter']=mgview_presenter_trace.analyze(out,d,r['audit'],foreign,cache/'drawing')
     r.update(status='pass');r.pop('error',None)
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     return r
@@ -289,5 +302,13 @@ if __name__=='__main__':
     parser.add_argument('--cache',type=Path,default=ROOT/'build/mgview-dev/smoke')
     parser.add_argument('--output',type=Path,default=ROOT/'build/mgview-audit')
     parser.add_argument('--analyze-only',action='store_true')
-    args=parser.parse_args();r=(reanalyze if args.analyze_only else run)(args.cache,args.output)
+    parser.add_argument('--presenter',action='store_true',help='Trace presenter phases and signal sites')
+    args=parser.parse_args()
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
+    if 'presenter' in r:
+        for row in r['presenter']['samples']:
+            held=row['windows']['owned_core']
+            print('presenter',row['action'],'UPDATE-held CPU ms',round(held['measured']['charged_cpu_ms'],2),
+                'Present CPU ms',round(held['routine_costs']['DESKINPUT_PRESENT']['cpu_ms'],2),
+                'signal posts',held['presenter_signal_counts'])
