@@ -158,3 +158,6 @@ For a source-only iteration with unchanged ABI:
 python3 tools/build_mgview.py --output build/mgview-dev/smoke/apps/mgview
 python3 tools/test_mgview.py --output build/mgview-dev/smoke --reuse --scroll
 ```
+
+The subsequent [scrolling audit](mgview-scroll-audit.md) measures the unchanged
+copy/strip path and shared presenter CPU using cached binaries, without builds.

@@ -1,5 +1,9 @@
 # Historical records
 
+- [MGVIEW scrolling audit](mgview-scroll-audit.md): two physical line-scroll
+  samples, verified copy/strip path, hardware-strip counts and presenter CPU
+  attribution, with zero builds.
+
 - [Original MagiC MGVIEW port](mgview-port.md): original-source application
   adaptation, small viewer/Counter development checks and delivery scope.
 
