@@ -89,7 +89,7 @@ STOP leaves the lease FAULTED and enters reset-required park. The launcher also
 parks on any normal/fault exit with VBXE ownership still live, including a
 rejected attempt to remove its retained Task; it cannot reclaim DMA storage.
 
-The current [VRAM map](vbxe-vram.json) reserves 420,352 bytes, including unused
+The current [VRAM map](vbxe-vram.json) reserves 473,600 bytes, including unused
 reserved capacity. The screen uses 76,800 bytes. Its former
 5,120-byte padding at `$12C00` now holds one 640 × 16 widget strip, with no
 increase in the total reservation. Widget continuations draw there and publish
@@ -99,16 +99,22 @@ generic submission bounded to 64 records and 8,192 estimated bus accesses.
 The trusted even-X text generator writes up to 80 glyphs plus background and
 optional trailing fill directly into that arena: at most 82 records / 1,722
 bytes / 15,872 estimated bus accesses. Its larger bound does not change the
-generic submission contract or VRAM reservation.
-The font atlases reserve 20,480 bytes (18,432 used), clipped glyph scratch reserves
-4,096 bytes, pointer storage reserves 1,280 bytes, and two desktop snapshot slots
-reserve 76,800 bytes each. Menu save-under uses 76,800 bytes, two popup images
-use 16,384 bytes each, and the Shell backing uses 40,960 bytes. Fixed window
-gadgets reserve 4,096 bytes at `$39000` (2,688 used), uploaded once per display
+generic submission contract or VRAM reservation. Odd-X text can use 86 records /
+1,806 bytes with its additional masked edges.
+The GEM and ATASCII font atlases each reserve 20,480 bytes (18,432 glyph bytes
+each). Shared glyph/raster/icon scratch reserves 4,096 bytes, pointer storage
+reserves 1,280 bytes, and two desktop snapshot slots reserve 76,800 bytes each.
+Menu save-under uses 76,800 bytes, two popup images
+use 16,384 bytes each, and the retired Shell backing retains 40,960 bytes.
+Its drawing entries still exist; the current GEM Terminal does not use them.
+The colour-icon cache reserves sixteen 2,048-byte slots (32,768 bytes).
+Fixed window gadgets reserve 4,096 bytes at `$39000` (2,688 used), uploaded once per display
 session; clipped copies share the ordinary frame list and scratch. The remaining
-103,936 bytes are unassigned within the exclusively owned 512 KiB. The
+50,688 bytes are unassigned within the exclusively owned 512 KiB. The
 32-byte cross-page test at `$3FFF0` is diagnostic borrowing, not a production
-reservation. CPU and VRAM address spaces are accounted separately.
+reservation. CPU and VRAM address spaces are accounted separately. The
+[VRAM audit](../../docs/history/vbxe-vram-audit.md) records every reservation,
+free interval, consumer and reclamation constraint.
 
 Run `tools/test_gem_display.py --mode raw|opt --output DIR`. The probe build
 substitutes status reads only for explicit timeout cases and adds four assembly

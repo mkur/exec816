@@ -1,0 +1,174 @@
+{
+  "format": "exec816-vbxe-vram-audit-v1",
+  "date": "2026-11-14",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "audit_base": "6a1a599ec2489aae37211777071ddaf7778196f4",
+  "scope": "Static VRAM reservations, active source consumers, generated constants and retirement candidates; no target allocation or behavior change",
+  "summary": {
+    "vram_bytes": 524288,
+    "region_count": 16,
+    "reserved_bytes": 473600,
+    "unassigned_bytes": 50688,
+    "diagnostic_bytes": 32,
+    "unassigned_excluding_diagnostics": 50656,
+    "largest_unassigned_bytes": 20480,
+    "retained_cache_bytes": 295936,
+    "retained_shell_backing_bytes": 40960
+  },
+  "gaps": [
+    {
+      "base": 158720,
+      "end_exclusive": 159744,
+      "bytes": 1024
+    },
+    {
+      "base": 192512,
+      "end_exclusive": 196608,
+      "bytes": 4096
+    },
+    {
+      "base": 196864,
+      "end_exclusive": 200704,
+      "bytes": 3840
+    },
+    {
+      "base": 226560,
+      "end_exclusive": 229376,
+      "bytes": 2816
+    },
+    {
+      "base": 258048,
+      "end_exclusive": 266240,
+      "bytes": 8192
+    },
+    {
+      "base": 307200,
+      "end_exclusive": 327680,
+      "bytes": 20480
+    },
+    {
+      "base": 481280,
+      "end_exclusive": 491520,
+      "bytes": 10240
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "cross_page_transfer",
+      "base": 262128,
+      "bytes": 32
+    }
+  ],
+  "copy_workspace_candidate": {
+    "base": 311296,
+    "end_exclusive": 327680,
+    "bytes": 16384,
+    "pitch_bytes": 153,
+    "rows": 96,
+    "payload_bytes": 14688,
+    "implemented": false
+  },
+  "shell_retirement": {
+    "implemented": false,
+    "unassigned_after_retirement_bytes": 91648,
+    "merged_interval_before_diagnostic_exclusion": {
+      "base": 258048,
+      "end_exclusive": 327680,
+      "bytes": 69632
+    },
+    "required_migration": [
+      "bitmap backing packet operations",
+      "GemDrawingBackingText / GemDrawingBackingFill",
+      "AtasciiText backing selector / VbxeOwnerBackingText",
+      "fixed backing constants",
+      "emitted drawing fixtures"
+    ]
+  },
+  "checks": {
+    "reservation_and_subrange_invariants": "pass",
+    "allocation_fields_unchanged_from_audit_base": true,
+    "generated_desktop_constants": "pass",
+    "driver_constants": "pass",
+    "gadget_payload": "pass",
+    "icon_slot_payload": "pass",
+    "pinned_extraction": "pass; fresh renderer/header match existing packaged build",
+    "host": {
+      "tier": "development",
+      "patterns": [
+        "test_display_abi.py",
+        "test_desktop_contract.py",
+        "test_frame_gadget_assets.py",
+        "test_icon_cache.py"
+      ],
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "status": "pass"
+    },
+    "documentation": {
+      "status": "pass",
+      "local_links": {
+        "docs/history/vbxe-vram-audit.md": 20,
+        "docs/history/README.md": 261,
+        "docs/reference/display.md": 9,
+        "platform/altirraos/vbxe.md": 6
+      },
+      "all_map_regions_documented": true,
+      "source_hashes": "pass"
+    }
+  },
+  "existing_link_evidence": {
+    "path": "build/gem-raster-fast/demo/bitmap-console/drawing/link.lst",
+    "sha256": "f19f6eac30d487df22b0873bff721f8860979e5fda3cbd8d701559b8e514a3a5",
+    "symbols": {
+      "ConsoleBitmapEntry": 850598,
+      "GemDrawingBackingText": 1038152,
+      "GemDrawingBackingFill": 1044811,
+      "VbxeOwnerBackingText": 1056298
+    },
+    "new_execution": false
+  },
+  "selected_renderer": {
+    "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+    "files": {
+      "src/vdi/dev_vbxe.c": "2d17d845f09496ff35f0d8d41f1df97582ed0f9997b810978c752f8a85dd1411",
+      "src/vbxe/vbxe.h": "3b75e3e273133baa91f6f3818430cc739b1526d84cb88d6ce0bae461e68a484c"
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_and_unused_capacity_included": true
+  },
+  "source_inputs": {
+    "platform/altirraos/vbxe-vram.json": "6cbe5c20c7119be929b62522069766ae5a41989e671f30687516c12a6e768ecd",
+    "platform/altirraos/vbxe.c": "599cbc06a8b75c23950407e9ef48598ae48a6b2d6cbfd85846e1b00d4da5e8b5",
+    "platform/altirraos/vbxe-map.s": "998bd53b584e9af6e46f64ac1584c78b0e54df74da682d12d8c0956ba88b7a8c",
+    "platform/altirraos/vbxe-internal.h": "e7456fc010edc6723611d9ffd310afc38ed333c532c4d1f9c0385c1be989a00b",
+    "c/include/hardware/vbxe.h": "65f4af88738d1ce5801399138f5a8a5ef73fba57c12c4217de09e28dabc2a1b7",
+    "c/include/hardware/vbxe-snapshots.h": "d30105c2bc2810516c4531a0d52eb421d52f1d4860be53900747c45c3ef5587b",
+    "ports/gem4xe/adapter/gem-vbxe.c": "0f0d2aed63ba15b9b1aeb1cd54ed9fee87019be546e69ba4a6d1cf59023e4932",
+    "ports/gem4xe/adapter/gem-drawing.h": "16a56b69a6cd9517338a1b9713022c7c7ce676b5803f787838cd246267e89109",
+    "ports/gem4xe/selection.json": "5b663fedccb5ce87d97dce7da3f80e4e9d0da1ee21d6678fa7e0fc7d5b341700",
+    "ports/gem4xe/inputs.json": "ae3cea7c132a9e846c8cbfd015368ec4e1c0f3c3db28585317022ea8f3ef6bf0",
+    "ports/gem4xe/patches/0003-hosted-window.patch": "abd32dbc2d637c70372d3cee79cddbf319fc4970616f35b0ac24b0944b3be963",
+    "ports/gem4xe/hosted/hosted-dispatch.inc": "64b1326b6509b0744e0edd4cba842672e2b0963f0ca48ab5d79ea0e0714494e0",
+    "tools/build_bitmap_console.py": "72617416a325a9e26710016cddd07e50a0506c0c102d531081e08c43943a38dc",
+    "tools/extract_gem_vdi.py": "9ed99cc3230aaff6ca234a50f1b9ea7aedd12bb21a221876ac2f494e6dde9bdd",
+    "tools/generate_desktop.py": "7cf06e1d40b62c1f3e248c62cf4422b8efa7bb912e0c869e6c51e4b4cc14cc70",
+    "tools/generate_frame_gadgets.py": "3ea519577856d15299765dd2a652b00dcb7e014fab561afbdadaa93cefb12c71",
+    "lib/desktop/deskcache.act": "9ec1f3e24f42496e7d543cad2973890bf4dc83a97c1a3616f5b8ea8165f0597f",
+    "lib/desktop/deskmenucache.act": "d021834ef75b0798fea8d165e27ce505a5b79f51db1f907d20d4dfcb21617d77",
+    "lib/desktop/desktypes.act": "471ffe5a9c537048acaf6f342c14fa8c2f81fa117397c0b3841a3cedba22ec6c",
+    "lib/console/console-bitmap.c": "c4770d0b9d3003258b366814caed85f917757541b5a5ef4a5706d963b06046da",
+    "abi/console-bitmap.json": "5eea5f389991b1acefb253af0d3d1bcad9fca98b3bce945eec329b1b82d6e5f5",
+    "tests/programs/gem_drawing.c": "1d47e6711aa273de9dbb7236edfb17296c570578c3e67cac036b1d560ef1907b",
+    "c/calypsi/aes-objects.c": "bf67b04d24b3fb7413efb97fb7e3f5a6e532f49101c0382359dd91e072b27a5d",
+    "c/calypsi/aes-resource.c": "89c29b04ada221ce70e36dc44ae1ab870abc1ac20d1fbe1329dd0d9a81e7d09b"
+  }
+}

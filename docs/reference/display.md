@@ -337,8 +337,13 @@ the drawing adapter. GF12 removes its native Shell-window owner and all console
 model-to-backing presentation policy. The copied GEM terminal paints ordinary
 AES work with VDI; it does not consume that reservation. The older Shell
 backing protocol is recorded in the [retired desktop history](../history/native-desktop.md).
+The private backing text/fill drawing entries and bitmap packet operations
+remain implemented and tested. Retiring the GUI owner did not retire those
+entries or release their VRAM; reuse requires an explicit migration.
 
 Production VRAM reservations remain 473,600 bytes, with 50,688 unassigned
 (50,656 after the diagnostic exclusion). ATASCII masks retain their existing
 20,480-byte range at `$3A000–$3EFFF`; the terminal's private VDI face reuses the
 existing font atlas. No CPU aperture or reserved bank-zero storage grows.
+The [VRAM audit](../history/vbxe-vram-audit.md) records free intervals and the
+lifetimes that prevent other reserved storage from being shared as scratch.

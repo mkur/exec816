@@ -1,5 +1,9 @@
 # Historical records
 
+- [VBXE VRAM audit](vbxe-vram-audit.md): complete reservation and consumer map,
+  49.5 KiB unassigned, a separate 16 KiB scratch option and the still-callable
+  retired Shell backing path.
+
 - [GEM4XE raster copy](gem-raster-copy.md): conventional screen/memory forms,
   sixteen logical modes, owned VBXE acceleration and packaged scrolling checks;
   the dedicated S_ONLY path improves the matched one-pixel copy by about 3.7×.
