@@ -67,4 +67,13 @@ Images, repeated execution and heap/guard restoration. The optimized QED APP
 rebuild uses the shared wrappers. Host checks: 715 tests, four historical skips.
 The selected Process observations leave at least 480 bytes above the application
 stack floor; they are samples, not a worst-case bound. No descriptor table,
-allocation prefix or reserved bank-zero pool grows. GC2–GC4 remain in progress.
+allocation prefix or reserved bank-zero pool grows.
+
+GC2 implemented. [Native metadata evidence](../development/gemdos-compatibility-gc2.json)
+records four executions each for optimized SDFS/RAM, optimized MyDOS/RAM and a
+small raw C call probe on the same optimized provider, plus cancellation during
+measurement and before publication (277 assertions each). Output, cursor,
+ownership, guards and OS restoration pass. DOS revision 16 / APP ABI 40 expose
+ExamineFH to resident native Tasks and C APPs. The native COMMAND import and SDX
+FILELENG migration are explicitly deferred; no native provider-table reservation
+is enlarged. GC3–GC4 remain in progress.

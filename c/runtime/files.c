@@ -181,6 +181,12 @@ static LONG transfer(int fd,void *buffer,LONG bytes,int writing)
 }
 LONG ExecCRuntimeRead(int fd,void *buffer,LONG bytes) { return transfer(fd,buffer,bytes,0); }
 LONG ExecCRuntimeWrite(int fd,const void *buffer,LONG bytes) { return transfer(fd,(void *)buffer,bytes,1); }
+LONG ExecCRuntimeExamineFH(int fd,struct FileInfoBlock *info)
+{
+    struct Descriptor *file=descriptor(fd);
+    if (!file) return ExecCRuntimeFail(ERROR_BAD_NUMBER);
+    return ExamineFH(file->handle,info) ? 0:ExecCRuntimeFail(IoErr());
+}
 size_t _Stub_read(int fd,void *buffer,size_t bytes)
 { return (size_t)ExecCRuntimeRead(fd,buffer,bytes>32767U ? 32767L:(LONG)bytes); }
 size_t _Stub_write(int fd,const void *buffer,size_t bytes)

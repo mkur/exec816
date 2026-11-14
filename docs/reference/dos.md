@@ -150,6 +150,22 @@ size is zero and exact; allocated sectors describe its storage separately.
 | SpartaDOS file/directory | Stored file length / directory zero, exact | -1, unavailable |
 | RAM file/directory | Known file length / directory zero, exact | 0, exact; RAM has no disk sectors |
 
+`ExamineFH(file, info)` queries a live owned regular-file handle. It returns
+DOS true/false with IoErr and preserves the shared file position and traversal
+state on success, failure and cancellation. Successful results have exact byte
+size, including zero for an empty file. RAM/SDFS use their stored size; an
+unknown MyDOS size uses the existing bounded chain measurement in worker
+scratch. Other metadata keeps the ordinary availability flags above. Failure
+leaves the caller's FIB unchanged; successful handle queries create no directory
+enumeration cookie. Stream/device metadata returns ERROR_ACTION_NOT_KNOWN.
+
+This operation is available through the resident DOS source API and the C
+binding (APP ABI 40). The loaded native COMMAND provider does not yet expose
+ExamineFH; its existing program ABI is unchanged. The SDX FILELENG adapter still
+uses its existing cached length. Both are explicit later consumer migrations.
+There is no new kernel gateway, worker, cursor copy per Task or bank-zero
+reservation; the filesystem worker reuses its existing measurement scratch.
+
 SDFS also exposes its stored hidden and archived attributes through
 `fib_Protection`: `FIBF_HIDDEN` (128) and `FIBF_ARCHIVE` (16) are positive metadata
 bits. The protected attribute continues to set the negative permission bits

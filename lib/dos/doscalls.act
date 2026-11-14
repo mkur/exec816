@@ -868,6 +868,37 @@ PUBLIC LONGINT FUNC Information(BYTE POINTER identity,info LONGINT action)
 
 RETURN(result)
 
+; Query a retained open object without borrowing or changing its shared cursor.
+PUBLIC LONGINT FUNC ExamineFH(BYTE POINTER identity,info)
+
+  LET slot=DOSCORE.Current()
+  LET client=DOSCLIENT.EnsureSlot(slot)
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+
+  LET header=Object(slot,identity,DOSOBJECTS.KIND_FILE)
+  IF header=NULL THEN
+    RETURN(0)
+  FI
+
+  IF header.backend<>DOSOBJECTS.BACKEND_FILE THEN
+    slot.error=ERROR_ACTION_NOT_KNOWN
+    RETURN(0)
+  FI
+
+  LET item=File(client,header)
+  IF item=NULL THEN
+    RETURN(0)
+  FI
+
+  LET mount=item.mount
+  client.packet.sp_Pkt.dp_Arg2=LONGINT(ADDRESS(info))
+  LET result=DOSCLIENT.Call(slot,client,mount.port,1034)
+  FSREGISTRY.Release(mount)
+
+RETURN(result)
+
 ; Admit one bounded directory batch; the worker borrows the resolved lock.
 PUBLIC LONGINT FUNC ExNextBatch(BYTE POINTER identity,info DirBatch POINTER batch)
 

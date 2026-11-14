@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 39,
+  "version": 40,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -141,7 +141,8 @@
     "AllocSignal",
     "FreeSignal",
     "SetSignal",
-    "vro_cpyfm"
+    "vro_cpyfm",
+    "ExamineFH"
   ],
   "stack_requirement": {
     "workspace_mask": 255,
@@ -297,6 +298,10 @@
     {
       "name": "SetFileDate",
       "native": "CSetFileDate"
+    },
+    {
+      "name": "ExamineFH",
+      "native": "CExamineFH"
     }
   ],
   "stack_floor_bytes": 1312,

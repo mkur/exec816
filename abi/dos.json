@@ -1,6 +1,6 @@
 {
   "abi": "exec816.dos",
-  "revision": 15,
+  "revision": 16,
   "services": {
     "CONTEXT": 52,
     "MOUNT_REFERENCE": 53
@@ -120,7 +120,8 @@
     "ACTION_EXAMINE_BATCH": 28,
     "ACTION_SET_DATE": 34,
     "ACTION_CREATE_EXCLUSIVE": 1010,
-    "ACTION_UPDATE_EXISTING": 1011
+    "ACTION_UPDATE_EXISTING": 1011,
+    "ACTION_EXAMINE_FH": 1034
   },
   "records": {
     "DateStamp": {
@@ -1120,6 +1121,22 @@
         }
       ],
       "outgoing_bytes": 19,
+      "result_bytes": 4
+    },
+    "ExamineFH": {
+      "arguments": [
+        {
+          "alignment": 1,
+          "offset": 0,
+          "size": 3
+        },
+        {
+          "alignment": 1,
+          "offset": 3,
+          "size": 3
+        }
+      ],
+      "outgoing_bytes": 7,
       "result_bytes": 4
     }
   },

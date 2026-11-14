@@ -285,8 +285,36 @@ PROC DirectoryCase(BYTE unused)
 
 RETURN
 
-; Cancel active seek traversal while preserving the cursor's committed
-; position.
+; Cancel metadata measurement/publication without changing output or cursor.
+PROC HandleInfoCase()
+  CARD index
+
+  file=DOS.Open(path,DOS.MODE_OLDFILE)
+  Require(file<>NULL AND DOS.Read(file,buffer,10)=10)
+  A816MEMORY.Fill(BYTE POINTER(info),$a5,SIZE(260))
+  A816MEMORY.Move(savedInfo,BYTE POINTER(info),SIZE(260))
+  StartScope(IF scenario=20 THEN 11 ELSE 13 FI,0)
+  result=DOS.ExamineFH(file,info)
+  error=DOS.IoErr()
+  Collected(0)
+  Require(result=0 AND error=DOS.ERROR_BREAK)
+  LET bytes=BYTE POINTER(info)
+  FOR index=0 TO 259 DO
+    Require(bytes(index)=savedInfo(index))
+  OD
+
+  FSACTIVEPROBE.mode=0
+  DOS.ClearBreak()
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=10)
+  Require(DOS.ExamineFH(file,info)<>0 AND info.fib_Size=777
+      AND (info.fib_InfoFlags & DOS.FIB_SIZE_EXACT)<>0)
+  Require(DOS.Seek(file,0,DOS.OFFSET_CURRENT)=10)
+  Require(DOS.Read(file,buffer,1)=1 AND buffer(0)=(10 XOR 83))
+  Require(DOS.Close(file)<>0)
+
+RETURN
+
+; Cancel active seek traversal while preserving the cursor's committed position.
 PROC SeekCase(BYTE unused)
 
   file=DOS.Open(path,DOS.MODE_OLDFILE)
@@ -319,7 +347,9 @@ PROC Main()
   ; Start the common filesystem outside the cancellation/allocation baseline.
   file=DOS.Open(path,DOS.MODE_OLDFILE)
   Require(file<>DOS.FileHandle POINTER(0) AND DOS.Close(file)<>0)
-  IF scenario=17 THEN
+  IF scenario=19 OR scenario=20 THEN
+    HandleInfoCase()
+  ELSEIF scenario=17 THEN
     ObjectCase(0)
   ELSEIF scenario=14 THEN
     DirectoryCase(0)

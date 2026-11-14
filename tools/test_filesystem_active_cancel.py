@@ -3,12 +3,13 @@
 from library_paths import library_file, read_source
 import argparse,json,shutil
 from pathlib import Path
-from native_program import ROOT,build,compiler,require,verify_machine,sha256
-from os_boundary import emulator
+from native_program import ROOT,build,compiler,require,verify_machine,sha256,read_build
+from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 PIN=json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 CASES={'first':1,'middle':2,'final':3,'before-send':4,'wire':5,'open-allocation':6,'lock-allocation':7,'open-publication':8,'lock-publication':9,'directory-scan':10,'directory-publication':11,'copy':12,'seek':13,'exact-accounting':14,'lookup':17,'preparing':15,'terminal':16,'metadata-checkpoint':18}
+CASES.update({'handle-info':19,'handle-measure':20})
 
 def instrument(out,filesystem,directory_only=False):
     for name in ('filesystem_active_cancel.act','fsactiveprobe.act'):(out/name).write_bytes((ROOT/'tests/programs'/name).read_bytes())
@@ -25,7 +26,7 @@ def instrument(out,filesystem,directory_only=False):
             ('  error=INT(CARD(state))','  error=INT(CARD(state))\n  FSACTIVEPROBE.Point(10)')],
         'fshandler.act':[('  ; The object kind is set before any failure or cancellation can free it.','  FSACTIVEPROBE.Deliver(service,4)\n  ; The object kind is set before any failure or cancellation can free it.')],
         'fspacket.act':[('  DOSOBJECTS.Link(service.owner,@item.header)','  DOSOBJECTS.Link(service.owner,@item.header)\n  FSACTIVEPROBE.Deliver(service,5)')],
-        'fsdirectory.act':[('  LET status=FSBACKEND.BufferedEntry(service.work)','  FSACTIVEPROBE.Deliver(service,6)\n  LET status=FSBACKEND.BufferedEntry(service.work)'),('  FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),\n      FSTYPES.LockObject POINTER(service.object),\n      service.enumIndex)','  FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),FSTYPES.LockObject POINTER(service.object),service.enumIndex)\n  FSACTIVEPROBE.Deliver(service,7)')],
+        'fsdirectory.act':[('  LET status=FSBACKEND.BufferedEntry(service.work)','  FSACTIVEPROBE.Deliver(service,6)\n  LET status=FSBACKEND.BufferedEntry(service.work)'),('    FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),\n        FSTYPES.LockObject POINTER(service.object),\n        service.enumIndex)','    FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),FSTYPES.LockObject POINTER(service.object),service.enumIndex)\n    FSACTIVEPROBE.Deliver(service,7)')],
         'mydosfile.act':[('    target(index)=source(index)','    target(index)=source(index)\n    IF index=amount RSH 1 THEN FSACTIVEPROBE.Point(8) FI')],
         'siodriver.act':[('  okay=SIOADAPTER.Start()','  FSACTIVEPROBE.Point(9)\n  okay=SIOADAPTER.Start()')],
     }
@@ -49,9 +50,10 @@ def instrument(out,filesystem,directory_only=False):
         (out/name).write_text(source)
     return {name:sha256(out/name) for name in (*edits,'fsactiveprobe.act')}
 
-def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
+def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False,reuse=False):
     out.mkdir(parents=True,exist_ok=True);observers=instrument(out,filesystem,directory_only=set(names)<=
-        {'directory-scan','directory-publication','metadata-checkpoint','exact-accounting'})
+        {'directory-scan','directory-publication','metadata-checkpoint','exact-accounting','handle-info','handle-measure'})
+    require(filesystem=='mydos' or 'handle-measure' not in names,'SDFS handle size uses stored metadata without a chain walk')
     require(filesystem=='mydos' or 'seek' not in names,'SDFS seeks complete without an active-I/O cancellation point')
     require(not warm or set(names)<={'middle','final'}, 'Warm checks require progress before cancellation')
     fixture=f'sdfs/sdfs-21-{size}.atr' if filesystem=='sdfs' else f'mydos/mydos450-{size}.atr'
@@ -59,8 +61,11 @@ def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
     profile_path=out/'memory.json'
     profile_data=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile_data['image_data_bytes']=8192
     profile_path.write_text(json.dumps(profile_data)+'\n')
-    p=build(compiler(ROOT/'build/actionc',release=True),out/'filesystem_active_cancel.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
+    p=read_build(out) if reuse else build(compiler(ROOT/'build/actionc',release=True),out/'filesystem_active_cancel.act',out,optimize=optimize,tasks=True,task_capacity=8,console=True,kernel_bank=bank,memory_profile=profile_path,
             dos_mounts=[dict(alias='D1',unit=49,sectors=2000 if filesystem=='sdfs' or size==256 else 720,sector_bytes=size,profile=profile,format=2 if filesystem=='sdfs' else 1)])
+    if reuse:
+        require(p['build']['source_sha256']==sha256(out/'filesystem_active_cancel.act'),
+            'Changed cancellation fixture; rebuild it')
     def at(name):return next(d['address'] for d in p['image']['data'] if '_FILESYSTEMACTIVETEST_'+name.upper()+'_' in d['name'])
     cases=[]
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -77,12 +82,23 @@ def run(out,optimize,size,profile,names,bank,filesystem='mydos',warm=False):
                 if not i:b.state_save(slot='loaded')
                 b.memload(at('scenario'),CASES[name].to_bytes(2,'little'));b.memload(at('sectorBytes'),size.to_bytes(2,'little'))
                 b.poke(at('warm'),int(warm))
+                # Boot deliberately prints the version before Task admission.
+                # Compare the operation's OS screen against that completed boot.
+                b.bp_clear_all();b.bp_set(p['labels']['startup_complete'])
+                run_to(b,p['labels']['startup_complete'],timeout=180,frame_limit=10000)
+                b.bp_clear_all()
                 saved.update(at=b.peek16(88),mask=b.peek(16),cursor=b.peek(752));saved['screen']=b.memdump(saved['at'],960)
             try:runtime,_=execute(b,{**p,'output':caseout},before_run=before,timeout=600,frame_limit=30000,preloaded=bool(i))
             except Exception:
                 print('Active failure',{n:read(n,True) for n in ('checks','scenario','result','error')},flush=True);raise
             ownership(b,p,out)
-            require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS console not restored')
+            actual=b.memdump(saved['at'],960)
+            differences=[n for n,(a,c) in enumerate(zip(saved['screen'],actual)) if a!=c]
+            require(not differences and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],
+                'OS console not restored: '+str(dict(screen=saved['at'],
+                    differences=differences[:16],count=len(differences),
+                    changed=[(n,saved['screen'][n],actual[n]) for n in differences[:32]],
+                    mask=(saved['mask'],b.peek(16)),cursor=(saved['cursor'],b.peek(752)))))
             cases.append(dict(status='pass',name=name,runtime=runtime,checks=read('checks',True),result=read('result'),error=read('error'),
                               probe={n:read(n,False,'FSACTIVEPROBE') for n in ('fired','attempts','accepted','wirePhase','committed','extentHits')}))
         require(sha256(media)==media_sha,'Read-only media changed')
@@ -94,8 +110,9 @@ if __name__=='__main__':
     a.add_argument('--profile',type=int,choices=(1,4),default=1);a.add_argument('--bank',type=int,choices=(2,3),default=2)
     a.add_argument('--format',choices=('mydos','sdfs'),default='mydos');a.add_argument('--suite',default=','.join(name for name in CASES if name not in ('exact-accounting','lookup','metadata-checkpoint')));a.add_argument('--output',type=Path,required=True)
     a.add_argument('--warm',action='store_true')
+    a.add_argument('--from-build',action='store_true')
     args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r={'status':'running'}
-    try:r=run(out,args.case=='opt',args.size,args.profile,args.suite.split(','),args.bank,args.format,args.warm)
+    try:r=run(out,args.case=='opt',args.size,args.profile,args.suite.split(','),args.bank,args.format,args.warm,args.from_build)
     except Exception as error:r.update(status='fail',error=str(error));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Active filesystem cancellation passed',args.case,args.size,args.profile,flush=True)

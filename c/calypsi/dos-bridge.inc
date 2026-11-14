@@ -44,6 +44,11 @@ LONGINT FUNC CExamineExact(LONGCARD lock,info,unused)
 RETURN(DOS.ExamineExact(DOS.FileLock POINTER(ADDRESS(lock)),
     DOS.FileInfoBlock POINTER(ADDRESS(info))))
 
+LONGINT FUNC CExamineFH(LONGCARD file,info,unused)
+
+RETURN(DOS.ExamineFH(DOS.FileHandle POINTER(ADDRESS(file)),
+    DOS.FileInfoBlock POINTER(ADDRESS(info))))
+
 LONGINT FUNC CExNext(LONGCARD lock,info,unused)
 
 RETURN(DOS.ExNext(DOS.FileLock POINTER(ADDRESS(lock)),

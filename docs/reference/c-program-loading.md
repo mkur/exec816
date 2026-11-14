@@ -5,6 +5,10 @@ using the large-code/huge-data ABI. It is separate from the
 [native o65 contract](program-loading.md). Its constants and import ordinals
 are defined in [abi/c-program.json](../../abi/c-program.json).
 
+Current APP ABI 40 adds the public DOS `ExamineFH` binding for open-file
+metadata. Rebuild C providers and APPs together; earlier APP ABI versions are
+rejected. The runtime invocation record and runtime contract version stay 1.
+
 `PROGRAMFILE.Load` and `PROGRAM.Load` recognize this profile alongside native
 o65. A desktop build supplies the fixed C provider; a build without that
 provider rejects the image with `ERROR_BAD_PROVIDER`. Loading does not start

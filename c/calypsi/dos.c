@@ -46,6 +46,7 @@ BPTR EXEC_CALL CreateDir(CONST_STRPTR name) { return call(C_DOS_CREATEDIR,(ULONG
 LONG EXEC_CALL Rename(CONST_STRPTR oldName,CONST_STRPTR newName) { return call(C_DOS_RENAME,(ULONG)oldName,(ULONG)newName,0); }
 LONG EXEC_CALL DeleteFile(CONST_STRPTR name) { return call(C_DOS_DELETEFILE,(ULONG)name,0,0); }
 LONG EXEC_CALL ExamineExact(BPTR lock,struct FileInfoBlock *info) { return call(C_DOS_EXAMINEEXACT,lock,(ULONG)info,0); }
+LONG EXEC_CALL ExamineFH(BPTR file,struct FileInfoBlock *info) { return call(C_DOS_EXAMINEFH,file,(ULONG)info,0); }
 LONG EXEC_CALL MountVolume(CONST_STRPTR name,const struct SioMountSpec *spec) { return call(C_DOS_MOUNTVOLUME,(ULONG)name,(ULONG)spec,0); }
 LONG EXEC_CALL UnmountVolume(CONST_STRPTR name) { return call(C_DOS_UNMOUNTVOLUME,(ULONG)name,0,0); }
 LONG EXEC_CALL ExNextBatch(BPTR lock,struct FileInfoBlock *info,struct DirBatch *batch)

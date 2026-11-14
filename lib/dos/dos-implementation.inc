@@ -96,6 +96,10 @@ PUBLIC LONGINT FUNC ExamineExact(FileLock POINTER lock FileInfoBlock POINTER inf
 
 RETURN(DOSCALLS.Information(BYTE POINTER(lock),BYTE POINTER(info),25))
 
+PUBLIC LONGINT FUNC ExamineFH(FileHandle POINTER file FileInfoBlock POINTER info)
+
+RETURN(DOSCALLS.ExamineFH(BYTE POINTER(file),BYTE POINTER(info)))
+
 PUBLIC LONGINT FUNC ExNext(FileLock POINTER lock FileInfoBlock POINTER info)
 
 RETURN(DOSCALLS.Information(BYTE POINTER(lock),BYTE POINTER(info),24))

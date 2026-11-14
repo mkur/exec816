@@ -75,6 +75,29 @@ PUBLIC BYTE FUNC Select(FSTYPES.Service POINTER service)
 
 RETURN(Continue(service))
 
+; The public caller has retained the owned file and its mount. Measure with
+; worker scratch: neither cursor traversal nor shared position is borrowed.
+PUBLIC BYTE FUNC Handle(FSTYPES.Service POINTER service)
+  BYTE index
+
+  service.object=FSTYPES.Object POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg1))
+  service.info=BYTE POINTER(ADDRESS(service.packet.sp_Pkt.dp_Arg2))
+  IF FSNAMES.Mapped(service.info,FILEINFOBLOCK_SIZE)=0 THEN
+    RETURN(FSPACKET.Error(service,ERROR_BAD_NUMBER))
+  FI
+
+  LET file=FSTYPES.FileObject POINTER(service.object)
+  LET cursor=@file.backing.cursor
+  service.work.depth=cursor.depth
+  FOR index=0 TO cursor.depth DO
+    service.work.ancestors(index)=cursor.ancestors(index)
+  OD
+
+  FSCORE.CopyEntry(@service.work.entry,@cursor.entry)
+  service.enumIndex=0
+
+RETURN(SelectEntry(service))
+
 ; Batch buffers and locks have already been admitted by the public caller.
 PUBLIC BYTE FUNC Batch(FSTYPES.Service POINTER service)
 
@@ -194,7 +217,9 @@ BYTE FUNC SelectEntry(FSTYPES.Service POINTER service)
     FI
   FI
 
-  IF service.packet.sp_Pkt.dp_Type<>DOS_ACTION_EXAMINE_EXACT THEN
+  IF service.packet.sp_Pkt.dp_Type<>DOS_ACTION_EXAMINE_EXACT AND
+      (service.packet.sp_Pkt.dp_Type<>DOS_ACTION_EXAMINE_FH OR
+      service.work.entry.known<>0) THEN
     RETURN(SizeResult(service,
         FSBACKEND.Metadata(service.work,@service.measured)))
   FI
@@ -264,9 +289,11 @@ BYTE FUNC PublishStep(BYTE POINTER raw)
   FSINFO.Fill(FSINFO.FileInfoBlock POINTER(service.info),
       @service.measured.entry,service.work.volume,
       BYTE(service.packet.sp_Pkt.dp_Type=DOS_ACTION_EXAMINE_EXACT))
-  FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
-      FSTYPES.LockObject POINTER(service.object),
-      service.enumIndex)
+  IF service.packet.sp_Pkt.dp_Type<>DOS_ACTION_EXAMINE_FH THEN
+    FSINFO.Save(FSINFO.FileInfoBlock POINTER(service.info),
+        FSTYPES.LockObject POINTER(service.object),
+        service.enumIndex)
+  FI
   service.packet.sp_Pkt.dp_Res1=-1
   FSPACKET.Reply(service)
 

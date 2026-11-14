@@ -29,6 +29,8 @@ void ExecCRuntimeFilesBegin(void);
 void ExecCRuntimeAcknowledge(int);
 LONG ExecCRuntimeRead(int,void *,LONG);
 LONG ExecCRuntimeWrite(int,const void *,LONG);
+struct FileInfoBlock;
+LONG ExecCRuntimeExamineFH(int,struct FileInfoBlock *);
 void ExecCRuntimeFilesCleaning(void);
 LONG ExecCRuntimeFilesFinish(void);
 void ExecCRuntimeStdioBegin(void);
