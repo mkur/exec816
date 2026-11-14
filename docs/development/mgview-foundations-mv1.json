@@ -1,0 +1,250 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "MV1",
+  "c_app_abi": 41,
+  "cases": [
+    {
+      "path": "build/mgview-foundation/mv1-opt/results.json",
+      "sha256": "dc699fce2b4baaa87755fd10c0c6e8646a58761f0dc24a40bcfabc272fe01877",
+      "status": "pass",
+      "checks": 27,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 537,
+          "untouched_above_floor": 743
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "foundation_pixels": null
+    },
+    {
+      "path": "build/mgview-foundation/mv1-raw/results.json",
+      "sha256": "3a4bcfeb8899c30a56a8e677b68b819a61ffd2a03f84d1fdfde4d7cedecbdbd7",
+      "status": "pass",
+      "checks": 27,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 552,
+          "untouched_above_floor": 728
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "foundation_pixels": null
+    },
+    {
+      "path": "build/mgview-foundation/mv1-vdi-fixed/results.json",
+      "sha256": "216c34c5543704800a8b4a83ca8148638c770901f2b52dc4675a2d9595eb72b7",
+      "status": "pass",
+      "checks": 913,
+      "failures": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 161,
+          "untouched_above_floor": 1119
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 128,
+          "untouched_above_floor": 928
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 952,
+          "untouched_above_floor": 104
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 1035,
+          "untouched_above_floor": 21
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 716,
+          "untouched_above_floor": 1588
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "foundation_pixels": "6b2e895418dadc966ca4226456a95b6a14c9cb4e44cd8ec80d0439ca3e3c1aee"
+    }
+  ],
+  "host_suite": {
+    "tests": 715,
+    "skipped": 5,
+    "status": "pass"
+  },
+  "generators": [
+    "generate_vdi_client.py --check",
+    "generate_gem_text.py --check",
+    "generate_c_program.py --check"
+  ],
+  "upper_heap_workstation_growth_bytes": 4,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "includes": "guards, alignment and unused reserved capacity"
+  },
+  "source_inputs": {
+    "abi/c-program.json": "5be90f17264bf1c3e4dc39c8df0b571d801816258334c8f00b6e5d01bc42d665",
+    "abi/vdi-client.json": "cd297731518e90dc924382b201f892b6d1903ce65c438c9e5ad0451c65d86243",
+    "c/calypsi/vdi.c": "bd4fec391f5cf20b012c42dc7bfc8bb47f56db298089e6db70b94811dac930e5",
+    "c/include/gem.h": "5d361f02beff9028e576e724bea928a5dde9f196815faaf1a49ceb216ad5e862",
+    "ports/gem4xe/text/inputs.json": "7190bd022e261d6b6f0483a66d3ae8857501e506d8aa0bb70abd228090a2caed",
+    "ports/gem4xe/text/origin.h": "aeae1a280569270748db52cd5939d7876036bb21597f1a3cca0d56e6a7a1a3eb",
+    "tools/generate_gem_text.py": "3b14629d2865a3024cec0552b3de6840cdbadb7381157eeff41590c47e879b49",
+    "tests/programs/vdi_text_abi.c": "c4c5ae35ae7e1803fb12127c488be1bf009974ad4c245f26188e667a45fabe8c",
+    "tests/programs/aes_vdi.c": "27878fa519b5b33b8a240b706d8d16b78dc95505ba6c7b510a7f420f60964507",
+    "tools/test_vdi_client.py": "16c783473d478bf717a71b3b404d2a4f1f55ab6eb8ce6aa0de8fdfadcf32460a"
+  },
+  "limits": [
+    "Solid fill only; no pattern/perimeter addition.",
+    "Original MGVIEW, mouse calls and animations remain separate."
+  ],
+  "fixture_note": "The first physical run passed all 913 assertions and exact pixels but exceeded worker interrupt headroom. Calypsi had inlined the new probe buffers into its persistent frame; moving those test-only buffers to upper RAM restores the required reserve without changing production stacks."
+}

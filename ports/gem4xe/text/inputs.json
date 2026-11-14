@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/slaapliedje/gem4xe",
+  "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "license": "GPL-2.0-or-later; see ../inputs.json and upstream COPYING",
+  "files": {
+    "src/vdi/vdi.c": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524"
+  },
+  "selection": [
+    "align_x",
+    "align_y"
+  ],
+  "adaptation": "Explicit per-workstation alignment and fixed Exec font metrics; widened origin arithmetic. Other bindings are independently written against the VDI interface."
+}

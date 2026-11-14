@@ -43,6 +43,7 @@ def files():
     private+=''.join(f'    {k} {n}'+(f'[{c[0]}]' if c else '')+';\n' for n,k,*c in ABI['workstation'])
     private+='};\nBOOL ExecVDIClose(struct ExecAESContext *context);\n#endif\n'
     raster=prefix+'#ifndef EXEC816_GEM_RASTER_H\n#define EXEC816_GEM_RASTER_H\n#include <exec/types.h>\n'
+    raster+=''.join(f'#define {n} {v}\n' for n,v in ABI['text_alignments'].items())
     raster+=''.join(f'#define {n} {v}\n' for n,v in ABI['raster_modes'].items())
     raster+='typedef struct {\n'+''.join(f'    {k} {n};\n' for n,k in ABI['mfdb'])+'} MFDB;\n#endif\n'
     probe=prefix+'#include "vdi-private.h"\n#include <gem.h>\n__attribute__((section("exec_layout")))\nconst UWORD VDILayout[] = {\n'

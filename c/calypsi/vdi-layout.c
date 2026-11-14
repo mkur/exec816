@@ -34,6 +34,8 @@ const UWORD VDILayout[] = {
     offsetof(struct ExecVDIWorkstation, fillColor),
     offsetof(struct ExecVDIWorkstation, textColor),
     offsetof(struct ExecVDIWorkstation, writeMode),
+    offsetof(struct ExecVDIWorkstation, hAlign),
+    offsetof(struct ExecVDIWorkstation, vAlign),
     offsetof(struct ExecVDIWorkstation, clip),
     offsetof(struct ExecVDIWorkstation, control),
     offsetof(struct ExecVDIWorkstation, intin),

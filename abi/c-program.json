@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 40,
+  "version": 41,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -142,7 +142,10 @@
     "FreeSignal",
     "SetSignal",
     "vro_cpyfm",
-    "ExamineFH"
+    "ExamineFH",
+    "vst_alignment",
+    "vqt_attributes",
+    "vr_recfl"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

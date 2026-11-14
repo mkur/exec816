@@ -217,4 +217,10 @@ def physical(b,p,foreign,report):
     report['raster_mode_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
     report['raster_submission_yields']=b.peek16(sy['VDIRasterSwitches'])
     require(report['raster_submission_yields']>0,'Logical modes did not execute the instrumented blitter path')
-    b.poke16(sy['VDIGo'],41);b.bp_clear_all()
+    b.poke16(sy['VDIGo'],41);phase(42);frames(8)
+    r.clip=(l,t,l+383,t+126);r.fill=5;r.apply(11,(l,t,l+383,t+126));r.text=6
+    for x,y,value in ((l+5,t+9,b'Top aligned'),(l+96,t+25,b'Centre'),
+                      (l+140,t+41,b'Right'),(l+5,t+57,b'Baseline')):
+        r.apply(8,(x,y),value)
+    report['foundation_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+    b.poke16(sy['VDIGo'],42);b.bp_clear_all()

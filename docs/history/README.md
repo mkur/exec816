@@ -1,5 +1,9 @@
 # Historical records
 
+- [MGVIEW drawing and window foundations](mgview-foundations.md): shared VDI
+  alignment, attributes and rectangle fill, followed by window geometry and
+  horizontal scrollbar slices.
+
 - [GEMDOS source compatibility](gemdos-compatibility.md): shared wrappers, native
   open-handle metadata, FSTAT and small loader/Counter consumer acceptance.
 

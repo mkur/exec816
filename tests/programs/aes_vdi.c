@@ -396,6 +396,33 @@ static void raster_modes(WORD handle,WORD window)
     CHECK(wind_update(END_UPDATE));
 }
 
+static void draw_foundation(WORD handle,WORD window)
+{
+    /* Only worker B runs this phase. Keep its added probe buffers out of the
+     * worker's persistent frame: Calypsi inlines these local drawing helpers. */
+    static WORD x,y,w,h,box[4],a,b,attr[10];
+    CHECK(wind_update(BEG_UPDATE));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    box[0]=x+w-1;box[1]=y+h-1;box[2]=x;box[3]=y;
+    vs_clip(handle,0,box);vsf_color(handle,5);vr_recfl(handle,box);
+    CHECK(ExecAESDiagnostic()==AES_OK);
+    vst_color(handle,6);vswr_mode(handle,MD_REPLACE);
+    vst_alignment(handle,TA_LEFT,TA_TOP,&a,&b);
+    CHECK(a==0 && b==5);
+    v_gtext(handle,x+5,y+3,"Top aligned");
+    vst_alignment(handle,TA_CENTRE,TA_TOP,&a,&b);
+    v_gtext(handle,x+120,y+19,"Centre");
+    vst_alignment(handle,TA_RIGHT,TA_TOP,&a,&b);
+    v_gtext(handle,x+180,y+35,"Right");
+    vqt_attributes(handle,attr);
+    CHECK(attr[1]==6 && attr[3]==2 && attr[4]==5 && attr[5]==1);
+    CHECK(attr[6]==8 && attr[7]==6 && attr[8]==8 && attr[9]==8);
+    vst_alignment(handle,TA_LEFT,TA_BASE,&a,&b);
+    v_gtext(handle,x+5,y+57,"Baseline");
+    CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void worker(UWORD who)
 {
     BYTE bit=AllocSignal(-1),reserved[32],used=0,next;
@@ -466,6 +493,7 @@ static void worker(UWORD who)
         else if (command==9) break;
         else if (who && command==100) draw_atascii(handle,window);
         else if (who && command==101) raster_modes(handle,window);
+        else if (who && command==102) draw_foundation(handle,window);
         else if (who && command>=10) {
             copy_case(handle,window,command-10);
             if (command-10<=15) raster_case(handle,window,command-10);
@@ -543,6 +571,8 @@ UWORD AESRun(void)
     VDIPhase=40;while (VDIGo<40) ExecYield();
     issue(1,101);while (VDIStage[1]!=101) Wait(wake);
     VDIPhase=41;while (VDIGo<41) ExecYield();
+    issue(1,102);while (VDIStage[1]!=102) Wait(wake);
+    VDIPhase=42;while (VDIGo<42) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

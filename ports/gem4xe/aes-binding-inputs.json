@@ -457,6 +457,27 @@
       "intin": 1,
       "intout": 0,
       "ptsout_pairs": 0
+    },
+    "vst_alignment": {
+      "opcode": 39,
+      "point_pairs": 0,
+      "intin": 2,
+      "intout": 2,
+      "ptsout_pairs": 0
+    },
+    "vqt_attributes": {
+      "opcode": 38,
+      "point_pairs": 0,
+      "intin": 0,
+      "intout": 6,
+      "ptsout_pairs": 2
+    },
+    "vr_recfl": {
+      "opcode": 114,
+      "point_pairs": 2,
+      "intin": 0,
+      "intout": 0,
+      "ptsout_pairs": 0
     }
   },
   "resource_limits": {

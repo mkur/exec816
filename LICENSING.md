@@ -104,7 +104,8 @@ emulators or patches to upstream projects.
   `native/qed-gem-extra.h` retains its GEM LGPL notice. The native adapter MIT
   exception above covers only Exec-authored code.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
-  `ports/gem4xe/aes/selection.json`, calculator sources pinned by
+  `ports/gem4xe/aes/selection.json`, text-origin arithmetic pinned by
+  `ports/gem4xe/text/inputs.json`, calculator sources pinned by
   `ports/gem4xe/apps/calculator/inputs.json`, benchmark sources pinned by
   `ports/gem4xe/apps/g4bench/inputs.json`, archive sources pinned by
   `ports/gem4xe/apps/gemarc/inputs.json`, and patches to them, retain

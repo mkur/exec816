@@ -32,6 +32,10 @@ WORD graf_mkstate(WORD *x, WORD *y, WORD *buttons, WORD *qualifiers);
 void v_opnvwk(WORD *work_in, WORD *handle, WORD *work_out);
 void v_clsvwk(WORD handle);
 void v_bar(WORD handle, const WORD *pxy);
+void vr_recfl(WORD handle, const WORD *pxy);
+void vst_alignment(WORD handle, WORD horizontal, WORD vertical,
+    WORD *actualHorizontal, WORD *actualVertical);
+void vqt_attributes(WORD handle, WORD *attributes);
 void v_gtext(WORD handle, WORD x, WORD y, const char *text);
 void vro_cpyfm(WORD handle, WORD mode, const WORD *pxy,
     const MFDB *source, const MFDB *destination);

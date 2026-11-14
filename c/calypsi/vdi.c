@@ -4,6 +4,7 @@
 #include <proto/exec.h>
 #include "gem-drawing.h"
 #include "../../ports/gem4xe/raster/client.h"
+#include "../../ports/gem4xe/text/origin.h"
 #include "vdi-inquiry.inc"
 #include <hardware/vbxe.h>
 
@@ -214,10 +215,19 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
     struct ExecVDIWorkstation *w=c->workstation;
     const UBYTE *chars=source;
     const WORD *glyphs=source;
-    LONG at=x,top=(LONG)y-EXEC_VDI_FONT_TOP;
+    LONG at=x,origin,top=GemTextAlignY(y,w->vAlign),length=words;
     UWORD count;
     if (!drawing(c)) return;
-    w->unit.operation=8; w->unit.y=y;
+    if (w->hAlign!=TA_LEFT) {
+        if (string) {
+            const UBYTE *end=chars;
+            length=0;
+            while (*end++) ++length;
+        }
+        at=GemTextAlignX(x,length*EXEC_VDI_FONT_WIDTH,w->hAlign);
+    }
+    origin=at;
+    w->unit.operation=8; w->unit.y=(WORD)(top+EXEC_VDI_FONT_TOP);
     while (at<EXEC_VDI_WIDTH) {
         count=0;
         while (count<EXEC_VDI_TEXT_CHUNK) {
@@ -239,7 +249,7 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
         at+=(LONG)count<<3;
         if (c->diagnostic!=AES_OK) break;
     }
-    if (at>x) changed(c,x,top,at,top+EXEC_VDI_FONT_HEIGHT);
+    if (at>origin) changed(c,origin,top,at,top+EXEC_VDI_FONT_HEIGHT);
 }
 
 static WORD fill_color(struct ExecAESContext *c,WORD color)
@@ -259,7 +269,9 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
     pb->contrl[2]=pb->contrl[4]=0;
     switch (op) {
     case 100: words=11; break;
-    case 101: break;
+    case 101: case 38: break;
+    case 39: words=2; break;
+    case 114: pairs=2; break;
     case 8: pairs=1; words=pb->contrl[3]; break;
     case 11:
         if (pb->contrl[5]!=1) { c->diagnostic=AES_UNSUPPORTED; return; }
@@ -280,7 +292,25 @@ static void dispatch(struct ExecAESContext *c,VDIPB *pb)
         ExecGemRasterCopy(c,pb->intin[0],pb->ptsin,(const MFDB *)source,(const MFDB *)destination);
         return;
     }
-    if (op==11) { bar(c,pb->ptsin); return; }
+    if (op==11 || op==114) { bar(c,pb->ptsin); return; }
+    if (op==39) {
+        value=pb->intin[0];
+        w->hAlign=value>=TA_LEFT && value<=TA_RIGHT ? value:TA_LEFT;
+        value=pb->intin[1];
+        w->vAlign=value>=TA_BASE && value<=TA_TOP ? value:TA_BASE;
+        pb->intout[0]=w->hAlign; pb->intout[1]=w->vAlign;
+        pb->contrl[4]=2;
+        return;
+    }
+    if (op==38) {
+        pb->intout[0]=1; pb->intout[1]=w->textColor; pb->intout[2]=0;
+        pb->intout[3]=w->hAlign; pb->intout[4]=w->vAlign;
+        pb->intout[5]=w->writeMode;
+        pb->ptsout[0]=EXEC_VDI_FONT_WIDTH; pb->ptsout[1]=EXEC_VDI_FONT_TOP;
+        pb->ptsout[2]=EXEC_VDI_FONT_WIDTH; pb->ptsout[3]=EXEC_VDI_FONT_HEIGHT;
+        pb->contrl[4]=6; pb->contrl[2]=2;
+        return;
+    }
     if (op==25) {
         value=fill_color(c,pb->intin[0]);
         if (c->diagnostic==AES_OK) {
@@ -354,6 +384,21 @@ void v_bar(WORD h,const WORD *p)
     if (!c->workstation || c->workstation->handle!=h) c->diagnostic=AES_IDENTITY;
     else bar(c,p);
     c->busy=0;
+}
+void vr_recfl(WORD h,const WORD *p) { v_bar(h,p); }
+void vst_alignment(WORD h,WORD horizontal,WORD vertical,WORD *actualH,WORD *actualV)
+{
+    WORD control[12]={39,0,0,2,0,0,0,0,0,0,0,0};
+    WORD input[2],output[2]={0,0};
+    VDIPB pb={control,input,NULL,output,NULL};
+    input[0]=horizontal; input[1]=vertical; control[6]=h;
+    vdi_call(&pb); *actualH=output[0]; *actualV=output[1];
+}
+void vqt_attributes(WORD h,WORD *attributes)
+{
+    WORD control[12]={38,0,0,0,0,0,0,0,0,0,0,0};
+    VDIPB pb={control,NULL,NULL,attributes,attributes+6};
+    control[6]=h; vdi_call(&pb);
 }
 void vs_clip(WORD h,WORD clip,const WORD *p) { call(129,0,2,1,h,p,&clip); }
 WORD vswr_mode(WORD h,WORD mode) { return call(32,0,0,1,h,NULL,&mode); }

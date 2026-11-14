@@ -13,6 +13,8 @@ struct ExecVDIWorkstation {
     WORD fillColor;
     WORD textColor;
     WORD writeMode;
+    WORD hAlign;
+    WORD vAlign;
     WORD clip[4];
     WORD control[12];
     WORD intin[80];

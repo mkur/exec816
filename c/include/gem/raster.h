@@ -2,6 +2,15 @@
 #ifndef EXEC816_GEM_RASTER_H
 #define EXEC816_GEM_RASTER_H
 #include <exec/types.h>
+#define TA_LEFT 0
+#define TA_CENTRE 1
+#define TA_RIGHT 2
+#define TA_BASE 0
+#define TA_HALF 1
+#define TA_ASCENT 2
+#define TA_BOTTOM 3
+#define TA_DESCENT 4
+#define TA_TOP 5
 #define ALL_WHITE 0
 #define S_AND_D 1
 #define S_AND_NOTD 2

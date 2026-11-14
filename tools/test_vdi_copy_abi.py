@@ -11,10 +11,10 @@ from test_cooperative import data
 from test_dos_stack import execute,ownership
 
 
-def run(out,optimize=True,raster=False):
+def run(out,optimize=True,raster=False,text=False):
     out.mkdir(parents=True,exist_ok=True)
-    sources=[ROOT/('tests/programs/vdi_raster_abi.c' if raster else 'tests/programs/vdi_copy_abi.c'),ROOT/'c/calypsi/vdi.c']
-    if raster:sources.append(ROOT/'ports/gem4xe/raster/client.c')
+    sources=[ROOT/('tests/programs/vdi_text_abi.c' if text else 'tests/programs/vdi_raster_abi.c' if raster else 'tests/programs/vdi_copy_abi.c'),ROOT/'c/calypsi/vdi.c']
+    if raster or text:sources.append(ROOT/'ports/gem4xe/raster/client.c')
     foreign=emit(out/'c',sources,[ROOT/'c/calypsi/image-info.s'],(),optimize,
         includes=[ROOT/'c/calypsi',ROOT/'ports/gem4xe/adapter'],
         roots=['CopyProbe','CopyChecks'],probes=[(ROOT/'c/calypsi/vdi-layout.c',expected_layout())])
@@ -38,5 +38,5 @@ def run(out,optimize=True,raster=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--raster',action='store_true');a=p.parse_args()
-    print(run(a.output.resolve(),a.mode=='opt',a.raster)['status'])
+    p.add_argument('--mode',choices=('raw','opt'),default='opt');p.add_argument('--raster',action='store_true');p.add_argument('--text',action='store_true');a=p.parse_args()
+    print(run(a.output.resolve(),a.mode=='opt',a.raster,a.text)['status'])

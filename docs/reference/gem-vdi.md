@@ -21,7 +21,8 @@ one cold AES delegation exchange and never opens, clears or repalettes hardware.
 The 57-word inquiry is generated from [vdi-client.json](../../abi/vdi-client.json).
 It describes 640×240, sixteen colours, one fixed 8×8 face and the bar GDP.
 Line, marker, polygon, input-device and external-font capabilities
-are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `v_gtext`, `vro_cpyfm`,
+are not advertised. Other supported calls are `v_clsvwk`, `v_bar`, `vr_recfl`,
+`v_gtext`, `vst_alignment`, `vqt_attributes`, `vro_cpyfm`,
 `vs_clip`, `vsf_color`, `vst_color`, `vsf_interior(1)` and `vswr_mode(1/2)`.
 Named calls and `vdi_call(VDIPB *)` share helpers; opcodes/counts are recorded in
 the [binding manifest](../../ports/gem4xe/aes-binding-inputs.json).
@@ -30,8 +31,17 @@ Attribute changes are caller-local. Drawing requires a shown application window
 and `wind_update(BEG_UPDATE)` ownership. Every draw is confined to its published
 visible work region, intersected with the private user clip. Clip-off removes
 only that user clip. Inclusive signed corners are ordered and widened before
-conversion; empty intersections do no hardware work. Text is left-aligned at
-the baseline, with top at `y-6`. A workstation starts in `MD_REPLACE` (1):
+conversion; empty intersections do no hardware work. Text defaults to left
+alignment at the baseline, with top at `y-6`. `vst_alignment` selects left,
+centre or right and baseline, half, ascent, bottom, descent or top, returning
+the accepted pair. Invalid components fall back independently to left/baseline.
+Alignment belongs to the private workstation and applies to the whole string
+before chunking. `vqt_attributes` returns six text attributes followed by four
+metric words: font 1, pen, zero rotation, horizontal/vertical alignment, mode,
+character width 8, character height 6, cell width 8 and cell height 8.
+`vr_recfl` uses the same solid fill, inclusive corners and clipping as `v_bar`;
+patterns and fill perimeters remain unsupported.
+A workstation starts in `MD_REPLACE` (1):
 glyph paper becomes pen zero. `MD_TRANS` (2) paints only glyph ink, including
 pen-zero ink, preserving paper pixels. Both named and parameter-block mode
 setters return the accepted mode; unsupported modes return zero and preserve

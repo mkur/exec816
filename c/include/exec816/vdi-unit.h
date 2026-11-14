@@ -17,6 +17,9 @@
 #define EXEC_VDI_COPY_REDRAW 0
 #define EXEC_VDI_COPY_ERROR -1
 #define EXEC_VDI_ATASCII_BASE 57344
+#define EXEC_VDI_FONT_HALF 4
+#define EXEC_VDI_FONT_ASCENT 6
+#define EXEC_VDI_FONT_DESCENT 1
 struct ExecVDIUnit {
     uint16_t operation;
     uint16_t textColor;
