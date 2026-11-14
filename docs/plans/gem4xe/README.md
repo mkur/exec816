@@ -1,5 +1,9 @@
 # GEM as a client of an Exec-like kernel
 
+The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
+bindings, full/previous geometry and horizontal window gadgets needed before
+porting the original viewer.
+
 The [mapped raster follow-up](mapped-raster-plan.md) stages different-parity
 screen copies in 16 KiB VRAM through the existing 4 KiB CPU aperture.
 

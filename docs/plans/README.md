@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [MGVIEW drawing and window foundations](gem4xe/mgview-foundation-plan.md):
+  three executable slices for VDI alignment/inquiry/fill, full/previous window
+  geometry and horizontal scrollbars, using GEM4XE as the source reference.
+
 - [GEMDOS compatibility implementation](gemdos-compatibility-implementation-plan.md):
   shared wrappers, native ExamineFH, FSTAT and loader/QED consumer acceptance.
 
