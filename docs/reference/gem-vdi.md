@@ -95,17 +95,26 @@ A null MFDB pointer or null fd_addr denotes the screen; other screen fields
 are ignored. Corners are inclusive and normalized with widened arithmetic.
 Source dimensions determine the copy size; destination dimensions do not scale.
 
-Screen-to-screen S_ONLY (3) supports either X parity and overlapping
-rectangles. Other modes, scaling and memory forms fail with AES_UNSUPPORTED
+S_ONLY (3) supports screen and device-format memory forms in either direction,
+either X parity and same-form overlap. Other modes and scaling fail with AES_UNSUPPORTED
 before writes. Fragmented visible destinations use ordered row bands/spans;
 results do not depend on visibility-list order. Empty
 clips and identical source/destination copies do no hardware work.
+
+Memory MFDBs require fd_stand=0, fd_nplanes=4, positive dimensions and a
+sufficient positive word stride. Pitch is fd_wdwidth×8 bytes, at most 65,535.
+Rows contain packed hardware pixels, high nibble first; padding and outside
+nibbles are preserved. Linear caller buffers may cross CPU banks. Distinct
+memory forms must be disjoint; overlapping aliases with different base/pitch
+descriptions are outside this profile. Memory destinations ignore the screen
+clip. Memory-only calls need no window UPDATE and acquire no display access.
 
 The destination intersects the window work/visible region and user clip;
 source coordinates advance by the same clipping loss. Source bounds are the
 physical screen, not the user clip. Screen reads copy actual framebuffer
 pixels; callers choose appropriate visible source content. This operation
-needs UPDATE ownership but no pixelsReady or paint-completion journal.
+needs UPDATE ownership when the screen participates, but no pixelsReady or
+paint-completion journal.
 Physical units retain current fences, overlay repair and bounded ownership.
 Writes record destination damage; applications explicitly report completed
 painting. Operational failures mark the UPDATE failed, including partial writes.

@@ -82,6 +82,13 @@ LONG CopyProbe(void)
     view.visibleCount=1;view.visible[0]=view.work;
     status=DISPLAY_DEVICE_FAULT;vro_cpyfm(2,S_ONLY,points,NULL,NULL);
     CHECK(context.diagnostic==AES_DISPLAY_ERROR && context.request.paintFailed && !context.busy && calls==8);
+    status=DISPLAY_OK;context.request.paintFailed=0;
+    form.fd_addr=(void *)0x100000UL;form.fd_w=640;form.fd_h=240;form.fd_wdwidth=40;form.fd_nplanes=4;
+    context.view=NULL;
+    vro_cpyfm(2,S_ONLY,points,&form,&form);
+    CHECK(context.diagnostic==AES_OK && calls==9 && changes==8);
+    form.fd_stand=1;vro_cpyfm(2,S_ONLY,points,&form,&form);
+    CHECK(context.diagnostic==AES_UNSUPPORTED && calls==9);
     CHECK(unexpected==0);
     return 0;
 }

@@ -15,7 +15,9 @@ public ABI probes and optimized physical VDI fixture pass. RC1 checks 22 copy
 frames and ATASCII, with 869 guest assertions, normal shutdown and guards.
 The host suite passes 714 tests with four existing skips. RC2 is implemented:
 the host snapshot oracle and optimized emitted visibility/ABI probes pass.
-RC3–RC6 remain pending.
+RC3 is implemented: memory-only copies acquire no hardware access, the
+optimized production row-path probe passes across real CPU-bank boundaries,
+and raw/optimized form-admission probes pass. RC4–RC6 remain pending.
 
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware

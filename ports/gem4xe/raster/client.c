@@ -11,11 +11,24 @@ static void screen(struct GemRasterSurface *s)
     s->address=NULL; s->pitch=320; s->width=640; s->height=240;
 }
 
+static WORD surface(struct ExecAESContext *c,const MFDB *m,struct GemRasterSurface *s)
+{
+    LONG pitch;
+    if (!m || !m->fd_addr) { screen(s); return 1; }
+    if (m->fd_stand!=0 || m->fd_nplanes!=4) { c->diagnostic=AES_UNSUPPORTED; return 0; }
+    pitch=(LONG)m->fd_wdwidth*8;
+    if (m->fd_w<=0 || m->fd_h<=0 || pitch<=0 || pitch>65535 || pitch*2<m->fd_w) {
+        c->diagnostic=AES_MALFORMED; return 0;
+    }
+    s->address=m->fd_addr; s->pitch=pitch; s->width=m->fd_w; s->height=m->fd_h;
+    return 1;
+}
+
 static UWORD copy(struct ExecVDIWorkstation *w,struct GemRasterCopy *p)
 {
     struct VbxeCopy *v=&w->copy;
     struct GemRasterRect *r=&p->rect;
-    if (((r->sx^r->dx)&1)==0) {
+    if (!p->source.address && !p->destination.address && ((r->sx^r->dx)&1)==0) {
         v->source.offset=v->destination.offset=0;
         v->source.pitch=v->destination.pitch=320;
         v->source.width=v->destination.width=640;
@@ -37,7 +50,8 @@ static int16_t draw(void *opaque,const struct GemRasterRect *r)
     UWORD status;
     client->copy->rect=*r;
     status=copy(c->workstation,client->copy);
-    ExecAESChanged(c,r->dx,r->dy,r->dx+r->width,r->dy+r->height);
+    if (!client->copy->destination.address)
+        ExecAESChanged(c,r->dx,r->dy,r->dx+r->width,r->dy+r->height);
     if (status!=DISPLAY_OK) { c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR; return 0; }
     return 1;
 }
@@ -51,22 +65,33 @@ void ExecGemRasterCopy(struct ExecAESContext *c,WORD mode,const WORD *points,
     struct GemRasterRect whole;
     struct RasterClient client;
     LONG l,t,r,b;
-    if (mode!=S_ONLY || (source && source->fd_addr) || (destination && destination->fd_addr)) {
+    if (mode!=S_ONLY) {
         c->diagnostic=AES_UNSUPPORTED; return;
     }
-    if (!view) { c->diagnostic=AES_IDENTITY; return; }
-    if (!view->updates) { c->diagnostic=AES_BUSY; return; }
-    p.mode=mode; screen(&p.source); screen(&p.destination);
+    if (!surface(c,source,&p.source) || !surface(c,destination,&p.destination)) return;
+    if (!p.source.address || !p.destination.address) {
+        if (!view) { c->diagnostic=AES_IDENTITY; return; }
+        if (!view->updates) { c->diagnostic=AES_BUSY; return; }
+    }
+    p.mode=mode;
     GemRasterNormalize(&p.rect,points);
-    l=view->work.left; t=view->work.top; r=view->work.right; b=view->work.bottom;
-    if (w->clipped) {
+    l=0; t=0; r=p.destination.width; b=p.destination.height;
+    if (!p.destination.address) {
+        if (l<view->work.left) l=view->work.left;
+        if (t<view->work.top) t=view->work.top;
+        if (r>view->work.right) r=view->work.right;
+        if (b>view->work.bottom) b=view->work.bottom;
+    }
+    if (!p.destination.address && w->clipped) {
         if (l<w->clip[0]) l=w->clip[0];
         if (t<w->clip[1]) t=w->clip[1];
         if (r>(LONG)w->clip[2]+1) r=(LONG)w->clip[2]+1;
         if (b>(LONG)w->clip[3]+1) b=(LONG)w->clip[3]+1;
     }
-    if (!GemRasterClip(&p.rect,0,0,640,240,l,t,r,b)) return;
-    if (p.rect.sx==p.rect.dx && p.rect.sy==p.rect.dy) return;
+    if (!GemRasterClip(&p.rect,0,0,p.source.width,p.source.height,l,t,r,b)) return;
+    if (p.source.address==p.destination.address && p.source.pitch==p.destination.pitch &&
+        p.rect.sx==p.rect.dx && p.rect.sy==p.rect.dy) return;
     whole=p.rect; client.context=c; client.copy=&p;
-    GemRasterVisible(&whole,view->visible,view->visibleCount,draw,&client);
+    if (p.destination.address) draw(&client,&whole);
+    else GemRasterVisible(&whole,view->visible,view->visibleCount,draw,&client);
 }

@@ -103,6 +103,8 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
             scope='Fixture-only JML at a zero low PC; two stack parities and all 24 lower DP bytes')
     if desktop_style:foreign['provenance']['aes_extraction']=aes_record
     if desktop_style:foreign['provenance']['desktop_palette_sha256']=sha256(ad/'gem-desktop-palette.h')
+    foreign['provenance']['raster_inputs']={str(p.relative_to(ROOT)):sha256(p)
+        for p in sorted((PORT/'raster').glob('*')) if p.is_file()}
     (out/'c-image.json').write_text(json.dumps(foreign,indent=2)+'\n')
     return foreign
 

@@ -1284,33 +1284,65 @@ UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     return drawing_borrow(grant,left,top,right,bottom,0,&pen);
 }
 
-UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCopy *copy,
+/* Screen spans use the existing owned driver; CPU spans retain huge pointers. */
+static UWORD raster_span(const struct GemRasterSurface *s,UWORD x,UWORD y,
+    UBYTE *bytes,UWORD count,UWORD put)
+{
+    if (s->address) {
+        UBYTE *at=s->address+(ULONG)y*s->pitch+(x>>1);
+        if (put) memcpy(at,bytes,count);
+        else memcpy(bytes,at,count);
+        return DISPLAY_OK;
+    }
+    if (put) return VbxeOwnerWrite(&display,GemScreenRows[y]+(x>>1),bytes,count);
+    return VbxeOwnerRead(&display,GemScreenRows[y]+(x>>1),bytes,count);
+}
+
+UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCopy *p,
     UBYTE *scratch)
 {
-    const struct GemRasterRect *r=&copy->rect;
+    const struct GemRasterRect *r=&p->rect;
     UWORD sx=r->sx,sy=r->sy,dx=r->dx,dy=r->dy,width=r->width,height=r->height;
-    UWORD sn=((sx&1)+width+1)>>1,dn=((dx&1)+width+1)>>1;
-    UWORD left=height,first,n,k,y,limit,status;
-    limit=(UWORD)VBXE_LIST_WORK/(sn+dn*2);
-    if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    UWORD hardware=!p->source.address || !p->destination.address;
+    UWORD same=p->source.address==p->destination.address;
+    UWORD backY=same && dy>sy,backX=same && dx>sx;
+    UWORD left=height,first,n,k,y,limit=16,status=DISPLAY_OK;
+    UWORD remaining,span,column,sn,dn;
+    if (hardware) {
+        sn=((sx&1)+width+1)>>1;dn=((dx&1)+width+1)>>1;
+        limit=(UWORD)VBXE_LIST_WORK/(sn+dn*2);
+        if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    }
     while (left) {
         n=left<limit ? left:limit;
-        first=dy>sy ? left-n:height-left;
-        status=DisplayEnter(grant);
-        if (status!=DISPLAY_OK) return status;
-        pointer_erase(sx,sy+first,sx+width,sy+first+n);
-        pointer_erase(dx,dy+first,dx+width,dy+first+n);
-        status=fence_owner();
-        for (k=0;k<n && !fault;++k) {
-            y=dy>sy ? first+n-1-k:first+k;
-            latch(VbxeOwnerRead(&display,GemScreenRows[sy+y]+(sx>>1),scratch,sn));
-            if (!fault) latch(VbxeOwnerRead(&display,GemScreenRows[dy+y]+(dx>>1),scratch+321,dn));
-            if (!fault) {
-                GemRasterMerge(scratch+321,scratch,sx&1,dx&1,width,copy->mode);
-                latch(VbxeOwnerWrite(&display,GemScreenRows[dy+y]+(dx>>1),scratch+321,dn));
+        first=backY ? left-n:height-left;
+        if (hardware) {
+            status=DisplayEnter(grant);
+            if (status!=DISPLAY_OK) return status;
+            if (!p->source.address) pointer_erase(sx,sy+first,sx+width,sy+first+n);
+            if (!p->destination.address) pointer_erase(dx,dy+first,dx+width,dy+first+n);
+            status=fence_owner();
+        }
+        for (k=0;k<n && status==DISPLAY_OK;++k) {
+            y=backY ? first+n-1-k:first+k;
+            remaining=width;
+            while (remaining && status==DISPLAY_OK) {
+                span=remaining<640 ? remaining:640;
+                column=backX ? remaining-span:width-remaining;
+                sn=(((sx+column)&1)+span+1)>>1;dn=(((dx+column)&1)+span+1)>>1;
+                status=raster_span(&p->source,sx+column,sy+y,scratch,sn,0);
+                if (status==DISPLAY_OK) status=raster_span(&p->destination,dx+column,dy+y,scratch+321,dn,0);
+                if (status==DISPLAY_OK) {
+                    GemRasterMerge(scratch+321,scratch,(sx+column)&1,(dx+column)&1,span,p->mode);
+                    status=raster_span(&p->destination,dx+column,dy+y,scratch+321,dn,1);
+                }
+                remaining-=span;
             }
         }
-        status=borrow_leave(grant);
+        if (hardware) {
+            latch(status);
+            status=borrow_leave(grant);
+        }
         if (status!=DISPLAY_OK) return status;
         left-=n;
     }

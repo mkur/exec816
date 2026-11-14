@@ -18,7 +18,7 @@ class CopyPixels(unittest.TestCase):
         source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
         source=(source[source.index('static UWORD borrow_leave('):
                        source.index('static UWORD drawing_borrow(')]+
-                source[source.index('UWORD GemDrawingRasterBorrow(' if raster else 'UWORD GemDrawingCopyBorrow('):
+                source[source.index('static UWORD raster_span(' if raster else 'UWORD GemDrawingCopyBorrow('):
                        source.index('NATIVE_UNIT(FrameBatch,')])
         prelude=r'''
 #include <assert.h>
@@ -94,7 +94,7 @@ static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
     edges[642]=0xab;edges[643]=0xcd;
     for(y=0;y<h;++y)for(x=0;x<w;++x)put(expected,sx+dx+x,sy+dy+y,pixel(original,sx+x,sy+y));
 #if RASTER
-    {struct GemRasterCopy p={{sx,sy,sx+dx,sy+dy,w,h},3};
+    {struct GemRasterCopy p={{0,320,640,240},{0,320,640,240},{sx,sy,sx+dx,sy+dy,w,h},3};
     result=GemDrawingRasterBorrow(&g,&p,edges);}
 #else
     result=GemDrawingCopyBorrow(&g,&c,edges);
@@ -119,7 +119,8 @@ int main(void)
         with tempfile.TemporaryDirectory() as directory:
             prelude+='#include "'+str(ROOT/'ports/gem4xe/raster/core.h')+'"\n'
             prelude+='struct GemRasterRect {int32_t sx,sy,dx,dy,width,height;};\n'
-            prelude+='struct GemRasterCopy {struct GemRasterRect rect;UWORD mode;};\n'
+            prelude+='struct GemRasterSurface {UBYTE *address;UWORD pitch,width,height;};\n'
+            prelude+='struct GemRasterCopy {struct GemRasterSurface source,destination;struct GemRasterRect rect;UWORD mode;};\n'
             p=Path(directory);(p/'copy.c').write_text(prelude+source+checks)
             subprocess.run(['cc','-std=c99','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-Wno-unused-variable',
                 '-DRASTER='+str(int(raster)),str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
