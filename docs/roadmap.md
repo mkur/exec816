@@ -236,8 +236,10 @@ The [GEMDOS source subset](reference/gemdos-compatibility.md) shares QED's gener
 wrappers over the common C runtime and provides native ExamineFH plus the
 size/type FSTAT profile for MGVIEW-style loading. The
 [implementation plan](plans/gemdos-compatibility-implementation-plan.md) records
-the executable slices and consumer checks. The complete MGVIEW GUI port and
-the SDX FILELENG consumer migration remain separate work.
+the executable slices and consumer checks. The
+[original MGVIEW port plan](plans/gem4xe/mgview-port-plan.md) now orders the
+application port using the completed window, raster and mouse foundations.
+The SDX FILELENG consumer migration remains separate work.
 
 The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) is implemented
 through RC6: conventional `vro_cpyfm`, device-format memory forms, all sixteen
