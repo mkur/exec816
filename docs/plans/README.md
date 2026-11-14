@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [Small GEMDOS source compatibility layer](gemdos-compatibility-design.md):
+  proposed extraction of QED's thin wrappers over the common C runtime, with
+  open-handle metadata and a narrow FSTAT profile for MGVIEW.
+
 - [Mapped VRAM raster workspace](gem4xe/mapped-raster-plan.md): 16 KiB private
   staging, mapped native nibble shifting and bounded blitter publication through
   the existing 4 KiB aperture. Implemented; matched OF816 copies improve about

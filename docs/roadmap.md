@@ -232,13 +232,20 @@ extension.
 
 ## Colour GEM desktop roadmap
 
+The proposed [GEMDOS compatibility design](plans/gemdos-compatibility-design.md)
+extracts QED's generic wrappers over the common C runtime for MGVIEW and other
+source ports. It specifies descriptor/allocation ownership, a reusable native
+open-handle metadata operation and a narrow FSTAT information profile. This is
+a design note; the shared layer and MGVIEW port are not yet implemented.
+
 The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) is implemented
 through RC6: conventional `vro_cpyfm`, device-format memory forms, all sixteen
 logical modes and bounded acceleration. The [record](history/gem-raster-copy.md)
 contains packaged development acceptance and timing. Reusing GEM4XE's dedicated
-S_ONLY byte/nibble-shift path makes the matched different-parity sample about
-3.7× faster, though it still takes about 625 ms. Further copy performance,
-bitmap workstations and the complete MGVIEW port remain separate work.
+S_ONLY byte/nibble-shift path first reduced the matched different-parity sample
+to about 625 ms. The subsequent [mapped VRAM path](history/gem-raster-mapped.md)
+reduces it to 149–150 ms using 16 KiB VRAM through the existing 4 KiB aperture.
+Bitmap workstations and the complete MGVIEW port remain separate work.
 
 The proposed [GEM-first GUI design](plans/gem4xe/gem-first-gui-design.md) replaces
 the native/GEM graphical interface split with one AES window model. It retains
