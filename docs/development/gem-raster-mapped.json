@@ -1,0 +1,1806 @@
+{
+  "format": "exec816-mapped-raster-development-v1",
+  "date": "2026-11-14",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "implementation_base": "fea57a362603c75c406043f2235fef70f68659f7",
+  "scope": "Different-parity screen S_ONLY through blitter capture, mapped native shift and masked blitter publication; same 4 KiB CPU aperture",
+  "foundation": {
+    "path": "docs/development/gem-raster-mapped-foundation.json",
+    "sha256": "e48f92e1928435b810331d2456ca51b2dbfc1b757e76bb1d6e9f8bfae5eda4de"
+  },
+  "baseline": {
+    "path": "docs/development/gem-raster-s-only-fast.json",
+    "sha256": "adae010f6d526643a47bad8a5e38c0a402e93e989f3060f9130a863449252eb9",
+    "zip_sha256": "e2e89e94f11133aea0722c28b7f831a261a71edc00a68e7036f8a172a71c376e"
+  },
+  "cases": {
+    "callback-raw": {
+      "path": "build/gem-raster-mapped/callback-raw/results.json",
+      "sha256": "68895658496202b14df2c03e1954458f1eef7f00ef3ea65b73bfda4c2d2d2b49",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 723,
+        "native_irq_count": 7092,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 165,
+            "untouched_above_floor": 1115
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 43,
+            "untouched_above_floor": 213
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 264,
+          "untouched_from_base": 1272,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": false,
+      "checks": 16386,
+      "mapped_only": true,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "9c62a106739940dea5aa159ff5887c2b95d95ba10c12540f7a89a34ab7c7e322",
+        "ports/gem4xe/adapter/gem-vbxe.c": "7e91480d5bbc38a2ca9d77256ac2d548d070f3be152558550ebc9853d0e402a6",
+        "ports/gem4xe/raster/core.h": "0981ea5d2051f13510f5f61282655759f3426c2bb5fb48f0934649a10075e327",
+        "ports/gem4xe/raster/shift.s": "3984e024147a3a8c0f40871db1d6dd4e237599150f56d22b22dd135e9ed0c67a",
+        "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084",
+        "ports/gem4xe/raster/staged.h": "9e1f6dcd42e96b8262b02bc9abae4f3fc6f9112115a5c4811d7c58792dec57e3"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "memory-opt": {
+      "path": "build/gem-raster-mapped/memory-opt/results.json",
+      "sha256": "1a5aed1c2eca3ce39719277880f7a524ea8097210d134342e78e3f80a9ce5baf",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1027,
+        "native_irq_count": 10061,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 295,
+            "untouched_above_floor": 985
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 258,
+          "untouched_from_base": 1278,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "optimize": true,
+      "checks": 49067,
+      "mapped_only": false,
+      "source_inputs": {
+        "tests/programs/gem_raster_memory.c": "9c62a106739940dea5aa159ff5887c2b95d95ba10c12540f7a89a34ab7c7e322",
+        "ports/gem4xe/adapter/gem-vbxe.c": "7e91480d5bbc38a2ca9d77256ac2d548d070f3be152558550ebc9853d0e402a6",
+        "ports/gem4xe/raster/core.h": "0981ea5d2051f13510f5f61282655759f3426c2bb5fb48f0934649a10075e327",
+        "ports/gem4xe/raster/shift.s": "3984e024147a3a8c0f40871db1d6dd4e237599150f56d22b22dd135e9ed0c67a",
+        "ports/gem4xe/raster/screen.h": "01fd16cca72c2c4fd8ef78aa0c8775c19974fbc864963b57b6668848718b3084",
+        "ports/gem4xe/raster/staged.h": "9e1f6dcd42e96b8262b02bc9abae4f3fc6f9112115a5c4811d7c58792dec57e3"
+      },
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "root_kernel": 0,
+        "idle": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "physical": {
+      "path": "build/gem-raster-mapped/physical/results.json",
+      "sha256": "60262a7c0efe60061d9f0cefc19d8a43d2bea03a71f6395e4883e100bb797f85",
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 3285,
+        "native_irq_count": 53103,
+        "os_busy": 0,
+        "return_s": 11278,
+        "return_d": 3328,
+        "fault_required": 0,
+        "return_dbr": 0,
+        "return_e": 0,
+        "current": 8,
+        "switching": 0,
+        "os_owner": 255,
+        "live_tasks": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 143,
+            "untouched_above_floor": 1137
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 142,
+            "untouched_above_floor": 914
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 958,
+            "untouched_above_floor": 98
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 1036,
+            "untouched_above_floor": 20
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 730,
+            "untouched_above_floor": 1574
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 287,
+          "untouched_from_base": 1249,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "reserved_bank_zero_delta": {
+        "fixed": 0,
+        "per_public_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "AESChecks": 905,
+      "AESFailures": 0,
+      "AESFirstFailure": 0,
+      "raster_submission_yields": 18,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 143,
+          "remaining_above_floor": 1137
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 142,
+          "remaining_above_floor": 914
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 958,
+          "remaining_above_floor": 98
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 1036,
+          "remaining_above_floor": 20
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 730,
+          "remaining_above_floor": 1574
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      }
+    }
+  },
+  "package": {
+    "audit": {
+      "status": "pass",
+      "tier": "development",
+      "qualification": false,
+      "zip_sha256": "0b75043c310b27bdb789c931d31d90f480d2b9f145e4c342645f325252a19273",
+      "zip_bytes": 2990296,
+      "members": [
+        "Exec-of816.xex",
+        "README.txt",
+        "SHA256SUMS",
+        "altirraos-816.rom",
+        "cartridge/Exec-of816-atarimax-8mbit-new.car",
+        "cartridge/Exec-of816-atarimax-8mbit-old.car",
+        "cartridge/Exec-of816-atarimax-8mbit.bin",
+        "cartridge/README.txt",
+        "exec816.atr",
+        "licenses/ALTIRRAOS-LICENSE.txt",
+        "licenses/CALCULATOR-COPYING.LIB.txt",
+        "licenses/CALCULATOR-COPYING.txt",
+        "licenses/CALCULATOR-LICENSING.md",
+        "licenses/CALCULATOR-PROVENANCE.txt",
+        "licenses/EXEC816-GPL-3.0.txt",
+        "licenses/EXEC816-LICENSING.md",
+        "licenses/EXEC816-MIT.txt",
+        "licenses/G4BENCH-COPYING.LIB.txt",
+        "licenses/G4BENCH-COPYING.txt",
+        "licenses/G4BENCH-LICENSING.md",
+        "licenses/G4BENCH-PROVENANCE.txt",
+        "licenses/GEM-COPYING.LIB.txt",
+        "licenses/GEM-COPYING.txt",
+        "licenses/GEM-FONT-NOTICE.txt",
+        "licenses/GEM-LICENSING.md",
+        "licenses/GEMARC-COPYING.LIB.txt",
+        "licenses/GEMARC-COPYING.txt",
+        "licenses/GEMARC-LICENSING.md",
+        "licenses/GEMARC-PROVENANCE.txt",
+        "licenses/OF816-LICENSE.txt",
+        "licenses/SDX-UTILITIES-NOTICE.txt"
+      ],
+      "checksums": {
+        "Exec-of816.xex": "bac1ae1e39c0e1ab757ba31eb3bf2298b6988357ee2c962134eff4b693346312",
+        "README.txt": "86f90327985b93ccf42b208bbd0ea8aa7f8c793ae8f5baec61a399169891c858",
+        "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "cartridge/Exec-of816-atarimax-8mbit-new.car": "e35a75651ff5f833a0d2b761e71d23f58aaecf97b653569536e2022304788e68",
+        "cartridge/Exec-of816-atarimax-8mbit-old.car": "77eafef1ee201c073051cc5573fafce754c65b3ee88323a238b269a2dc4cd548",
+        "cartridge/Exec-of816-atarimax-8mbit.bin": "077028bbc44eb0d8d64e5635a2ddda3ad963bcb93f3003e512bc1fb80e5548de",
+        "cartridge/README.txt": "376f3c7f227d7b87265b476bafefbb5edeb61d600b93f810b52212bc64c8fe97",
+        "exec816.atr": "058dbe6efdf4a8d05fce66ea9b958dfc92739cfeccb049d0fd65e0bae017e397",
+        "licenses/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+        "licenses/CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+        "licenses/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+        "licenses/EXEC816-LICENSING.md": "93b139ca3b1fb5c43b8619dd1592305350a1e4b1b15b74557aebc06ded61595a",
+        "licenses/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+        "licenses/G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+        "licenses/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+        "licenses/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/GEMARC-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "licenses/GEMARC-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "licenses/GEMARC-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "licenses/GEMARC-PROVENANCE.txt": "38dcc3771bc511bb3c7bb9a003e4d168d507d98a8be54d36517d81bd3a3ccf43",
+        "licenses/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+        "licenses/SDX-UTILITIES-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1"
+      },
+      "allocation": {
+        "sectors": 8192,
+        "sector_bytes": 256,
+        "allocated": 4691,
+        "free": 3501,
+        "files": 73,
+        "directories": 6
+      },
+      "matched_system_files": 73,
+      "matched_disk_apps": 13,
+      "qed_separate": false
+    },
+    "functional_path": "build/gem-raster-mapped/sample/results.json",
+    "functional_sha256": "db721c5508b6d8d7c4f34285f859f1cfc5aeae4179f7145c76ca70806049e28f",
+    "timing_path": "build/gem-raster-mapped/sample-timing/results.json",
+    "timing_sha256": "3e2f866c7f94ba42cf4be611e7f24d802e0427f5e53f6031d0b1cafb2259e86d",
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 10682,
+      "native_irq_count": 28628,
+      "os_busy": 0,
+      "return_s": 15534,
+      "return_d": 3840,
+      "fault_required": 0,
+      "return_dbr": 0,
+      "return_e": 0,
+      "current": 12,
+      "switching": 0,
+      "os_owner": 255,
+      "live_tasks": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 606,
+          "untouched_above_floor": 674
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 235,
+          "untouched_above_floor": 821
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 401,
+          "untouched_above_floor": 655
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 160,
+          "untouched_above_floor": 896
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 671,
+          "untouched_above_floor": 385
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 838,
+          "untouched_above_floor": 218
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 759,
+          "untouched_above_floor": 1545
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 869,
+          "untouched_above_floor": 1435
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 1312,
+          "touched_bytes": 743,
+          "untouched_above_floor": 313
+        },
+        {
+          "slot": 9,
+          "reserved_bytes": 1312,
+          "touched_bytes": 695,
+          "untouched_above_floor": 361
+        },
+        {
+          "slot": 10,
+          "reserved_bytes": 1312,
+          "touched_bytes": 787,
+          "untouched_above_floor": 269
+        },
+        {
+          "slot": 11,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 12,
+          "reserved_bytes": 512,
+          "touched_bytes": 135,
+          "untouched_above_floor": 121
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 295,
+        "untouched_from_base": 1241,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "sample": {
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$e77c4aafbabe2561",
+        "actual_kernel_id": "$e77c4aafbabe2561",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "autoboot_frames": 250,
+      "pixels": [
+        {
+          "label": "initial",
+          "state": {
+            "ready": 1,
+            "scrolls": 0,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "67541764280e5f13049dbaa22664e601ff75946944275921f9b3f607450fabc8"
+        },
+        {
+          "label": "down-0",
+          "state": {
+            "ready": 1,
+            "scrolls": 1,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 1,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "3fc5e57ef66bd63578ca5b1c7948ca887fa7ff159736380426f5416bbb406dc4"
+        },
+        {
+          "label": "up-1",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 0,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 0,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "67541764280e5f13049dbaa22664e601ff75946944275921f9b3f607450fabc8"
+        },
+        {
+          "label": "right-2",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 1,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 1,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "570db6276c2e42a411a8526a8c33ced98f767499955c86eefadb8ceb3074b3fe"
+        },
+        {
+          "label": "right-3",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "before-memory",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 0,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "memory-roundtrip",
+          "state": {
+            "ready": 1,
+            "scrolls": 2,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 0,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "6f2f1f179b42bb94ce9ac2fa8c84352ad871948ee4ff43bcbde885b134e0df48"
+        },
+        {
+          "label": "timed-scroll",
+          "state": {
+            "ready": 1,
+            "scrolls": 11,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 9,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "69e570a520c8a912b88fdd59709fd33d601fab69b602fd8b8dacc4818ab121b5"
+        },
+        {
+          "label": "uncovered",
+          "state": {
+            "ready": 1,
+            "scrolls": 11,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 9,
+            "work": [
+              40,
+              64,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "69e570a520c8a912b88fdd59709fd33d601fab69b602fd8b8dacc4818ab121b5"
+        },
+        {
+          "label": "moved",
+          "state": {
+            "ready": 1,
+            "scrolls": 11,
+            "shifts": 2,
+            "roundtrips": 1,
+            "running": 0,
+            "left": 2,
+            "first": 9,
+            "work": [
+              58,
+              76,
+              304,
+              96
+            ]
+          },
+          "exact_pixels": 29184,
+          "sha256": "69e570a520c8a912b88fdd59709fd33d601fab69b602fd8b8dacc4818ab121b5"
+        }
+      ],
+      "timing": [
+        {
+          "operation": "DOWN",
+          "parity": "same",
+          "rectangle": [
+            304,
+            88
+          ],
+          "input_offered": 236531927,
+          "completed_update_observed": 236708932,
+          "scanout_observed": 236744500,
+          "offered_to_update_ms": 99.80842398774139,
+          "offered_to_checked_scanout_ms": 119.86427565518574,
+          "cpu": {
+            "kind": "raster",
+            "start": 4531563248.0,
+            "end": 4531621410.5,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 32.79629084029834,
+            "charged_cpu_ms": 17.708023496607595,
+            "off_cpu_ms": 11.0865277940283,
+            "interrupt_ms": 4.001739549662451
+          },
+          "call_elapsed_ms": 32.79629084029834,
+          "call_to_checked_scanout_ms": 83.7622765827576
+        },
+        {
+          "operation": "UP",
+          "parity": "same",
+          "rectangle": [
+            304,
+            88
+          ],
+          "input_offered": 236744500,
+          "completed_update_observed": 237029044,
+          "scanout_observed": 237064612,
+          "offered_to_update_ms": 160.44681333955475,
+          "offered_to_checked_scanout_ms": 180.50266500699908,
+          "cpu": {
+            "kind": "raster",
+            "start": 4531865994.375,
+            "end": 4531928421.125,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 35.20078829511446,
+            "charged_cpu_ms": 18.141148807619057,
+            "off_cpu_ms": 13.06812014452077,
+            "interrupt_ms": 3.9915193429746303
+          },
+          "call_elapsed_ms": 35.20078829511446,
+          "call_to_checked_scanout_ms": 93.55429185245123
+        },
+        {
+          "operation": "RIGHT",
+          "parity": "different",
+          "rectangle": [
+            303,
+            96
+          ],
+          "input_offered": 237064612,
+          "completed_update_observed": 237740404,
+          "scanout_observed": 237775972,
+          "offered_to_update_ms": 381.0611816814425,
+          "offered_to_checked_scanout_ms": 401.1170333488868,
+          "cpu": {
+            "kind": "raster",
+            "start": 4532225289.375,
+            "end": 4532489604.75,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 149.04042831828966,
+            "charged_cpu_ms": 110.11123813927392,
+            "off_cpu_ms": 15.114276007606653,
+            "interrupt_ms": 23.81491417140908
+          },
+          "call_elapsed_ms": 149.04042831828966,
+          "call_to_checked_scanout_ms": 292.0744059240547
+        },
+        {
+          "operation": "RIGHT",
+          "parity": "different",
+          "rectangle": [
+            303,
+            96
+          ],
+          "input_offered": 237775972,
+          "completed_update_observed": 238380628,
+          "scanout_observed": 238416196,
+          "offered_to_update_ms": 340.9494783465538,
+          "offered_to_checked_scanout_ms": 361.00533001399816,
+          "cpu": {
+            "kind": "raster",
+            "start": 4532864401.125,
+            "end": 4533131149.5,
+            "return_a": 0,
+            "return_x": 0,
+            "elapsed_ms": 150.41233247671553,
+            "charged_cpu_ms": 110.07092118599508,
+            "off_cpu_ms": 16.541439766330832,
+            "interrupt_ms": 23.799971524389644
+          },
+          "call_elapsed_ms": 150.41233247671553,
+          "call_to_checked_scanout_ms": 292.70157419376665
+        }
+      ],
+      "coexistence": {
+        "distinct_processes": true,
+        "paused_idle": true,
+        "timer_scroll": true,
+        "cover_uncover": true,
+        "physical_move": true,
+        "counter_progress": true,
+        "normal_app_exit": true
+      },
+      "stacks": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 606,
+          "remaining_above_floor": 674
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 235,
+          "remaining_above_floor": 821
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 401,
+          "remaining_above_floor": 655
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 160,
+          "remaining_above_floor": 896
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 671,
+          "remaining_above_floor": 385
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 838,
+          "remaining_above_floor": 218
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 759,
+          "remaining_above_floor": 1545
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 869,
+          "remaining_above_floor": 1435
+        },
+        "8": {
+          "base": 37904,
+          "bytes": 1312,
+          "peak": 743,
+          "remaining_above_floor": 313
+        },
+        "9": {
+          "base": 39248,
+          "bytes": 1312,
+          "peak": 695,
+          "remaining_above_floor": 361
+        },
+        "10": {
+          "base": 40592,
+          "bytes": 1312,
+          "peak": 787,
+          "remaining_above_floor": 269
+        },
+        "11": {
+          "base": 41936,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "12": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 135,
+          "remaining_above_floor": 121
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 295,
+          "remaining_above_floor": 985
+        }
+      },
+      "cpu_trace": {
+        "duplicates": 0,
+        "worker_dp": 37376,
+        "definition": {
+          "points": {
+            "native_irq": 6912,
+            "native_nmi": 6656,
+            "interrupt_schedule": 6762,
+            "selected": 7474,
+            "turn": 1583159
+          },
+          "spans": {
+            "raster": {
+              "entry": 1583159,
+              "returns": [
+                1583163
+              ]
+            }
+          },
+          "task_dps": [
+            3328,
+            3584,
+            3840,
+            4096,
+            4352,
+            4608,
+            4864,
+            5120,
+            36864,
+            37120,
+            37376,
+            37632,
+            5376
+          ]
+        },
+        "host_clock_epoch": 4294967296,
+        "scope": "Conservative caller CPU charge including kernel and bus stalls; native IRQ/NMI and peer Task time separate"
+      },
+      "commands": [
+        {
+          "text": "RUN SYS:C/PULSE.APP paint",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "NEWSHELL",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "RUN SYS:C/RASTER.APP",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "SESSION 2",
+          "result": [
+            0,
+            0
+          ]
+        },
+        {
+          "text": "JOBS",
+          "result": [
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "comparison": [
+    {
+      "operation": "DOWN",
+      "rectangle": [
+        304,
+        88
+      ],
+      "before_elapsed_ms": 40.275085673525716,
+      "after_elapsed_ms": 32.79629084029834,
+      "elapsed_speedup": 1.2280378250591018,
+      "before_cpu_ms": 19.578814709767276,
+      "after_cpu_ms": 17.708023496607595,
+      "cpu_speedup": 1.1056465287341681,
+      "after_checked_scanout_ms": 83.7622765827576,
+      "after_off_cpu_ms": 11.0865277940283,
+      "after_interrupt_ms": 4.001739549662451
+    },
+    {
+      "operation": "UP",
+      "rectangle": [
+        304,
+        88
+      ],
+      "before_elapsed_ms": 35.94728628842974,
+      "after_elapsed_ms": 35.20078829511446,
+      "elapsed_speedup": 1.0212068544333959,
+      "before_cpu_ms": 17.829679198284694,
+      "after_cpu_ms": 18.141148807619057,
+      "cpu_speedup": 0.9828307670788992,
+      "after_checked_scanout_ms": 93.55429185245123,
+      "after_off_cpu_ms": 13.06812014452077,
+      "after_interrupt_ms": 3.9915193429746303
+    },
+    {
+      "operation": "RIGHT",
+      "rectangle": [
+        303,
+        96
+      ],
+      "before_elapsed_ms": 624.4336243390346,
+      "after_elapsed_ms": 149.04042831828966,
+      "elapsed_speedup": 4.18969290000629,
+      "before_cpu_ms": 497.9266372418693,
+      "after_cpu_ms": 110.11123813927392,
+      "cpu_speedup": 4.522032861096958,
+      "after_checked_scanout_ms": 292.0744059240547,
+      "after_off_cpu_ms": 15.114276007606653,
+      "after_interrupt_ms": 23.81491417140908
+    },
+    {
+      "operation": "RIGHT",
+      "rectangle": [
+        303,
+        96
+      ],
+      "before_elapsed_ms": 624.7376226248592,
+      "after_elapsed_ms": 150.41233247671553,
+      "elapsed_speedup": 4.153499997891272,
+      "before_cpu_ms": 498.2587587171315,
+      "after_cpu_ms": 110.07092118599508,
+      "cpu_speedup": 4.526706539279219,
+      "after_checked_scanout_ms": 292.70157419376665,
+      "after_off_cpu_ms": 16.541439766330832,
+      "after_interrupt_ms": 23.799971524389644
+    }
+  ],
+  "memory": {
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root_kernel": 0,
+      "idle": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "includes_guards_alignment_and_unused_capacity": true
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 11072,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848,
+        1600,
+        1600,
+        1600,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 35040,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 55008,
+      "loading_including_os": 40336
+    },
+    "task_pools": [
+      {
+        "dp": 3328,
+        "dp_reserved_bytes": 256,
+        "stack_base": 9744,
+        "stack_bytes": 1536,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3584,
+        "dp_reserved_bytes": 256,
+        "stack_base": 12880,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3840,
+        "dp_reserved_bytes": 256,
+        "stack_base": 14224,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4096,
+        "dp_reserved_bytes": 256,
+        "stack_base": 15568,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4352,
+        "dp_reserved_bytes": 256,
+        "stack_base": 16912,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4608,
+        "dp_reserved_bytes": 256,
+        "stack_base": 18256,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4864,
+        "dp_reserved_bytes": 256,
+        "stack_base": 19600,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 5120,
+        "dp_reserved_bytes": 256,
+        "stack_base": 22192,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 36864,
+        "dp_reserved_bytes": 256,
+        "stack_base": 37904,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 37120,
+        "dp_reserved_bytes": 256,
+        "stack_base": 39248,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 37376,
+        "dp_reserved_bytes": 256,
+        "stack_base": 40592,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 37632,
+        "dp_reserved_bytes": 256,
+        "stack_base": 41936,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 5376,
+        "dp_reserved_bytes": 256,
+        "stack_base": 24784,
+        "stack_bytes": 512,
+        "interrupt_reserve": 256
+      }
+    ],
+    "runtime_reservations": [
+      {
+        "name": "os-low",
+        "address": 0,
+        "size": 2560
+      },
+      {
+        "name": "state",
+        "address": 2560,
+        "size": 256
+      },
+      {
+        "name": "boot-state",
+        "address": 2816,
+        "size": 256
+      },
+      {
+        "name": "kernel-dp",
+        "address": 3072,
+        "size": 256
+      },
+      {
+        "name": "dp0",
+        "address": 3328,
+        "size": 256
+      },
+      {
+        "name": "dp1",
+        "address": 3584,
+        "size": 256
+      },
+      {
+        "name": "dp2",
+        "address": 3840,
+        "size": 256
+      },
+      {
+        "name": "dp3",
+        "address": 4096,
+        "size": 256
+      },
+      {
+        "name": "dp4",
+        "address": 4352,
+        "size": 256
+      },
+      {
+        "name": "dp5",
+        "address": 4608,
+        "size": 256
+      },
+      {
+        "name": "dp6",
+        "address": 4864,
+        "size": 256
+      },
+      {
+        "name": "dp7",
+        "address": 5120,
+        "size": 256
+      },
+      {
+        "name": "dp12",
+        "address": 5376,
+        "size": 256
+      },
+      {
+        "name": "resident",
+        "address": 5632,
+        "size": 4096
+      },
+      {
+        "name": "stack0",
+        "address": 9728,
+        "size": 1568
+      },
+      {
+        "name": "kernel-stack",
+        "address": 11296,
+        "size": 1568
+      },
+      {
+        "name": "stack1",
+        "address": 12864,
+        "size": 1344
+      },
+      {
+        "name": "stack2",
+        "address": 14208,
+        "size": 1344
+      },
+      {
+        "name": "stack3",
+        "address": 15552,
+        "size": 1344
+      },
+      {
+        "name": "stack4",
+        "address": 16896,
+        "size": 1344
+      },
+      {
+        "name": "stack5",
+        "address": 18240,
+        "size": 1344
+      },
+      {
+        "name": "stack6",
+        "address": 19584,
+        "size": 2592
+      },
+      {
+        "name": "stack7",
+        "address": 22176,
+        "size": 2592
+      },
+      {
+        "name": "stack12",
+        "address": 24768,
+        "size": 544
+      },
+      {
+        "name": "sdx-direct-pages",
+        "address": 25328,
+        "size": 544
+      },
+      {
+        "name": "vbxe-aperture",
+        "address": 32768,
+        "size": 4096
+      },
+      {
+        "name": "dp8",
+        "address": 36864,
+        "size": 256
+      },
+      {
+        "name": "dp9",
+        "address": 37120,
+        "size": 256
+      },
+      {
+        "name": "dp10",
+        "address": 37376,
+        "size": 256
+      },
+      {
+        "name": "dp11",
+        "address": 37632,
+        "size": 256
+      },
+      {
+        "name": "stack8",
+        "address": 37888,
+        "size": 1344
+      },
+      {
+        "name": "stack9",
+        "address": 39232,
+        "size": 1344
+      },
+      {
+        "name": "stack10",
+        "address": 40576,
+        "size": 1344
+      },
+      {
+        "name": "stack11",
+        "address": 41920,
+        "size": 2592
+      },
+      {
+        "name": "os-high",
+        "address": 48128,
+        "size": 17408
+      }
+    ],
+    "upper_reservations_unchanged": true,
+    "workstation_live": 1056,
+    "workstation_reserved": 1056,
+    "workstation_delta": 0,
+    "CPU_raster_scratch": 642,
+    "reserved_vram_delta": 16384,
+    "vram_reserved": 489984,
+    "vram_unassigned": 34304,
+    "cpu_aperture_base": 32768,
+    "cpu_aperture_bytes": 4096,
+    "C_image_before": 331307,
+    "C_image_after": 332629,
+    "C_image_delta": 1322,
+    "C_zero_fill_before": 18615,
+    "C_zero_fill_after": 18615,
+    "physical_minimum_spare_above_interrupt_reserve": 20,
+    "packaged_minimum_spare_above_interrupt_reserve": 121
+  },
+  "unchanged_applications": {
+    "panel": {
+      "abi": 39,
+      "sha256": "e174b8063a4ad5620385746903d08d30c1326a7514d7324e631dd4a0341f5dd8"
+    },
+    "widget": {
+      "abi": 39,
+      "sha256": "1dd7b5842cf2a864473ad6d06d6ab5bffd5333eb5d00e7c0ad172ca02f47a4a3"
+    },
+    "pulse": {
+      "abi": 39,
+      "sha256": "c43382a8f1d9487f9f487f0e9a1ff0838feba8bdd1b71bf59e7041204d678f17"
+    },
+    "terminal": {
+      "abi": 39,
+      "sha256": "4baef7f3628d94d3039f0f202b9051cdd3b9ec519b60cc925b631d9eb1ced8e3"
+    },
+    "gemarc": {
+      "abi": 39,
+      "sha256": "d879fe2cdd7a948dceb3feb3af2eddc23e7de9848ab76e7f1280d3fc34af3ea5"
+    },
+    "desktop": {
+      "abi": 39,
+      "sha256": "7c5b32905228e98d8a2b5f90ba269f3615c89cb553c453024d386d18b88d3bf8"
+    },
+    "calc": {
+      "abi": 39,
+      "sha256": "fa3f2c67d2da1415e6cf82ba0fa554d670d8d26c3adbf7d44607ff1f2a2a12c5"
+    },
+    "dialog": {
+      "abi": 39,
+      "sha256": "0b48876c671d22645bc75724c2234f0105ee65b75f55bfd60e433617568cec95"
+    },
+    "g4bench": {
+      "abi": 39,
+      "sha256": "a66b4f14da057bf69eebd09f20a686a02572675ccbd9426087b35d1e9e8363f4"
+    },
+    "files": {
+      "abi": 39,
+      "sha256": "07647d0545b9c5e03cc0ed131d45bef94f518fabd5429e1facbdbb87690fde61"
+    },
+    "text": {
+      "abi": 39,
+      "sha256": "aaf3d213160df27242f1c91bf439254402a4b20e25174ee7922ac20075964243"
+    },
+    "counter": {
+      "abi": 39,
+      "sha256": "7980cab03f0abcda48f4f191dda21f2624e589bf238406314f9b6793187ca412"
+    },
+    "raster": {
+      "abi": 39,
+      "sha256": "f942994359080ffda5f320117ee6cf236219c75e5987157749b4c7d9c3347845"
+    },
+    "pair": {
+      "abi": 39,
+      "sha256": "49d349cc11247b6e155a591612d5f3cf92ff6641243f3a6759fe2343b2c9887e"
+    }
+  },
+  "tools": {
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "machine_pin": {
+      "schema_version": 1,
+      "rom": {
+        "name": "AltirraOS 3.44 for 65C816",
+        "bytes": 16384,
+        "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+        "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+        "cop0_after_xce": 50931
+      },
+      "emulator": {
+        "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+        "platform": "macOS arm64",
+        "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "source_patch": "toolchain/patches/altirra-console-probe.patch",
+        "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+        "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+        "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+        "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+        "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+        "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+        "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+        "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+      },
+      "machine": {
+        "model": "800XL",
+        "cpu": "65C816",
+        "clock_multiplier": 8,
+        "memory": "64K",
+        "high_banks": 63,
+        "video": "PAL",
+        "basic": false,
+        "dli": false,
+        "shadow_rom": true,
+        "addons": "custom"
+      },
+      "scope": "GEM VDI development: FX 1.26 at D600, private 512 KiB VRAM, inactive at cold boot. Detection only is tested by G0.",
+      "peripherals": [
+        {
+          "name": "fastest-125k",
+          "diskemu": "fastest",
+          "divisor": 0,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "stock-810",
+          "diskemu": "810",
+          "divisor": 40,
+          "source": "src/Altirra/source/diskprofile.cpp",
+          "firmware": "built-in high-level model"
+        },
+        {
+          "name": "happy-none",
+          "diskemu": "happy1050",
+          "divisor": 40,
+          "source": "src/Altirra/source/disk.cpp",
+          "firmware": "built-in high-level model; quiet command only"
+        }
+      ],
+      "configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true
+      },
+      "source_sha256": {
+        "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+        "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+        "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f",
+        "src/Altirra/source/vbxe.cpp": "26673f20ae03820eb02438404684a9fe4b793dff1c694dae83dfe2c34e7f1341",
+        "src/Altirra/h/vbxe.h": "c1967997263c033e2a921f2611fe78785d51469e8b7eab0c8672115f35afe651",
+        "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "728c6e823d8ff03bedb8eafd1e89fa47a8b0aaa3e35d91647492e82207987e01"
+      },
+      "observer": {
+        "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+        "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+      },
+      "keyboard_input": {
+        "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+        "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+        "initialization": "KEY ALL up enables scan mode before modifier changes",
+        "added_keys": {
+          "ASTERISK": 7,
+          "LESS": 54,
+          "GREATER": 55
+        },
+        "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+        "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+      },
+      "serial_regression_pins": [
+        "toolchain/altirra-sio-queued.json",
+        "toolchain/altirra-sio-sectors.json"
+      ],
+      "devices": [
+        {
+          "tag": "vbxe",
+          "settings": {
+            "version": 126,
+            "alt_page": false,
+            "shared_mem": false
+          },
+          "readback": [
+            {
+              "address": 54848,
+              "bytes": [
+                16,
+                38
+              ]
+            }
+          ],
+          "vram_bytes": 524288,
+          "register_base": 54784
+        }
+      ],
+      "startup_configuration": {
+        "siopatch": "off",
+        "burstio": false,
+        "randdelay": false,
+        "accuratedisk": true,
+        "diskemu": "generic56k"
+      },
+      "disk_workload": {
+        "format": "SDFS",
+        "unit": 49,
+        "sectors": 720,
+        "sector_bytes": 128,
+        "exec_profile": 4,
+        "nominal_baud": 57600
+      },
+      "mouse_input": {
+        "model": "ST mouse",
+        "port": 2,
+        "internal_port": 1,
+        "map": "Mouse -> ST Mouse (port 2)",
+        "mapping": "unmodified built-in preset; all other input maps disabled in isolated test profile",
+        "host_path": "ATInputManager::OnMouseMove(0, dx, dy); OnButtonChanged(0, MouseLMB, state)",
+        "sensitivity": "default preset: 16 integer host units per electrical transition; no mapping acceleration",
+        "capture": "headless scheduled relative motion; GUI uses normal host mouse capture",
+        "commands": [
+          "MOUSE ST",
+          "MOUSE AT <delay-base-cycles> <dx> <dy> <-1 unchanged|0 left-up|1 left-down>",
+          "MOUSE CLEAR"
+        ],
+        "observer": "EXEC816_MOUSE_TRACE=1 logs MOUSE_HOST and passive MOUSE_PHASE in base scheduler cycles; unset for replay",
+        "tooling": {
+          "binary": "build/mouse-bridge/AltirraBridgeServer",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "source_sha256": {
+            "src/Altirra/source/inputcontroller.cpp": "057b029f18681f7022b929cdeaca408e32399fecd2ffebfe51526aedd9973a4b",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.cpp": "712a996e8ec66d96c3ee31c2e99749d9a7aec570efa7a971b4c8902290f744e2",
+            "src/AltirraSDL/source/bridge/bridge_server.cpp": "455a5fd6adb90faab98b8227780867d75308988db3b4f67456b85d9de5167949",
+            "src/AltirraSDL/source/bridge/bridge_commands_write.h": "27dd386c487c91d41234662a53244d4c80efc23b99cb8a7c7f944562be248547"
+          }
+        },
+        "initial_acceptance": {
+          "transitions_per_second_per_axis": 1000,
+          "minimum_transition_spacing_us": 1000,
+          "minimum_button_level_us": 10000,
+          "required_max_sample_gap_us_exclusive": 1000,
+          "visible_response_pal_ticks": 12
+        },
+        "controller_timing": "Unmodified slow (scanline) scheduler: each phase delay clamps 0x1000000/remaining fixed-point distance to 1..256 scanlines. The passive observer timestamps output on the base CPU scheduler."
+      }
+    },
+    "C": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "observer_sha256": "76faaf9cb4663395a5b3023a33991082878b58dbafb64bdc649d82e9dfc3ce41"
+  },
+  "host": {
+    "status": "pass",
+    "tests": 715,
+    "skipped": 4,
+    "path": "build/gem-raster-mapped/host.log",
+    "sha256": "02db278a869496c243e29cb443572273e4bb03f9e52f8eeac776dcaeadf032c8"
+  },
+  "inputs": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "7e91480d5bbc38a2ca9d77256ac2d548d070f3be152558550ebc9853d0e402a6",
+    "ports/gem4xe/raster/staged.h": "9e1f6dcd42e96b8262b02bc9abae4f3fc6f9112115a5c4811d7c58792dec57e3",
+    "ports/gem4xe/raster/core.h": "0981ea5d2051f13510f5f61282655759f3426c2bb5fb48f0934649a10075e327",
+    "ports/gem4xe/raster/shift.s": "3984e024147a3a8c0f40871db1d6dd4e237599150f56d22b22dd135e9ed0c67a",
+    "ports/gem4xe/raster/inputs.json": "6937830afe96435f132381d43fcadc34b077fdc9217273cdf01e8594c0b8886e",
+    "platform/altirraos/vbxe.c": "767b7b3ac9bfbd88d3319e29cdd8970fe380a8f029dd7070ab543e268685d8b8",
+    "platform/altirraos/vbxe-internal.h": "7fd0cd82dc7c6404bfaad8081ceb897f274f99319b4eca52dabde51605494304",
+    "platform/altirraos/vbxe-vram.json": "55cc3c9240c47fcdfd30f169b38fd3cc1737516825cd600fb3a4a2f4f1a6221a",
+    "c/include/hardware/vbxe-snapshots.h": "e0c965043db31b975b765940075eee904813788af1426d738ffaf63577588b18",
+    "tests/programs/gem_raster_memory.c": "9c62a106739940dea5aa159ff5887c2b95d95ba10c12540f7a89a34ab7c7e322",
+    "tests/test_vdi_copy.py": "947daa7f4808397b1c70eb95eb2ef52bdbea88f70c74163ac77e012e5b6cb748",
+    "tools/test_gem_raster_memory.py": "b210d56b65f102f11271f0b4090bb24898861b29fb39634443b6a5e89e5e70e3",
+    "tools/test_gem_raster_sample.py": "76faaf9cb4663395a5b3023a33991082878b58dbafb64bdc649d82e9dfc3ce41"
+  },
+  "limits": [
+    "Development checks only; no hosted release or MagiC-relative qualification",
+    "Four matched call observations, not a latency distribution; checked scanout includes exposed-strip painting and frame-resolution observation",
+    "303-pixel copies use seven-row bands under the full 8192 raster-access estimate; sixteen rows remain the maximum",
+    "Memory forms and other different-parity logical modes retain the CPU transfer path",
+    "The CPU aperture remains 4 KiB; the 16 KiB reservation includes unused row-slot capacity"
+  ]
+}

@@ -1,6 +1,7 @@
 /* Execute the production row transfer across real CPU banks, without MEMAC. */
 #include <proto/exec.h>
 #include <hardware/vbxe.h>
+#include <hardware/vbxe-snapshots.h>
 #include <exec816/vdi-unit.h>
 #include <string.h>
 #include "drawing.h"
@@ -24,6 +25,12 @@ UWORD VbxeOwnerRead(struct VbxeDisplay *d,ULONG a,void *p,UWORD n)
 { (void)d;(void)a;(void)p;(void)n;++unexpected;return DISPLAY_DEVICE_FAULT; }
 UWORD VbxeOwnerWrite(struct VbxeDisplay *d,ULONG a,const void *p,UWORD n)
 { (void)d;(void)a;(void)p;(void)n;++unexpected;return DISPLAY_DEVICE_FAULT; }
+UWORD VbxeOwnerMapPage(struct VbxeDisplay *d,ULONG a,void (*f)(UBYTE *,void *),void *p)
+{ (void)d;(void)a;(void)f;(void)p;++unexpected;return DISPLAY_DEVICE_FAULT; }
+static void blit_mask(ULONG a,UWORD b,ULONG c,UWORD d,UWORD e,UWORD f,UBYTE g,UBYTE h,UBYTE i)
+{ (void)a;(void)b;(void)c;(void)d;(void)e;(void)f;(void)g;(void)h;(void)i;++unexpected; }
+static void blit_and(ULONG a,UWORD b,UWORD c,UWORD d,UBYTE e)
+{ (void)a;(void)b;(void)c;(void)d;(void)e;++unexpected; }
 UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *p,UWORD n)
 {
     UWORD i;(void)d;
@@ -92,6 +99,43 @@ LONG RasterShiftProbe(void)
     return 0;
 }
 
+LONG RasterMappedProbe(void)
+{
+    UBYTE *page=AllocMem(4096UL,MEMF_PUBLIC|MEMF_LINEAR);
+    void (*volatile operation)(UBYTE *,void *)=raster_shift_page;
+    struct RasterMappedShift shift;
+    UWORD i,k,right,rows,row,offset,value,nibble,half;
+    WORD sourcePixel;
+    const UWORD counts[]={1,2,17,319,320};
+    CHECK(page!=NULL);
+    for (right=0;right<2;++right) for (rows=1;rows<=4;rows+=3)
+        for (k=0;k<5;++k) {
+            shift.bytes=counts[k];shift.rows=rows;shift.right=right;
+            for (i=0;i<4096;++i) page[i]=(UBYTE)(i*37+i/97);
+            operation(page,&shift);
+            for (i=0;i<4096;++i) {
+                row=i/1024;offset=i&1023;value=(UBYTE)(i*37+i/97);
+                if (row<rows && offset>=512 && offset<512+shift.bytes) {
+                    value=0;
+                    for (half=0;half<2;++half) {
+                        sourcePixel=(WORD)((offset-512)*2+half)+(right ? -1:1);
+                        nibble=0;
+                        if (sourcePixel>=0) {
+                            UWORD at=row*1024+(UWORD)sourcePixel/2;
+                            nibble=(UBYTE)(at*37+at/97);
+                            nibble=sourcePixel&1 ? nibble&15:nibble>>4;
+                        }
+                        value=(value<<4)|nibble;
+                    }
+                }
+                CHECK(page[i]==value);
+            }
+        }
+    FreeMem(page,4096UL);
+    CHECK(!unexpected);
+    return 0;
+}
+
 LONG RasterProbe(void)
 {
     UBYTE *allocation,*source,*destination;
@@ -100,6 +144,8 @@ LONG RasterProbe(void)
     UWORD i,x,y,same,mode,value,s,d,back,width;
     const UWORD widths[]={1,2,3,47,77};
     LONG result=RasterPackingProbe();
+    if (result) return result;
+    result=RasterMappedProbe();
     if (result) return result;
     result=RasterShiftProbe();
     if (result) return result;

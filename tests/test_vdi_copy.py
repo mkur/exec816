@@ -49,7 +49,8 @@ static unsigned rasterMode=3;
 static UWORD DisplayEnter(struct DisplayGrant *g)
 { assert(!g->active);g->active=1;++enters;work=0;return 0; }
 static UWORD DisplayLeave(struct DisplayGrant *g)
-{ assert(g->active);if(RASTER)assert(work<=8192);g->active=0;++leaves;return 0; }
+{ assert(g->active);if(RASTER)assert(work<=8192);g->active=0;++leaves;
+  memset(vram+DESKTOP_RASTER_SCRATCH_BASE,0x9b,DESKTOP_RASTER_SCRATCH_BYTES);return 0; }
 static void pointer_erase(UWORD l,UWORD t,UWORD r,UWORD b)
 { assert(l<r && t<b && r<=640 && b<=240); }
 static void outline_toggle(void) {}
@@ -65,6 +66,7 @@ static void blit_mask(ULONG s,UWORD ss,ULONG d,UWORD ds,UWORD w,UWORD h,
     UBYTE am,UBYTE xm,UBYTE mode)
 {
     UWORD x,y;if(fault || !transfer())return;
+    work+=w*h*(mode==0 || !am ? 2:3);
     assert(s+(h-1)*ss+w<=sizeof(vram) && d+(h-1)*ds+w<=sizeof(vram));
     for(y=0;y<h;++y)for(x=0;x<w;++x) {
         UBYTE v=(vram[s+y*ss+x]&am)^xm;
@@ -75,6 +77,7 @@ static void blit_mask(ULONG s,UWORD ss,ULONG d,UWORD ds,UWORD w,UWORD h,
 }
 static void blit_and(ULONG d,UWORD ds,UWORD w,UWORD h,UBYTE v)
 { blit_mask(0,0,d,ds,w,h,0,v,4); }
+static UWORD VbxeOwnerMapPage(UWORD *,ULONG,void (*)(UBYTE *,void *),void *);
 static UWORD VbxeOwnerSubmit(UWORD *d,const UBYTE *p,UWORD count)
 {
     ULONG s=p[0]|((ULONG)p[1]<<8)|((ULONG)p[2]<<16),a=p[6]|((ULONG)p[7]<<8)|((ULONG)p[8]<<16);
@@ -149,6 +152,13 @@ int main(void)
         for(h=1;h<=177;h+=16)for(dx=-8;dx<=8;dx+=RASTER ? 1:8)for(dy=-8;dy<=8;dy+=8)
             check(40+parity,20,w,h,dx,dy,0);
     check(1,0,638,232,0,8,0);check(1,8,638,232,0,-8,0);
+#if RASTER
+    /* Full-width overlap, both shift directions and all four scratch pages
+     * for narrow 240-row copies; one-pixel output exercises zero-count shift. */
+    check(1,0,639,239,-1,1,0);check(0,1,639,239,1,-1,0);
+    check(1,0,1,240,-1,0,0);check(638,0,1,240,1,0,0);
+    check(1,0,2,240,-1,0,0);check(0,0,2,240,1,0,0);
+#endif
     for(i=1;i<=70;++i)check(41,20,400,177,RASTER ? 1:8,8,i);
 #if RASTER
     for(rasterMode=0;rasterMode<16;rasterMode++)for(parity=0;parity<2;parity++)
@@ -160,12 +170,28 @@ int main(void)
     return 0;
 }
 '''
+        mapped=r'''
+static UWORD VbxeOwnerMapPage(UWORD *d,ULONG a,void (*modify)(UBYTE *,void *),void *context)
+{
+    struct RasterMappedShift *p=context;
+    UBYTE before[4096];UWORD row,i;(void)d;
+    if(!transfer())return 5;
+    assert(!(a&4095) && a>=DESKTOP_RASTER_SCRATCH_BASE && a+4096<=DESKTOP_RASTER_SCRATCH_BASE+DESKTOP_RASTER_SCRATCH_BYTES);
+    assert(p->rows>0 && p->rows<=4 && p->bytes>0 && p->bytes<=320);
+    work+=3*p->bytes*p->rows;
+    memcpy(before,vram+a,4096);modify(vram+a,context);
+    for(row=0;row<4;++row)for(i=0;i<1024;++i)
+        if(row>=p->rows || i<512 || i>=512+p->bytes)assert(vram[a+row*1024+i]==before[row*1024+i]);
+    return 0;
+}
+'''
         with tempfile.TemporaryDirectory() as directory:
+            prelude='#include "'+str(ROOT/'c/include/hardware/vbxe-snapshots.h')+'"\n'+prelude
             prelude+='#include "'+str(ROOT/'ports/gem4xe/raster/core.h')+'"\n'
             prelude+='struct GemRasterRect {int32_t sx,sy,dx,dy,width,height;};\n'
             prelude+='struct GemRasterSurface {UBYTE *address;UWORD pitch,width,height;};\n'
             prelude+='struct GemRasterCopy {struct GemRasterSurface source,destination;struct GemRasterRect rect;UWORD mode;};\n'
-            p=Path(directory);(p/'copy.c').write_text(prelude+source+checks)
+            p=Path(directory);(p/'copy.c').write_text(prelude+source+(mapped if raster else '')+checks)
             subprocess.run(['cc','-std=c99','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-Wno-unused-variable',
                 '-I',str(ROOT/'ports/gem4xe/adapter'),'-DRASTER='+str(int(raster)),str(p/'copy.c'),'-o',str(p/'copy')],check=True,capture_output=True)
             result=subprocess.run([str(p/'copy')],capture_output=True,text=True)

@@ -3,9 +3,11 @@
 [Plan index](../README.md) · [VRAM audit](../../history/vbxe-vram-audit.md) ·
 [Display contract](../../reference/display.md)
 
-The workspace/driver foundation is implemented and passes the three optimized
-driver cases; [execution record](../../history/gem-raster-mapped.md).
-Renderer integration and packaged performance checks follow.
+Implemented in two executable commits: workspace/driver foundation, then
+renderer integration with packaged checks. The three optimized driver cases,
+raw callback/optimized RAM probes, physical VDI fixture and exact OF816 sample
+walkthroughs pass. Matched one-pixel copies improve from 625 ms to 149–150 ms;
+[execution record](../../history/gem-raster-mapped.md).
 
 Improve different-parity screen-to-screen `S_ONLY` copies by staging through
 VRAM and running the existing native nibble shifter inside the mapped page.

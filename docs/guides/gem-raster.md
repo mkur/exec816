@@ -7,8 +7,8 @@ Build and launch the OF816 desktop demo:
 
 ```sh
 python3 tools/build_demo.py --gem-desktop --gem-widget --release-compiler \
-  --output build/gem-raster-fast/demo
-build/gem-raster-fast/demo/launch-altirra.command
+  --output build/gem-raster-mapped/demo
+build/gem-raster-mapped/demo/launch-altirra.command
 ```
 
 Leave the five-second autoboot countdown alone. From Terminal, launch
@@ -60,8 +60,8 @@ overlap, memory-only calls and unsupported formats.
 Reproduce packaged development acceptance with:
 
 ```sh
-python3 tools/test_gem_raster_sample.py --bundle build/gem-raster-fast/demo \
-  --output build/gem-raster-fast/sample
+python3 tools/test_gem_raster_sample.py --bundle build/gem-raster-mapped/demo \
+  --output build/gem-raster-mapped/sample
 ```
 
 The runner checks actual pixels against an independent row model, normal
@@ -70,9 +70,9 @@ and checked scanout observations. A second run adds passive call CPU/elapsed
 attribution using the verified relocated call markers from the first:
 
 ```sh
-python3 tools/test_gem_raster_sample.py --bundle build/gem-raster-fast/demo \
-  --trace-from build/gem-raster-fast/sample/results.json \
-  --output build/gem-raster-fast/sample-timing
+python3 tools/test_gem_raster_sample.py --bundle build/gem-raster-mapped/demo \
+  --trace-from build/gem-raster-mapped/sample/results.json \
+  --output build/gem-raster-mapped/sample-timing
 ```
 
 These are development measurements, not a MagiC speed comparison or release

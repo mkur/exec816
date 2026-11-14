@@ -110,10 +110,22 @@ overlap, because their first pass would otherwise change source pixels.
 Modes 8 and 14 invert after the combining pass. Packed source and destination
 edge bytes are staged before writes; outside nibbles are preserved. Row and
 combining units retain the sixteen-row and 8,192 estimated raster-access limits,
-including edge work and each combining/inversion pass. S_ONLY reuses the
+including edge work and each combining/inversion pass. Same-parity S_ONLY reuses the
 existing whole-source edge capture, at most 480 bytes, before its bounded copy
-strips; that auxiliary read is not a sixteen-row strip. Memory forms and
-different-parity copies use private row buffers. In that row path, S_ONLY
+strips; that auxiliary read is not a sixteen-row strip.
+
+Different-parity screen-to-screen S_ONLY captures each complete band into the
+shared 16 KiB VRAM workspace at `$4C000–$4FFFF`. Source and disjoint output
+occupy separate halves of 1,024-byte row slots. The blitter captures source
+pixels, the native nibble shifter runs through mapped 4 KiB pages, and blits
+publish complete bytes and masked partial edges. Downward overlap consumes
+bands bottom first. Staging, CPU shifting and publication together fit the
+8,192 raster-access bound and sixteen-row maximum; actual band height depends
+on byte width and edge work. Every band fences and repairs overlays before
+releasing physical access. No scratch contents survive another owner by contract.
+
+Memory forms and other different-parity modes use private row buffers.
+In that row path, S_ONLY
 copies complete bytes directly at matching parity and uses GEM4XE's adapted
 nibble-shift loop otherwise. It reads destination bytes only at partial edges,
 preserving their outside nibbles. The loop uses native huge pointers, including
@@ -141,7 +153,9 @@ painting. Operational failures mark the UPDATE failed, including partial writes.
 
 The row fallback reuses the workstation copy scratch, enlarged from 480 to
 642 bytes: 162 additional live upper bytes, 160 additional rounded heap bytes.
-Reserved bank-zero and persistent VRAM changes are zero. APP ABI 39 adds the
+The mapped screen path adds 16,384 reserved VRAM bytes, including unused row
+capacity. The CPU aperture and all reserved bank-zero pools are unchanged.
+APP ABI 39 adds the
 named call without moving existing imports; rebuild applications and provider
 together. The [sample](../guides/gem-raster.md) demonstrates scrolling and
 memory forms; the [development record](../history/gem-raster-copy.md) separates

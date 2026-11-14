@@ -4,6 +4,11 @@
 [Sample](../guides/gem-raster.md) · [Plan](../plans/gem4xe/vro-cpyfm-plan.md) ·
 [Development evidence](../development/gem-raster-copy.json)
 
+The subsequent [mapped VRAM implementation](gem-raster-mapped.md) reduces the
+same one-pixel screen copies from 625 ms to 149–150 ms using a 16 KiB workspace
+through the existing 4 KiB CPU aperture. The records below preserve the earlier
+delivery and plain-copy baseline.
+
 ## Reuse and delivered boundary
 
 RC0–RC6 deliver the supported raster profile using algorithms from GEM4XE 0.15 commit

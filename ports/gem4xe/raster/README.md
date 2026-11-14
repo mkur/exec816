@@ -11,6 +11,15 @@ access. It uses the existing caller argument workspace, with no DP reservation.
 `geometry.h` adapts the donor's rectangle normalization and paired clipping
 to widened arithmetic. These units access no hardware or global renderer state.
 
+`staged.h` composes different-parity screen S_ONLY through the drawing adapter:
+source blit, existing native shift inside a mapped page, then masked blitter
+publication. Its 16 KiB reservation contains sixteen 1,024-byte slots, with
+source at +0 and output at +512. Whole-band capture protects overlap; the
+complete raster work determines band height within the current 8,192-access
+and sixteen-row bounds. Physical access and final fences protect scratch only
+until that band returns. The [mapped-copy record](../../../docs/history/gem-raster-mapped.md)
+keeps ownership checks, memory costs and packaged measurements separate.
+
 Reproduce or verify with `python3 tools/generate_gem_raster.py --fetch` and
 `--check`; both `core.h` and `shift.s` are generated. Preserve GEM4XE's
 GPL-2.0-or-later provenance and COPYING notice;
