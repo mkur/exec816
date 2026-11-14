@@ -4,6 +4,7 @@
 #include "../../../c/calypsi/vdi-private.h"
 #include "../adapter/gem-drawing.h"
 #include "drawing.h"
+#include "visible.h"
 
 static void screen(struct GemRasterSurface *s)
 {
@@ -27,15 +28,29 @@ static UWORD copy(struct ExecVDIWorkstation *w,struct GemRasterCopy *p)
     return GemDrawingRasterBorrow(&w->grant,p,w->copyEdges);
 }
 
+struct RasterClient { struct ExecAESContext *context; struct GemRasterCopy *copy; };
+
+static int16_t draw(void *opaque,const struct GemRasterRect *r)
+{
+    struct RasterClient *client=opaque;
+    struct ExecAESContext *c=client->context;
+    UWORD status;
+    client->copy->rect=*r;
+    status=copy(c->workstation,client->copy);
+    ExecAESChanged(c,r->dx,r->dy,r->dx+r->width,r->dy+r->height);
+    if (status!=DISPLAY_OK) { c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR; return 0; }
+    return 1;
+}
+
 void ExecGemRasterCopy(struct ExecAESContext *c,WORD mode,const WORD *points,
     const MFDB *source,const MFDB *destination)
 {
     struct ExecVDIWorkstation *w=c->workstation;
     struct AESWindowView *view=c->view;
     struct GemRasterCopy p;
-    struct GemRasterRect candidate,chosen;
+    struct GemRasterRect whole;
+    struct RasterClient client;
     LONG l,t,r,b;
-    UWORD i,count=0,status;
     if (mode!=S_ONLY || (source && source->fd_addr) || (destination && destination->fd_addr)) {
         c->diagnostic=AES_UNSUPPORTED; return;
     }
@@ -51,17 +66,7 @@ void ExecGemRasterCopy(struct ExecAESContext *c,WORD mode,const WORD *points,
         if (b>(LONG)w->clip[3]+1) b=(LONG)w->clip[3]+1;
     }
     if (!GemRasterClip(&p.rect,0,0,640,240,l,t,r,b)) return;
-    for (i=0;i<view->visibleCount;++i) {
-        candidate=p.rect;
-        if (!GemRasterClip(&candidate,0,0,640,240,view->visible[i].left,
-            view->visible[i].top,view->visible[i].right,view->visible[i].bottom)) continue;
-        chosen=candidate;
-        if (++count>1) { c->diagnostic=AES_UNSUPPORTED; return; }
-    }
-    if (!count) return;
-    p.rect=chosen;
-    if (chosen.sx==chosen.dx && chosen.sy==chosen.dy) return;
-    status=copy(w,&p);
-    ExecAESChanged(c,chosen.dx,chosen.dy,chosen.dx+chosen.width,chosen.dy+chosen.height);
-    if (status!=DISPLAY_OK) { c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR; }
+    if (p.rect.sx==p.rect.dx && p.rect.sy==p.rect.dy) return;
+    whole=p.rect; client.context=c; client.copy=&p;
+    GemRasterVisible(&whole,view->visible,view->visibleCount,draw,&client);
 }

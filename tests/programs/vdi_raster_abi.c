@@ -72,8 +72,16 @@ LONG CopyProbe(void)
     station.clipped=1;station.clip[0]=40;station.clip[1]=35;station.clip[2]=99;station.clip[3]=99;
     vro_cpyfm(2,S_ONLY,points,NULL,NULL);
     CHECK(context.diagnostic==AES_OK && calls==4 && observed[0]==39 && observed[1]==43 && observed[2]==40 && observed[3]==35 && observed[4]==60 && observed[5]==45);
-    station.clipped=0;status=DISPLAY_DEVICE_FAULT;vro_cpyfm(2,S_ONLY,points,NULL,NULL);
-    CHECK(context.diagnostic==AES_DISPLAY_ERROR && context.request.paintFailed && !context.busy && calls==5);
+    station.clipped=0;
+    view.visibleCount=3;
+    view.visible[0].left=20;view.visible[0].top=20;view.visible[0].right=70;view.visible[0].bottom=55;
+    view.visible[1].left=80;view.visible[1].top=20;view.visible[1].right=300;view.visible[1].bottom=55;
+    view.visible[2].left=20;view.visible[2].top=65;view.visible[2].right=300;view.visible[2].bottom=200;
+    vro_cpyfm(2,S_ONLY,points,NULL,NULL);
+    CHECK(context.diagnostic==AES_OK && calls==7 && observed[2]==31 && observed[3]==65 && observed[4]==80 && observed[5]==15);
+    view.visibleCount=1;view.visible[0]=view.work;
+    status=DISPLAY_DEVICE_FAULT;vro_cpyfm(2,S_ONLY,points,NULL,NULL);
+    CHECK(context.diagnostic==AES_DISPLAY_ERROR && context.request.paintFailed && !context.busy && calls==8);
     CHECK(unexpected==0);
     return 0;
 }

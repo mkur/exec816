@@ -11,6 +11,14 @@ from generate_gem_raster import generate,PORT
 
 
 class RasterCore(unittest.TestCase):
+    def test_fragment_order_against_whole_snapshot(self):
+        with tempfile.TemporaryDirectory() as folder:
+            program=Path(folder)/'visible'
+            subprocess.run(['cc','-std=c99','-O2','-I',str(PORT),
+                str(ROOT/'tests/programs/gem_raster_visible.c'),'-o',str(program)],
+                check=True,capture_output=True)
+            subprocess.run([str(program)],check=True,capture_output=True)
+
     def test_independent_pixels_and_geometry(self):
         with tempfile.TemporaryDirectory() as folder:
             program=Path(folder)/'raster'

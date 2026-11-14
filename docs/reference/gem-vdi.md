@@ -95,10 +95,10 @@ A null MFDB pointer or null fd_addr denotes the screen; other screen fields
 are ignored. Corners are inclusive and normalized with widened arithmetic.
 Source dimensions determine the copy size; destination dimensions do not scale.
 
-RC1 supports screen-to-screen S_ONLY (3), either X parity and overlapping
+Screen-to-screen S_ONLY (3) supports either X parity and overlapping
 rectangles. Other modes, scaling and memory forms fail with AES_UNSUPPORTED
-before writes. The effective destination must intersect no more than one
-current visible rectangle; RC2 removes this intermediate restriction. Empty
+before writes. Fragmented visible destinations use ordered row bands/spans;
+results do not depend on visibility-list order. Empty
 clips and identical source/destination copies do no hardware work.
 
 The destination intersects the window work/visible region and user clip;

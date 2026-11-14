@@ -10,9 +10,9 @@ from test_cooperative import data
 from test_dos_stack import execute,ownership
 
 
-def run(out,optimize=True):
+def run(out,optimize=True,visible=False):
     out.mkdir(parents=True,exist_ok=True)
-    source=ROOT/'tests/programs/gem_raster_core.c'
+    source=ROOT/('tests/programs/gem_raster_visible.c' if visible else 'tests/programs/gem_raster_core.c')
     foreign=emit(out/'c',[source],[ROOT/'c/calypsi/image-info.s'],(),optimize,
         includes=[ROOT/'ports/gem4xe/raster'],roots=['RasterProbe','RasterChecks'])
     driver=out/'probe.act'
@@ -30,6 +30,8 @@ def run(out,optimize=True):
         ownership(b,program,program['output'])
         record=dict(status='pass',tier='development',qualification=False,optimize=optimize,
             machine=machine,runtime=runtime,source_sha256=sha256(source),
+            source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [source,
+                *(ROOT/'ports/gem4xe/raster'/n for n in ('core.h','geometry.h','visible.h','inputs.json'))]},
             checks_modulo_65536=b.peek16(foreign['symbols']['RasterChecks']),
             reserved_bank_zero_delta=dict(fixed=0,root_kernel=0,idle=0,per_public_task=[0]*12))
     (out/'results.json').write_text(json.dumps(record,indent=2)+'\n')
@@ -40,4 +42,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--mode',choices=('raw','opt'),default='opt')
-    a=p.parse_args();print(run(a.output.resolve(),a.mode=='opt')['status'])
+    p.add_argument('--visible',action='store_true')
+    a=p.parse_args();print(run(a.output.resolve(),a.mode=='opt',a.visible)['status'])
