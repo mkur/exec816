@@ -27,7 +27,7 @@ PROC Main()
   LET mouse=@service.directory.mouse
   Require(SIZEOF(AESTYPES.MouseState)=100)
   Require(SIZEOF(AESTYPES.Request)=418)
-  Require(SIZEOF(AESSTATE.Client)=224 AND SIZEOF(AESSTATE.Service)=1716)
+  Require(SIZEOF(AESSTATE.Client)=376 AND SIZEOF(AESSTATE.Service)=2324)
   Require(mouse.x=320 AND mouse.y=120 AND mouse.visible=1)
   request.intin(0)=AESTYPES.M_OFF
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
@@ -71,6 +71,64 @@ PROC Main()
   Require(first.mouseHides=0 AND mouse.depth=0)
   request.intin(0)=INT(AESTYPES.M_FORCE OR AESTYPES.ARROW)
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  ; Isolated per-registration history, including the save-only difference.
+  mouse.revision=0
+  mouse.completed=0
+  Require(first.previousForm.kind=AESTYPES.ARROW
+      AND first.savedForm.kind=AESTYPES.ARROW)
+  request.intin(0)=AESTYPES.TEXT_CRSR
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(0)=AESTYPES.M_SAVE
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.savedForm.kind=AESTYPES.TEXT_CRSR
+      AND first.previousForm.kind=AESTYPES.ARROW AND request.mouseWait=0)
+  request.intin(0)=AESTYPES.POINT_HAND
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(0)=AESTYPES.M_PREVIOUS
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.currentForm.kind=AESTYPES.TEXT_CRSR
+      AND first.previousForm.kind=AESTYPES.POINT_HAND)
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.currentForm.kind=AESTYPES.POINT_HAND
+      AND first.previousForm.kind=AESTYPES.TEXT_CRSR)
+  request.intin(0)=AESTYPES.M_RESTORE
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.currentForm.kind=AESTYPES.TEXT_CRSR
+      AND first.previousForm.kind=AESTYPES.POINT_HAND)
+  request.intin(0)=AESTYPES.USER_DEF
+  request.mouseForm(2)=1
+  request.mouseForm(3)=9
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(0)=AESTYPES.M_SAVE
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(0)=111
+  request.intin(1)=1
+  request.mouseForm(3)=4
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(mouse.form.words(3)=4 AND first.currentForm.words(3)=9
+      AND first.savedForm.words(3)=9)
+  request.intin(1)=0
+  request.intin(0)=AESTYPES.ARROW
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  request.intin(0)=AESTYPES.M_PREVIOUS
+  Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(first.currentForm.kind=AESTYPES.USER_DEF AND first.currentForm.words(3)=9
+      AND first.previousForm.kind=AESTYPES.ARROW)
+  Require(second.currentForm.kind=AESTYPES.ARROW
+      AND second.previousForm.kind=AESTYPES.ARROW
+      AND second.savedForm.kind=AESTYPES.ARROW)
+  ; Form retirement waits for physical completion, including newer revisions.
+  first.id=1
+  service.cursorOwner=1
+  Require(AESCURSOR.Retire(service,first,@request)=0)
+  Require(mouse.form.kind=AESTYPES.ARROW AND request.mouseWait=mouse.revision)
+  mouse.revision==+1
+  mouse.completed=mouse.revision
+  Require(AESCURSOR.Retire(service,first,@request)<>0)
+  mouse.completed=0
+  mouse.revision==+1
+  mouse.status=1
+  Require(AESCURSOR.Retire(service,first,@request)<>0)
   EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
 
 RETURN

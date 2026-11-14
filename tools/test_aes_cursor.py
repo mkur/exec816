@@ -48,7 +48,7 @@ def physical(bridge,program,foreign,report):
         cropped=b''.join(raw[y*frame.stride+64:y*frame.stride+2624] for y in range(240))
         return bytearray(colors[cropped[i:i+3]] for i in range(0,len(cropped),4))
     previous=None
-    for phase in range(1,147):
+    for phase in range(1,152):
         reach(phase)
         address=int.from_bytes(bridge.memdump(sy['AESMouse'],4),'little')
         raw=bridge.memdump(address,layout()['MouseState']['size'])
@@ -79,8 +79,13 @@ def physical(bridge,program,foreign,report):
             elif phase>=138:
                 names=['ARROW','TEXT_CRSR','HOURGLASS','POINT_HAND',
                        'FLAT_HAND','THIN_CROSS','THICK_CROSS','OUTLN_CROSS']
-                name=names[phase-138] if phase<=145 else 'HOURGLASS'
-                expected=form_overlay(previous,point,DONOR['mform_words'](name))
+                if phase==151:
+                    expected=form_overlay(previous,point,[0,0,1,9,1]+[65535]*16+[0]*16)
+                else:
+                    name=names[phase-138] if phase<=145 else {
+                        146:'HOURGLASS',147:'HOURGLASS',148:'ARROW',
+                        149:'POINT_HAND',150:'ARROW'}[phase]
+                    expected=form_overlay(previous,point,DONOR['mform_words'](name))
             else: expected=overlay(SimpleNamespace(pixels=previous),point)
             digest=pixels(bridge,folder,expected,palette=DESKTOP_PALETTE)
             records.append(dict(phase=phase,position=point,sha256=digest))

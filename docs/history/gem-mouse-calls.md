@@ -89,3 +89,36 @@ guards, alignment and unused capacity. Saved/previous operations remain GM4.
 checks, all standard-form scanouts and the 22 native routing assertions.
 The 715 host checks pass with five skips. Guards, heap ownership and OS
 restoration remain enabled; these checks do not establish release qualification.
+
+## GM4: saved/previous forms and lifetime
+
+Current, previous and saved forms are now per-registration owned records.
+M_SAVE copies current without changing previous; M_RESTORE performs an ordinary
+selection and M_PREVIOUS swaps current/previous using the request's owned
+scratch. This preserves USER_DEF data across source reuse and avoids overwriting
+an aliased history input. Raw VDI and temporary system forms do not mutate AES
+history. Saved and inactive form operations return without borrowing a display
+grant or waiting for unrelated physical work.
+
+Retirement preserves the registration until its last visibility/form revision
+completes or a newer coherent target supersedes it. Driver fault handling stays
+in the existing fenced backend; reset-required failure retains the outstanding
+request, lease and renderer storage. Repeated application init/exit clears the
+native client record, including all three forms and local hide contributions.
+
+Each native client grows 152 upper bytes to 376, and the four-client service
+grows 608 bytes to 2,324 (2,328 after heap rounding). No new per-call allocation,
+readonly form, scratch or VRAM reservation is added. Public ABI remains APP 45 /
+AES 24. Fixed, root, kernel, idle and every public Task reserve zero additional
+bank-zero bytes, including guards, alignment and unused capacity.
+
+The lifecycle fixture now collects an independent malformed-message reply
+before freeing that descriptor. A completed caller-local window operation does
+not prove that unrelated reply arrived. The previous single poll followed by
+freeing the still-owned message could corrupt shutdown. The fixture also drains
+pending desktop work before stopping the console, as the other window tests do.
+
+[GM4 development evidence](../development/gem-mouse-gm4.json) records 52 policy
+checks in each compiler mode, 431 cursor/history assertions, the complete hidden
+window lifecycle and reset-required cursor storage retention. The host suite
+passes 715 checks with five skips. This is development coverage.

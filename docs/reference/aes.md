@@ -40,10 +40,10 @@ These are the latest presenter-published values, rather than a hardware read.
 `graf_mouse(mode,form)` and AESPB opcode 78 (one input/result word and one
 address input) implement ARROW, TEXT_CRSR, HOURGLASS (BUSYBEE/BUSY_BEE),
 POINT_HAND, FLAT_HAND, THIN_CROSS, THICK_CROSS, OUTLN_CROSS, USER_DEF,
-M_OFF and M_ON. Other selectors fail
+M_OFF, M_ON, M_SAVE, M_RESTORE and M_PREVIOUS. Other selectors fail
 with AES_UNSUPPORTED. M_FORCE is accepted and stripped as in MagiC; it does not
 override the input recipient. The 74-byte MFORM declaration and standard selector
-constants are public; saved/previous forms are not yet admitted.
+constants are public.
 USER_DEF accepts one plane, hotspots 0..15 and logical pens 0..15.
 It copies all 37 words before a wait and retains no application form pointer.
 Other modes ignore that pointer. Unsupported formats fail without mutation.
@@ -57,6 +57,15 @@ installed form. Raw vsc_form changes only device state and survives ordinary
 motion until an AES installation or recipient change. Form changes while
 stationary erase and repaint the pointer; queries still return its logical
 hotspot position. Rendering clips against the screen independently of VDI clip.
+
+Current, previous and saved forms belong to the registration and initialize to
+ARROW. Ordinary selection records the old current as previous, even when the
+pixels are identical. M_PREVIOUS swaps current and previous; M_RESTORE installs
+saved as an ordinary transition. M_SAVE only copies current to saved, preserving
+appearance and previous. This save-only behavior follows GEM4XE; MagiC's
+save fall-through also changes previous. Raw VDI installation and system/menu
+overrides change none of these application history slots. Inactive history
+changes and M_SAVE need no physical operation or RPC.
 
 Each registration owns its nested AES hide contribution. Only the shared
 aggregate's outer transitions add/balance a VDI device hide. M_ON at local zero

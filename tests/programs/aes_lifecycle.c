@@ -224,18 +224,21 @@ UWORD AESRun(void)
     CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
     while (done!=2) Wait(wake);
     stable();remove_hidden(last,1);release();
-    /* An older message defers caller admission before this new operation. */
+    /* An older message can defer caller admission. Its independent reply
+     * remains the lifetime boundary even if the local window call finishes. */
     LifePhase=7;
     {
         struct MsgPort *reply=CreateMsgPort();CHECK(reply!=NULL);
         struct Message *older=AllocMem(sizeof(*older),MEMF_PUBLIC|MEMF_CLEAR);
+        struct Message *returned;
         CHECK(older!=NULL);older->mn_ReplyPort=reply;
         for (;;) { Forbid();if (GATE==1) break;Permit();ExecYield(); }
         PutMsg(c->service,older);
         sequence=c->sequence;system=NATIVE(1);
         last=wind_create(AES_WINDOW_KIND,32,24,128,64);
         CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
-        CHECK(GetMsg(reply)==older);
+        while ((returned=GetMsg(reply))==NULL) Wait(1UL<<reply->mp_SigBit);
+        CHECK(returned==older && returned->mn_Node.ln_Type==NT_REPLYMSG);
         CHECK(controller->tc_TDNestCnt==0);Permit();DeleteMsgPort(reply);
         FreeMem(older,sizeof(*older));
     }

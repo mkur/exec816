@@ -6,7 +6,7 @@
 [MGVIEW foundations](mgview-foundation-plan.md) ·
 [MagiC mouse cross-check](../../history/gem-mouse-magic-review.md)
 
-Status: GM1–GM3 implemented; GM4–GM5 pending, 2026-11-14. Deliver the remaining
+Status: GM1–GM4 implemented; GM5 pending, 2026-11-14. Deliver the remaining
 slices, committing each after its development checks pass. This plan adds shared SDK services;
 MGVIEW itself remains a separate application port. Current contracts continue
 to describe the implemented system until each slice lands.

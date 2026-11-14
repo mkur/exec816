@@ -81,6 +81,28 @@ PUBLIC CARD FUNC Select(AESSTATE.Service POINTER service)
 
 RETURN(status)
 
+; Pixel identity may avoid rendering, but an ordinary selection still records
+; the old current form as previous. Input never aliases a history slot.
+CARD FUNC Transition(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client INT kind INT POINTER words)
+  CARD status
+
+  status=AESTYPES.OK
+  IF service.cursorOwner=client.id AND client.id<>0 THEN
+    status=Install(service,kind,words)
+  FI
+  IF status=AESTYPES.OK THEN
+    A816MEMORY.Move(BYTE POINTER(@client.previousForm),
+        BYTE POINTER(@client.currentForm),SIZEOF(AESTYPES.MouseForm))
+    client.currentForm.kind=kind
+    IF kind=AESTYPES.USER_DEF THEN
+      A816MEMORY.Move(BYTE POINTER(@client.currentForm.words),
+          BYTE POINTER(words),AESTYPES.MFORM_WORDS*2)
+    FI
+  FI
+
+RETURN(status)
+
 ; Return before any mutation if a new physical target cannot be identified.
 CARD FUNC SetDepth(AESSTATE.Service POINTER service LONGCARD depth)
 
@@ -138,16 +160,19 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
         FI
       FI
     ELSEIF mode<=AESTYPES.OUTLN_CROSS OR mode=AESTYPES.USER_DEF THEN
-      IF service.cursorOwner=client.id AND client.id<>0 THEN
-        status=Install(service,INT(mode),@request.mouseForm)
-      FI
-      IF status=AESTYPES.OK THEN
-        client.currentForm.kind=INT(mode)
-        IF mode=AESTYPES.USER_DEF THEN
-          A816MEMORY.Move(BYTE POINTER(@client.currentForm.words),
-              BYTE POINTER(@request.mouseForm),AESTYPES.MFORM_WORDS*2)
-        FI
-      FI
+      status=Transition(service,client,INT(mode),@request.mouseForm)
+    ELSEIF mode=AESTYPES.M_SAVE THEN
+      A816MEMORY.Move(BYTE POINTER(@client.savedForm),
+          BYTE POINTER(@client.currentForm),SIZEOF(AESTYPES.MouseForm))
+    ELSEIF mode=AESTYPES.M_RESTORE THEN
+      status=Transition(service,client,client.savedForm.kind,
+          @client.savedForm.words)
+    ELSEIF mode=AESTYPES.M_PREVIOUS THEN
+      ; Preserve the desired input before Transition overwrites previous.
+      A816MEMORY.Move(BYTE POINTER(@request.mouseForm),
+          BYTE POINTER(@client.previousForm.words),AESTYPES.MFORM_WORDS*2)
+      status=Transition(service,client,client.previousForm.kind,
+          @request.mouseForm)
     ELSE
       status=AESTYPES.UNSUPPORTED
     FI
@@ -169,8 +194,12 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
     status=AESTYPES.UNSUPPORTED
   FI
 
-  request.mouseWait=IF status=AESTYPES.OK THEN
-      service.directory.mouse.revision ELSE LONGCARD(0) FI
+  request.mouseWait=0
+  IF status=AESTYPES.OK AND (request.intin(1)<>0
+      OR mode=AESTYPES.M_OFF OR mode=AESTYPES.M_ON
+      OR (mode<>AESTYPES.M_SAVE AND service.cursorOwner=client.id)) THEN
+    request.mouseWait=service.directory.mouse.revision
+  FI
   request.intout(0)=INT(status=AESTYPES.OK)
   EXEC.Permit()
 
@@ -231,7 +260,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     status=Select(service)
   FI
   request.mouseWait=service.directory.mouse.revision
-  IF client.mouseHides<>0 THEN
+  IF status=AESTYPES.OK AND client.mouseHides<>0 THEN
     IF service.cursorHides=LONGCARD(client.mouseHides)
         AND service.directory.mouse.depth<>0 THEN
       status=SetDepth(service,service.directory.mouse.depth-1)

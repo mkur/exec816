@@ -10,7 +10,7 @@ form override. The plan starts with real hide/show for MGVIEW and ends with
 saved forms and small-app package acceptance.
 GM1 hide/show/state, GM2 custom forms/recipient selection and GM3 standard forms
 are implemented; see the [execution record](../../history/gem-mouse-calls.md).
-GM4–GM5 remain pending.
+GM4 saved/previous forms and lifecycle are implemented; GM5 remains pending.
 
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before

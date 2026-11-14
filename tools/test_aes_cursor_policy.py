@@ -23,7 +23,7 @@ def run(out,mode,routing=False):
         runtime,_=execute(bridge,program,frame_limit=600,timeout=60)
         ownership(bridge,program,program['output'])
         checks=data(bridge,program['image'],'checks',True)[0]
-        require(checks==(22 if routing else 29),'Incomplete cursor policy checks: '+str(checks))
+        require(checks==(22 if routing else 52),'Incomplete cursor policy checks: '+str(checks))
     report=dict(status='pass',tier='development',qualification=False,mode=mode,
         checks=checks,machine=machine,runtime=runtime,build=program['build'])
     (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')

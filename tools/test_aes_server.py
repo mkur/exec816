@@ -396,7 +396,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -458,7 +458,7 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor') else ''}
+''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle') else ''}
   Require(AESCORE.Idle(service)<>0)
 {exhaustion}
 RETURN
@@ -631,7 +631,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[224,1716],
+                require(report['lifecycle_stats'][6:]==[376,2324],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')

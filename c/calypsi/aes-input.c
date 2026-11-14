@@ -36,6 +36,7 @@ WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
     c->diagnostic=c->request.status;
     if (c->diagnostic!=AES_OK) return 0;
     target=c->request.mouseWait;
+    if (!target) return 1;
     if (c->workstation && mouse->completed<target && !mouse->status)
         status=GemDrawingMouseBorrow(&c->workstation->grant,mouse);
     if (status!=DISPLAY_OK) c->diagnostic=AES_DISPLAY_ERROR;

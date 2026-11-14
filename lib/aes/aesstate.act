@@ -37,6 +37,7 @@ PUBLIC TYPE Client=[
   Menu POINTER menu
   CARD mouseHides
   AESTYPES.MouseForm currentForm
+  AESTYPES.MouseForm previousForm,savedForm
   DESKTYPES.GuiPending gui
   BYTE guiNext,windowWaiting,closeRequested,windowLocks,waitMode
 ]
