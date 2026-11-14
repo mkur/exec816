@@ -1,12 +1,11 @@
 # Implementation plans
 
 - [GEMDOS compatibility implementation](gemdos-compatibility-implementation-plan.md):
-  four executable slices for shared wrappers, native ExamineFH, FSTAT and
-  consumer acceptance.
+  shared wrappers, native ExamineFH, FSTAT and loader/QED consumer acceptance.
 
 - [Small GEMDOS source compatibility layer](gemdos-compatibility-design.md):
-  proposed extraction of QED's thin wrappers over the common C runtime, with
-  open-handle metadata and a narrow FSTAT profile for MGVIEW.
+  design rationale for QED's shared common-runtime wrappers, open-handle
+  metadata and a narrow FSTAT profile for MGVIEW. Implemented.
 
 - [Mapped VRAM raster workspace](gem4xe/mapped-raster-plan.md): 16 KiB private
   staging, mapped native nibble shifting and bounded blitter publication through

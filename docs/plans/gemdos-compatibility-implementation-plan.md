@@ -85,4 +85,17 @@ unsupported streams/commands, invalid descriptors, scratch failure, rejected
 bounded/unknown/type metadata and pending transfer errors pass. The
 [supported source contract](../reference/gemdos-compatibility.md) records the
 280-byte temporary upper backing and 52-byte local result. Reserved bank-zero
-cost remains zero in every category. GC4 consumer acceptance remains in progress.
+cost remains zero in every category.
+
+GC4 implemented. [Consumer evidence](../development/gemdos-compatibility-gc4.json)
+records exact-read loader/model limits and unwind, independent ATR bytes and
+the QED migration acceptance run. The final graphical check uses only Counter:
+two private instances tick, close, restart and stop before entry (five collected
+executions). Its APP is byte-identical to the rebuilt ABI 40 distribution.
+The [delivery record](../history/gemdos-compatibility.md) records package checks,
+the unchanged production bank-zero maps and the broader menu-observer limit.
+All four implementation slices are complete at the development tier.
+
+For routine follow-up changes, prefer the small GEMDOS probes and Counter.
+Repeat QED scenarios when editor-specific behavior or file/save changes need
+them; the initial migration does not make QED a mandatory test for every slice.

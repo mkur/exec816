@@ -1,0 +1,655 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "GC4 loader/model acceptance; one QED migration cohort; routine GUI acceptance uses simple loaded Counters",
+  "cases": [
+    {
+      "name": "document",
+      "status": "pass",
+      "checks": [
+        27
+      ],
+      "completed": [
+        4
+      ],
+      "app_sha256": "9e26ac04b4e5083230f0cca76164287a0718c18f013bcd7e6df29b27ce77a39c",
+      "app_abi": 40,
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/tests/programs/gemdos_document.c": "deee8e40a8e7fc89469bc5b7693c24067a48f8c75c3f7d1a397647b7a5d785a1",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/control.c": "bb041ab48df7fb52cab8831fa4c92be7d00123a8a8a1f8d753b1af0d671674b5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "913f87356fe6ef8c1659e32f1e85a7a8e1cb8c898db8aae25ae50ea967ac6f13",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/document/app/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 13545,
+        "native_nmi_count": 10389
+      },
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 4,
+            "ordinal": 1,
+            "dp": 4352,
+            "clock": 40061683,
+            "app_entry": 327680,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 17586,
+            "dp": 4352,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 419,
+            "pc": 1685554,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 41520006
+          },
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 17564,
+            "dp": 4352,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 397,
+            "pc": 1685582,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836:after-tcs",
+            "clock": 41520010
+          },
+          {
+            "slot": 4,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 17522,
+            "dp": 17527,
+            "pool_bytes": 1312,
+            "expected_dp": 4352,
+            "headroom": 355,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 41520148
+          }
+        ]
+      },
+      "persisted_documents": {
+        "allocation": {
+          "sectors": 2880,
+          "sector_bytes": 256,
+          "allocated": 769,
+          "free": 2111,
+          "files": 12,
+          "directories": 1
+        },
+        "files": {
+          "DOC08.DAT": {
+            "bytes": 23,
+            "sha256": "746bd4312d20dc75edc1a95799f1f8a5e528531186a7742604a5912a596506fc"
+          },
+          "DOC06.DAT": {
+            "bytes": 23,
+            "sha256": "746bd4312d20dc75edc1a95799f1f8a5e528531186a7742604a5912a596506fc"
+          }
+        }
+      }
+    },
+    {
+      "name": "counter",
+      "status": "pass",
+      "checks": [
+        29
+      ],
+      "completed": null,
+      "app_sha256": "eaa0d504d43a316804b15c4cbd8385544249f6b69813ac7f401a850de8edcb7e",
+      "app_abi": 40,
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/examples/gem-counter/main.c": "c2b0041ff76452a627d3fc2b68ecb7863ab0570b48e71ee4787af4c14ac171a8",
+        "/Users/michalkurcewicz/action/exec816-public/examples/gem-counter/counter.c": "1f6b93eabe973176784ff6f715539e722b496a5b3dd7b1488189e0198bb96f9d",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "913f87356fe6ef8c1659e32f1e85a7a8e1cb8c898db8aae25ae50ea967ac6f13",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/counter/apps/counter/runtime-main.c": "0dc3d1f1c4d65f405c85a8d87c39df94e37e2a9c60f2a0a7aac2e7026e7cff45"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 40483,
+        "native_nmi_count": 1327
+      },
+      "stacks": null,
+      "cases": [
+        {
+          "phase": 1,
+          "bases": [
+            327680,
+            458752
+          ],
+          "counts": [
+            2,
+            2
+          ]
+        },
+        {
+          "phase": 2,
+          "bases": [
+            327680,
+            458752
+          ],
+          "counts": [
+            2,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "qed-files",
+      "status": "pass",
+      "checks": [
+        26
+      ],
+      "completed": [
+        3
+      ],
+      "app_sha256": "058eb40a896a9d6229a83615b78e4102a162d6f842c32e6b442ff5a476f545a4",
+      "app_abi": 40,
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/tests/programs/qed_native_files.c": "d357affed90887df3b8aba504bcdbf3a303dbb1005feb39a1698a8d762e501db",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/allocation.c": "8189ebd6707f8843c8e613c8271f76ff6e1bb6e114d4406e7d051bd68ae63974",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/files.c": "a2f880865fa304e72b0552265d51bf0d69b51a07e09017b1b6c3bc5769705184",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/library.c": "4242a4acebcc26ab2f5b0af89f9ddc7e538283e690397e8a7fdec94251a48ec8",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/control.c": "bb041ab48df7fb52cab8831fa4c92be7d00123a8a8a1f8d753b1af0d671674b5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "913f87356fe6ef8c1659e32f1e85a7a8e1cb8c898db8aae25ae50ea967ac6f13",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/qed-files/app/runtime-main.c": "ce0ec88286e52f4de725cf5cf545b4ba852501505b03cd2cb3859c5daf157309"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 37506,
+        "native_nmi_count": 2669
+      },
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 7,
+            "ordinal": 1,
+            "dp": 5120,
+            "clock": 49823493,
+            "app_entry": 337716,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 24138,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1691,
+            "pc": 1685446,
+            "marker": "M_DOSCLIENT_SETERROR_F2B11A26",
+            "clock": 68788570
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 24130,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1683,
+            "pc": 1685474,
+            "marker": "M_DOSCLIENT_SETERROR_F2B11A26:after-tcs",
+            "clock": 68788573
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 24107,
+            "dp": 3072,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1660,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 68808967
+          }
+        ]
+      }
+    },
+    {
+      "name": "qed-saving",
+      "status": "pass",
+      "checks": [
+        14
+      ],
+      "completed": [
+        2
+      ],
+      "app_sha256": "2e9b980706c83681a3bde5d44f24db3f3f14dc82f59dc19f469888acdf08118f",
+      "app_abi": 40,
+      "inputs": {
+        "/Users/michalkurcewicz/action/exec816-public/tests/programs/qed_transaction.c": "df6ad410886c26989a140e2ef3b98386c2d8370639761683a3a5a2e21b9f3b54",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/allocation.c": "8189ebd6707f8843c8e613c8271f76ff6e1bb6e114d4406e7d051bd68ae63974",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/files.c": "a2f880865fa304e72b0552265d51bf0d69b51a07e09017b1b6c3bc5769705184",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/library.c": "4242a4acebcc26ab2f5b0af89f9ddc7e538283e690397e8a7fdec94251a48ec8",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/path.c": "d2d2ac0c809f9b9c4ad0465d5cb57b6304b1f49ba663717265fa233846749415",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/stage.c": "f61f41163c7f8a9ec10424bc470595ef0493df8ceb7c4ecc7b1b8fd07fb5abc3",
+        "/Users/michalkurcewicz/action/exec816-public/ports/gem4xe/apps/qed/native/save.c": "2a67f58da86ea3cb4360e1950bb58c12d22163f745709d521bc5859eacf76f64",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/qed-saving/inputs/source/qed/src/memory.c": "302114e0d99ed08a70a64001ba9dd65ecf30cce0112034acf16ca54e1ce7de91",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/qed-saving/inputs/source/qed/src/clipbrd.c": "4f35d9d510e2e5e36542fb9056ddcc7e28b4369fd30d6b9d2b36e9f4d7e87b80",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/files.c": "d4212b1211b81ac418cd14385fa60c6a0ae57dc96680f301ec4e188976cf8755",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/allocation.c": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/termination.c": "e17d73e0de49453fe75399066052917426a71305914517227f0e1808469eaa25",
+        "/Users/michalkurcewicz/action/exec816-public/c/compat/gemdos/control.c": "bb041ab48df7fb52cab8831fa4c92be7d00123a8a8a1f8d753b1af0d671674b5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/allocation.c": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/arguments.c": "bb36adeedd1a0e7c1970db3f5ba4c061a77c930d42e9f84dc2f872d961e28743",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/files.c": "913f87356fe6ef8c1659e32f1e85a7a8e1cb8c898db8aae25ae50ea967ac6f13",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/stdio.c": "99d93d14142295aabee2133f596b29dcc61c3dc1bc15598bfa55468bedfbd9df",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/library.c": "8f2f6eb31fac73f838cd5aad77b40ba0d65c3176b2dce54282ac2a47297ce663",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/lifecycle.c": "01598d2f77a544bdd9f63b1b9a960c12890bcb4dde325a0c569af9d24e7164d5",
+        "/Users/michalkurcewicz/action/exec816-public/c/runtime/scope.c": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35",
+        "/Users/michalkurcewicz/action/exec816-public/build/gemdos-gc4/qed-saving/app/runtime-main.c": "ce0ec88286e52f4de725cf5cf545b4ba852501505b03cd2cb3859c5daf157309",
+        "/Users/michalkurcewicz/action/exec816-public/tests/programs/qed_stage.c": "4617bc68bcdb4cc6048c1142462e60095f03ea29c8a3a0e4ad24d7c237ad97c3"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_irq_count": 37952,
+        "native_nmi_count": 24839
+      },
+      "stacks": {
+        "scope": "Actual captured APP image bases and native/provider sites; per-pool Process ordinals, DP and guards remain checked. Broad candidate-only sites are excluded. Selected-PC observations, not a watermark.",
+        "lifetimes": [
+          {
+            "slot": 7,
+            "ordinal": 1,
+            "dp": 5120,
+            "clock": 65717807,
+            "app_entry": 359363,
+            "identity": 1
+          }
+        ],
+        "minima": [
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "ordinary-sample",
+            "minimum_s": 24172,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1725,
+            "pc": 1685554,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836",
+            "clock": 67834956
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "frame-reservation",
+            "minimum_s": 24150,
+            "dp": 5120,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1703,
+            "pc": 1685582,
+            "marker": "M_DOSCLIENT_SERVICEWAIT_F299F836:after-tcs",
+            "clock": 67834959
+          },
+          {
+            "slot": 7,
+            "lifetime": 1,
+            "kind": "async",
+            "minimum_s": 24108,
+            "dp": 24113,
+            "pool_bytes": 2560,
+            "expected_dp": 5120,
+            "headroom": 1661,
+            "pc": 6912,
+            "marker": "native_irq",
+            "clock": 325498416
+          }
+        ]
+      },
+      "transaction_cases": 41,
+      "saving_core": {
+        "blocks": 2,
+        "payload": 52432,
+        "backing": 52464,
+        "peak_backing": 57990
+      }
+    }
+  ],
+  "document_limits": {
+    "max_file_bytes": 65519,
+    "max_line_pointers": 16380,
+    "oversized_file": 65520,
+    "oversized_line_pointers": 16381,
+    "short_read": "rejected with unwind",
+    "allocation_failures": "FSTAT scratch, text and index",
+    "terminal_close": "consumed once; unpublished document"
+  },
+  "qed_transaction_audit": {
+    "status": "pass",
+    "scope": "Preauthorized core; injected uncertainty is not an offline transport claim",
+    "allocation": {
+      "sectors": 2880,
+      "sector_bytes": 256,
+      "allocated": 196,
+      "free": 2684,
+      "files": 5,
+      "directories": 1
+    },
+    "image_sha256": "71edc9a39cb68c5cbe4449b80610500a128162b901201ee3bd504cf77a55f019",
+    "files": {
+      "AUDIT.TXT": {
+        "bytes": 5,
+        "sha256": "d09cf3ea81e47a45d92e668a57be70abc15a5abfbcf19c955cd0ee6571b6f353"
+      },
+      "AUDIT.BAK": {
+        "bytes": 3,
+        "sha256": "cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4"
+      }
+    }
+  },
+  "package_audit": {
+    "status": "pass",
+    "tier": "development",
+    "qualification": false,
+    "zip_sha256": "4a8c526dd5b18fa90de8989142a9e626a1a985b1c46a317425282a708350f521",
+    "zip_bytes": 2991714,
+    "members": [
+      "Exec-of816.xex",
+      "README.txt",
+      "SHA256SUMS",
+      "altirraos-816.rom",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car",
+      "cartridge/Exec-of816-atarimax-8mbit.bin",
+      "cartridge/README.txt",
+      "exec816.atr",
+      "licenses/ALTIRRAOS-LICENSE.txt",
+      "licenses/CALCULATOR-COPYING.LIB.txt",
+      "licenses/CALCULATOR-COPYING.txt",
+      "licenses/CALCULATOR-LICENSING.md",
+      "licenses/CALCULATOR-PROVENANCE.txt",
+      "licenses/EXEC816-GPL-3.0.txt",
+      "licenses/EXEC816-LICENSING.md",
+      "licenses/EXEC816-MIT.txt",
+      "licenses/G4BENCH-COPYING.LIB.txt",
+      "licenses/G4BENCH-COPYING.txt",
+      "licenses/G4BENCH-LICENSING.md",
+      "licenses/G4BENCH-PROVENANCE.txt",
+      "licenses/GEM-COPYING.LIB.txt",
+      "licenses/GEM-COPYING.txt",
+      "licenses/GEM-FONT-NOTICE.txt",
+      "licenses/GEM-LICENSING.md",
+      "licenses/GEMARC-COPYING.LIB.txt",
+      "licenses/GEMARC-COPYING.txt",
+      "licenses/GEMARC-LICENSING.md",
+      "licenses/GEMARC-PROVENANCE.txt",
+      "licenses/OF816-LICENSE.txt",
+      "licenses/SDX-UTILITIES-NOTICE.txt"
+    ],
+    "checksums": {
+      "Exec-of816.xex": "aa0f8996093bb5f32971e3eaead2a2e9117e98d26b0ac0f7998a91ac0bb04ceb",
+      "README.txt": "86f90327985b93ccf42b208bbd0ea8aa7f8c793ae8f5baec61a399169891c858",
+      "altirraos-816.rom": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "cartridge/Exec-of816-atarimax-8mbit-new.car": "b3db576808d08f35c5cb6392defb0b8a697b72476c1008c61de3178180b1d801",
+      "cartridge/Exec-of816-atarimax-8mbit-old.car": "6c1617efab52b75fa82ea873c5837dbdb49c0a04b6e9adb64d03d72a1c9c3d07",
+      "cartridge/Exec-of816-atarimax-8mbit.bin": "952f04bf6f824fb0400196f40d3308d74155eab7d02ec3d518036320577abc6f",
+      "cartridge/README.txt": "376f3c7f227d7b87265b476bafefbb5edeb61d600b93f810b52212bc64c8fe97",
+      "exec816.atr": "f2245b35b871df61a9695cabe906e03b4831a25d2b81fdb7a31f8e62245362fe",
+      "licenses/ALTIRRAOS-LICENSE.txt": "8e3af350682f0a12d311d35fd382c9119235467be8292d89a1bb062116c675f6",
+      "licenses/CALCULATOR-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/CALCULATOR-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/CALCULATOR-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/CALCULATOR-PROVENANCE.txt": "3f90b2f47985b07a6908cea27104089d7ffffdd0d1f9c2da4cbcade56ba4415e",
+      "licenses/EXEC816-GPL-3.0.txt": "fb981668c18a279e285fc4d83fba1e836cc84dd4daa73c9697d3cfd2d8aca6e0",
+      "licenses/EXEC816-LICENSING.md": "93b139ca3b1fb5c43b8619dd1592305350a1e4b1b15b74557aebc06ded61595a",
+      "licenses/EXEC816-MIT.txt": "2b9f2e62ae7bb2998338aea1b6462a989707ec1812b6a7d921cbea1503ac44c0",
+      "licenses/G4BENCH-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/G4BENCH-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/G4BENCH-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/G4BENCH-PROVENANCE.txt": "7dfc2f08d87a16f77653f6f5173fbb185b22b6b269909c26d359e01762b36a9e",
+      "licenses/GEM-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/GEM-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/GEM-FONT-NOTICE.txt": "e1b7042da9e3da387e3f3cb7c381022305adaa2f5e40c67bd38858c66b6cb2b9",
+      "licenses/GEM-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/GEMARC-COPYING.LIB.txt": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+      "licenses/GEMARC-COPYING.txt": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+      "licenses/GEMARC-LICENSING.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+      "licenses/GEMARC-PROVENANCE.txt": "38dcc3771bc511bb3c7bb9a003e4d168d507d98a8be54d36517d81bd3a3ccf43",
+      "licenses/OF816-LICENSE.txt": "0c0542e8eadcb1e3d6f855c32545c607f4793ba1c4e76fb92300c161fa8dd9a1",
+      "licenses/SDX-UTILITIES-NOTICE.txt": "a1e4d9afd2a6ac478c13ba6a85d0a0b0444f9ebeba915d381de90995a14d94a1"
+    },
+    "allocation": {
+      "sectors": 8192,
+      "sector_bytes": 256,
+      "allocated": 4695,
+      "free": 3497,
+      "files": 74,
+      "directories": 6
+    },
+    "matched_system_files": 74,
+    "matched_disk_apps": 13,
+    "qed_separate": true
+  },
+  "unchanged_production_reservations": {
+    "regions": true,
+    "task_pools": true,
+    "runtime_reservations": true,
+    "bank_zero_budget": true
+  },
+  "counter_matches_packaged_app": true,
+  "app_abi": 40,
+  "host": {
+    "tests": 715,
+    "skipped": 4,
+    "final_focused_abi_tests": 11
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root_kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "includes": "guards, alignment and unused capacity"
+  },
+  "fstat_code_bytes": 323,
+  "gui_scope": {
+    "selected": "Counter tick, physical close, restart, stop before start; five collected executions",
+    "broader_menu_walkthrough": "About-menu observer did not complete on either previous ABI 39 package or rebuilt ABI 40 package; outside this slice acceptance; no GUI menu code changed"
+  },
+  "atr_boot": {
+    "of816_loaded": true,
+    "autoboot_frames": 249,
+    "native_handoff_frame": 22600,
+    "source_bytes": 638225,
+    "reader_guards": "intact",
+    "firmware_context_restored": true,
+    "scope": "Boot transport observed before optional menu walkthrough"
+  }
+}

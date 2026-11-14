@@ -232,11 +232,12 @@ extension.
 
 ## Colour GEM desktop roadmap
 
-The proposed [GEMDOS compatibility design](plans/gemdos-compatibility-design.md)
-extracts QED's generic wrappers over the common C runtime for MGVIEW and other
-source ports. It specifies descriptor/allocation ownership, a reusable native
-open-handle metadata operation and a narrow FSTAT information profile. This is
-a design note; the shared layer and MGVIEW port are not yet implemented.
+The [GEMDOS source subset](reference/gemdos-compatibility.md) shares QED's generic
+wrappers over the common C runtime and provides native ExamineFH plus the
+size/type FSTAT profile for MGVIEW-style loading. The
+[implementation plan](plans/gemdos-compatibility-implementation-plan.md) records
+the executable slices and consumer checks. The complete MGVIEW GUI port and
+the SDX FILELENG consumer migration remain separate work.
 
 The [GEM4XE raster-copy plan](plans/gem4xe/vro-cpyfm-plan.md) is implemented
 through RC6: conventional `vro_cpyfm`, device-format memory forms, all sixteen

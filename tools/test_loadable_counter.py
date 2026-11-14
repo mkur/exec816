@@ -11,13 +11,20 @@ from test_mouse_observe import PIN,BRIDGE,ROM
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 from desktop_mouse import schedule
+from build_c_program import build as build_application
+from c_program import ABI
 
 def run(out,reuse=False):
     out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if reuse else build_desktop(out,
-        source=ROOT/'tests/programs/c_counter.act',program_output=out/'program',
-        system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
-                                         sector_bytes=256,profile=4,format=2)])
+    if reuse:
+        p=read_build(out/'program')
+    else:
+        build_application(out/'apps/counter',[ROOT/'examples/gem-counter'/name
+            for name in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
+        p=build_desktop(out,build_applications=False,release_compiler=True,
+            source=ROOT/'tests/programs/c_counter.act',program_output=out/'program',
+            system_mount='D1',dos_mounts=[dict(alias='D1',unit=49,sectors=2880,
+                                             sector_bytes=256,profile=4,format=2)])
     media=out/'media';media.mkdir(exist_ok=True)
     (media/'COUNTER.APP').write_bytes((out/'apps/counter/program.app').read_bytes())
     make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
@@ -31,7 +38,11 @@ def run(out,reuse=False):
             for k,v in PIN['configuration'].items():b.config(k,str(v).lower() if isinstance(v,bool) else v)
             b.mount(0,str(out/'system.atr'));report['machine']=verify_machine(b,ROM,PIN)
             def reach(condition):
-                b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
+                # The supervisor yields while waiting; no device polling or
+                # periodic IRQ is required to observe the two small clients.
+                marker=p['labels']['native_cop']
+                condition='(@xpc=$%x)&(%s)'%(marker,condition)
+                b.bp_clear_all();b.bp_set(marker,condition=condition)
                 b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
                 faults=[p['labels'][name] for name in ('heap_fault','stack_overflow','arithmetic_fault')]
                 for fault in faults:b.bp_set(fault)
@@ -42,7 +53,7 @@ def run(out,reuse=False):
                     require(pc!=p['labels']['done'],'Guest stopped: '+hex(b.peek16(adapter.STATE)))
                     return result
                 b.regs=regs
-                try:run_to(b,p['labels']['native_irq'],condition=condition,timeout=180,frame_limit=12000)
+                try:run_to(b,marker,condition=condition,timeout=180,frame_limit=12000)
                 finally:b.regs=original
             def frames(n):reach('@frame>=%d'%(b.eval_expr('@frame')+n))
             def number(address,size=2):return int.from_bytes(b.memdump(address,size),'little')

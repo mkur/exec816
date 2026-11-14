@@ -3,10 +3,12 @@
 [Plan index](README.md) · [Hosted C runtime](../reference/c-runtime.md) ·
 [Native DOS contract](../reference/dos.md) · [Memory contract](../reference/memory.md)
 
-Design proposal, 2026-11-14. This note selects a source-level library design;
-it implements no new calls and changes no current ABI. MGVIEW is the first
-new consumer. QED's existing adapters are the migration input, not a second
-implementation to keep alongside the shared layer.
+Design recorded 2026-11-14; delivered through the
+[implementation plan](gemdos-compatibility-implementation-plan.md). The
+[source contract](../reference/gemdos-compatibility.md) describes the installed
+subset. This page retains the design rationale. MGVIEW is the first new
+consumer model; its complete GUI port remains separate. QED uses the shared
+wrappers rather than keeping a second implementation.
 
 The initial consumer is [MGVIEW's loader](https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/APPS/MGVIEW/SRC/MGWIND.C),
 at the MagiC revision recorded in
@@ -49,11 +51,10 @@ handle-based metadata path. It is not a reason to replace the runtime.
 
 ## Initial source interface
 
-Proposed public declarations/constants live in `c/include/compat/gemdos.h`;
-implementations live in `c/compat/gemdos/`. A future
+Public declarations/constants live in `c/include/compat/gemdos.h`;
+implementations live in `c/compat/gemdos/`.
 `abi/gemdos-compat.json` records supported calls, constants, integer widths and
 the XATTR layout, with a generator for the C declarations and layout checks.
-These paths and files are proposed, not currently installed interfaces.
 
 Use WORD/UWORD for modes, descriptors and command selectors; LONG for byte
 counts, offsets and scalar results; and ordinary four-byte huge C pointers.
@@ -139,8 +140,8 @@ every MiNT errno or GEMDOS device-error distinction.
 
 MGVIEW calls Fcntl with FSTAT before allocating its document buffer. FSTAT is
 an open-handle query in the [GEMDOS/MagiC reference](https://freemint.github.io/tos.hyp/en/gemdos_file.html#Fcntl).
-The current native public interface exposes Examine/ExamineExact on locks,
-but no corresponding open-file operation.
+At design time, the native public interface exposed Examine/ExamineExact on
+locks without a corresponding open-file operation. ExamineFH supplies it now.
 
 SpartaDOS provides a useful precedent for the underlying operation. Original
 SpartaDOS's `XIO 39` returns the currently open channel's 24-bit file length on

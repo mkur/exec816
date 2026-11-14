@@ -52,7 +52,7 @@ ENDMODULE
     if lifetimes!=2:
         supervisor.write_text(supervisor.read_text().replace('FOR cycle=0 TO 1 DO','FOR cycle=0 TO '+str(lifetimes-1)+' DO'))
     return process_run(out,True,reuse=reuse,rebuild_app=reuse,app_sources=sources,
-        app_options=dict(main_signature='args',includes=[native,ROOT/'c/runtime',qed,out/'inputs/source/cflib'],definitions=definitions,
+        app_options=dict(gemdos=True,main_signature='args',includes=[native,ROOT/'c/runtime',ROOT/'c/compat/gemdos',qed,out/'inputs/source/cflib'],definitions=definitions,
                          extra_inputs=extra_inputs,
                          runtime_attributes={'printf':'nofloat'},minimum_stack=minimum_stack,
                          probes=[(ROOT/'tests/programs'/name,layout) for name,layout in probes]),

@@ -82,7 +82,7 @@ RETURN
 ENDMODULE
 """)
     return process_run(out,optimize,reuse=reuse,rebuild_app=reuse,app_sources=sources,
-        app_options=dict(main_signature='args',includes=[native,ROOT/'c/runtime',qed,out/'inputs/source/cflib'],definitions=definitions,
+        app_options=dict(gemdos=True,main_signature='args',includes=[native,ROOT/'c/runtime',ROOT/'c/compat/gemdos',qed,out/'inputs/source/cflib'],definitions=definitions,
                          runtime_attributes={'printf':'nofloat'}),
         fixture_source=fixture,expected_completed=2,native_optimize=True,
         release_compiler=True,loader_failures=False,interaction=interaction)

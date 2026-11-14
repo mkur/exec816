@@ -1,5 +1,8 @@
 # Historical records
 
+- [GEMDOS source compatibility](gemdos-compatibility.md): shared wrappers, native
+  open-handle metadata, FSTAT and small loader/Counter consumer acceptance.
+
 - [Mapped VRAM raster copies](gem-raster-mapped.md): 16 KiB staging through the
   existing 4 KiB aperture, checked ownership and NMI transitions; matched
   one-pixel copies improve from 625 ms to 149–150 ms with unchanged APPs.
