@@ -22,7 +22,7 @@ LAYOUT=[('WORD',2),('huge pointer',4),('WINDOW',338),('outer',260),('work',268),
 DOCUMENT=b''.join((f'Row {i:03d}\t'+''.join(chr(65+(i+j)%26) for j in range(100))+'\r\n').encode() for i in range(50))
 
 
-def run(out,reuse=False,scroll=False,failures=False):
+def run(out,reuse=False,scroll=False,failures=False,interactions=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     if not reuse:
         viewer(out/'apps/mgview',probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
@@ -53,13 +53,25 @@ def run(out,reuse=False,scroll=False,failures=False):
                 for fault in faults:b.bp_set(fault)
                 original=b.regs
                 def regs():
-                    state=original();require(int(state['PC'].lstrip('$'),16) not in faults,'Guest fault/stopped: '+str(state));return state
+                    state=original();pc=b.eval_expr('@xpc')
+                    if pc in faults:report['guest_fault']=dict(pc=pc,stack=b.eval_expr('@s'),state=state)
+                    require(pc not in faults,'Guest fault/stopped: '+str(state));return state
                 b.regs=regs
                 try:run_to(b,marker,condition=condition,timeout=120,frame_limit=12000)
                 finally:b.regs=original
             def frames(count):reach('@frame>=%d'%(b.eval_expr('@frame')+count))
             def symbols(name,base):return {key:base+value-(ABI['link_bank']<<16) for key,value in apps[name]['image']['symbols'].items()}
+            paint_context=[0]
+            def context_for(identity):
+                from generate_aes_server import layout,ABI as AES_ABI
+                resident=json.loads((out/'c-image.json').read_text())['symbols']
+                raw=b.memdump(resident['contexts'],AES_ABI['constants']['CONTEXTS']*4)
+                contexts=[int.from_bytes(raw[i:i+4],'little') for i in range(0,len(raw),4)]
+                return next(c for c in contexts if c and number(c+layout()['Request']['fields']['global']+4)==identity)
             def picture(window,label,payload):
+                from generate_aes_server import expected_layout
+                depth=paint_context[0]+dict(expected_layout())['C context updateDepth']
+                reach(f'dw(${depth:x})=0');frames(1)
                 x,y,w,h=[number(window+268+i*2) for i in range(4)]
                 vshift=number(window+280,4);hshift=number(window+304,4);tabs=number(window+336)
                 font=font_bytes(out/'selected/src/vdi/font8x8.c');model=Raster(font)
@@ -84,7 +96,22 @@ def run(out,reuse=False,scroll=False,failures=False):
                 return actual
             def before(b):
                 position=[320,120];b._cmd_ok('MOUSE ST')
+                def move(x,y):
+                    nonlocal position
+                    position=schedule(b,program,position,(x,y))
+                    cursor=lambda name:next(d['address'] for d in program['image']['data'] if '_DESKINPUT_'+name.upper()+'_' in d['name'])
+                    reach(f'(dw(${cursor("cursorX"):x})={position[0]})&(dw(${cursor("cursorY"):x})={position[1]})')
+                    frames(3)
+                def pulse(key,ctrl=False):
+                    if ctrl:b._cmd_ok('KEY CTRL down')
+                    b._cmd_ok('KEY '+key+' down');frames(3);b._cmd_ok('KEY '+key+' up')
+                    if ctrl:b._cmd_ok('KEY CTRL up')
+                    frames(40)
+                def edge(down):b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));frames(15 if down else 60)
+                def drag(start,end):move(*start);edge(1);move(*end);edge(0)
+                def click(x,y):move(x,y);edge(1);edge(0)
                 arguments=(b'SYS:BIG.TXT',b'SYS:TALL.TXT',b'') if failures else (b'"SYS:VIEW.TXT"',b'SYS:EMPTY.TXT',b'')
+                if interactions:arguments=(b'SYS:VIEW.TXT SYS:EMPTY.TXT',b'SYS:EMPTY.TXT',b'')
                 for round,argument in enumerate(arguments):
                     phase=round*2+1;reach(f'dw(${at("phase"):x})={phase}')
                     base=number(at('bases'),4);sy=symbols('mgview',base)
@@ -105,8 +132,11 @@ def run(out,reuse=False,scroll=False,failures=False):
                         require(number(sy['nwindows'])==0 and number(sy['windows'],4)==0,'Rejected loader published a document')
                         report['cases'].append(dict(arguments=argument.decode(),rejected=True))
                     elif argument:
-                        reach(f'dw(${sy["nwindows"]:x})=1');frames(80)
+                        count=2 if interactions and round==0 else 1
+                        reach(f'dw(${sy["nwindows"]:x})={count}');frames(80)
                         window=number(sy['windows'],4);require(window,'Missing original window record')
+                        paint_context[0]=context_for(number(sy['ap_id']))
+                        if count==2:pulse('W',True)
                         position=schedule(b,program,position,(632,0));frames(30)
                         initial=number(counter+14,4)
                         picture(window,f'round-{round}',DOCUMENT if round==0 else b'')
@@ -124,11 +154,33 @@ def run(out,reuse=False,scroll=False,failures=False):
                             b._cmd_ok('MOUSE AT 2000 0 0 0');frames(50)
                             require(number(window+304,4)==0,'Horizontal left gadget did not restore the model')
                             picture(window,'scroll-left-gadget',DOCUMENT)
+                        if interactions and round==0:
+                            outer=lambda:tuple(number(window+260+i*2) for i in range(4))
+                            ox,oy,ow,oh=outer()
+                            drag((ox+ow-5,oy+oh-5),(ox+ow-133,oy+oh-53))
+                            report['resize']=dict(before=[ox,oy,ow,oh],after=outer())
+                            require(outer()[2]<ow and outer()[3]<oh,'Size message did not resize the viewer')
+                            move(632,0);picture(window,'resized',DOCUMENT)
+                            ox,oy,ow,oh=outer()
+                            drag((ox+80,oy+5),(ox+104,oy+13))
+                            require(outer()[:2]==(ox+24,oy+8),'Move message did not move the viewer')
+                            move(632,0);picture(window,'moved',DOCUMENT)
+                            restored=outer();ox,oy,ow,oh=restored
+                            click(ox+ow-8,oy+5);move(632,0)
+                            require(outer()[2]>ow,'Full message did not enlarge the viewer')
+                            picture(window,'full',DOCUMENT)
+                            ox,oy,ow,oh=outer();click(ox+ow-8,oy+5);move(632,0)
+                            require(outer()==restored,'Previous geometry was not restored')
+                            picture(window,'restored',DOCUMENT)
+                            pulse('5');require(number(window+336)==5,'Digit did not change original tab width')
+                            picture(window,'tabs-five',DOCUMENT)
                         frames(60);require(number(counter+14,4)>initial,'Counter did not progress beside MGVIEW')
                         report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows']),counter_progress=number(counter+14,4)-initial))
                         if round==0:
                             b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY U down');frames(3)
                             b._cmd_ok('KEY U up');b._cmd_ok('KEY CTRL up')
+                            if count==2:
+                                reach(f'dw(${sy["nwindows"]:x})=1');pulse('Q',True)
                             reach(f'dw(${sy["nwindows"]:x})=0')
                     else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a document')
                     b.poke16(at('go'),phase+1)
@@ -141,12 +193,12 @@ def run(out,reuse=False,scroll=False,failures=False):
     finally:
         payload=json.dumps(report,indent=2)+'\n'
         (out/'results.json').write_text(payload)
-        (out/('results-'+('failures' if failures else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
+        (out/('results-'+('failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
     print('MGVIEW development check passed: three lifetimes, exact pixels and Counter progress',flush=True)
     return report
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true');parser.add_argument('--failures',action='store_true')
-    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures)
+    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true');parser.add_argument('--failures',action='store_true');parser.add_argument('--interactions',action='store_true')
+    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures,args.interactions)

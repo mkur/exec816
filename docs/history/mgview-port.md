@@ -71,3 +71,23 @@ also pass. The pinned bridge has no physical PLUS key name, so the real left
 GEM gadget supplies the reverse horizontal action. No timing, RPC or complete
 occlusion/fault matrix is claimed by this minimal check. All reserved bank-zero
 deltas remain zero, including each public Task.
+
+## MP4: interaction and document ownership
+
+Keyboard dispatch uses the accepted key's owning window, rather than a later
+query of the current top window. Tab-width scans run outside UPDATE; publishing
+new tab/column state and sliders uses UPDATE, followed by ordinary full redraw.
+Ctrl-close retires all documents through the normal close path instead of direct
+Pterm. Original move/size/full/previous, slider, digit and key callbacks remain.
+
+`build/mgview-dev/smoke/results-interactions.json` passes two documents in one
+registration, Ctrl-W routing, resize, move, full/previous restore, digit-5 tab
+expansion, Ctrl-U/Ctrl-Q, empty/no-argument restart and stop beside Counter.
+Seven exact completed viewport comparisons, four Process lifetimes, restored heap
+and stack/domain ownership pass. The observer waits for UPDATE completion before
+checking a repaint and uses the complete banked PC for fault detection. Physical
+button tests wait for the pointer to reach its target before pressing.
+
+This is the small interaction case, not a full capacity, occlusion, every-slider
+endpoint or stop/fault injection matrix. Fixed/root/kernel/idle and each public
+Task reserve zero additional bank-zero bytes.

@@ -92,7 +92,7 @@
  
  /*	Mrsrc_load("mgview.rsc", global);	*/
  
-@@ -91,18 +78,11 @@
+@@ -91,23 +78,16 @@
  
  	while(nwindows)
  		{
@@ -116,6 +116,12 @@
  
  
  		if	(w_ev.mwhich & MU_KEYBD)
+ 			{
+-			w = whdl2window(top_whdl());
++			w = whdl2window(ExecAESInputWindow(MU_KEYBD));
+ 
+ 			if	(w_ev.key == 0x1011)
+ 				break;		/* ^Q */
 @@ -115,9 +95,9 @@
  			else
  			if	((w_ev.key == 0x1117) && (w))
@@ -361,7 +367,7 @@
  				pxy[1] = y;
  				pxy[2] = w->in.g_x + w->in.g_w - 1;
  				pxy[3] = y + w->vscroll.pixelsize - 1;
-@@ -338,16 +334,10 @@
+@@ -338,16 +334,15 @@
  *
  *****************************************************************/
  
@@ -369,17 +375,23 @@
 +static void _my_close(WINDOW *w, WORD kstate)
  {
  	WINDOW **sl;
- 
+-
 -	if	(kstate & K_CTRL)
 -		{
 -		v_clsvwk(vdi_handle);
 -		appl_exit();
 -		Pterm0();				/* brutalo */
 -		}
++    WORD slot;
++
++    if(kstate & K_CTRL) {
++        for(slot=0;slot<NWINDOWS;++slot)if(windows[slot])windows[slot]->close(windows[slot],0);
++        return;
++    }
  	wind_close(w->handle);
  	wind_delete(w->handle);
  	Mfree(w->user_file);
-@@ -355,6 +345,7 @@
+@@ -355,6 +350,7 @@
  	sl = find_slot_window(w);
  	*sl = NULL;
  	nwindows--;
@@ -387,7 +399,7 @@
  }
  
  
-@@ -365,11 +356,10 @@
+@@ -365,11 +361,11 @@
  *****************************************************************/
  
  
@@ -399,11 +411,30 @@
 +static void _my_keyed( WINDOW *w, WORD kstate, WORD key )
 +{
 +	WORD newtab;
++    long lines,columns;
 +	WORD ascii;
  
  	/* Tabulator umschalten */
  
-@@ -433,7 +423,6 @@
+@@ -379,11 +375,12 @@
+ 		newtab = ascii-'0';
+ 		if	(newtab != w->user_tabsize)
+ 			{
+-			w->user_tabsize = newtab;
+-			get_line_column_count(w->user_file, w->user_fsize,
+-					&(w->vscroll.n), &(w->hscroll.n),
+-					w->user_tabsize);
+-			w->arrange(w);	/* Scrollbalken justieren! */
++            get_line_column_count(w->user_file,w->user_fsize,&lines,&columns,newtab);
++            if(!ExecAESBeginUpdate(w->handle))return;
++            w->user_tabsize=newtab;
++            w->vscroll.n=lines;w->hscroll.n=columns;
++            w->arrange(w);
++            wind_update(END_UPDATE);
+ 			update_window(w);
+ 			}
+ 		}
+@@ -433,7 +430,6 @@
  					break;
  		}
  }
@@ -411,7 +442,7 @@
  
  
  /*****************************************************************
-@@ -448,7 +437,7 @@
+@@ -448,7 +444,7 @@
  	WINDOW *w;
  	XATTR xa;
  	long err;
@@ -420,7 +451,7 @@
  	GRECT full;		/* berechne maximale Fenstergre */
  
  
-@@ -456,7 +445,7 @@
+@@ -456,7 +452,7 @@
  	/* ------------------------------------------------ */
  
  	if	(strlen(path) > 127)
@@ -429,7 +460,7 @@
  	new_slot = new_window();
  	if	(!new_slot)
  		{
-@@ -471,19 +460,21 @@
+@@ -471,19 +467,21 @@
  		return;
  		}
  
@@ -455,7 +486,7 @@
  	if	(w->handle <= 0)
  		{
  		Mfree(w);
-@@ -502,15 +493,16 @@
+@@ -502,15 +500,16 @@
  		form_xerr(err, path);
  		return;
  		}
@@ -474,7 +505,7 @@
  	w->user_fsize = xa.size;
  	w->user_file = Malloc(xa.size + 1);	/* Platz fr EOS */
  	if	(!w->user_file)
-@@ -529,9 +521,10 @@
+@@ -529,9 +528,10 @@
  		goto err3;
  		}
  
@@ -488,7 +519,7 @@
  
  	/* Default-Einstellungen */
  
-@@ -543,7 +536,8 @@
+@@ -543,7 +543,8 @@
  	get_line_column_count(w->user_file, w->user_fsize,
  					&(w->vscroll.n), &(w->hscroll.n),
  					w->user_tabsize);
@@ -498,7 +529,7 @@
  	if	(!w->user_lines)
  		{
  		err = ENSMEM;
-@@ -565,12 +559,12 @@
+@@ -565,12 +566,12 @@
  	err = (long) w->hscroll.n * (long) text_attrib[8];
  	if	(err > scrg.g_w)
  		err = scrg.g_w;
@@ -514,7 +545,7 @@
  
  	if	(w->out.g_y < scrg.g_y)
  		w->out.g_y = scrg.g_y;
-@@ -580,11 +574,13 @@
+@@ -580,11 +581,13 @@
  		w->out.g_h = scrg.g_h;
  
  	/* Fenster staffeln */
