@@ -14,10 +14,11 @@ LICENSE_FILES = {
 }
 
 GEM_FILES = ('Exec-gem-vdi.xex', 'graphics.atr', 'README.txt', 'GEM-COPYING.txt',
-             'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md', 'GEM-FONT-NOTICE.txt')
+             'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md', 'GEM-FONT-NOTICE.txt',
+             'GEM-MOUSE-NOTICE.txt')
 BITMAP_FILES = ('Exec-bitmap-console.xex', 'system.atr', 'README.txt',
                 'GEM-COPYING.txt', 'GEM-COPYING.LIB.txt', 'GEM-LICENSING.md',
-                'GEM-FONT-NOTICE.txt')
+                'GEM-FONT-NOTICE.txt', 'GEM-MOUSE-NOTICE.txt')
 GEM_NOTICES = BITMAP_FILES[3:]
 CALCULATOR_NOTICES = ('CALCULATOR-COPYING.txt','CALCULATOR-COPYING.LIB.txt',
                       'CALCULATOR-LICENSING.md','CALCULATOR-PROVENANCE.txt')
@@ -61,6 +62,11 @@ owns one RUN job; JOBS collects it after the application closes.
 RUN C:RASTER.APP opens the raster sample. Space starts/pauses scrolling;
 Up/Down step a row, Left/Right shift a pixel, M copies screen to memory and
 back, and Q exits. Drag or cover/expose the window to check repainting.
+
+RUN C:MOUSE.APP cycles through mouse forms and a small scrolling pattern for
+sixteen steps, then closes. Move the pointer into its window to inspect forms.
+It can run beside one Counter while Desktop and Terminal occupy the other two
+AES registrations. This is an SDK probe; original MagiC MGVIEW is not included.
 
 Terminal displays 64 by 20 cells. Its tabs select two independent shell sessions;
 + creates a session and NEWSHELL starts one in the current directory. SESSION 1

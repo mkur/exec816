@@ -1,0 +1,378 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "GM5",
+  "implementation_base_revision": "b9fc65da",
+  "build_scope": "GM4 implementation plus GM5 worktree inputs recorded below; delivery guide/media refreshed around unchanged native/OF816 images.",
+  "abi": {
+    "c_app": 45,
+    "aes": 24,
+    "console_bitmap": 15
+  },
+  "loaded_probe": {
+    "path": "build/gem-mouse/gm5-loaded/results.json",
+    "sha256": "1440ee631892c286919ab5cf51f0768d69d246c4bacf0dbca6f493f6252449b7",
+    "supervisor_checks": [
+      50
+    ],
+    "process_lifetimes": 8,
+    "stop_while_hidden": true,
+    "cases": [
+      {
+        "round": 0,
+        "bases": [
+          327680,
+          458752
+        ],
+        "counter_before": [
+          1,
+          2
+        ],
+        "counter_after": [
+          11,
+          12
+        ],
+        "probe_checks": 270,
+        "probe_rounds": 16,
+        "measured_warm_rounds": 15,
+        "warm_rpc_delta": 0
+      },
+      {
+        "round": 1,
+        "bases": [
+          327680,
+          458752
+        ],
+        "counter_before": [
+          1,
+          2
+        ],
+        "counter_after": [
+          11,
+          11
+        ],
+        "probe_checks": 270,
+        "probe_rounds": 16,
+        "measured_warm_rounds": 15,
+        "warm_rpc_delta": 0
+      }
+    ],
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 465,
+        "remaining_above_floor": 815
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 139,
+        "remaining_above_floor": 917
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 313,
+        "remaining_above_floor": 743
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 149,
+        "remaining_above_floor": 907
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 770,
+        "remaining_above_floor": 286
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 712,
+        "remaining_above_floor": 344
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 719,
+        "remaining_above_floor": 1585
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 821,
+        "remaining_above_floor": 1483
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 129,
+        "remaining_above_floor": 127
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 299,
+        "remaining_above_floor": 981
+      }
+    }
+  },
+  "physical_cost": {
+    "path": "build/gem-mouse/gm5-pointer-cost.json",
+    "sha256": "daee5293782ca945b380d1346c822675484df3c7a0bf39384bdf839fa2f5115c",
+    "matched_healthy_fixed_arrow_cases": 52,
+    "comparison": "Same records, command bytes, uploads and launches. Warm move/show/hide one upload/launch, stationary no-ops none. Existing84-byte/1440-work-unit bound; no CPU/latency speedup claim."
+  },
+  "host": {
+    "path": "build/gem-mouse-host-gm5-delivery.log",
+    "tests": 715,
+    "skipped": 5
+  },
+  "package": {
+    "path": "build/gem-mouse/gm5-package-audit.json",
+    "sha256": "8aba60a9f3057f03816283eadc899324cd6372053d96bf71c202f89a17db771e",
+    "zip": {
+      "path": "build/gem-mouse/demo/exec816-demo.zip",
+      "sha256": "f1d933fd44cfd18357fe65d2701d32dfa4565b2aa3b15f8107810c1d4ac193fc"
+    },
+    "system_files": 75,
+    "disk_apps": 14,
+    "qed_separate": true,
+    "guide": "RUN C:MOUSE.APP, beside one Counter in the four-client desktop; minimal acceptance fixture uses probe plus two Counters."
+  },
+  "applications": {
+    "panel": {
+      "abi": 45,
+      "bytes": 17912,
+      "sha256": "9a0971e8cdb7ad55fd70354368357e80d89c78ce303c74a189cb6a4bde35d5b1",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/panel/app.json",
+        "sha256": "adea0717e9ef0d2e04edaec8fdc9f4c4c81fd56f391fcb3a039bedbd57917b38"
+      }
+    },
+    "counter": {
+      "abi": 45,
+      "bytes": 14754,
+      "sha256": "425dba4899f8492859bed640f4d37dfbc04f7e577a601f113baeff6f04a29e81",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/counter/app.json",
+        "sha256": "69f2e11494d57face2c5d9bf079395676e480e1af71c0a08812976527a80c5ff"
+      }
+    },
+    "files": {
+      "abi": 45,
+      "bytes": 68735,
+      "sha256": "c6e2da7ac0731425adfb2dfd5e95cb5fa51190588965f53451274e9897959524",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/files/app.json",
+        "sha256": "9d59fd616c0075fd4d38b6c40b78d4bfed9e595080024dd2c75ddf95a29b4c39"
+      }
+    },
+    "desktop": {
+      "abi": 45,
+      "bytes": 93327,
+      "sha256": "92c5d6cef6df148bd71a5a55c70af0282ac6d35a9b103521110bb0ad2290aa2f",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/desktop/app.json",
+        "sha256": "5cd2037b46f486b50757bac0faf80920c4ca5b5285a6b16c41f9f32f7cbb2e34"
+      }
+    },
+    "dialog": {
+      "abi": 45,
+      "bytes": 18375,
+      "sha256": "c7b61d4e50f8683df0da09abac68c98bea43c7ba704177cfb2f762fd8edfe2e8",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/dialog/app.json",
+        "sha256": "45a57f5301dcd528f2c37343ef633ba278dec13f1bcb302aeeac55dcca7a04dd"
+      }
+    },
+    "raster": {
+      "abi": 45,
+      "bytes": 16124,
+      "sha256": "04f3d0dcd409caeb58fba0779cddcdde2180e7a5b664da23a0aeeea478438020",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/raster/app.json",
+        "sha256": "c20570379854a10343e21b3516e55ed5b9db8d9cfb469e1df797b349d0bdfca9"
+      }
+    },
+    "mouse": {
+      "abi": 45,
+      "bytes": 14011,
+      "sha256": "220b67595e70b999777420393b8a2e0c10f271753609a0178ff39d16a615b5a2",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/mouse/app.json",
+        "sha256": "108e704eb3a21b541d1a0a18005510a560fbfddb3af7a5d96e3c32c980b781c9"
+      }
+    },
+    "calc": {
+      "abi": 45,
+      "bytes": 17627,
+      "sha256": "eaa16b6f5db45f6fe8de886c0bb9f152ccb55718254365f9e303619dc2184036",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/calc/app.json",
+        "sha256": "b1da674ce51f00486b09878ffc3c7ebbc13e3147308937e455955d3f69cf2d49"
+      }
+    },
+    "g4bench": {
+      "abi": 45,
+      "bytes": 25670,
+      "sha256": "ff45f189ba3eda17f8d68358b9412670db441b628d36daad8fff6199436fdc72",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/g4bench/app.json",
+        "sha256": "a5e39ba68db9bd2eb40426bbf1462119e15fcebc10b8a9aecb4e30fd7ecea7bb"
+      }
+    },
+    "text": {
+      "abi": 45,
+      "bytes": 27390,
+      "sha256": "a2dfbadfd615b915219ab30e4261e3a82c99f733ae06adc869aa3a02ba27c4bc",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/text/app.json",
+        "sha256": "ce6f7e0de374b3b7a79b113a888cee08b8db9c6ce83b8ca66ce7de09462566d2"
+      }
+    },
+    "gemarc": {
+      "abi": 45,
+      "bytes": 49898,
+      "sha256": "aea82ca849dd81db91b97e9d271d4e7339f5fdd4cc2a60cef9cfae771562dbad",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/gemarc/app.json",
+        "sha256": "7a4a97e06ca7f6b65c6e77176c874a15a98f04ddee5380c825fa08d19204593f"
+      }
+    },
+    "widget": {
+      "abi": 45,
+      "bytes": 15112,
+      "sha256": "e8ce471f83f5223069e2060162d704797d3026db842af9a76c2f27430b79505e",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/widget/app.json",
+        "sha256": "ae2f58c835f2c2558ffeb370f36f99d1601f2c7bf76309e7e50ba34b88af1dac"
+      }
+    },
+    "pulse": {
+      "abi": 45,
+      "bytes": 14919,
+      "sha256": "4f8476fd760e13352aae5a8a5e5f50a9f0ad7c1e6b55153b73668472c5d0c009",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/pulse/app.json",
+        "sha256": "fa5ea76ce3ee74e07fb452dbe093535c61ead92015bac9e5cc1230a37e1525be"
+      }
+    },
+    "pair": {
+      "abi": 45,
+      "bytes": 11650,
+      "sha256": "6612c3e6b24db8216c4bb5b46cb778ff513bdb5dbef418a69e1356a2b337bbdf",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/pair/app.json",
+        "sha256": "f2b0f15bf95ae7356e241d6aba7ac1ce551460be93a56fea177470f25dd499e0"
+      }
+    },
+    "terminal": {
+      "abi": 45,
+      "bytes": 24050,
+      "sha256": "5d45d65bef292c89e959800a5ac15ed5e8858ead96ed18a86e2db903f4e689ae",
+      "manifest": {
+        "path": "build/gem-mouse/demo/bitmap-console/apps/terminal/app.json",
+        "sha256": "14f19a1ac82259e5a4c7af657b235bc2b365c40ccc311477bb00a9464d2e1739"
+      }
+    }
+  },
+  "qed": {
+    "abi": 45,
+    "app_sha256": "02ca1cafbe9c3f71ab2208c3a3ed6cf7b454b7f859fa76ec2e78412791ece4a1",
+    "scope": "Rebuilt for current ABI; no QED execution in these checks."
+  },
+  "atr_boot": {
+    "path": "build/gem-mouse/gm5-atr-final/results.json",
+    "sha256": "9b9c8ae71cda79b2e5bf1a70cb87a00a952b3eef981d2ad001e0869a93411a3e",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "boot": {
+      "first_stage_rom_boot": true,
+      "memlo": 1792,
+      "initial_memtop": 48159,
+      "initial_basicf": 2,
+      "prepared_memtop": 48159,
+      "prepared_basicf": 2,
+      "firmware_to_of_frame": 1527,
+      "countdown_frames": 249,
+      "native_handoff_frame": 22783,
+      "callbacks": 759,
+      "reads": 2538,
+      "source_bytes": 643735,
+      "reader_guards": "intact",
+      "firmware_context_restored": true,
+      "native_bytes_verified": 1752163
+    },
+    "scope": "Final cold ATR transport, OF816 autoboot and byte-verified native entry; stops before GUI runtime."
+  },
+  "memory": {
+    "production_task_capacity": 12,
+    "complete_budgets_match_previous_demo": true,
+    "loaded_fixture_budgets_match_current_eight_task_profile": true,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0,
+      "includes": "all guards, alignment and unused reserved capacity"
+    },
+    "cursor_vram_growth": 0,
+    "minimum_ordinary_task_bytes_above_interrupt_floor": 286
+  },
+  "source_inputs": {
+    "examples/gem-mouse/main.c": "f756d61a4f4bace505e10707889d3c2c79c869a3e96998b980467be2af6d37bb",
+    "tests/programs/c_mouse.act": "c4d59f7b4b892e1d24c108a5830d88e2b0cf1f78a85923e447858bf7316ff268",
+    "tools/test_loadable_mouse.py": "4a719b6f37abfb76247b858bc2ded45548a2d6164f36708172b8d9e5e23171a9",
+    "ports/gem4xe/mouse/NOTICE.txt": "e40c6487cec7ff5199691c286c3735828d2bba32ea4e0433f9b8ae013cc40ba3",
+    "tools/build_gem_desktop.py": "b1a9ff836d91f157c9c34cef161b97690c932b2eb2f1a2bd027215fba2450270",
+    "tools/package_demo.py": "f45a8dde393c0e0e6b6657e5b9f4293a6f31ecd7f5de9cae70175afd63ad753c",
+    "tools/build_bitmap_artifact.py": "151c6d516d297e2b8786682217f887e609724a615a679e7f04bf7259a1b3c3d9",
+    "tools/build_gem_artifact.py": "43005aa4d96448a21991b7fda8e6c4ee59a70be78c676b1466923f31617f3e73",
+    "tools/audit_gem_demo.py": "85d61eb7f086adfb4250f22be9c2066a9d58a67af21ac379647b87b8dc40cffa"
+  },
+  "artifacts": {
+    "launcher": "build/gem-mouse/demo/launch-altirra.command",
+    "zip": "build/gem-mouse/demo/exec816-demo.zip"
+  },
+  "scope": "Development checks and final cold ATR transport to native entry. Optimized application/physical/ownership checks; focused raw/optimized ABI/policy checks are recorded in GM1\u2013GM4. No full platform release qualification or original MGVIEW port claim."
+}

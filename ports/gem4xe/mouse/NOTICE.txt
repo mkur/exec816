@@ -1,0 +1,15 @@
+GEM mouse forms and VBXE packing
+
+GEM4XE 0.17: https://github.com/slaapliedje/gem4xe
+Revision: ac476b8bdeda63b8b53ad22ec25b9d88bd7886af
+Selected files: tools/gemdata.py and the pointer expansion in src/vdi/dev_vbxe.c.
+Exact source and selection hashes: ports/gem4xe/mouse/inputs.json in Exec816.
+
+The eight MFORMs are transcribed by GEM4XE from EmuTOS aes/mforms.c
+(GPLv2, generated there from mform.rsc). The GEM4XE module retains this
+provenance. Exec816 selects all eight forms into readonly upper memory and
+adapts mask/data expansion to its existing display ownership and fences.
+
+See GEM-COPYING.txt, GEM-COPYING.LIB.txt and GEM-LICENSING.md in this
+distribution for the donor's licence notices. No donor startup, polling or
+scheduling implementation is included in this mouse selection.

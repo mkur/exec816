@@ -2,7 +2,8 @@
 
 - [GEM mouse calls](gem-mouse-calls.md): per-registration AES hide bookkeeping,
   raw VDI device operations, custom forms, hotspot clipping, recipient routing,
-  coherent state queries and physical completion.
+  saved/previous forms, coherent state queries, physical completion and the
+  loaded Mouse/Counter acceptance and demo delivery.
 
 - [GEM mouse MagiC cross-check](gem-mouse-magic-review.md): pinned source review
   of per-application forms, shared hide counts, raw VDI boundaries, ownership

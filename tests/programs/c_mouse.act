@@ -1,0 +1,157 @@
+MODULE CMOUSETEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE HEAPCORE
+USE AESSTATE
+INCLUDE "mouse-app.inc"
+
+TYPE MouseResult=[
+  CARD ready,done,checks,failures
+  LONGCARD rounds
+  CARD painting
+  INT id
+]
+CARD checks,phase,go,completed
+LONGCARD ARRAY bases(2)
+LONGCARD probeBase
+LONGCARD ARRAY counts(2)
+LONGCARD ARRAY rounds(2)
+CARD stopHidden
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa80+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Collect(LONGCARD child)
+  PROCESS.Result result
+
+  Require(PROCESS.Wait(child,@result)<>0)
+  Require(result.primary=0)
+  completed==+1
+
+RETURN
+
+PROC Rendezvous(CARD stage)
+
+  phase=stage
+  WHILE go<>stage DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Main()
+  LONGCARD one,two,mouse,baseline
+  BYTE round,index
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  DOS.SelectInput(input)
+  DOS.SelectOutput(output)
+  FOR round=0 TO 1 DO
+    BEGIN
+      LET first=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+      LET second=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
+      LET probe=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MOUSE.APP"))
+      Require(first<>NULL AND second<>NULL AND probe<>NULL)
+      bases(0)=LONGCARD(first.text)
+      bases(1)=LONGCARD(second.text)
+      probeBase=LONGCARD(probe.text)
+      Require(bases(0)<>bases(1) AND probeBase<>bases(0) AND probeBase<>bases(1))
+      one=PROCESS.StartBackgroundLoaded(BYTE POINTER(first),NULL,0)
+      two=PROCESS.StartBackgroundLoaded(BYTE POINTER(second),NULL,0)
+      Require(one<>0 AND two<>0)
+      Rendezvous(CARD(round)*3+1)
+      mouse=PROCESS.StartBackgroundLoaded(BYTE POINTER(probe),NULL,0)
+      Require(mouse<>0)
+      phase=CARD(round)*3+2
+      Collect(mouse)
+      BEGIN
+        LET model=MouseResult POINTER(ADDRESS(probeBase+MOUSE_MODEL))
+        Require(model.done=1 AND model.failures=0 AND model.rounds=16)
+        Require(model.checks>=200)
+        rounds(round)=model.rounds
+      END
+      FOR index=0 TO 1 DO
+        BEGIN
+          LET count=LONGCARD POINTER(ADDRESS(bases(index)+COUNTER_MODEL+14))
+          counts(index)=count^
+          Require(count^<>0)
+        END
+      OD
+      Rendezvous(CARD(round)*3+3)
+      Require(PROCESS.RequestStop(one)<>0)
+      Require(PROCESS.RequestStop(two)<>0)
+      Collect(one)
+      Collect(two)
+      PROGRAM.Unload(first)
+      PROGRAM.Unload(second)
+      PROGRAM.Unload(probe)
+      IF round=0 THEN
+        baseline=EXEC.AvailMem(0)
+      ELSE
+        Require(EXEC.AvailMem(0)=baseline)
+      FI
+    END
+  OD
+  ; Stop while the probe owns UPDATE and has completed its outer hide.
+  ; The normal call completes before the Process retires its copied state.
+  BEGIN
+    LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MOUSE.APP"))
+    Require(image<>NULL)
+    LET service=AESSTATE.Get()
+    probeBase=LONGCARD(image.text)
+    LET model=MouseResult POINTER(ADDRESS(probeBase+MOUSE_MODEL))
+    mouse=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+    Require(mouse<>0)
+    DO
+      EXEC.Forbid()
+      IF model.painting=2 AND service.directory.mouse.visible=0 THEN
+        stopHidden=1
+        Require(PROCESS.RequestStop(mouse)<>0)
+        EXEC.Permit()
+        EXIT
+      FI
+      IF model.done<>0 THEN
+        HEAPCORE.Abort($faff)
+      FI
+      EXEC.Permit()
+      EXEC.Yield()
+    OD
+    Collect(mouse)
+    Require(model.done=1 AND model.failures=0 AND model.rounds<16)
+    Require(service.cursorHides=0 AND service.directory.mouse.visible=1)
+    PROGRAM.Unload(image)
+    Require(EXEC.AvailMem(0)=baseline)
+  END
+  ; A stopped execution must not run main or create an AES registration.
+  BEGIN
+    LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MOUSE.APP"))
+    Require(image<>NULL)
+    LET model=MouseResult POINTER(ADDRESS(LONGCARD(image.text)+MOUSE_MODEL))
+    EXEC.Forbid()
+    mouse=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+    Require(mouse<>0 AND PROCESS.RequestStop(mouse)<>0)
+    EXEC.Permit()
+    Collect(mouse)
+    Require(model.checks=0 AND model.done=0)
+    PROGRAM.Unload(image)
+    Require(EXEC.AvailMem(0)=baseline)
+  END
+  DOS.SelectInput(NULL)
+  DOS.SelectOutput(NULL)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE

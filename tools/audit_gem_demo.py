@@ -39,7 +39,8 @@ def audit(bundle):
             'Development artifacts in distributable ZIP')
     require(allowed<=members.keys(),'Missing boot artifact or cartridge form')
     for name in ('OF816-LICENSE.txt','ALTIRRAOS-LICENSE.txt','EXEC816-GPL-3.0.txt',
-                 'EXEC816-MIT.txt','GEM-COPYING.txt','SDX-UTILITIES-NOTICE.txt'):
+                 'EXEC816-MIT.txt','GEM-COPYING.txt','GEM-MOUSE-NOTICE.txt',
+                 'SDX-UTILITIES-NOTICE.txt'):
         require('licenses/'+name in members,'Missing upstream notice '+name)
     boot=json.loads((bundle/'of816/of816.json').read_text())
     require(checksums['Exec-of816.xex']==boot['xex_sha256'],'Changed OF816 image')

@@ -13,6 +13,7 @@ def copy_notices(selected,output):
         shutil.copyfile(selected/source,output/name)
     font=(selected/'src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
     (output/'GEM-FONT-NOTICE.txt').write_text(font)
+    shutil.copyfile(ROOT/'ports/gem4xe/mouse/NOTICE.txt',output/'GEM-MOUSE-NOTICE.txt')
 
 
 def build(output,media_bundle):

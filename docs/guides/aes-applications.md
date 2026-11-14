@@ -74,6 +74,32 @@ python3 tools/test_gem_counter.py --no-timing --program build/aes-windows/counte
 ```
 
 The command selects functional checks; timing measurements are separate.
+
+## Mouse forms and scrolling probe
+
+The [Mouse example](../../examples/gem-mouse/main.c) is packaged as
+`SYS:C/MOUSE.APP`. Launch it from Files beside a Counter. It cycles through
+sixteen drawing steps with 250 ms timer waits, then closes, and also accepts
+the window's Close gadget.
+Move the pointer into its window to inspect the standard forms.
+
+The example uses the shared GEM bindings for named/custom forms, raw VDI forms,
+save/restore/previous, visibility and queries. Its small scrolling pattern holds
+UPDATE through visible-rectangle enumeration, copying and exposed-strip repair.
+Physical drawing retains ordinary Task preemption. This is an SDK example;
+the original MagiC MGVIEW application remains a separate port.
+
+Run its focused development check with:
+
+```sh
+python3 tools/test_loadable_mouse.py --output build/gem-mouse/gm5-loaded
+```
+
+The check uses a minimal GUI fixture to load the probe beside two independent
+Counters (three of four AES registrations), repeats execution,
+checks their progress and observes warm RPC counts outside the application.
+It also requests stop while the pointer is hidden and before main starts,
+then checks collection, heap ownership and stack guards.
 The proof adds development-only pause and timing hooks outside rendering
 ownership. It compares full framebuffers after timers, physical top/drag/close,
 full cover/exposure, simultaneous readiness and repeated restart. Closing the

@@ -122,3 +122,44 @@ pending desktop work before stopping the console, as the other window tests do.
 checks in each compiler mode, 431 cursor/history assertions, the complete hidden
 window lifecycle and reset-required cursor storage retention. The host suite
 passes 715 checks with five skips. This is development coverage.
+
+## GM5: loaded SDK acceptance and distribution
+
+The [Mouse example](../../examples/gem-mouse/main.c) is a small disk APP using
+the published loadable SDK. Sixteen timer-driven steps exercise forms,
+visibility, queries and an UPDATE-held copy/strip repair. The example contains
+no resident-context lookup; the development observer measures RPCs externally.
+
+Two independent disk Counters advance during each probe execution. Two complete
+runs each finish sixteen steps and 270 assertions, with zero AES RPC growth across
+the fifteen measured warm rounds. The supervisor also requests stop while the
+device is hidden and before main starts, collecting eight Process lifetimes
+and restoring the heap on repeated execution. The emitted-code check retains
+Task/domain guards and OS restoration; the observed minimum ordinary-Task
+headroom is 286 bytes above the reserved interrupt floor.
+
+The physical-cost comparison matches 52 healthy fixed-arrow backend operations
+against GM1: the same records, command bytes, upload and launch counts.
+Warmed move/show/hide retains one upload/launch; stationary no-ops launch none.
+The 84-byte/1,440-work-unit list bound and existing drawing quanta remain.
+This is a physical-work and RPC comparison, without a CPU or latency speedup
+claim. The original MagiC MGVIEW application remains a separate port.
+
+[GM5 development evidence](../development/gem-mouse-gm5.json) records the loaded
+probe, matching packaged Mouse/Counter binaries, cost comparison and delivery.
+All fifteen C APPs and the provider use ABI 45; QED is rebuilt on its separate
+disk without routine QED execution. The ZIP/SYS audit matches 75 system files
+and fourteen disk APPs, including the mouse artwork notice under `licenses/`.
+The guide describes the four-client limit: Desktop and Terminal leave room
+for the probe beside one Counter; the minimal test fixture runs two Counters.
+
+The final cold ATR boot preserves the five-second OF816 autoboot (249 PAL
+frames), reads 643,735 source bytes and verifies 1,752,163 expanded native/zero
+bytes. Reader guards and firmware context remain intact. This transport check
+stops at native entry; the separate optimized SDK fixtures cover graphical
+execution and shutdown. Production bank-zero budgets and all twelve Task
+pools are identical to the previous demo, including guards and spare capacity.
+
+Delivery files are `build/gem-mouse/demo/exec816-demo.zip` and
+`build/gem-mouse/demo/launch-altirra.command`. These are development results,
+without a hosted-system release qualification claim.

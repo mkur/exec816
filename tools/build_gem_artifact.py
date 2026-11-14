@@ -17,6 +17,7 @@ def build(output):
         shutil.copyfile(output/'selected'/source,output/name)
     font=(output/'selected/src/vdi/font8x8.c').read_text().split('*/',1)[0]+'*/\n'
     (output/'GEM-FONT-NOTICE.txt').write_text(font)
+    shutil.copyfile(ROOT/'ports/gem4xe/mouse/NOTICE.txt',output/'GEM-MOUSE-NOTICE.txt')
     from package_demo import GEM_FILES
     record=dict(format='exec816-gem-vdi-artifact-v1',diagnostic=False,workload='interactive-keyboard-st-mouse',
         files={name:sha256(output/name) for name in GEM_FILES},
