@@ -359,6 +359,36 @@ static void raster_case(WORD handle,WORD window,UWORD index)
     CHECK(wind_update(END_UPDATE));
 }
 
+static void raster_bar(WORD handle,WORD l,WORD t,WORD r,WORD b,WORD color)
+{
+    WORD p[4];p[0]=l;p[1]=t;p[2]=r;p[3]=b;
+    vsf_color(handle,color);v_bar(handle,p);
+}
+
+static void raster_modes(WORD handle,WORD window)
+{
+    WORD x,y,w,h,sx,sy,dx,dy,p[8],mode;
+    UWORD i;
+    CHECK(ExecAESBeginUpdate(window));
+    CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
+    vs_clip(handle,0,p);vswr_mode(handle,MD_TRANS);
+    raster_bar(handle,x,y,x+w-1,y+h-1,5);
+    for (i=0;i<32;++i) {
+        sx=x+(i%8)*47+1;sy=y+(i/8)*28+1;
+        dx=x+(i%8)*47+(i&1 ? 24:25);dy=sy+12;mode=i/2;
+        raster_bar(handle,sx,sy,sx+7,sy+7,5);
+        raster_bar(handle,sx+8,sy,sx+15,sy+7,10);
+        raster_bar(handle,dx,dy,dx+15,dy+3,3);
+        raster_bar(handle,dx,dy+4,dx+15,dy+7,15);
+        p[0]=sx;p[1]=sy;p[2]=sx+15;p[3]=sy+7;
+        p[4]=dx;p[5]=dy;p[6]=dx+15;p[7]=dy+7;
+        vro_cpyfm(handle,mode,p,NULL,NULL);
+        CHECK(ExecAESDiagnostic()==AES_OK);
+    }
+    CHECK(ExecAESPainted(window,x,y,w,h));
+    CHECK(wind_update(END_UPDATE));
+}
+
 static void worker(UWORD who)
 {
     BYTE bit=AllocSignal(-1),reserved[32],used=0,next;
@@ -428,6 +458,7 @@ static void worker(UWORD who)
         else if (command==8) draw_private_mode(who,handle,window);
         else if (command==9) break;
         else if (who && command==100) draw_atascii(handle,window);
+        else if (who && command==101) raster_modes(handle,window);
         else if (who && command>=10) {
             copy_case(handle,window,command-10);
             if (command-10<=15) raster_case(handle,window,command-10);
@@ -503,6 +534,8 @@ UWORD AESRun(void)
     }
     issue(1,100);while (VDIStage[1]!=100) Wait(wake);
     VDIPhase=40;while (VDIGo<40) ExecYield();
+    issue(1,101);while (VDIStage[1]!=101) Wait(wake);
+    VDIPhase=41;while (VDIGo<41) ExecYield();
     issue(0,9); issue(1,9);
     while (AESDone!=2) Wait(wake);
     FreeMem(textAllocation,65700UL);

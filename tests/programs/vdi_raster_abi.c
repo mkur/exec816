@@ -9,6 +9,7 @@ static struct AESWindowView view;
 static MFDB form;
 static UWORD calls,changes,status,unexpected;
 static WORD observed[6];
+static WORD observedMode;
 volatile UWORD CopyChecks;
 struct ExecAESContext *ExecAESContext(void) { return &context; }
 void ExecAESChanged(struct ExecAESContext *c,LONG l,LONG t,LONG r,LONG b)
@@ -19,6 +20,7 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *g,struct VbxeCopy *p,UBYTE *scra
     observed[0]=p->sourceX;observed[1]=p->sourceY;
     observed[2]=p->destinationX;observed[3]=p->destinationY;
     observed[4]=p->width;observed[5]=p->height;
+    observedMode=S_ONLY;
     return status;
 }
 UWORD GemDrawingRasterBorrow(struct DisplayGrant *g,const struct GemRasterCopy *p,UBYTE *scratch)
@@ -27,6 +29,7 @@ UWORD GemDrawingRasterBorrow(struct DisplayGrant *g,const struct GemRasterCopy *
     observed[0]=p->rect.sx;observed[1]=p->rect.sy;
     observed[2]=p->rect.dx;observed[3]=p->rect.dy;
     observed[4]=p->rect.width;observed[5]=p->rect.height;
+    observedMode=p->mode;
     return status;
 }
 /* Unused PB branches still link; none may be called by a raster operation. */
@@ -65,7 +68,7 @@ LONG CopyProbe(void)
     view.updates=0;vro_cpyfm(2,S_ONLY,points,NULL,NULL);
     CHECK(context.diagnostic==AES_BUSY && calls==3);view.updates=1;
     vro_cpyfm(9,S_ONLY,points,NULL,NULL);CHECK(context.diagnostic==AES_IDENTITY && calls==3);
-    mode=6;vdi_call(&pb);CHECK(context.diagnostic==AES_UNSUPPORTED && calls==3);mode=S_ONLY;
+    mode=16;vdi_call(&pb);CHECK(context.diagnostic==AES_UNSUPPORTED && calls==3);mode=S_ONLY;
     control[1]=3;vdi_call(&pb);CHECK(context.diagnostic==AES_MALFORMED && calls==3);control[1]=4;
     form.fd_addr=(void *)1;vro_cpyfm(2,S_ONLY,points,&form,NULL);
     CHECK(context.diagnostic==AES_UNSUPPORTED && calls==3);form.fd_addr=NULL;
@@ -89,6 +92,16 @@ LONG CopyProbe(void)
     CHECK(context.diagnostic==AES_OK && calls==9 && changes==8);
     form.fd_stand=1;vro_cpyfm(2,S_ONLY,points,&form,&form);
     CHECK(context.diagnostic==AES_UNSUPPORTED && calls==9);
+    form.fd_stand=0;
+    vro_cpyfm(2,S_XOR_D,points,&form,&form);
+    CHECK(context.diagnostic==AES_OK && calls==10 && observedMode==S_XOR_D);
+    vro_cpyfm(2,D_ONLY,points,&form,&form);
+    CHECK(context.diagnostic==AES_OK && calls==10);
+    points[4]=points[0];points[5]=points[1];points[6]=points[2];points[7]=points[3];
+    vro_cpyfm(2,S_XOR_D,points,&form,&form);
+    CHECK(context.diagnostic==AES_OK && calls==11);
+    vro_cpyfm(2,S_ONLY,points,&form,&form);
+    CHECK(context.diagnostic==AES_OK && calls==11);
     CHECK(unexpected==0);
     return 0;
 }

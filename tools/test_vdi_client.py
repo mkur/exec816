@@ -196,4 +196,22 @@ def physical(b,p,foreign,report):
     atascii(0,l+9,t+72,l,l+384);atascii(128,l+17,t+72,l,l+384)
     r.apply(8,(l+25,t+78),b'B')
     report['atascii_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
-    b.poke16(sy['VDIGo'],40);b.bp_clear_all()
+    b.poke16(sy['VDIGo'],40);phase(41);frames(8)
+    r.clip=(l,t,l+383,t+126);r.fill=5;r.apply(11,(l,t,l+383,t+126))
+    operations=(lambda s,d:0,lambda s,d:s&d,lambda s,d:s&~d,lambda s,d:s,
+        lambda s,d:~s&d,lambda s,d:d,lambda s,d:s^d,lambda s,d:s|d,
+        lambda s,d:~(s|d),lambda s,d:~(s^d),lambda s,d:~d,lambda s,d:s|~d,
+        lambda s,d:~s,lambda s,d:~s|d,lambda s,d:~(s&d),lambda s,d:15)
+    for i in range(32):
+        sx=l+(i%8)*47+1;source_y=t+(i//8)*28+1
+        dx=l+(i%8)*47+(24 if i&1 else 25);dy=source_y+12
+        for pen,box in ((5,(sx,source_y,sx+7,source_y+7)),(10,(sx+8,source_y,sx+15,source_y+7)),
+                (3,(dx,dy,dx+15,dy+3)),(15,(dx,dy+4,dx+15,dy+7))):
+            r.fill=pen;r.apply(11,box)
+        before=bytes(r.pixels)
+        for yy in range(8):
+            for xx in range(16):
+                at=(dy+yy)*640+dx+xx
+                r.pixels[at]=operations[i//2](before[(source_y+yy)*640+sx+xx],before[at])&15
+    report['raster_mode_pixels']=pixels(b,out,overlay(r,position),palette=DESKTOP_PALETTE)
+    b.poke16(sy['VDIGo'],41);b.bp_clear_all()

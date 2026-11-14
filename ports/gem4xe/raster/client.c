@@ -28,7 +28,7 @@ static UWORD copy(struct ExecVDIWorkstation *w,struct GemRasterCopy *p)
 {
     struct VbxeCopy *v=&w->copy;
     struct GemRasterRect *r=&p->rect;
-    if (!p->source.address && !p->destination.address && ((r->sx^r->dx)&1)==0) {
+    if (p->mode==S_ONLY && !p->source.address && !p->destination.address && ((r->sx^r->dx)&1)==0) {
         v->source.offset=v->destination.offset=0;
         v->source.pitch=v->destination.pitch=320;
         v->source.width=v->destination.width=640;
@@ -65,7 +65,7 @@ void ExecGemRasterCopy(struct ExecAESContext *c,WORD mode,const WORD *points,
     struct GemRasterRect whole;
     struct RasterClient client;
     LONG l,t,r,b;
-    if (mode!=S_ONLY) {
+    if ((UWORD)mode>15) {
         c->diagnostic=AES_UNSUPPORTED; return;
     }
     if (!surface(c,source,&p.source) || !surface(c,destination,&p.destination)) return;
@@ -89,7 +89,8 @@ void ExecGemRasterCopy(struct ExecAESContext *c,WORD mode,const WORD *points,
         if (b>(LONG)w->clip[3]+1) b=(LONG)w->clip[3]+1;
     }
     if (!GemRasterClip(&p.rect,0,0,p.source.width,p.source.height,l,t,r,b)) return;
-    if (p.source.address==p.destination.address && p.source.pitch==p.destination.pitch &&
+    if (mode==D_ONLY) return;
+    if (mode==S_ONLY && p.source.address==p.destination.address && p.source.pitch==p.destination.pitch &&
         p.rect.sx==p.rect.dx && p.rect.sy==p.rect.dy) return;
     whole=p.rect; client.context=c; client.copy=&p;
     if (p.destination.address) draw(&client,&whole);

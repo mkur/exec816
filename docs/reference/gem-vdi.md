@@ -95,11 +95,14 @@ A null MFDB pointer or null fd_addr denotes the screen; other screen fields
 are ignored. Corners are inclusive and normalized with widened arithmetic.
 Source dimensions determine the copy size; destination dimensions do not scale.
 
-S_ONLY (3) supports screen and device-format memory forms in either direction,
-either X parity and same-form overlap. Other modes and scaling fail with AES_UNSUPPORTED
+All sixteen logical modes (0–15) support screen and device-format memory forms
+in either direction, either X parity and same-form overlap. Scaling and invalid
+modes fail with AES_UNSUPPORTED
 before writes. Fragmented visible destinations use ordered row bands/spans;
 results do not depend on visibility-list order. Empty
-clips and identical source/destination copies do no hardware work.
+clips and D_ONLY (5) do no hardware work. Identical source/destination is a
+no-op for S_ONLY (3); XOR and inversion still change those pixels. Raster modes
+operate on packed hardware pixel bits and are independent of vswr_mode.
 
 Memory MFDBs require fd_stand=0, fd_nplanes=4, positive dimensions and a
 sufficient positive word stride. Pitch is fd_wdwidth×8 bytes, at most 65,535.

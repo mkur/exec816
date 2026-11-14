@@ -17,7 +17,9 @@ The host suite passes 714 tests with four existing skips. RC2 is implemented:
 the host snapshot oracle and optimized emitted visibility/ABI probes pass.
 RC3 is implemented: memory-only copies acquire no hardware access, the
 optimized production row-path probe passes across real CPU-bank boundaries,
-and raw/optimized form-admission probes pass. RC4–RC6 remain pending.
+and raw/optimized form-admission probes pass. RC4 is implemented: all sixteen
+modes pass the emitted bank-crossing probe, admission/no-op checks and a
+32-transfer physical scene at both pixel parities. RC5–RC6 remain pending.
 
 Deliver conventional `vro_cpyfm` through the resident application VDI, using
 selected GEM4XE algorithms behind Exec's existing ownership and hardware
