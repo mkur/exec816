@@ -15,6 +15,26 @@ binding declarations and generated interface outputs under MIT; OS
 implementation remains GPL-3.0-only. Update the licence map when adding a new
 public binding outside an existing MIT directory. Preserve third-party notices.
 
+## GEM architecture guidance
+
+**Use GEM4XE for rendering; use MagiC for multitasking ownership.**
+
+GEM4XE supplies drawing algorithms, cursor/bitmap handling and artwork. When
+adapting these implementations to multiple applications, use the pinned MagiC
+source to guide application state, shared resource ownership, UPDATE/MCTRL,
+input routing and lifecycle cleanup. Keep application state, shared device state
+and temporary renderer state distinct.
+
+Map that structure onto Exec Tasks, signals, ports, device I/O and display
+ownership, preserving normal Task preemption and the existing IRQ/NMI protocols.
+Document deliberate semantic differences and retain donor pins and provenance.
+Current public contracts remain authoritative until implementation slices land.
+
+Consult the [MagiC source model](../architecture/magic.md) and
+[MagiC-to-Exec mapping](../architecture/magic-exec-mapping.md). The
+[mouse cross-check](../history/gem-mouse-magic-review.md) shows how this principle
+changes a GEM4XE adaptation's ownership, bookkeeping and cleanup.
+
 ## Maintaining the documentation
 
 Put instructions in guides, explanations in architecture, and current contracts

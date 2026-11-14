@@ -16,6 +16,12 @@
   device I/O and driver responsibilities. Consider QNX and BeOS as references
   for specific improvements; document the chosen semantics and the reason for
   departing from the Amiga model.
+- For GEM work: **Use GEM4XE for rendering; use MagiC for multitasking
+  ownership.** Reuse GEM4XE drawing algorithms and artwork; use pinned MagiC
+  source to guide application state, shared ownership, input routing and cleanup.
+  Map that structure onto Exec primitives, preserving normal Task preemption
+  and IRQ/NMI protocols, and document deliberate semantic differences. See the
+  [GEM architecture guidance](docs/contributing/README.md#gem-architecture-guidance).
 - Keep device-specific queue, active-request, cancellation and lifecycle policy
   in the driver, using general public kernel primitives for coordination.
 - Treat correct API use and live application-owned pointers/handles as caller
