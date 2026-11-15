@@ -114,3 +114,109 @@ Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 private idle and
 This completes the aligned-copy slice. Text-row rendering and remaining
 UPDATE/scene coordination costs remain separate follow-ups. Development
 checks do not qualify a release or establish the larger input-latency targets.
+
+## Remaining cost at individual call boundaries
+
+The subsequent [granular analysis](../development/gem-scroll-detail.json)
+reuses this exact capture, with no build or guest run. All times below are ms.
+Wall time includes other Tasks and native interrupts; CPU is the viewer's
+conservative charge, including kernel execution and bus stalls.
+
+| Call inside `set_shift` | Down wall | Down CPU | Up wall | Up CPU |
+| --- | ---: | ---: | ---: | ---: |
+| BEGIN UPDATE | 7.71 | 6.39 | 27.74 | 7.76 |
+| Window-view query | 2.23 | 1.20 | 0.89 | 0.75 |
+| Slider arrangement, two `wind_set` calls | 6.73 | 5.55 | 6.73 | 5.55 |
+| `graf_mouse(M_OFF)` | **19.20** | 6.58 | **19.57** | 3.96 |
+| First visible rectangle | 1.27 | 1.05 | 1.27 | 1.05 |
+| Screen rectangle intersection | 0.07 | 0.07 | 0.07 | 0.07 |
+| Copy clip setup | 1.65 | 1.34 | 1.65 | 1.34 |
+| `vro_cpyfm` | 28.57 | 9.68 | 14.56 | 12.05 |
+| Exposed-row callback | 18.62 | 14.66 | 23.30 | 15.59 |
+| Painted-region acknowledgement | 1.10 | 0.93 | 1.10 | 0.93 |
+| Next visible rectangle | 2.91 | 1.67 | 1.23 | 1.01 |
+| `graf_mouse(M_ON)` | **20.32** | 3.94 | **17.96** | 3.95 |
+| END UPDATE | 17.11 | 9.80 | 38.81 | 11.16 |
+| Caller code, argument setup and compiler helpers | 0.45 | **0.36** | 2.04 | **1.04** |
+
+These are disjoint direct-call intervals plus their residual. Indirect callbacks
+are identified by their contained slider/draw routines. Public calls match
+the viewer DP, native stack and linked JSL successor; all matched stacks agree.
+Compiler switch helpers and helpers with inline operand data do not have a
+normal JSL+4 return; their work remains in the caller residual. Thus almost
+all viewer CPU is inside GEM/binding callbacks rather than MGVIEW's own scroll
+arithmetic.
+
+### Mouse handoff
+
+Hide/show together take 39.52 ms down and 37.53 ms up, including 26.80/27.95 ms
+off the viewer CPU. The corresponding native scene entries are uncontended:
+each `AESGATE.EnterTask` takes about 0.15 ms of CPU. The substantial off-CPU
+intervals occur while the caller is in **`AESGATE.Release`**:
+
+| Mouse call | Release wall | Release CPU | Other-Task time inside release |
+| --- | ---: | ---: | ---: |
+| Down hide | 9.14 | 1.52 | 7.31 |
+| Down show | 17.41 | 1.52 | 15.58 |
+| Up hide | 16.61 | 1.52 | 14.77 |
+| Up show | 15.01 | 1.52 | 13.18 |
+
+Down hide also spends 3.91 ms off CPU inside display admission. These intervals
+account for all off-CPU time inside the four mouse calls.
+
+[`AESLOCAL.Call`](../../lib/aes/aeslocal.act) releases the scene with
+`AESGATE.Release(AESCURSOR.Pending())`. Release signals the presenter and calls
+`Permit()`. The C caller's attempt to apply that target through its workstation
+grant comes afterward in
+[`ExecAESMouseControl`](../../c/calypsi/aes-input.c). This creates an opportunity
+for the presenter to run before the caller reaches its physical mouse update.
+The measured pause is a scheduling handoff at release, rather than scene-gate
+acquisition contention. Whether that visibility wake can be deferred for a
+caller that will apply its own target is the next focused protocol question;
+required scene-waiter wakes and fallback completion still need preservation.
+
+### Exposed-row CPU
+
+The row callback itself breaks down as follows; these nested costs are already
+included in the callback row above:
+
+| Work | Down CPU | Up CPU |
+| --- | ---: | ---: |
+| Set text clip | 2.03 | 2.02 |
+| Clear exposed row | 2.30 | 2.29 |
+| Fetch source line | 0.36 | 0.27 |
+| Expand tabs/text | 2.29 | 1.66 |
+| `v_gtext` | 7.02 | 5.69 |
+| Trailing blank fill | 0 | 2.13 |
+| Remaining callback/call/compiler work | 0.66 | 1.53 |
+
+The presenter separately calls `DESKINPUT.Present` nine times during either
+whole scroll, costing 21.99/21.94 ms CPU. Contiguous native caller segments
+attribute 5.28/5.29 ms to cursor selection, 5.78/7.08 ms to cursor waiter/wake
+handling and 8.28/6.29 ms to bitmap mouse work. Segment costs include caller
+setup/cleanup; they are not pure callee timings and are not added to the
+viewer call table.
+
+### Visible pixels versus callback completion
+
+The handler starts at 27.83/20.45 ms after input. The exposed-row callback
+returns at 114.32/118.25 ms; complete pixels are observed at 120.12/140.49 ms.
+END UPDATE starts at about 138.66/138.56 ms, and the scroll handler returns at
+155.77/177.37 ms. Its late release cost therefore affects readiness for the
+next key even when pixels are already visible.
+
+The input-to-observed-pixels interval has this disjoint CPU accounting:
+
+| Attribution before observed completion | Down | Up |
+| --- | ---: | ---: |
+| Viewer Task | 54.40 | 58.99 |
+| Presenter Task | 30.73 | 41.15 |
+| Busy-yielding test supervisor | 13.47 | 7.04 |
+| Other Tasks | 0 | 8.08 |
+| All native interrupts | 21.52 | 25.23 |
+| Total elapsed | **120.12** | **140.49** |
+
+The supervisor is fixture overhead. The frame-sampled completion brackets
+remain authoritative; no pure hardware BUSY-edge duration or production
+desktop latency is inferred from these diagnostic samples. The analysis adds
+zero fixed or per-Task reserved bank-zero bytes and changes no target code.

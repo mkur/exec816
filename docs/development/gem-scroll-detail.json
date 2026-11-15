@@ -1,0 +1,617 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "code_revision": "d4cbb24b",
+  "tier": "development-analysis",
+  "builds": 0,
+  "guest_runs": 0,
+  "capture": "build/mgview-screen-copy/scroll",
+  "native_sha256": "5137d0adfedae07d65a4b68af66f9bafce9d9ddf3edf90899767b27cb33751b0",
+  "trace_sha256": "eddce9c5aa940712ab048c465e59694aee7792e45cbbc6377abfc968c50c9ac8",
+  "method": [
+    "Offline CPU timeline from the saved passive capture.",
+    "Public APP call sites matched by viewer DP, native S and linked JSL successor; all matched stacks agree.",
+    "Compiler helpers with inline data/nonreturning switches are excluded from call spans and remain in caller self cost.",
+    "Presenter segments run from one recorded native caller boundary to the next; include setup/cleanup, not pure callee costs.",
+    "Whole-scroll routine tables include work after the sampled visible-completion point."
+  ],
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "samples": [
+    {
+      "action": "down",
+      "input_to_visible_ms": 120.1247851994491,
+      "input_capture_ms": 8.008694928944895,
+      "handler_entry_ms": 27.832724115035827,
+      "handler_return_ms": 155.77413484188284,
+      "visible_bracket_ms": [
+        100.55781183260288,
+        120.1247851994491
+      ],
+      "before_visible_cpu_ms": {
+        "viewer": 54.397931148229645,
+        "presenter": 30.72969456383682,
+        "test_supervisor": 13.474602433959845,
+        "other_tasks": 0.0,
+        "native_interrupts": 21.522557053422783
+      },
+      "calls": [
+        {
+          "call": "ExecAESBeginUpdate",
+          "start_ms": 27.951489965166715,
+          "end_ms": 35.6602746909621,
+          "elapsed_ms": 7.708784725795378,
+          "charged_cpu_ms": 6.39023709469832,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.318547631097058
+        },
+        {
+          "call": "ExecAESWindowView",
+          "start_ms": 35.66126146953885,
+          "end_ms": 37.89279073668659,
+          "elapsed_ms": 2.231529267147745,
+          "charged_cpu_ms": 1.2016848539356253,
+          "off_cpu_ms": 0.7309914728234131,
+          "interrupt_ms": 0.2988529403887062
+        },
+        {
+          "call": "slider arrangement callback",
+          "start_ms": 37.9071695102336,
+          "end_ms": 44.64038264453839,
+          "elapsed_ms": 6.733213134304793,
+          "charged_cpu_ms": 5.5454136646277945,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1877994696769991
+        },
+        {
+          "call": "graf_mouse(M_OFF)",
+          "start_ms": 44.885526636677994,
+          "end_ms": 64.08506595205102,
+          "elapsed_ms": 19.199539315373023,
+          "charged_cpu_ms": 6.5798395498034195,
+          "off_cpu_ms": 11.211496252355934,
+          "interrupt_ms": 1.4082035132136699,
+          "presenter_scene_signal_posts": 1
+        },
+        {
+          "call": "wind_get(WF_FIRSTXYWH)",
+          "start_ms": 64.0873919301248,
+          "end_ms": 65.35864467372167,
+          "elapsed_ms": 1.2712527435968644,
+          "charged_cpu_ms": 1.0519764470050565,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21927629659180778
+        },
+        {
+          "call": "rc_intersect",
+          "start_ms": 65.36160500945194,
+          "end_ms": 65.43272355116235,
+          "elapsed_ms": 0.0711185417104256,
+          "charged_cpu_ms": 0.0711185417104256,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "call": "vs_clip",
+          "start_ms": 65.45746349976528,
+          "end_ms": 67.10947180562154,
+          "elapsed_ms": 1.652008305856249,
+          "charged_cpu_ms": 1.3444153266448542,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3075929792113948
+        },
+        {
+          "call": "vro_cpyfm",
+          "start_ms": 67.1141237617691,
+          "end_ms": 95.68037678025428,
+          "elapsed_ms": 28.56625301848518,
+          "charged_cpu_ms": 9.67656217621328,
+          "off_cpu_ms": 16.717650226465683,
+          "interrupt_ms": 2.172040615806219
+        },
+        {
+          "call": "exposed-row callback",
+          "start_ms": 95.70412995028046,
+          "end_ms": 114.3218223262882,
+          "elapsed_ms": 18.617692376007746,
+          "charged_cpu_ms": 14.656481232176311,
+          "off_cpu_ms": 0.732260188136384,
+          "interrupt_ms": 3.2289509556950517
+        },
+        {
+          "call": "ExecAESPainted",
+          "start_ms": 114.32485314620253,
+          "end_ms": 115.42567513275696,
+          "elapsed_ms": 1.100821986554437,
+          "charged_cpu_ms": 0.9256687891803957,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17515319737404123
+        },
+        {
+          "call": "wind_get(WF_NEXTXYWH)",
+          "start_ms": 115.43046805727263,
+          "end_ms": 118.33596709234415,
+          "elapsed_ms": 2.90549903507152,
+          "charged_cpu_ms": 1.6737879187289164,
+          "off_cpu_ms": 0.7313438937436829,
+          "interrupt_ms": 0.500367222598921
+        },
+        {
+          "call": "graf_mouse(M_ON)",
+          "start_ms": 118.33885694389036,
+          "end_ms": 138.6611388270586,
+          "elapsed_ms": 20.322281883168237,
+          "charged_cpu_ms": 3.9449997814990296,
+          "off_cpu_ms": 15.58468745198265,
+          "interrupt_ms": 0.7925946496865568,
+          "presenter_scene_signal_posts": 1
+        },
+        {
+          "call": "wind_update(END_UPDATE)",
+          "start_ms": 138.66135027961076,
+          "end_ms": 155.77039918012798,
+          "elapsed_ms": 17.109048900517216,
+          "charged_cpu_ms": 9.797724488602004,
+          "off_cpu_ms": 5.2416973155393665,
+          "interrupt_ms": 2.069627096375844
+        }
+      ],
+      "caller_self": {
+        "elapsed_ms": 0.45236749325819403,
+        "charged_cpu_ms": 0.36461468411103937,
+        "off_cpu_ms": 7.105427357601002e-15,
+        "interrupt_ms": 0.08775280914715644
+      },
+      "mouse_native": [
+        {
+          "mode": "M_OFF",
+          "routines": [
+            {
+              "kind": "AESGATE_ENTERTASK",
+              "elapsed_ms": 0.1951002214613063,
+              "charged_cpu_ms": 0.1517524482681331,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043347773193173185
+            },
+            {
+              "kind": "AESSNAPSHOT_PUBLISH",
+              "elapsed_ms": 0.06583222790638009,
+              "charged_cpu_ms": 0.06583222790638009,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            {
+              "kind": "AESGATE_RELEASE",
+              "elapsed_ms": 9.13651235799199,
+              "charged_cpu_ms": 1.5238680592461857,
+              "off_cpu_ms": 7.305615193006841,
+              "interrupt_ms": 0.3070291057389632
+            },
+            {
+              "kind": "DISPLAY_ENTER",
+              "elapsed_ms": 5.053997933403723,
+              "charged_cpu_ms": 0.9267965361252589,
+              "off_cpu_ms": 3.9058810593490927,
+              "interrupt_ms": 0.22132033792937203
+            }
+          ]
+        },
+        {
+          "mode": "M_ON",
+          "routines": [
+            {
+              "kind": "AESGATE_ENTERTASK",
+              "elapsed_ms": 0.19517070564536024,
+              "charged_cpu_ms": 0.15111809061164766,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.044052615033712585
+            },
+            {
+              "kind": "AESSNAPSHOT_PUBLISH",
+              "elapsed_ms": 0.1157350302165697,
+              "charged_cpu_ms": 0.0721758044712347,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043559225745335
+            },
+            {
+              "kind": "AESGATE_RELEASE",
+              "elapsed_ms": 17.414315901654827,
+              "charged_cpu_ms": 1.5239385434302397,
+              "off_cpu_ms": 15.58468745198265,
+              "interrupt_ms": 0.30568990624193837
+            }
+          ]
+        }
+      ],
+      "exposed_row_children": [
+        {
+          "call": "vs_clip",
+          "elapsed_ms": 3.313391008191672,
+          "charged_cpu_ms": 2.0338916150604964,
+          "off_cpu_ms": 0.732260188136384,
+          "interrupt_ms": 0.5472392049947913
+        },
+        {
+          "call": "vr_recfl",
+          "elapsed_ms": 2.77848653540632,
+          "charged_cpu_ms": 2.2963042322933154,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4821823031130045
+        },
+        {
+          "call": "get_line",
+          "elapsed_ms": 0.4040858271812388,
+          "charged_cpu_ms": 0.360244664699688,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04384116248155077
+        },
+        {
+          "call": "expand_line",
+          "elapsed_ms": 2.778627503774428,
+          "charged_cpu_ms": 2.292780023090619,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.48584748068380934
+        },
+        {
+          "call": "v_gtext",
+          "elapsed_ms": 8.510612803593002,
+          "charged_cpu_ms": 7.016559554201633,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.494053249391369
+        }
+      ],
+      "presenter_present_segments": {
+        "AESSTATE_GET": {
+          "calls": 11,
+          "cpu_ms": 0.12743540476952375
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 9,
+          "cpu_ms": 5.281943784634167
+        },
+        "CONSOLEBITMAP_PENDING": {
+          "calls": 9,
+          "cpu_ms": 0.06724191158745889
+        },
+        "DISPLAY_BLOCKED": {
+          "calls": 9,
+          "cpu_ms": 0.09606994286552041
+        },
+        "DESKINPUT_MOUSEREADY": {
+          "calls": 7,
+          "cpu_ms": 0.679256081727821
+        },
+        "DESKDRAG_APPLICATION": {
+          "calls": 7,
+          "cpu_ms": 0.043770678297496826
+        },
+        "DESKDRAG_SUSPEND": {
+          "calls": 7,
+          "cpu_ms": 0.46167140555330793
+        },
+        "CONSOLEBITMAP_CHANGED": {
+          "calls": 7,
+          "cpu_ms": 0.046026172187222915
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 7,
+          "cpu_ms": 1.1214033682981874
+        },
+        "CONSOLEBITMAP_MOUSE": {
+          "calls": 2,
+          "cpu_ms": 8.276111923245542
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 9,
+          "cpu_ms": 5.780901323552008
+        },
+        "tail/return": {
+          "calls": 9,
+          "cpu_ms": 0.009585849031335858
+        }
+      }
+    },
+    {
+      "action": "up",
+      "input_to_visible_ms": 140.48907565631347,
+      "input_capture_ms": 7.152171124321414,
+      "handler_entry_ms": 20.44541775271047,
+      "handler_return_ms": 177.37218045642737,
+      "visible_bracket_ms": [
+        120.34920684147684,
+        140.48907565631347
+      ],
+      "before_visible_cpu_ms": {
+        "viewer": 58.99089203373655,
+        "presenter": 41.15331860683781,
+        "test_supervisor": 7.040383208411864,
+        "other_tasks": 8.078121850238025,
+        "native_interrupts": 25.226359957089226
+      },
+      "calls": [
+        {
+          "call": "ExecAESBeginUpdate",
+          "start_ms": 20.51449225308333,
+          "end_ms": 48.25248562475066,
+          "elapsed_ms": 27.737993371667333,
+          "charged_cpu_ms": 7.76157737965178,
+          "off_cpu_ms": 18.351826033756286,
+          "interrupt_ms": 1.6245899582592662
+        },
+        {
+          "call": "ExecAESWindowView",
+          "start_ms": 48.25354288751147,
+          "end_ms": 49.13931762851734,
+          "elapsed_ms": 0.8857747410058657,
+          "charged_cpu_ms": 0.7536168959047279,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13215784510113776
+        },
+        {
+          "call": "slider arrangement callback",
+          "start_ms": 49.153907854616506,
+          "end_ms": 55.88754389402562,
+          "elapsed_ms": 6.733636039409117,
+          "charged_cpu_ms": 5.545554632995902,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1880814064132148
+        },
+        {
+          "call": "graf_mouse(M_OFF)",
+          "start_ms": 57.72330446771049,
+          "end_ms": 77.29091219221318,
+          "elapsed_ms": 19.567607724502697,
+          "charged_cpu_ms": 3.957193545340361,
+          "off_cpu_ms": 14.773766914442067,
+          "interrupt_ms": 0.8366472647202694,
+          "presenter_scene_signal_posts": 1
+        },
+        {
+          "call": "wind_get(WF_FIRSTXYWH)",
+          "start_ms": 77.29316768610292,
+          "end_ms": 78.56568914501275,
+          "elapsed_ms": 1.2725214589098353,
+          "charged_cpu_ms": 1.0535270990542431,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21899435985559199
+        },
+        {
+          "call": "rc_intersect",
+          "start_ms": 78.56864948074302,
+          "end_ms": 78.63976802245344,
+          "elapsed_ms": 0.0711185417104256,
+          "charged_cpu_ms": 0.0711185417104256,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "call": "vs_clip",
+          "start_ms": 78.66408506595205,
+          "end_ms": 80.31567046670398,
+          "elapsed_ms": 1.6515854007519253,
+          "charged_cpu_ms": 1.3439924215405306,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3075929792113948
+        },
+        {
+          "call": "vro_cpyfm",
+          "start_ms": 80.32018145448343,
+          "end_ms": 94.88066322797827,
+          "elapsed_ms": 14.560481773494844,
+          "charged_cpu_ms": 12.053218378328086,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 2.507263395166759
+        },
+        {
+          "call": "exposed-row callback",
+          "start_ms": 94.95312096918572,
+          "end_ms": 118.25434640720968,
+          "elapsed_ms": 23.301225438023963,
+          "charged_cpu_ms": 15.589268923946156,
+          "off_cpu_ms": 4.203042379320505,
+          "interrupt_ms": 3.5089141347573016
+        },
+        {
+          "call": "ExecAESPainted",
+          "start_ms": 118.25744771130806,
+          "end_ms": 119.36165293869709,
+          "elapsed_ms": 1.1042052273890262,
+          "charged_cpu_ms": 0.9260916942847194,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17811353310430672
+        },
+        {
+          "call": "wind_get(WF_NEXTXYWH)",
+          "start_ms": 119.36651634739681,
+          "end_ms": 120.5961129382178,
+          "elapsed_ms": 1.2295965908209858,
+          "charged_cpu_ms": 1.0082057687075596,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22139082211342598
+        },
+        {
+          "call": "graf_mouse(M_ON)",
+          "start_ms": 120.59893230557995,
+          "end_ms": 138.56048741222958,
+          "elapsed_ms": 17.96155510664962,
+          "charged_cpu_ms": 3.951695778984154,
+          "off_cpu_ms": 13.1759609461233,
+          "interrupt_ms": 0.8338983815421657,
+          "presenter_scene_signal_posts": 1
+        },
+        {
+          "call": "wind_update(END_UPDATE)",
+          "start_ms": 138.56069886478173,
+          "end_ms": 177.3684447946725,
+          "elapsed_ms": 38.80774592989079,
+          "charged_cpu_ms": 11.163778459751416,
+          "off_cpu_ms": 25.218395244291134,
+          "interrupt_ms": 2.425572225848242
+        }
+      ],
+      "caller_self": {
+        "elapsed_ms": 2.041715359490496,
+        "charged_cpu_ms": 1.041403819396976,
+        "off_cpu_ms": 0.731273409559634,
+        "interrupt_ms": 0.2690381305338878
+      },
+      "mouse_native": [
+        {
+          "mode": "M_OFF",
+          "routines": [
+            {
+              "kind": "AESGATE_ENTERTASK",
+              "elapsed_ms": 0.19517070564536024,
+              "charged_cpu_ms": 0.15111809061164766,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.044052615033712585
+            },
+            {
+              "kind": "AESSNAPSHOT_PUBLISH",
+              "elapsed_ms": 0.06583222790638009,
+              "charged_cpu_ms": 0.06583222790638009,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            {
+              "kind": "AESGATE_RELEASE",
+              "elapsed_ms": 16.608047320261807,
+              "charged_cpu_ms": 1.5230222490375385,
+              "off_cpu_ms": 14.773766914442067,
+              "interrupt_ms": 0.31125815678219965
+            }
+          ]
+        },
+        {
+          "mode": "M_ON",
+          "routines": [
+            {
+              "kind": "AESGATE_ENTERTASK",
+              "elapsed_ms": 0.14533838751922457,
+              "charged_cpu_ms": 0.14533838751922457,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            {
+              "kind": "AESSNAPSHOT_PUBLISH",
+              "elapsed_ms": 0.06583222790638009,
+              "charged_cpu_ms": 0.06583222790638009,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            {
+              "kind": "AESGATE_RELEASE",
+              "elapsed_ms": 15.007703921317097,
+              "charged_cpu_ms": 1.52358612250997,
+              "off_cpu_ms": 13.1759609461233,
+              "interrupt_ms": 0.3081568526838263
+            }
+          ]
+        }
+      ],
+      "exposed_row_children": [
+        {
+          "call": "vs_clip",
+          "elapsed_ms": 6.036829395851865,
+          "charged_cpu_ms": 2.020499620090248,
+          "off_cpu_ms": 3.4719804223130373,
+          "interrupt_ms": 0.5443493534485797
+        },
+        {
+          "call": "vr_recfl",
+          "elapsed_ms": 2.777922661933889,
+          "charged_cpu_ms": 2.2944011593238596,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.48352150261002935
+        },
+        {
+          "call": "get_line",
+          "elapsed_ms": 0.316685438954353,
+          "charged_cpu_ms": 0.2732671815771259,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043418257377227126
+        },
+        {
+          "call": "expand_line",
+          "elapsed_ms": 2.013310233316746,
+          "charged_cpu_ms": 1.6576470405805641,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3556631927361819
+        },
+        {
+          "call": "v_gtext",
+          "elapsed_ms": 6.872912787099702,
+          "charged_cpu_ms": 5.6858886434472975,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1870241436524058
+        },
+        {
+          "call": "vr_recfl",
+          "elapsed_ms": 2.569853350606657,
+          "charged_cpu_ms": 2.1318646308954734,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.43798871971118397
+        }
+      ],
+      "presenter_present_segments": {
+        "AESSTATE_GET": {
+          "calls": 11,
+          "cpu_ms": 0.1331446236778929
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 9,
+          "cpu_ms": 5.288498813751183
+        },
+        "CONSOLEBITMAP_PENDING": {
+          "calls": 9,
+          "cpu_ms": 0.06717142740340494
+        },
+        "DISPLAY_BLOCKED": {
+          "calls": 9,
+          "cpu_ms": 0.08422859994445847
+        },
+        "DESKINPUT_MOUSEREADY": {
+          "calls": 9,
+          "cpu_ms": 0.8712549990907541
+        },
+        "DESKDRAG_PRESENT": {
+          "calls": 3,
+          "cpu_ms": 0.17275673511620726
+        },
+        "CONSOLEBITMAP_CHANGED": {
+          "calls": 9,
+          "cpu_ms": 0.06449302840935522
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 9,
+          "cpu_ms": 1.4382297756206488
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 9,
+          "cpu_ms": 7.079924835666125
+        },
+        "tail/return": {
+          "calls": 9,
+          "cpu_ms": 0.009726817399443739
+        },
+        "DESKDRAG_APPLICATION": {
+          "calls": 6,
+          "cpu_ms": 0.04348874156128106
+        },
+        "DESKDRAG_SUSPEND": {
+          "calls": 6,
+          "cpu_ms": 0.3970374087758448
+        },
+        "CONSOLEBITMAP_MOUSE": {
+          "calls": 2,
+          "cpu_ms": 6.286413891586866
+        }
+      }
+    }
+  ]
+}
