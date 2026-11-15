@@ -173,3 +173,25 @@ UBYTE EXEC_CALL ExecSameAddress(const void *left, const void *right)
 {
     return (ULONG)left == (ULONG)right;
 }
+
+void EXEC_CALL InitSemaphore(struct SignalSemaphore *semaphore)
+{
+    UWORD index;
+    for (index=0; index<sizeof(*semaphore)/sizeof(UWORD); ++index)
+        semaphore->ss_Private[index]=0;
+}
+
+void EXEC_CALL ObtainSemaphore(struct SignalSemaphore *semaphore)
+{
+    _ExecPointer(EXEC_OBTAIN_SEMAPHORE, semaphore);
+}
+
+LONG EXEC_CALL AttemptSemaphore(struct SignalSemaphore *semaphore)
+{
+    return (LONG)_ExecPointer(EXEC_ATTEMPT_SEMAPHORE, semaphore);
+}
+
+void EXEC_CALL ReleaseSemaphore(struct SignalSemaphore *semaphore)
+{
+    _ExecPointer(EXEC_RELEASE_SEMAPHORE, semaphore);
+}

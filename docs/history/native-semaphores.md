@@ -94,3 +94,26 @@ Fast scratch remains 20 bytes. In the blocking scene the root peaks at 66 bytes,
 workers 60, kernel 173. All five categories of reserved bank-zero delta remain
 zero; public/private Task sizes and the five repurposed upper bytes are unchanged.
 No application catalog, demo, QED or release matrix was built.
+
+## NS3: C and loaded provider
+
+The generated C header and selectors expose the same four operations through
+huge source pointers and the native pointer gateway. Init is ordinary C code.
+Emitted raw and optimized C probes pass 12 assertions each, including recursion,
+full LONG results, a bank-crossing object, counter progress, blocking handoff
+and retirement. Passive traces confirm zero Init requests and exactly one per
+stateful wrapper. Calypsi packs record members: storage alignment is an explicit
+caller requirement, checked for the emitted fixture object; the emitted ABI
+probe checks size and the generated alignment constant, not natural C alignment.
+
+APP/provider ABI advances together to 46. One selected disk APP runs twice
+through the matching resident provider and retires cleanly. No catalog APPs were
+built. The initial run stopped at console startup under the nongraphics pin;
+the unchanged image passes with the pinned GEM custom-addons configuration.
+Both use the same recorded emulator binary and ROM. The existing provider-only
+builder already supports excluding catalog applications, so no new selector was
+needed. The host suite passes 718 tests with five skips; affected generators pass.
+
+The binding adds zero reserved bank-zero bytes in all five categories. Different
+pre-existing console/provider pool sizes in the loaded fixture are not semaphore
+reservation growth. No QED, demo refresh or release qualification was run.

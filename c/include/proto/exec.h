@@ -2,6 +2,7 @@
 #define PROTO_EXEC_H
 #include <exec816/abi.h>
 #include <exec/tasklease.h>
+#include <exec/semaphores.h>
 #include <exec/io.h>
 
 /* This is the implemented classic Exec subset, not an Amiga binary ABI. */

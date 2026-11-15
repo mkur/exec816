@@ -6,11 +6,18 @@
 
 Action! provides `InitSemaphore`, `ObtainSemaphore`, `AttemptSemaphore` and
 `ReleaseSemaphore` through `USE EXEC`.
+C provides the same functions in `<exec/semaphores.h>` (also included by
+`<proto/exec.h>`). Current loaded APP/provider ABI is 46; rebuild both together.
 
 `SignalSemaphore` is an opaque 12-byte, two-byte-aligned caller-owned object.
 Initialize it once before publication and keep its address live while used.
 Init is ordinary library code and must not race with use of the object.
 Do not copy or reinitialize a published semaphore.
+Calypsi packs record members. Declare C storage with
+`__attribute__((aligned(2)))`; when embedding an object, arrange its enclosing
+record's alignment and offset too. The generated `EXEC_SEMAPHORE_ALIGNMENT`
+constant records the required storage alignment. C pointers remain huge at the
+source boundary; the object itself contains only native private fields.
 
 Attempt returns a full LONGINT: one on acquisition, zero when another Task
 owns the semaphore. Ownership is exclusive and recursive. Each successful

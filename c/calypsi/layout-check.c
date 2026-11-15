@@ -60,6 +60,8 @@ const UWORD ExecCLayout[] = {
     offsetof(struct Task, tc_MemEntry),
     offsetof(struct Task, tc_UserData),
     offsetof(struct Task, tc_ExecPrivate),
+    sizeof(struct SignalSemaphore),
+    EXEC_SEMAPHORE_ALIGNMENT,
     sizeof(struct ExecCreateTaskPacket),
     offsetof(struct ExecCreateTaskPacket, name),
     offsetof(struct ExecCreateTaskPacket, priority),

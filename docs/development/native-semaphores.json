@@ -1096,6 +1096,175 @@
         "pin": "toolchain/altirra-shell-paced.json",
         "compiler_host": "release"
       }
+    },
+    "NS3": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/native-semaphores/ns3-c-opt",
+          "mode": "opt",
+          "checks": 12,
+          "results_sha256": "955c5dd78f1c07d55662b8f3fe222562f591f0456263df92fbe5bc562101c2ad",
+          "trace_sha256": "ee6f14349dfebe233292d9aa5f6af879144f0620ef98b5b03e992e16fcfa722b",
+          "image_sha256": "2860bd7faa16df5b6e858077aaa913968f99f2046a76f000a4236cd4620ff2aa",
+          "c_tools": {
+            "cc65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+              "version": "Calypsi ISO C compiler for 65816 version 5.18",
+              "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+            },
+            "as65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+              "version": "Calypsi assembler for 65816 version 5.18",
+              "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+            },
+            "ln65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+              "version": "Calypsi linker for 65816 version 5.18",
+              "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+            }
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 88,
+              "remaining_above_floor": 1192
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 51,
+              "remaining_above_floor": 1229
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 164,
+              "remaining_above_floor": 1116
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns3-c-raw",
+          "mode": "raw",
+          "checks": 12,
+          "results_sha256": "cd7bd6da4d2c932f0451553a4c6e0df2aad36c42cfa05ccb1aae6081392f0e8b",
+          "trace_sha256": "a9f134ff35970a96e444665976ceaf82c2adda9d79358fd99238b03c525e8405",
+          "image_sha256": "9c23b658cec3d5f73fa39f133244c7e0e9d77ec0578717f0b7d47e7c16194c71",
+          "c_tools": {
+            "cc65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+              "version": "Calypsi ISO C compiler for 65816 version 5.18",
+              "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+            },
+            "as65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+              "version": "Calypsi assembler for 65816 version 5.18",
+              "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+            },
+            "ln65816": {
+              "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+              "version": "Calypsi linker for 65816 version 5.18",
+              "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+            }
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 92,
+              "remaining_above_floor": 1188
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 48,
+              "remaining_above_floor": 1232
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 180,
+              "remaining_above_floor": 1100
+            }
+          }
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "app_abi": 46,
+      "loaded": {
+        "capture": "build/native-semaphores/ns3-loaded",
+        "results_sha256": "69ed8cbb9d831f1324971e1eeae5c35c9451a705e5dd33b2a80a8b6f37b7882c",
+        "completed": [
+          2
+        ],
+        "checks": [
+          13
+        ],
+        "app_sha256": "9125a9357f13464a6af07220a13c9ac2856ec480baed913a56306bc297fb7782",
+        "image_sha256": "e0dc1a9fb2009fe11c165722faf28023dc4ac583506d449ffe89025aacabc80d",
+        "pin": "toolchain/altirra-gem-vdi.json",
+        "bank_zero_delta": {
+          "baseline": "bank-zero-compaction",
+          "baseline_sha256": "a223abfb037c96e7760f38b6c2a8b60365f1cd4e032fda5ce756b609ed1adfa7",
+          "fixed": 0,
+          "per_public_task": [
+            0,
+            288,
+            288,
+            288,
+            288,
+            288,
+            1536,
+            1536
+          ],
+          "idle": 0,
+          "runtime": -6240,
+          "loading": -12256
+        },
+        "scope": "One selected APP, matching provider; no application catalog build. Initial console-startup failure used wrong hardware configuration; same image passed with pinned custom addons."
+      }
     }
   },
   "cleanup": {

@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 45,
+  "version": 46,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -150,7 +150,11 @@
     "v_hide_c",
     "v_show_c",
     "vq_mouse",
-    "vsc_form"
+    "vsc_form",
+    "InitSemaphore",
+    "ObtainSemaphore",
+    "AttemptSemaphore",
+    "ReleaseSemaphore"
   ],
   "stack_requirement": {
     "workspace_mask": 255,
