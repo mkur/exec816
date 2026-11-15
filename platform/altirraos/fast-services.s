@@ -16,6 +16,10 @@ fast_entry:
     beq fast_exclusion
     cpy #T_SERVICE_PERMIT
     beq fast_exclusion
+    cpy #SEM_SERVICE_OBTAIN_SEMAPHORE
+    bne :+
+    jmp fast_semaphore_validate
+:
     cpy #SEM_SERVICE_ATTEMPT_SEMAPHORE
     bne :+
     jmp fast_semaphore_validate
@@ -91,6 +95,8 @@ fast_setup:
     bne :+
     jmp fast_getmsg
 :
+    cpy #SEM_SERVICE_OBTAIN_SEMAPHORE
+    beq :+
     cpy #SEM_SERVICE_ATTEMPT_SEMAPHORE
     beq :+
     cpy #SEM_SERVICE_RELEASE_SEMAPHORE

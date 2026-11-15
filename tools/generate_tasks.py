@@ -325,7 +325,7 @@ ENDMODULE
     registry=registry.replace('"dos-storage-action.inc"','"'+str(Path(output)/'dos-storage-action.inc')+'"')
     (directory/'doscore.act').write_text(registry)
     policy_includes = {name: Path(output)/name for name in (
-        'tasks-action.inc', 'ports-action.inc', 'port-packets.inc',
+        'tasks-action.inc', 'semaphore-action.inc', 'semaphore-types.inc', 'ports-action.inc', 'port-packets.inc',
         'ports-storage-action.inc', 'io-action.inc', 'io-storage-action.inc',
         'sio-storage-action.inc', 'dos-action.inc', 'dos-storage-action.inc')}
     policy_includes.update({name: directory/name for name in (

@@ -4,8 +4,8 @@
 [Design](../plans/native-semaphore-design.md) ·
 [Development evidence](../history/native-semaphores.md)
 
-The current Action! subset provides `InitSemaphore`, `AttemptSemaphore` and
-`ReleaseSemaphore` through `USE EXEC`. Blocking Obtain is not yet available.
+Action! provides `InitSemaphore`, `ObtainSemaphore`, `AttemptSemaphore` and
+`ReleaseSemaphore` through `USE EXEC`.
 
 `SignalSemaphore` is an opaque 12-byte, two-byte-aligned caller-owned object.
 Initialize it once before publication and keep its address live while used.
@@ -17,8 +17,16 @@ owns the semaphore. Ownership is exclusive and recursive. Each successful
 acquisition needs one Release from that same Task. Other Tasks continue to run
 while ownership is held. The service does not allocate memory or signal bits.
 
+Obtain sleeps on contention. Final Release hands ownership directly to the oldest
+waiter before making it runnable. The resumed Obtain already owns the resource;
+newcomers cannot barge. FIFO resource order does not change scheduler priority.
+Normal signal Wait is permitted while owning a semaphore. Signals posted during
+semaphore waiting remain pending and cannot grant or wake that waiter. A blocked
+Obtain preserves outer Forbid nesting; contention with caller I set faults before
+enqueue. Immediate operations preserve caller masking.
+
 Wrong-owner or excess Release, recursion/count overflow and removal of a Task
-owning a semaphore are launch faults. Release all ownership before RemTask or
+owning or waiting for a semaphore are launch faults. Release all ownership before RemTask or
 default Task retirement. There is no owner-death recovery, shared mode,
 priority inheritance, timeout or interrupt-handler acquisition.
 

@@ -1118,7 +1118,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'dos.inc','dos-action.inc','dos-storage-action.inc','task-kernel/dosraw.act','task-kernel/doscore.act',
                 'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc','timer-storage-action.inc',
                 'ports.inc','ports-action.inc','port-packets.inc','ports-storage.inc','ports-storage-action.inc',
-                'heappolicy.act','heap-storage.inc','heap.inc','heap-action.inc','heap.json','tasks.inc','tasks-action.inc','tasks-bindings.inc','signal-gateway.inc','semaphore-abi.inc','semaphore-action.inc','semaphore-gateway.inc',
+                'heappolicy.act','heap-storage.inc','heap.inc','heap-action.inc','heap.json','tasks.inc','tasks-action.inc','tasks-bindings.inc','signal-gateway.inc','semaphore-abi.inc','semaphore-action.inc','semaphore-gateway.inc','semaphore-types.inc',
                 'task-kernel/processstate.act','task-kernel/exec.act','task-kernel/taskpolicy.act','task-kernel/taskmemory.act','task-kernel/task-wakes.inc',
                 'task-kernel/task-console.inc','task-kernel/task-signals.inc','task-kernel/exectasks.act','task-kernel/taskstacks.act','task-kernel/taskinspect.act','task-kernel/deviceinspect.act')})
     if tasks:

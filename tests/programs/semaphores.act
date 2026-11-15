@@ -31,6 +31,13 @@ PROC POINTER absent()
 VOLATILE CARD counter
 VOLATILE BYTE phase,queued,stop
 EXEC.SignalSemaphore device,second
+TYPE Participant=[
+  EXEC.Task POINTER task
+  EXEC.TaskLease lease
+]
+Participant ARRAY peers(3)
+VOLATILE BYTE completed
+BYTE ARRAY order(3)
 LONGINT attempted
 
 ; Stop on the first failed fixture invariant, outside timing loops.
@@ -383,6 +390,113 @@ PROC FarTask(BYTE unused)
 
 RETURN
 
+; Each waiter keeps its own Forbid depth and unrelated pending signals.
+PROC BlockingWorker()
+  BYTE index
+
+  LET self=EXEC.FindTask(NULL)
+  index=0
+  WHILE peers(index).task<>self DO
+    index==+1
+  OD
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.AllocSignal(17)=17)
+  BEGIN
+    LET ignored=EXEC.SetSignal(DONE,DONE)
+  END
+  EXEC.Signal(parent,DONE)
+  EXEC.Forbid()
+  EXEC.ObtainSemaphore(@device)
+  Require(self.tc_TDNestCnt=0)
+  Require(device.ss_Private(2)=1)
+  Require(EXEC.SetSignal(0,0)=(DONE OR $20000))
+  order(completed)=index
+  completed==+1
+  EXEC.ObtainSemaphore(@device)
+  EXEC.ReleaseSemaphore(@device)
+  EXEC.ReleaseSemaphore(@device)
+  EXEC.Permit()
+  EXEC.FreeSignal(16)
+  EXEC.FreeSignal(17)
+  EXEC.Signal(parent,DONE)
+  BEGIN
+    LET ignored=EXEC.Wait(0)
+  END
+
+RETURN
+
+; Serial admission makes FIFO order deterministic; the owner also tries to barge.
+PROC Blocking(BYTE unused)
+  BYTE index
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  EXEC.InitSemaphore(@device)
+  EXEC.ObtainSemaphore(@device)
+  FOR index=0 TO 2 DO
+    EXEC.Forbid()
+    peers(index).task=EXEC.CreateTask(c"semaphore waiter",0,@BlockingWorker,1)
+    Require(peers(index).task<>NULL)
+    Require(EXEC.RetainTask(peers(index).task,@peers(index).lease)<>0)
+    EXEC.Permit()
+    ; A normal signal Wait is permitted while resource ownership is held.
+    Require(EXEC.Wait(DONE)=DONE)
+    WHILE peers(index).task.tc_State<>EXEC.TS_WAIT DO
+      EXEC.Yield()
+    OD
+    EXEC.Signal(peers(index).task,$20000)
+    Require(peers(index).task.tc_State=EXEC.TS_WAIT)
+  OD
+  Require(completed=0)
+  Require(device.ss_Private(2)=1)
+  EXEC.ObtainSemaphore(@device)
+  EXEC.ReleaseSemaphore(@device)
+  Require(device.ss_Private(2)=1)
+  IF variant=12 THEN
+    Require(EXEC.ReleaseTask(@peers(0).lease)<>0)
+    EXEC.RemTask(peers(0).task)
+  FI
+  EXEC.Forbid()
+  EXEC.ReleaseSemaphore(@device)
+  Require(completed=0)
+  Require(EXEC.AttemptSemaphore(@device)=0)
+  IF variant=13 THEN
+    Require(EXEC.ReleaseTask(@peers(0).lease)<>0)
+    EXEC.RemTask(peers(0).task)
+  FI
+  EXEC.Permit()
+  WHILE completed<>3 DO
+    BEGIN
+      LET ignored=EXEC.Wait(DONE)
+    END
+  OD
+  FOR index=0 TO 2 DO
+    Require(order(index)=index)
+    EXEC.Forbid()
+    Require(EXEC.ReleaseTask(@peers(index).lease)<>0)
+    EXEC.RemTask(peers(index).task)
+    EXEC.Permit()
+  OD
+  Require(device.ss_Private(2)=0)
+  Require(device.ss_Private(3)=0 AND device.ss_Private(4)=0
+      AND device.ss_Private(5)=0)
+  EXEC.FreeSignal(16)
+  ; Reuse a retired pool and prove its semaphore accounting starts clear.
+  EXEC.Forbid()
+  worker=EXEC.CreateTask(c"semaphore reused",0,@FarWorker,1)
+  Require(worker<>NULL)
+  Require(EXEC.RetainTask(worker,@workerLease)<>0)
+  Require(EXEC.AllocSignal(16)=16)
+  EXEC.Permit()
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.Forbid()
+  Require(EXEC.ReleaseTask(@workerLease)<>0)
+  EXEC.RemTask(worker)
+  EXEC.Permit()
+  EXEC.FreeSignal(16)
+
+RETURN
+
 PROC Main()
 
   IF variant=0 THEN
@@ -391,6 +505,8 @@ PROC Main()
     NativeCore(0)
   ELSEIF variant=2 OR variant=9 THEN
     NativeABI(0)
+  ELSEIF variant>=11 THEN
+    Blocking(0)
   ELSEIF variant=10 THEN
     FarTask(0)
   ELSE

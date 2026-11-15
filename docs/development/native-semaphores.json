@@ -777,6 +777,325 @@
         "status": "pass"
       },
       "scope": "11 selected final guest runs; earlier native/ABI pilots also passed. Development only. No package refresh."
+    },
+    "NS2": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/native-semaphores/ns2-blocking",
+          "suite": "blocking",
+          "checks": 48,
+          "results_sha256": "299817fe091a56eed8e55fac0dfa64ef92b7f298017d64f4f783411b8fe47590",
+          "trace_sha256": "141b433818664a84cfbed3ed08ee049741722ef7a44e33e7830672d1b3b0f253",
+          "image_sha256": "211f01ea5d6ed1ed2515d24ef9d4a65c0e20477305f79dbc1381e7f1a2d16208",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 66,
+              "remaining_above_floor": 1214
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 173,
+              "remaining_above_floor": 1107
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns2-waiter-removal",
+          "suite": "waiter-removal",
+          "checks": 23,
+          "results_sha256": "39ed8431a0f4107353daf34e075f30449dabb078d2a325908dd0862c72337d56",
+          "trace_sha256": "087a560ca37cad3ace62175c0107a476c818154e4568d5899f82c005e6012c57",
+          "image_sha256": "211f01ea5d6ed1ed2515d24ef9d4a65c0e20477305f79dbc1381e7f1a2d16208",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 66,
+              "remaining_above_floor": 1214
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 173,
+              "remaining_above_floor": 1107
+            }
+          },
+          "fault_snapshot": {
+            "words": [
+              476,
+              63,
+              1,
+              544,
+              41023,
+              16130
+            ],
+            "states": [
+              3,
+              6,
+              6,
+              6
+            ],
+            "owned": [
+              1,
+              0,
+              0,
+              0
+            ],
+            "waits": [
+              0,
+              136148,
+              136148,
+              136148
+            ]
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns2-granted-removal",
+          "suite": "granted-removal",
+          "checks": 25,
+          "results_sha256": "3ec0b938f7a08c3d369f62fc91caf98a8adb4f54e8a7c5bdd399b2f07794ee68",
+          "trace_sha256": "b750840953c54da186c0291f9a05434bc54c05be8cbe855a24743318ffc8f89c",
+          "image_sha256": "211f01ea5d6ed1ed2515d24ef9d4a65c0e20477305f79dbc1381e7f1a2d16208",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 66,
+              "remaining_above_floor": 1214
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 173,
+              "remaining_above_floor": 1107
+            }
+          },
+          "fault_snapshot": {
+            "words": [
+              544,
+              63,
+              1,
+              608,
+              41023,
+              16130
+            ],
+            "states": [
+              3,
+              1,
+              6,
+              6
+            ],
+            "owned": [
+              0,
+              1,
+              0,
+              0
+            ],
+            "waits": [
+              0,
+              0,
+              136148,
+              136148
+            ]
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns2-abi",
+          "suite": "abi",
+          "checks": 13,
+          "results_sha256": "2cbf78bd9c103ee5eed09bdc0518e4fc7c311e8d10437a25ae31f71a41ae31a6",
+          "trace_sha256": "5863598ced25ba49f77e81e55217f0c8a446b2e63bd1369d98adc19927a0ed9b",
+          "image_sha256": "211f01ea5d6ed1ed2515d24ef9d4a65c0e20477305f79dbc1381e7f1a2d16208",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 62,
+              "remaining_above_floor": 1218
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 140,
+              "remaining_above_floor": 1140
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns2-native",
+          "suite": "native",
+          "checks": 12,
+          "results_sha256": "816c5e758482808e6daea20c8064eb3ba8a672a8520193f5557e82114a38287c",
+          "trace_sha256": "d66b56cc77618cc3d27eaa3f46a7a03b26f58c535884967623d7aa1e3c93391b",
+          "image_sha256": "211f01ea5d6ed1ed2515d24ef9d4a65c0e20477305f79dbc1381e7f1a2d16208",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 173,
+              "remaining_above_floor": 1107
+            }
+          }
+        }
+      ],
+      "bank_zero_budget": {
+        "fixed_runtime": 11552,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20672,
+        "loading_excluding_os": 21616,
+        "runtime_including_os": 40640,
+        "loading_including_os": 41584
+      },
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "signal_code_bytes": 11364,
+      "ordinary_signal_wait": {
+        "status": "pass",
+        "cases": 1,
+        "capture": "build/native-semaphores/ns2-signals",
+        "results_sha256": "59c7c759494d91a758e6e68a05b2e68277efbbff2e71c835acdd733ef0f6b977",
+        "pin": "toolchain/altirra-shell-paced.json",
+        "compiler_host": "release"
+      }
     }
   },
   "cleanup": {

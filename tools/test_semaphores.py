@@ -19,8 +19,8 @@ from sio_transaction_trace import read_events
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 CASES = {'baseline': 0, 'native': 1, 'abi': 2, 'empty-release': 3,
          'extra-release': 4, 'owner-removal': 5, 'depth-overflow': 6, 'owned-overflow': 7,
-         'wrong-owner': 8, 'far-object': 9, 'far-task': 10}
-FAULTS = set(range(3, 9))
+         'wrong-owner': 8, 'far-object': 9, 'far-task': 10, 'blocking': 11, 'waiter-removal': 12, 'granted-removal': 13}
+FAULTS = set(range(3, 9)) | {12,13}
 
 
 def inputs():
@@ -52,10 +52,10 @@ def definition(program):
     for span in public.values():
         pcs.add(span['entry'])
         pcs.update(span['returns'])
-    for name in ('fast_entry', 'fast_complete', 'fast_general'):
+    for name in ('fast_entry', 'fast_complete', 'fast_general', 'sem_policy'):
         pcs.add(program['labels'][name])
     return dict(native=native, public=public, labels={name: program['labels'][name] for name in
-                ('fast_entry', 'fast_complete', 'fast_general')}, timeline=timeline, pcs=sorted(pcs))
+                ('fast_entry', 'fast_complete', 'fast_general', 'sem_policy')}, timeline=timeline, pcs=sorted(pcs))
 
 
 def analyze(path, definition):
@@ -106,6 +106,8 @@ def public_calls(path, definition, program):
             expected = int(span['kind']!='InitSemaphore')
             require(len(posts)==expected, 'Wrong public semaphore request count: '+str((span, len(posts))))
             result.append(dict(span, requests=len(posts),
+                policy_continuations=sum(int(e[4],16)==definition['labels']['sem_policy'] and
+                                         lo<=int(e[9],16)<hi for _,e in selected),
                 native_completions=sum(int(e[4],16)==definition['labels']['fast_complete'] and
                                        lo<=int(e[9],16)<hi for _,e in selected),
                 post_operation_polls=sum(int(e[4],16)==definition['labels']['fast_general'] and
@@ -147,21 +149,34 @@ def run(out, mode, from_build=None, suite='baseline'):
                                  expected_status=4 if case in FAULTS else 0, before_run=before)
             report['runtime'] = runtime
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            expected = {0: 14, 1: 12, 2: 13, 9: 13, 10: 9}.get(case, 0)
+            expected = {0: 14, 1: 12, 2: 13, 9: 13, 10: 9, 11: 48, 12: 23, 13: 25}.get(case, 0)
             require(report['checks'] == expected, 'Semaphore fixture assertions: '+str(report['checks']))
             report['counter'] = data(bridge, program['image'], 'counter', True)[0]
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
             if case in FAULTS:
                 require(data(bridge, program['image'], 'reached') == [0], 'Expected semaphore fault returned')
                 words = data(bridge, program['image'], 'device', True)
-                require(words[2] == (0xffff if case == 6 else 1 if case in (5, 7, 8) else 0),
-                        'Fault partially changed depth: '+str(words))
-                require(words[3:] == [0, 0, 0], 'Fault changed waiter links')
-                owned = bridge.peek16(program['build']['task_storage']['BASE']+
-                                      program['build']['task_storage']['TCB_SEMAPHOREOWNED'])
-                require(owned == (0xffff if case == 7 else 1 if case in (5, 6) else 0),
-                        'Fault changed owned count: '+str(owned))
-                report['fault_snapshot'] = dict(words=words, owned=owned)
+                if case >= 11:
+                    require(words[2] == 1, 'Ownership lost before removal fault')
+                    records = runtime['task_records'][:4]
+                    states = [r[8] for r in records]
+                    counts = [int.from_bytes(bytes(r[50:52]),'little') for r in records]
+                    waits = [int.from_bytes(bytes(r[52:55]),'little') for r in records]
+                    require(states.count(6)==(3 if case==12 else 2), 'Wrong semaphore wait state')
+                    require(counts==([1,0,0,0] if case==12 else [0,1,0,0]),
+                            'Removal protection did not transfer with ownership')
+                    require(sum(bool(w) for w in waits)==(3 if case==12 else 2),
+                            'Wait association lost')
+                    report['fault_snapshot'] = dict(words=words,states=states,owned=counts,waits=waits)
+                else:
+                    require(words[2] == (0xffff if case == 6 else 1 if case in (5, 7, 8) else 0),
+                            'Fault partially changed depth: '+str(words))
+                    require(words[3:] == [0, 0, 0], 'Fault changed waiter links')
+                    owned = bridge.peek16(program['build']['task_storage']['BASE']+
+                                          program['build']['task_storage']['TCB_SEMAPHOREOWNED'])
+                    require(owned == (0xffff if case == 7 else 1 if case in (5, 6) else 0),
+                            'Fault changed owned count: '+str(owned))
+                    report['fault_snapshot'] = dict(words=words, owned=owned)
             else:
                 clean_ownership(bridge, program, program['output'])
             if case in (9, 10):

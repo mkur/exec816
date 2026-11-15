@@ -10,6 +10,8 @@ USE A816ABI
 USE BOOTCONFIG
 INCLUDE "exec-abi.inc"
 INCLUDE "tasks-action.inc"
+INCLUDE "semaphore-action.inc"
+INCLUDE "semaphore-types.inc"
 INCLUDE "heap-constants.inc"
 INCLUDE "heap-call-types.inc"
 INCLUDE "ports-action.inc"
@@ -838,6 +840,7 @@ INCLUDE "task-memory.inc"
 INCLUDE "task-ports.inc"
 INCLUDE "../io/task-io.inc"
 INCLUDE "task-lifetime.inc"
+INCLUDE "task-semaphores.inc"
 INCLUDE "../dos/task-dos.inc"
 INCLUDE "../dos/task-process.inc"
 INCLUDE "../input/task-input.inc"
@@ -1036,6 +1039,11 @@ PUBLIC CARD FUNC Dispatch(CARD saved BYTE service)
 
   ; Memory is a separate service family. Enter it directly so deep free-list
   ; coalescing does not retain the general Task-routing frame on the stack.
+  IF service=SEM_SERVICE_OBTAIN_SEMAPHORE
+      OR service=SEM_SERVICE_RELEASE_SEMAPHORE THEN
+    RETURN(FinishDispatch(ctx,saved,SemaphoreCall(ctx,saved,service)))
+  FI
+
   IF MemoryService(service)<>0 THEN
     RETURN(FinishDispatch(ctx,saved,MemoryCall(ctx,saved,service)))
   FI

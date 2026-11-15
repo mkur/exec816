@@ -1,6 +1,7 @@
 ; Task-only semaphore state under SWITCHING. Shared fast frame:
 ; 1=current Task, 4=saved frame, 6=context offset, 8=selector, 10=semaphore.
 ; IRQ/NMI neither traverse the object nor borrow this activation's scratch.
+.export sem_policy
 fast_semaphore_validate:
     lda f:T_FRAME_P,x
     and #$30
@@ -43,7 +44,9 @@ fast_semaphore_call:
     lda [10],y
     ldx 8
     cpx #SEM_SERVICE_RELEASE_SEMAPHORE
-    beq sem_release
+    bne :+
+    jmp sem_release
+:
     cmp #$ffff
     bne :+
     jml context_fault
@@ -85,9 +88,19 @@ sem_other:
     lda #1
     sta [10],y
 sem_success:
+    ldx 8
+    cpx #SEM_SERVICE_OBTAIN_SEMAPHORE
+    bne :+
+    jmp fast_complete
+:
     lda #1
     bra sem_result
 sem_busy:
+    ldx 8
+    cpx #SEM_SERVICE_OBTAIN_SEMAPHORE
+    bne :+
+    jmp sem_policy
+:
     lda #0
 sem_result:
     ldx 4
@@ -107,7 +120,15 @@ sem_release:
     sta [10],y
     jmp fast_complete
 sem_final:
-    ; No blocking Obtain is exposed in NS1, hence no valid queued waiter.
+    ; Classify a queued release before mutating depth or ownership counts.
+    ldy #SEM_HEAD
+    lda [10],y
+    sta 16
+    ldy #SEM_HEAD+2
+    lda [10],y
+    and #$ff
+    ora 16
+    bne sem_policy
     ldx 6
     lda f:T_BASE+T_TCB_SEMAPHOREOWNED,x
     dec a
@@ -120,5 +141,15 @@ sem_final:
     ldy #SEM_OWNER+2
     sta [10],y
     jmp fast_complete
+
+; Retire native scratch and continue this admitted request, without a COP.
+sem_policy:
+    ldy 8
+    ldx 4
+    txa
+    tcs
+    lda #E816_KERNEL_DP
+    tcd
+    jml dispatch_frame
 
 .include "semaphore-gateway.inc"

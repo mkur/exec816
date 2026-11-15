@@ -37,6 +37,8 @@ def generate(output):
     values = constants()
     (output/'semaphore-abi.inc').write_text('; Generated from abi/semaphores.json.\n'+
         ''.join(f'{name} = ${value:x}\n' for name, value in values.items()))
+    (output/'semaphore-types.inc').write_text('TYPE NativeSemaphore=[\n'+\
+        ''.join(f'  {kind} {name}\n' for name, kind, _ in ABI['record']['fields'])+']\n')
     tasks = json.loads((ROOT/'abi/tasks.json').read_text())
     context = {name: offset for name, _, offset in tasks['context']['fields']}
     (output/'semaphore-action.inc').write_text('; Generated semaphore fixture constants.\n'+

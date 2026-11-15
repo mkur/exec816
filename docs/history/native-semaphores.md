@@ -72,3 +72,25 @@ padding bytes now hold owned-count and waiting association. Fast scratch remains
 kernel 166 in the native functional case. Reserved bank-zero deltas remain
 **0 fixed, 0 root, 0 kernel, 0 idle, 0 per public Task**. No QED, demo build or
 release qualification was run. Per-case hashes and maps are in the evidence.
+
+## NS2: blocking FIFO handoff
+
+All four Action! calls are implemented. Busy Obtain and queued final Release
+continue the original admitted activation before mutation; blocked callers
+return Select's frame. Ownership and removal protection transfer before Ready.
+Signal-wake state remains separate; no service signal bit is allocated or used.
+
+The optimized three-waiter scene passes 48 assertions, including exact FIFO,
+non-barging, recursion with queued peers, outer Forbid, Wait while owning,
+unrelated bits posted before and during blocking, cleanup and pool reuse.
+Queued-waiter and granted-before-run removal faults pass 23 and 25 assertions;
+snapshots verify three/two semaphore-wait states and exact ownership counts.
+The native and ABI cases also pass on the same image. The host suite passes
+718 tests with five skips. The selected existing optimized signal Wait/Forbid
+case also passes using the same shell-paced pin and release-host compiler. Masked contention and forced asynchronous boundaries
+are checked in NS4's native overlay rather than adding a second masking binding.
+
+Fast scratch remains 20 bytes. In the blocking scene the root peaks at 66 bytes,
+workers 60, kernel 173. All five categories of reserved bank-zero delta remain
+zero; public/private Task sizes and the five repurposed upper bytes are unchanged.
+No application catalog, demo, QED or release matrix was built.

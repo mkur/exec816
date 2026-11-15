@@ -534,7 +534,8 @@
     "READY": 1,
     "RUNNING": 3,
     "SLEEPING": 4,
-    "SIGNAL_WAIT": 5
+    "SIGNAL_WAIT": 5,
+    "SEMAPHORE_WAIT": 6
   },
   "compiler_frame": {
     "dbr": 1,
@@ -549,7 +550,8 @@
   "wait_reasons": {
     "NONE": 0,
     "SIGNAL": 1,
-    "SLEEP": 2
+    "SLEEP": 2,
+    "SEMAPHORE": 3
   },
   "metadata": {
     "placement": "highest usable upper bank",
