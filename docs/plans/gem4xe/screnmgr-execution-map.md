@@ -4,12 +4,20 @@
 [Task capacity](../../architecture/task-capacity.md) ·
 [Input ownership](../../reference/input.md#calls-and-ownership)
 
+MagiC's source baseline is scheduler-side deferred input delivery plus a separate
+SCRENMGR application. Ordinary delivery is not a SCRENMGR turn and does not acquire
+UPDATE. See the [pinned input/event model](../../architecture/magic.md#input-events-and-application-messages),
+AESEVT `read_evnts_from_ringbuf` / `handle_key` / `write_key` and AESMAIN's
+`_evnt_multi` → `update_1` → interaction → `update_0` loop.
+
 SM2 needs an execution placement decision before the manager can block on
 UPDATE. The migration plan requires an explicit comparison; selection remains
 pending. This note prepares that decision and does not introduce a Task or
-change platform services.
+change platform services. After the user's MagiC structure question, evaluate a
+general public deferred-delivery foundation first. Task placement remains an
+explicit Exec adaptation, not MagiC's inspected execution arrangement.
 
-## Recommended placement: dedicated input Task
+## Existing-service option: dedicated input Task
 
 | Context | Responsibility and resource lifetime |
 | --- | --- |
@@ -57,6 +65,60 @@ that Task blocks on UPDATE. Calling Take from a second Task violates current
 INPUT ownership. Retiring all outstanding device work before a manager Obtain
 is also required whichever input placement is chosen; do not rely on a blocked
 owner to execute completion callbacks.
+
+## Alternative: keep the current input/display owner and add SCRENMGR
+
+The existing Worker keeps INPUT acquisition, consumption and release, physical
+cursor work and display completion. A new SCRENMGR Task consumes copied manager
+interactions and uses delegated display access. Stream/model processing remains
+in CONSOLEBACKEND. This avoids moving the input leases, but all manager graphics
+must lose their current assumption that the caller owns the physical session.
+It still consumes one Task slot. An ordinary pool costs 1,600 occupied bytes;
+if measured manager depth requires the existing large class, that occupies
+2,848 bytes instead. No new pool reservation is implied. Those bounds require
+measurement rather than assuming the current large Worker can be replaced by
+an ordinary manager unchanged.
+
+## Alternative: a public native deferred-work platform service
+
+There is relevant existing machinery, but not a reusable ordinary-callback API:
+
+- [interrupt-work.s](../../../platform/altirraos/interrupt-work.s) admits bounded
+  native work at safe native exits, with two callbacks per opportunity. Dispatch
+  currently selects a fixed timer source and an optional test probe.
+- [native-interrupts.json](../../../abi/native-interrupts.json) reserves 256 upper
+  bytes for source state and 8,192 for native code. Production source capacity
+  is one. Reserved slack is not proof that another implementation fits.
+- [timer-device.s](../../../platform/altirraos/timer-device.s) performs bounded
+  assembly completion with a per-source edit gate. Its callback borrows 26 stack
+  bytes for its own temporary state; this is not a bound for arbitrary handlers.
+- The [platform contract](../../reference/platform.md#deferred-native-completion)
+  admits this work while Forbid is held. The ordinary COP gateway remains
+  Task-only; the [native reply binding](../../reference/ports.md#native-interrupt-reply)
+  permits bounded publication without scheduling, allocation or compiled policy.
+
+Current AES input delivery cannot simply be registered there. `INPUT.Take`,
+`AESSNAPSHOT.Select` and `AESINBOX.PublishEndpoint` are ordinary compiled routines
+using Task gateways and Forbid. Their current Task guards do not exclude native
+completion. In particular, native delivery would be able to interrupt a guarded
+snapshot or inbox mutation unless a native-safe publication/edit protocol were
+introduced. Display access and any waiting also remain outside this callback ABI.
+
+The missing capability is a **general public deferred-service registration,
+notification and retirement contract**, including callback context/stack bounds,
+allowed native operations, edit exclusion and lifetime pins. If ordinary compiled
+callbacks are required, their independent DP/stack context and legal gateway use
+must also be provided; hiding those resources does not make them free. The
+existing assembly ABI alone does not supply that context.
+
+A restricted native service could avoid another Task and resemble MagiC's
+scheduler-side delivery more closely. It is a platform project first: no GUI
+callback may be added directly to the fixed timer dispatcher. Neither zero
+bank-zero growth nor support for existing AES routines is established by this
+audit. A separate design and explicit selection are required before implementing
+this option, under the repository's missing-platform-service rule. Task-based
+options use public services already available and preserve current Task-side
+publication semantics.
 
 ## Acceptance dependencies
 
