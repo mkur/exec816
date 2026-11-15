@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Cheap native Task semaphores](native-semaphore-design.md): draft public
+  recursive exclusive semaphore, one native request per operation, FIFO direct
+  handoff, signalless waiting and no added reserved bank-zero storage. AES
+  policy migration and measured primitive acceptance are separate gates.
+
 - [Original MagiC MGVIEW port](gem4xe/mgview-port-plan.md): MP1–MP6
   executable slices for the original-source viewer, bounded loader/lifetime,
   copy/strip scrolling, window interaction, paired MagiC checks and delivery.
