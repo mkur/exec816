@@ -893,8 +893,10 @@ The other possible milestones have no delivery order:
   starting with the extra scene gate and combined presenter. The adopted
   [SCRENMGR replacement](plans/gem4xe/screnmgr-migration-plan.md) moves ordinary
   drawing into callers and narrows the manager to interaction, with independent
-  input/device progress. SM0 records the direction; execution placement and
-  executable migration are pending. Bring architectural
+  input/device progress. SM0 records the direction; SM1a removes scene admission
+  from caller cursor policy while retaining device completion. See the
+  [execution record](history/screnmgr-migration.md). Caller frame drawing,
+  execution placement and the remaining migration are pending. Bring architectural
   departures to the user with concrete reasons and alternatives before
   implementation. [Report missing platform services](architecture/magic-exec-mapping.md#reported-platform-service-gaps)
   rather than building specialized substitutes. The

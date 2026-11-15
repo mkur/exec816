@@ -39,8 +39,7 @@ CARD FUNC Policy(LONGCARD value)
       AND request.operation<>AESTYPES.OP_OPEN
       AND request.operation<>AESTYPES.OP_CLOSE
       AND request.operation<>AESTYPES.OP_FIND
-      AND request.operation<>AESTYPES.OP_SET
-      AND request.operation<>AESTYPES.OP_GRAF_MOUSE THEN
+      AND request.operation<>AESTYPES.OP_SET THEN
     IF request.operation<>AESTYPES.OP_MENU
         AND request.operation<>AESTYPES.OP_DRAG_OUTLINE THEN
       RETURN(0)
@@ -50,21 +49,6 @@ CARD FUNC Policy(LONGCARD value)
   waiting=0
   DO
     AESGATE.EnterTask(request.owner,mask)
-    IF request.operation=AESTYPES.OP_GRAF_MOUSE THEN
-      request.status=AESCURSOR.Call(service,
-          AESSTATE.Find(service,request.client),request)
-      AESGATE.Release(0)
-      IF request.status=AESTYPES.OK THEN
-        BEGIN
-          LET ignored=CALYPSICALL.Invoke(mouseApply,value)
-        END
-      FI
-      AESCURSOR.Wake()
-      IF AESCURSOR.Pending()<>0 THEN
-        EXEC.Signal(service.owner,service.mask)
-      FI
-      RETURN(1)
-    FI
     IF request.operation=AESTYPES.OP_FIND THEN
       request.status=AESWINDOW.Query(request)
       AESGATE.Release(0)
@@ -241,6 +225,32 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   CARD status,result,handled
 
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation=AESTYPES.OP_GRAF_MOUSE THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      IF service=NULL THEN
+        RETURN(0)
+      FI
+
+      ; Registration pins the caller. Cursor policy reads published routing,
+      ; not the live scene; only its bounded state transition excludes Tasks.
+      EXEC.Forbid()
+      request.status=AESCURSOR.Call(service,
+          AESSTATE.Find(service,request.client),request)
+      EXEC.Permit()
+      IF request.status=AESTYPES.OK THEN
+        BEGIN
+          LET ignored=CALYPSICALL.Invoke(mouseApply,value)
+        END
+      FI
+      AESCURSOR.Wake()
+      IF AESCURSOR.Pending()<>0 THEN
+        EXEC.Signal(service.owner,service.mask)
+      FI
+      RETURN(1)
+    END
+  FI
+
   IF request.operation=AESTYPES.OP_EXIT THEN
     request.status=Depart(request)
     request.intout(0)=INT(request.status=AESTYPES.OK)

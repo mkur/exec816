@@ -170,6 +170,9 @@ CARD FUNC Register(AESSTATE.Service POINTER service
     RETURN(AESTYPES.MALFORMED)
   FI
 
+  ; Cursor readers use this guard without owning the scene. Publish identity,
+  ; binding and endpoint together; no reader may select a partial client.
+  EXEC.Forbid()
   client.id=service.nextClient
   client.gemId=INT(service.nextGem)
   client.sequence=1
@@ -182,9 +185,7 @@ CARD FUNC Register(AESSTATE.Service POINTER service
     service.nextGem==+1
   FI
 
-  ; Every reader uses this short Task-side publication guard. IRQ/NMI code
-  ; never reads the directory; public Exec primitives protect port internals.
-  EXEC.Forbid()
+  ; IRQ/NMI never reads the directory; Exec protects the port internals.
   client.endpoint=@service.directory.endpoints(slot)
   LET endpoint=client.endpoint
   endpoint.id=client.id

@@ -1,5 +1,5 @@
 ; Application AES contributions above one screen-device hide counter.
-; Policy callers own AESGATE. Publication/readback also covers presenter entry.
+; Bounded Task guards protect cursor state; routing uses published snapshots.
 MODULE AESCURSOR
 USE EXEC
 USE AESTYPES
@@ -127,9 +127,9 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
   LONGCARD depth
 
   mode=CARD(request.intin(0)) & $7fff
-  depth=service.directory.mouse.depth
   status=AESTYPES.OK
   EXEC.Forbid()
+  depth=service.directory.mouse.depth
   status=Select(service)
   IF status<>AESTYPES.OK THEN
     EXEC.Permit()

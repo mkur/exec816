@@ -73,14 +73,17 @@ does nothing and cannot consume another registration's contribution. Exit
 removes only its own contribution and waits for any resulting physical change.
 Normal Task scheduling and input delivery continue while hidden.
 
-Mouse calls need neither UPDATE nor a window/workstation. A warm call reuses
+Mouse calls need neither UPDATE nor scene admission nor a window/workstation.
+Cursor policy uses published routing and bounded Task guards; another Task's
+scene ownership does not bar this logical transition. Physical completion can
+still wait for the existing device access or continuation path. A warm call reuses
 the existing workstation display grant; a call before workstation open uses
 the presenter's pointer path and the registration's reply signal. Physical
 changes finish before success, including under the caller's own UPDATE/MCTRL.
 The caller handler publishes logical state, attempts physical completion in
 that Task and notifies completed revision waiters before returning. It requests
-presenter continuation for unfinished work; required scene/policy wakes and
-ordinary Task preemption remain enabled. A BUSY backend defers completion;
+presenter continuation for unfinished physical work; ordinary Task preemption
+remains enabled. A BUSY backend defers completion;
 device failure reports AES_DISPLAY_ERROR.
 Inner nesting and unchanged presentation need no render operation or RPC.
 Raw [VDI hide/show](gem-vdi.md#mouse-device-calls) retains separate device state.

@@ -7,8 +7,11 @@
 Direction adopted by the user on 2026-11-15: replace the combined presenter
 with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
-map. Executable migration is pending. Current reference contracts continue to
-describe supported behavior until each replacement slice lands.
+map. SM1a implements scene-independent caller cursor policy; frame painting
+and the remaining migration are pending. The
+[execution record](../../history/screnmgr-migration.md) tracks delivered slices.
+Current reference contracts continue to describe supported behavior until each
+replacement slice lands.
 
 ## Target responsibilities
 
@@ -105,6 +108,13 @@ no executable behavior is changed.
 Deliver small executable sub-slices. Start with the audit's logical cursor path:
 use its existing bounded cursor/publication guards consistently and retain its
 caller-side device completion, removing only its unnecessary broad scene entry.
+
+SM1a implements this cursor sub-slice. Client identity/binding/endpoint publication
+now uses one existing registration guard, and cursor depth is read inside its
+transition guard. Cursor calls no longer enter/release AESGATE or publish route
+geometry merely to update mouse state. Physical completion and fault handling
+retain their existing caller/device flow. See the
+[development record](../../history/screnmgr-migration.md#sm1a-cursor-policy-without-scene-admission).
 
 Then adapt the existing frame renderer for ordinary caller use with explicit
 call state and the existing display grant. Start with one simple slider setter:

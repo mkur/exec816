@@ -1,0 +1,146 @@
+MODULE CURSORSCENETEST
+USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESGATE
+USE AESLOCAL
+USE AESCURSOR
+USE HEAPCORE
+
+CONST RAW_SHOW=122,RAW_HIDE=123,INVALID_MODE=8
+CARD checks
+EXEC.Task POINTER parent
+LONGCARD wake,progress
+BYTE held,stop,done
+AESTYPES.Request request
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+; A competing scene owner computes until normal preemption resumes the caller.
+PROC HoldScene()
+
+  LET self=EXEC.FindTask(NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
+  held=1
+  EXEC.Signal(parent,wake)
+  WHILE stop=0 DO
+    progress==+1
+  OD
+  AESGATE.Release(0)
+  EXEC.FreeSignal(bit)
+  EXEC.Forbid()
+  done=1
+  EXEC.Signal(parent,wake)
+  EXEC.RemTask(NULL)
+
+RETURN
+
+; Call the real local dispatcher while the other Task retains scene ownership.
+PROC CursorCall(INT mode,raw,reset)
+
+  LET service=AESSTATE.Get()
+  LET owner=service.sceneOwner
+  LET count=parent.tc_TDNestCnt
+  request.operation=AESTYPES.OP_GRAF_MOUSE
+  request.intin(0)=mode
+  request.intin(1)=raw
+  request.intin(2)=reset
+  Require(AESLOCAL.Call(LONGCARD(ADDRESS(@request)))=1)
+  Require(parent.tc_TDNestCnt=count)
+  Require(service.policyGate=AESGATE.CALLER AND service.sceneOwner=owner)
+  Require(service.sceneWaiters=NULL)
+
+RETURN
+
+PROC Main()
+
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL)
+  AESSTATE.Bind(service)
+  AESCURSOR.Init(service)
+  parent=EXEC.FindTask(NULL)
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  wake=LONGCARD(1) LSH bit
+  service.owner=parent
+  service.mask=wake
+  service.live=1
+  service.policyGate=AESGATE.AVAILABLE
+  LET client=@service.clients(0)
+  client.id=1
+  client.binding=@request
+  client.replies=port
+  request.client=1
+  request.owner=parent
+  request.message.mn_ReplyPort=port
+  LET mouse=@service.directory.mouse
+  LET target=LONGCARD POINTER($CursorSceneMouse)
+  target^=LONGCARD(ADDRESS(mouse))
+  LET caller=LONGCARD POINTER($CursorSceneCaller)
+  caller^=LONGCARD(ADDRESS(parent))
+  AESLOCAL.ConfigureMouse(ADDRESS($CursorSceneApply))
+  LET peer=EXEC.CreateTask(c"cursor scene owner",0,@HoldScene,1312)
+  Require(peer<>NULL)
+  WHILE held=0 DO
+    EXEC.Wait(wake)
+  OD
+  ; The computing peer never yields, so returning here requires preemption.
+  EXEC.Yield()
+  Require(service.sceneOwner=peer AND progress<>0)
+
+  CursorCall(AESTYPES.M_OFF,0,0)
+  Require(request.status=AESTYPES.OK AND mouse.visible=0 AND mouse.depth=1)
+  Require(client.mouseHides=1 AND mouse.completed=mouse.revision)
+  CursorCall(AESTYPES.M_OFF,0,0)
+  Require(client.mouseHides=2 AND mouse.depth=1)
+  CursorCall(AESTYPES.M_ON,0,0)
+  Require(client.mouseHides=1 AND mouse.visible=0)
+  CursorCall(AESTYPES.M_ON,0,0)
+  Require(client.mouseHides=0 AND mouse.visible=1 AND mouse.depth=0)
+  CursorCall(AESTYPES.TEXT_CRSR,0,0)
+  Require(client.currentForm.kind=AESTYPES.TEXT_CRSR)
+  CursorCall(AESTYPES.M_SAVE,0,0)
+  Require(client.savedForm.kind=AESTYPES.TEXT_CRSR)
+  EXEC.Forbid()
+  CursorCall(AESTYPES.M_OFF,0,0)
+  Require(mouse.depth=1 AND mouse.visible=0)
+  CursorCall(AESTYPES.M_ON,0,0)
+  EXEC.Permit()
+  Require(mouse.depth=0 AND mouse.visible=1)
+  CursorCall(RAW_HIDE,1,0)
+  Require(mouse.depth=1 AND mouse.visible=0)
+  CursorCall(RAW_SHOW,1,0)
+  Require(mouse.depth=0 AND mouse.visible=1)
+  CursorCall(INVALID_MODE,0,0)
+  Require(request.status=AESTYPES.UNSUPPORTED AND request.intout(0)=0)
+
+  LET calls=CARD POINTER($CursorSceneCalls)
+  LET failures=CARD POINTER($CursorSceneFailures)
+  Require(calls^=10 AND failures^=0)
+  stop=1
+  WHILE done=0 DO
+    EXEC.Wait(wake)
+  OD
+  Require(service.policyGate=AESGATE.AVAILABLE AND service.sceneOwner=NULL)
+  Require(service.sceneWaiters=NULL AND progress<>0)
+  client.binding=NULL
+  service.live=0
+  AESSTATE.Bind(NULL)
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeSignal(bit)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+
+RETURN
+ENDMODULE

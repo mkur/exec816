@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "kind": "implementation-record",
+  "status": "implemented",
+  "slice": "SM1a",
+  "date": "2026-11-15",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "03e8db2adf35a4b8d8aceab4d784cebbf2b8498e",
+  "scope": "Caller cursor policy without scene admission; synchronous physical completion and existing fallback retained.",
+  "source_inputs": [
+    {
+      "path": "lib/aes/aeslocal.act",
+      "sha256": "a8759390d2a71e2a74aa8f838e279b47091a05c34e922d962d42e56e8dcbb2a7"
+    },
+    {
+      "path": "lib/aes/aescursor.act",
+      "sha256": "53a7ed3260c2145bb83641f360a2d32ca4b3698c94f6e8c2c9579f772ec4fdd1"
+    },
+    {
+      "path": "lib/aes/aescore.act",
+      "sha256": "1de50a1752409ba9de9ed6837c0ae4a349c48bf946fe6dd8c9e4942d1b01a213"
+    },
+    {
+      "path": "tests/programs/cursor_scene.act",
+      "sha256": "e0b55e966d72c3f06064df7c093eda39d878da8fe83166c404c46b5463a23129"
+    },
+    {
+      "path": "tests/programs/cursor_scene.c",
+      "sha256": "4708ade0825b83bc7043529a78222d304429cb0d225434531398c1f0acff8949"
+    },
+    {
+      "path": "tools/test_cursor_scene.py",
+      "sha256": "9264c5f94fd5f77aff6100a6c93bc843873d6842440d79ce72d0d40f2700c65c"
+    }
+  ],
+  "platform_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9"
+  },
+  "magic_baseline": {
+    "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "source_audit": "docs/development/magic-update-scene-audit.json",
+    "scope": "AESMAIN _graf_mouse and gm_hide/gm_show do not acquire window UPDATE."
+  },
+  "changes": [
+    "Move GRAF_MOUSE out of scene-gated AESLOCAL.Policy into direct caller dispatch.",
+    "Guard client lookup and cursor transition; read shared device depth inside the guard.",
+    "Publish registration identity, binding and endpoint within one existing guard.",
+    "Retain the existing caller-side physical helper, revision wakes, device fallback and faults."
+  ],
+  "commands": [
+    "python3 tools/test_cursor_scene.py --output build/screnmgr/sm1-cursor-scene",
+    "python3 tools/test_aes_server.py --suite cursor --mode opt --output build/screnmgr/sm1-cursor-pixels",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "runs": [
+    {
+      "name": "scene-owner",
+      "capture": "build/screnmgr/sm1-cursor-scene",
+      "results_sha256": "dfa2be02ef00f92369f2e58ffaa729164d4abef948ed3e75059b2fc23a29253b",
+      "image_sha256": "712172591e894df261641fa972e0ff6adad8e2e5a7a8fe39ce57f05b66a97bd7",
+      "xex_sha256": "9326a209312a0f976ba5bbf72b556dd2679fb57a8e029c80228992a4ee5da293",
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "build_profile": "release",
+        "override": false
+      },
+      "checks": 65,
+      "pixel_comparisons": 0,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 4,
+        "native_irq_count": 0,
+        "fault_required": 0,
+        "switches": 9,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 300,
+          "remaining_above_floor": 980
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 94,
+          "remaining_above_floor": 962
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "progress": 6687,
+      "physical_completion": "Controlled callback; production local policy and native/C bridge."
+    },
+    {
+      "name": "physical-mouse-counter",
+      "capture": "build/screnmgr/sm1-cursor-pixels",
+      "results_sha256": "6547556507afc8c4c57f0eb8eb40fa880502691c9f89131cfa43764a595a530a",
+      "image_sha256": "7b2730ec3974671a37d33f9c61a73e32e08ea1bf4c555128e768405f9d2ba956",
+      "xex_sha256": "f1334afe385550989a27b1d564126efb45e13a6593fb111e637debea20a1cc58",
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "build_profile": "release",
+        "override": false
+      },
+      "checks": 431,
+      "pixel_comparisons": 147,
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1379,
+        "native_irq_count": 33372,
+        "fault_required": 0,
+        "switches": 1852,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_dbr": 0,
+        "return_e": 0
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 845,
+          "remaining_above_floor": 435
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 142,
+          "remaining_above_floor": 914
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 51,
+          "remaining_above_floor": 1005
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 376,
+          "remaining_above_floor": 680
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 730,
+          "remaining_above_floor": 1574
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 287,
+          "remaining_above_floor": 993
+        }
+      },
+      "physical_completion": "Existing real display/VDI fixture with exact pixel oracle and background counter."
+    }
+  ],
+  "host_checks": {
+    "status": "pass",
+    "tests": 718,
+    "skips": 5,
+    "seconds": 12.426,
+    "log_path": "build/screnmgr-sm1-host.log",
+    "log_sha256": "683c8f3bbb734faabf3169b4d6d29c3bd2f43d5e723445f308c80649f1dab2ea"
+  },
+  "excluded_attempts": [
+    "Scene probe omitted generated console declarations; compilation stopped before execution.",
+    "Scene probe routine name collided with a local mouse pointer; compilation stopped before execution.",
+    "Preliminary passing scene probe preceded the explicit Yield to the computing owner; only final probe is recorded."
+  ],
+  "limits": [
+    "Physical completion may still wait on existing display/backend readiness.",
+    "SCRENMGR loop, frame setters, independent input/device execution and general scene migration remain pending.",
+    "No scrolling performance, release or hosted-system qualification claim.",
+    "No QED, application catalog, demo refresh or raw matrix."
+  ],
+  "resource_impact": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_public_task_bank_zero_delta": 0,
+    "production_upper_record_delta": 0,
+    "production_vram_delta": 0,
+    "production_task_count_delta": 0,
+    "public_abi_change": false,
+    "includes": "Guards, alignment and unused reserved capacity; fixture-only globals and computing peer are not product reservations."
+  },
+  "documentation_pages": [
+    "docs/history/screnmgr-migration.md",
+    "docs/history/README.md",
+    "docs/plans/gem4xe/screnmgr-migration-plan.md",
+    "docs/plans/gem4xe/README.md",
+    "docs/plans/README.md",
+    "docs/reference/aes.md",
+    "docs/roadmap.md"
+  ],
+  "documentation_checks": {
+    "status": "pass",
+    "pages": 7,
+    "local_links": 1128,
+    "diff_whitespace": "pass"
+  }
+}

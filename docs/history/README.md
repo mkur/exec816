@@ -1,5 +1,8 @@
 # Historical records
 
+- [SCRENMGR migration](screnmgr-migration.md): caller cursor policy without
+  scene admission, coherent registration publication and focused development checks.
+
 - [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
   UPDATE/MCTRL handler flow, native ownership and presenter operation scopes.
 
