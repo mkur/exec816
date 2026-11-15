@@ -1,10 +1,17 @@
 # Implementation plans
 
+- [Independent input.device design](input-device-design.md): proposed public
+  input service reusing the resident console/system Task, independent of
+  AES/SCRENMGR and display ownership. Covers the standard Atari text console,
+  future VBXE text-mode console and GEM consumers; the bounded handler interface
+  and migration boundaries are a design draft, not an installed device.
+
 - [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
   MagiC manager role, caller-context drawing, independent input/device progress
   and shared UPDATE ownership. SM0 records the direction and responsibility
   map; SM1a delivers caller cursor policy without scene admission. Frame drawing,
-  execution placement and the remaining migration are pending.
+  the remaining execution map and migration are pending. Input service Task
+  reuse is selected in the independent input.device design above.
 
 - [MagiC-led AES migration](gem4xe/aes-semaphore-migration-plan.md): reassessed
   AM0–AM5 flow, with MCTRL built on UPDATE, shared handler scopes, protected

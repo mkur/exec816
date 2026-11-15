@@ -20,11 +20,15 @@ then replaces the combined loop. SM0 records the direction and responsibility
 map; SM1a delivers scene-independent cursor policy with caller completion, and
 SM1b paints vertical slider positions synchronously in the calling Task, and
 SM1c extends that path to slider sizes. Remaining frame fields and the rest
-of the migration are pending. Execution placement
-and Task costs must be resolved explicitly rather than hidden behind a rename.
+of the migration are pending. The selected input service reuses the resident
+console/system Task; the remaining execution placement and Task costs must be
+resolved explicitly rather than hidden behind a rename.
 
-The [execution-placement comparison](screnmgr-execution-map.md) prepares the
-SM2 input Task decision and accounts for capacity and shutdown dependencies.
+The [independent input.device design](../input-device-design.md) covers GEM,
+the standard Atari text console and a future VBXE text-mode console without
+AES/SCRENMGR dependencies in the device. Its consumer handler interface is a
+draft. The [execution-placement comparison](screnmgr-execution-map.md) records
+the Task-reuse selection, alternatives and remaining shutdown/capacity work.
 
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common

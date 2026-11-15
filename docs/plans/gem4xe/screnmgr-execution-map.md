@@ -10,14 +10,28 @@ UPDATE. See the [pinned input/event model](../../architecture/magic.md#input-eve
 AESEVT `read_evnts_from_ringbuf` / `handle_key` / `write_key` and AESMAIN's
 `_evnt_multi` → `update_1` → interaction → `update_0` loop.
 
-SM2 needs an execution placement decision before the manager can block on
-UPDATE. The migration plan requires an explicit comparison; selection remains
-pending. This note prepares that decision and does not introduce a Task or
-change platform services. After the user's MagiC structure question, evaluate a
-general public deferred-delivery foundation first. Task placement remains an
-explicit Exec adaptation, not MagiC's inspected execution arrangement.
+## Selected direction
 
-## Existing-service option: dedicated input Task
+The user selected a Task-based input service **reusing the existing resident
+console/system Task**, with Terminal as an ordinary GEM application. The
+[input.device design draft](../input-device-design.md) makes the device
+independent of AES, SCRENMGR and display ownership, with consumers for standard
+Atari text, future VBXE text-mode and GEM operation. It proposes bounded consumer
+handlers so AES event publication does not require another receiving Task.
+
+This does not add a separate input Task or select a new native deferred-work
+service. It also does not put live scene mutation or physical cursor drawing
+inside the input dispatcher. Console stream/model work remains in the existing
+CONSOLEBACKEND Task. Remaining Worker duties, including the SCRENMGR execution
+context and standalone display work, still need explicit relocation/costing;
+the complete Task count and stack bounds are not established by this selection.
+
+The alternatives below retain the earlier comparison. They are not the selected
+implementation map. Task-side delivery is an explicit Exec adaptation of
+MagiC's scheduler-side input role, preserving its independence from SCRENMGR.
+This documentation changes no Task, platform service or reserved bank-zero byte.
+
+## Earlier alternative: add a dedicated input Task
 
 | Context | Responsibility and resource lifetime |
 | --- | --- |
@@ -45,8 +59,9 @@ on an unsafe device or lease retirement failure.
 MagiC performs ordinary input delivery outside SCRENMGR, using its native
 scheduler/deferred mechanisms. Exec's existing Task, signal, message, INPUT and
 display services supply that execution role; no scheduler callback, IRQ-side AES
-work or GUI-specific kernel operation is proposed. Cursor access can wait for a
-bounded drawing grant, but it does not couple input progress to manager UPDATE.
+work or GUI-specific kernel operation is proposed. This earlier option allowed
+cursor access to wait for a bounded drawing grant. The selected design keeps
+physical cursor work outside input dispatch so drawing cannot delay delivery.
 Copied interactions must preserve capture identity, explicit loss/cancellation,
 and route-retirement references; a wake is only an arrival hint.
 

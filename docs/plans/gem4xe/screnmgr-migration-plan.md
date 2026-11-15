@@ -85,13 +85,18 @@ contexts with any additional ordinary Task, including simultaneous application
 capacity, stack/DP occupancy and shutdown ordering. A combined nonblocking loop
 that continues all presenter work is not accepted as SCRENMGR merely by renaming it.
 
-The user has selected the replacement architecture. Its execution placement is
-not fixed by this note. Bring actual departures or newly required platform
-services to the user with source, costs and alternatives. Do not add a private
-GUI deferred-work service or change the scheduler to conceal the dependency.
+The user selected a Task-based input service reusing the existing resident
+console/system Task. The [independent input.device draft](../input-device-design.md)
+separates the generic device from AES routing, SCRENMGR and display ownership,
+and covers standard Atari text, future VBXE text-mode and GEM consumers. Its
+bounded consumer handler is proposed; public ABI details and the complete
+SCRENMGR/display execution map remain to be specified before implementation.
 
-The [execution-placement comparison](screnmgr-execution-map.md) prepares the
-SM2 choice; its selection is pending.
+The [execution-placement comparison](screnmgr-execution-map.md) records this
+selection and retains the earlier alternatives. Bring actual departures or
+newly required platform services to the user with source, costs and alternatives.
+Do not add a private GUI deferred-work service or change the scheduler to
+conceal the dependency. No additional input Task is selected.
 
 ## Migration slices
 
