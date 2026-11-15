@@ -6,9 +6,9 @@ The installed subset admits unit zero/flags zero, QUERY and settled Close.
 IM2 adds the Task/control/handler lifetime implementation. The boot controller
 must explicitly start the selected input owner; opening alone does not start
 a second owner alongside the existing console. ATTACH/DETACH require that
-running service; otherwise they return IOERR_UNITBUSY. IM3a connects keyboard
-capture and synchronous route operations. QUERY reports KEYBOARD_SET; pointer
-capture is not connected yet. The [migration plan](../plans/input-device-migration-plan.md) tracks
+running service; otherwise they return IOERR_UNITBUSY. IM3 connects keyboard,
+relative ST/port-2 pointer capture and synchronous route operations. QUERY
+reports KEYBOARD_SET | POINTER_SET. The [migration plan](../plans/input-device-migration-plan.md) tracks
 remaining work; its target semantics are not an installed-service claim.
 
 Use the generated [InputDeviceRequest](../../c/include/devices/input.h), a
@@ -43,6 +43,10 @@ in the input Task. The service supplies configuration version/source/wake mask;
 the consumer supplies generic keyboard flags and raw-key filters. A source-set
 failure unwinds its acquired prefix. DETACH releases the source in its acquiring
 Task; a later attach can choose new filters and gets a fresh capture generation.
+For pointer capture supply POINTER_RELATIVE, POINTER_ST/POINTER_PORT and zero
+initial coordinates/bounds. Relative movement/buttons carry the existing INPUT
+event semantics; screen coordinates, acceleration and cursor drawing are consumer
+responsibilities. Pointer-only attachment does not acquire the keyboard.
 
 CREATE_ROUTE/PUBLISH_ROUTE/RETIRE_ROUTE/DISCARD name the INPUT source ID in
 Request.source. CREATE_ROUTE uses routeFlags and returns the tag in route;

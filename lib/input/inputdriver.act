@@ -338,8 +338,11 @@ BYTE FUNC Drain()
         count=0
         WHILE count<DRAIN_BUDGET DO
           status=SOURCE.Take(capture)
-          IF status<>INPUT.OK THEN
+          IF status=INPUT.EMPTY THEN
             EXIT
+          FI
+          IF status<>INPUT.OK THEN
+            HEAPCORE.Abort($fca5)
           FI
           Dispatch(opened.consumer.entry,opened.consumer.context,@capture.event)
           count==+1

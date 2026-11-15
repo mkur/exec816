@@ -84,7 +84,39 @@ def keyboard_stimulus(bridge, program, report):
 def keyboard_hardware(bridge):
     return {name: bridge.memdump(address, size).hex() for name, address, size in (
         ('mask', 16, 1), ('skctl', 0x232, 1), ('key_vector', 0x208, 2),
-        ('break_vector', 0x236, 2))}
+        ('break_vector', 0x236, 2), ('timer_vector', 0x210, 2))}
+
+
+def pointer_stimulus(bridge, program, report):
+    at = lambda name: next(d['address'] for d in program['image']['data']
+        if d['name'].startswith('M_INPUTDEVICEPOINTER_'+name.upper()+'_'))
+
+    def reach(condition):
+        bridge.bp_clear_all()
+        bridge.bp_set(program['labels']['native_nmi'], condition=condition)
+        try:
+            run_to(bridge, program['labels']['native_nmi'], frame_limit=800,
+                   timeout=15, condition=condition)
+        except Exception:
+            report['checkpoint'] = condition
+            report['diagnostic'] = {name: bridge.peek16(at(name))
+                for name in ('checks', 'received', 'sumX', 'sumY')}
+            report['diagnostic']['button_states'] = bridge.memdump(at('buttonStates'), 1).hex()
+            report['diagnostic']['status'] = bridge.peek16(adapter.STATE)
+            raise
+
+    bridge._cmd_ok('MOUSE ST')
+    reach(f'db(${at("stage"):x})=1')
+    for i in range(4):
+        bridge._cmd_ok(f'MOUSE AT {2000+i*36000} 16 0 -1')
+    reach(f'dw(${at("sumX"):x})>=4')
+    bridge._cmd_ok('MOUSE AT 2000 0 0 1')
+    reach(f'db(${at("buttonStates"):x})=1')
+    bridge._cmd_ok('MOUSE AT 2000 0 0 0')
+    reach(f'db(${at("buttonStates"):x})=3')
+    bridge.memload(at('stop'), bytes([1]))
+    bridge.bp_clear_all()
+    report['physical_pointer'] = dict(movements=4, button_changes=2)
 
 
 def main():
@@ -93,7 +125,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -112,7 +144,7 @@ def main():
     report = dict(status='running', tier='development', qualification=False,
                   suite=args.suite, mode=args.mode, build=program['build'], c_layout=layout)
     pin, bridge_dir, rom = PIN, ROOT/'build/altirra-irq-bridge', ROOT/'build/firmware/altirraos-816.rom'
-    if args.suite == 'keyboard':
+    if args.suite in ('keyboard', 'pointer'):
         from test_mouse_observe import PIN as INPUT_PIN, BRIDGE, ROM
         pin, bridge_dir, rom = INPUT_PIN, BRIDGE, ROM
     expected_bridge = pin.get('mouse_input', {}).get('tooling', {}).get('sha256', pin['emulator']['sha256'])
@@ -124,16 +156,20 @@ def main():
             report['machine'] = verify_machine(bridge, rom, pin)
             def stimulus(b):
                 report['keyboard_before'] = keyboard_hardware(b)
-                keyboard_stimulus(b, program, report)
+                if args.suite == 'keyboard':
+                    keyboard_stimulus(b, program, report)
+                else:
+                    pointer_stimulus(b, program, report)
             report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=3600,
-                                           before_run=stimulus if args.suite == 'keyboard' else None)
-            if args.suite == 'keyboard':
+                                           before_run=stimulus if args.suite in ('keyboard', 'pointer') else None)
+            if args.suite in ('keyboard', 'pointer'):
                 bridge._cmd_ok('KEY ALL up')
+                bridge._cmd_ok('MOUSE CLEAR')
                 report['keyboard_after'] = keyboard_hardware(bridge)
                 require(report['keyboard_after'] == report['keyboard_before'],
                         'Keyboard capture hardware was not restored')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            require(report['checks'] == {'abi': 17, 'service': 33, 'keyboard': 25}[args.suite],
+            require(report['checks'] == {'abi': 17, 'service': 33, 'keyboard': 25, 'pointer': 10}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

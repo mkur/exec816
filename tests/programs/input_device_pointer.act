@@ -1,0 +1,88 @@
+MODULE INPUTDEVICEPOINTER
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDRIVER
+USE HEAPCORE
+
+CARD checks,received
+BYTE stage,stop,cleanGuard,buttonStates
+INT sumX,sumY
+LONGCARD tag
+INPUTDEVICE.Consumer consumer
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Handler(LONGCARD context INPUT.Event POINTER event)
+
+  LET self=EXEC.FindTask(NULL)
+  IF self<>INPUTDRIVER.Task() OR self.tc_TDNestCnt<>$ff OR event.route<>tag THEN
+    cleanGuard=0
+  FI
+  IF event.kind=INPUT.EVENT_POINTER THEN
+    IF (event.flags & INPUT.RELATIVE)=0 THEN
+      cleanGuard=0
+    FI
+    sumX==+event.x
+    sumY==+event.y
+  ELSEIF event.kind=INPUT.EVENT_BUTTON THEN
+    IF event.buttons<>0 THEN
+      buttonStates=buttonStates OR 1
+    ELSE
+      buttonStates=buttonStates OR 2
+    FI
+  FI
+  received==+1
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  LET self=EXEC.FindTask(NULL)
+  LET signals=self.tc_SigAlloc
+  cleanGuard=1
+  Require(INPUTDRIVER.Start()<>0)
+  LET port=EXEC.CreateMsgPort()
+  LET io=EXEC.CreateIORequest(port,INPUTDEVICE.REQUEST_BYTES)
+  Require(port<>NULL AND io<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,0)=0)
+  LET packet=INPUTDEVICE.Request POINTER(io)
+  packet.io.io_Data=BYTE POINTER(@consumer)
+  packet.io.io_Length=INPUTDEVICE.CONSUMER_BYTES
+  consumer.version=INPUTDEVICE.VERSION
+  consumer.sources=INPUTDEVICE.POINTER_SET
+  consumer.entry=LONGCARD(ADDRESS(@Handler))
+  consumer.pointerConfig.flags=INPUT.POINTER_RELATIVE
+  consumer.pointerConfig.pointerProtocol=INPUT.POINTER_ST
+  consumer.pointerConfig.pointerPort=INPUT.POINTER_PORT
+  io.io_Command=INPUTDEVICE.ATTACH
+  Require(EXEC.DoIO(io)=0)
+  packet.source=INPUT.SOURCE_POINTER
+  io.io_Command=INPUTDEVICE.CREATE_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  tag=packet.route
+  io.io_Command=INPUTDEVICE.PUBLISH_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  stage=1
+  WHILE stop=0 DO
+    EXEC.Yield()
+  OD
+  Require(sumX=4 AND sumY=0 AND buttonStates=3 AND received<>0 AND cleanGuard<>0)
+  io.io_Command=INPUTDEVICE.DETACH
+  Require(EXEC.DoIO(io)=0)
+  EXEC.CloseDevice(io)
+  EXEC.DeleteIORequest(io)
+  EXEC.DeleteMsgPort(port)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before AND self.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE
