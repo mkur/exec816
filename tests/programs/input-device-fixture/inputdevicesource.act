@@ -1,0 +1,64 @@
+; Test-only capture seam. No public device injection command is installed.
+MODULE INPUTDEVICESOURCE
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDEVICESTATE AS STATE
+
+PUBLIC CONST CAPABILITIES=3
+PUBLIC CARD pending,opens,closes,failSource
+PUBLIC BYTE pauseOpen,pauseClose,entered
+PUBLIC EXEC.Task POINTER caller,lastOpen,lastClose
+PUBLIC LONGCARD wakeMask
+
+PUBLIC PROC Inject(CARD count)
+
+  EXEC.Forbid()
+  pending=count
+  LET service=STATE.Get()
+  EXEC.Signal(service.workerLease.task,INPUTDEVICE.KEYBOARD_MASK)
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC CARD FUNC Open(STATE.Source POINTER source)
+
+  IF source.config.source=failSource THEN
+    RETURN(INPUT.NO_MEMORY)
+  FI
+  opens==+1
+  lastOpen=EXEC.FindTask(NULL)
+  IF pauseOpen<>0 THEN
+    entered=1
+    EXEC.Signal(caller,wakeMask)
+    EXEC.Yield()
+  FI
+
+RETURN(INPUT.OK)
+
+PUBLIC CARD FUNC Close(STATE.Source POINTER source)
+
+  closes==+1
+  lastClose=EXEC.FindTask(NULL)
+  pending=0
+  IF pauseClose<>0 THEN
+    entered=1
+    EXEC.Signal(caller,wakeMask)
+    EXEC.Yield()
+  FI
+
+RETURN(INPUT.OK)
+
+PUBLIC CARD FUNC Take(STATE.Source POINTER source)
+
+  IF pending=0 OR source.config.source<>INPUT.SOURCE_KEYBOARD THEN
+    RETURN(INPUT.EMPTY)
+  FI
+  pending==-1
+  source.event.route=LONGCARD(pending)+1
+  source.event.kind=INPUT.EVENT_KEY
+  source.event.code=$21
+
+RETURN(INPUT.OK)
+
+ENDMODULE

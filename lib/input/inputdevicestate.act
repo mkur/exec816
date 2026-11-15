@@ -1,0 +1,48 @@
+; Private upper-memory input.device state. No Task is added by this module.
+MODULE INPUTDEVICESTATE
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDEVICEMETA AS META
+
+PUBLIC TYPE Binding=[
+  EXEC.TaskLease owner
+  CARD state,sources
+  INPUTDEVICE.Consumer consumer
+  EXEC.IORequest POINTER request
+  BYTE reserved
+]
+PUBLIC TYPE Source=[
+  INPUT.Lease lease
+  INPUT.Config config
+  BYTE slot,active
+  CARD status
+  INPUT.Event event
+]
+PUBLIC TYPE Service=[
+  CARD opens,generation
+  BYTE state,stopping
+  EXEC.Task POINTER controller
+  BYTE initialized
+  EXEC.TaskLease workerLease
+  EXEC.Task task
+  EXEC.MsgPort port
+  EXEC.IORequest POINTER active
+  BYTE cancelled,signalBit
+  CARD error
+  BYTE POINTER waiters
+]
+
+PUBLIC Service POINTER FUNC Get()
+
+RETURN(Service POINTER(ADDRESS(META.SERVICE)))
+
+PUBLIC Binding POINTER FUNC BindingAt(BYTE slot)
+
+RETURN(Binding POINTER(ADDRESS(META.BINDINGS+CARD(slot)*INPUTDEVICE.BINDING_BYTES)))
+
+PUBLIC Source POINTER FUNC SourceAt(BYTE slot)
+
+RETURN(Source POINTER(ADDRESS(META.SOURCES+CARD(slot)*INPUTDEVICE.SOURCE_BYTES)))
+
+ENDMODULE

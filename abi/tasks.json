@@ -704,7 +704,8 @@
     "SIODRIVER.Worker",
     "CONSOLEDRIVER.Worker",
     "IDEPLUSDRIVER.Worker",
-    "CONSOLEBACKEND.Worker"
+    "CONSOLEBACKEND.Worker",
+    "INPUTDRIVER.Worker"
   ],
   "create_packet": {
     "size": 16,

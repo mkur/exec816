@@ -1,26 +1,19 @@
-; Shared input resident. Control entry points execute on the submitting Task.
+; Shared input resident. Ordinary request callbacks never wait or draw.
 MODULE INPUTDRIVER
 USE EXEC
 USE INPUT
 USE INPUTDEVICE
 USE INPUTDEVICEMETA AS META
+USE INPUTDEVICESTATE AS STATE
+USE INPUTDEVICESOURCE AS SOURCE
+USE A816MEMORY AS MEM
+USE EXECLISTS AS LISTS
 USE HEAPCORE
 
-TYPE Binding=[
-  EXEC.TaskLease owner
-  CARD state,sources
-  INPUTDEVICE.Consumer consumer
-  EXEC.IORequest POINTER request
-  BYTE reserved
-]
-TYPE DeviceState=[CARD opens,generation]
+CONST DRAIN_BUDGET=8
 PROC POINTER handler(LONGCARD context INPUT.Event POINTER captured)
 
-Binding POINTER FUNC BindingAt(BYTE slot)
-
-RETURN(Binding POINTER(ADDRESS(META.BINDINGS+CARD(slot)*INPUTDEVICE.BINDING_BYTES)))
-
-; Only the service's consuming Task dispatches borrowed capture records.
+; Dispatch only in the consuming Task, with no driver guard held.
 PUBLIC PROC Dispatch(LONGCARD entry,context INPUT.Event POINTER captured)
 
   LET target=ADDRESS POINTER(@handler)
@@ -32,23 +25,24 @@ RETURN
 PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER
     request LONGCARD flags)
   BYTE slot
-  Binding POINTER opened
-  DeviceState POINTER service
+  STATE.Binding POINTER opened
 
   request.io_Error=BYTE(EXEC.IOERR_OPENFAIL)
   IF unit<>INPUTDEVICE.UNIT OR flags<>0
       OR request.io_Message.mn_Length<INPUTDEVICE.REQUEST_BYTES THEN
     RETURN(EXEC.IOERR_OPENFAIL)
   FI
-
   LET port=request.io_Message.mn_ReplyPort
   LET self=EXEC.FindTask(NULL)
   IF port=NULL OR port.mp_SigTask<>self OR port.mp_Flags<>EXEC.PA_SIGNAL THEN
     RETURN(EXEC.IOERR_OPENFAIL)
   FI
-
+  LET service=STATE.Get()
+  IF service.stopping<>0 THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
   FOR slot=0 TO INPUTDEVICE.OPEN_SLOTS-1 DO
-    opened=BindingAt(slot)
+    opened=STATE.BindingAt(slot)
     IF opened.state=INPUTDEVICE.CLOSED THEN
       IF EXEC.RetainTask(self,@opened.owner)=0 THEN
         RETURN(EXEC.IOERR_OPENFAIL)
@@ -56,7 +50,6 @@ PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER
       opened.state=INPUTDEVICE.OPEN
       opened.sources=0
       opened.request=NULL
-      service=DeviceState POINTER(ADDRESS(META.SERVICE))
       service.opens==+1
       request.io_Device=BYTE POINTER(ADDRESS(META.DEVICE))
       request.io_Unit=BYTE POINTER(opened)
@@ -69,8 +62,8 @@ RETURN(EXEC.IOERR_OPENFAIL)
 
 PUBLIC PROC Close(EXEC.IORequest POINTER request)
 
-  LET opened=Binding POINTER(request.io_Unit)
-  LET service=DeviceState POINTER(ADDRESS(META.SERVICE))
+  LET opened=STATE.Binding POINTER(request.io_Unit)
+  LET service=STATE.Get()
   opened.state=INPUTDEVICE.CLOSED
   service.opens==-1
   IF EXEC.ReleaseTask(@opened.owner)=0 THEN
@@ -78,6 +71,9 @@ PUBLIC PROC Close(EXEC.IORequest POINTER request)
   FI
   request.io_Device=NULL
   request.io_Unit=NULL
+  IF service.stopping<>0 THEN
+    EXEC.Signal(service.workerLease.task,INPUTDEVICE.STOP_MASK)
+  FI
 
 RETURN
 
@@ -95,6 +91,8 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
   INPUTDEVICE.Capabilities POINTER info
 
   LET packet=INPUTDEVICE.Request POINTER(request)
+  LET opened=STATE.Binding POINTER(request.io_Unit)
+  LET service=STATE.Get()
   packet.io.io_Actual=0
   IF request.io_Command=INPUTDEVICE.QUERY THEN
     IF packet.io.io_Length<INPUTDEVICE.CAPABILITIES_BYTES THEN
@@ -102,12 +100,23 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
     ELSE
       info=INPUTDEVICE.Capabilities POINTER(packet.io.io_Data)
       info.version=INPUTDEVICE.VERSION
-      info.sources=0
+      info.sources=SOURCE.CAPABILITIES
       info.consumerBytes=INPUTDEVICE.CONSUMER_BYTES
       info.eventBytes=INPUT.EVENT_BYTES
       info.routeSlots=INPUTDEVICE.ROUTE_SLOTS
       info.reserved=0
       packet.io.io_Actual=INPUTDEVICE.CAPABILITIES_BYTES
+    FI
+  ELSEIF request.io_Command=INPUTDEVICE.ATTACH
+      OR request.io_Command=INPUTDEVICE.DETACH THEN
+    IF service.state<>INPUTDEVICE.RUNNING OR service.stopping<>0
+        OR opened.request<>NULL THEN
+      request.io_Error=BYTE(EXEC.IOERR_UNITBUSY)
+    ELSE
+      opened.request=request
+      request.io_Flags=request.io_Flags & $fe
+      EXEC.PutMsg(@service.port,@request.io_Message)
+      RETURN
     FI
   ELSE
     request.io_Error=BYTE(EXEC.IOERR_NOCMD)
@@ -118,6 +127,261 @@ RETURN
 
 PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
 
+  LET service=STATE.Get()
+  IF request.io_Message.mn_Node.ln_Type<>EXEC.NT_MESSAGE THEN
+    RETURN
+  FI
+  LET opened=STATE.Binding POINTER(request.io_Unit)
+  IF service.active=request THEN
+    service.cancelled=1
+  ELSEIF opened.request=request THEN
+    LISTS.Remove(@request.io_Message.mn_Node)
+    opened.request=NULL
+    request.io_Error=BYTE(EXEC.IOERR_ABORTED)
+    Finish(request)
+  FI
+
 RETURN
 
+BYTE FUNC Cancelled()
+
+  LET service=STATE.Get()
+
+RETURN(service.cancelled)
+
+INT FUNC Attach(INPUTDEVICE.Request POINTER packet STATE.Binding POINTER opened)
+  BYTE slot,owner
+  CARD mask,status
+  STATE.Source POINTER capture
+  INT error
+
+  IF opened.state<>INPUTDEVICE.OPEN
+      OR packet.io.io_Length<INPUTDEVICE.CONSUMER_BYTES THEN
+    RETURN(EXEC.IOERR_BADLENGTH)
+  FI
+  LET descriptor=INPUTDEVICE.Consumer POINTER(packet.io.io_Data)
+  IF descriptor.version<>INPUTDEVICE.VERSION OR descriptor.sources=0
+      OR descriptor.sources>3 OR descriptor.entry<$10000
+      OR descriptor.entry>LONGCARD($ffffff) THEN
+    RETURN(INT(INPUT.BAD_ARGUMENT))
+  FI
+  MEM.Move(BYTE POINTER(@opened.consumer),BYTE POINTER(descriptor),
+      INPUTDEVICE.CONSUMER_BYTES)
+  owner=BYTE((ADDRESS(opened)-ADDRESS(META.BINDINGS))/INPUTDEVICE.BINDING_BYTES)
+  mask=1
+  error=0
+  FOR slot=0 TO INPUTDEVICE.SOURCE_SLOTS-1 DO
+    capture=STATE.SourceAt(slot)
+    IF (opened.consumer.sources & mask)<>0 THEN
+      IF capture.active<>0 THEN
+        error=EXEC.IOERR_UNITBUSY
+        EXIT
+      FI
+      IF slot=0 THEN
+        MEM.Move(BYTE POINTER(@capture.config),BYTE POINTER(@opened.consumer.keyboard),
+            INPUT.CONFIG_BYTES)
+        capture.config.source=INPUT.SOURCE_KEYBOARD
+        capture.config.wakeMask=INPUTDEVICE.KEYBOARD_MASK
+      ELSE
+        MEM.Move(BYTE POINTER(@capture.config),BYTE POINTER(@opened.consumer.pointerConfig),
+            INPUT.CONFIG_BYTES)
+        capture.config.source=INPUT.SOURCE_POINTER
+        capture.config.wakeMask=INPUTDEVICE.POINTER_MASK
+      FI
+      capture.config.version=INPUT.VERSION
+      status=SOURCE.Open(capture)
+      IF status<>INPUT.OK THEN
+        error=INT(status)
+        EXIT
+      FI
+      capture.active=1
+      capture.slot=owner
+    FI
+    mask=mask LSH 1
+  OD
+  EXEC.Forbid()
+  IF Cancelled()<>0 THEN
+    error=EXEC.IOERR_ABORTED
+  FI
+  IF error=0 THEN
+    opened.sources=opened.consumer.sources
+    opened.state=INPUTDEVICE.ATTACHED
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  EXEC.Permit()
+  FOR slot=0 TO INPUTDEVICE.SOURCE_SLOTS-1 DO
+    capture=STATE.SourceAt(slot)
+    IF capture.active<>0 AND capture.slot=owner THEN
+      status=SOURCE.Close(capture)
+      IF status<>INPUT.OK THEN
+        HEAPCORE.Abort($fca2)
+      FI
+      capture.active=0
+    FI
+  OD
+
+RETURN(error)
+
+INT FUNC Detach(STATE.Binding POINTER opened)
+  BYTE slot
+  CARD status
+  STATE.Source POINTER capture
+
+  EXEC.Forbid()
+  IF Cancelled()<>0 THEN
+    EXEC.Permit()
+    RETURN(EXEC.IOERR_ABORTED)
+  FI
+  IF opened.state<>INPUTDEVICE.ATTACHED THEN
+    EXEC.Permit()
+    RETURN(INT(INPUT.BAD_ARGUMENT))
+  FI
+  opened.state=3
+  EXEC.Permit()
+  ; Commitment stops callbacks; Abort cannot undo source retirement.
+  FOR slot=0 TO INPUTDEVICE.SOURCE_SLOTS-1 DO
+    capture=STATE.SourceAt(slot)
+    IF (opened.sources & (CARD(1) LSH slot))<>0 THEN
+      status=SOURCE.Close(capture)
+      IF status<>INPUT.OK THEN
+        HEAPCORE.Abort($fca3)
+      FI
+      capture.active=0
+    FI
+  OD
+  opened.sources=0
+  opened.state=INPUTDEVICE.OPEN
+
+RETURN(0)
+
+BYTE FUNC Control()
+  EXEC.IORequest POINTER request
+  INT error
+
+  LET service=STATE.Get()
+  EXEC.Forbid()
+  request=EXEC.IORequest POINTER(EXEC.GetMsg(@service.port))
+  IF request=NULL THEN
+    EXEC.Permit()
+    RETURN(0)
+  FI
+  service.active=request
+  service.cancelled=0
+  EXEC.Permit()
+  LET opened=STATE.Binding POINTER(request.io_Unit)
+  IF request.io_Command=INPUTDEVICE.ATTACH THEN
+    error=Attach(INPUTDEVICE.Request POINTER(request),opened)
+  ELSE
+    error=Detach(opened)
+  FI
+  EXEC.Forbid()
+  opened.request=NULL
+  service.active=NULL
+  request.io_Error=BYTE(error)
+  Finish(request)
+  EXEC.Permit()
+
+RETURN(1)
+
+BYTE FUNC Drain()
+  BYTE slot,count,again
+  CARD status
+  STATE.Source POINTER capture
+  STATE.Binding POINTER opened
+
+  again=0
+  FOR slot=0 TO INPUTDEVICE.SOURCE_SLOTS-1 DO
+    capture=STATE.SourceAt(slot)
+    IF capture.active<>0 THEN
+      opened=STATE.BindingAt(capture.slot)
+      IF opened.state=INPUTDEVICE.ATTACHED THEN
+        count=0
+        WHILE count<DRAIN_BUDGET DO
+          status=SOURCE.Take(capture)
+          IF status<>INPUT.OK THEN
+            EXIT
+          FI
+          Dispatch(opened.consumer.entry,opened.consumer.context,@capture.event)
+          count==+1
+        OD
+        IF count=DRAIN_BUDGET THEN
+          again=1
+        FI
+      FI
+    FI
+  OD
+
+RETURN(again)
+
+PUBLIC EXEC.Task POINTER FUNC Task()
+
+  LET service=STATE.Get()
+
+RETURN(service.workerLease.task)
+
+PUBLIC PROC Worker()
+  BYTE allocated,registered,again
+  LONGCARD bits
+
+  LET service=STATE.Get()
+  allocated=0
+  registered=0
+  FOR allocated=0 TO 3 DO
+    IF EXEC.AllocSignal(31-allocated)<>31-allocated THEN
+      EXIT
+    FI
+  OD
+  IF allocated=4 THEN
+    registered=EXEC.RegisterResident(INPUTDEVICE.STOP_MASK)
+  FI
+  IF registered<>0 THEN
+    LISTS.NewList(@service.port.mp_MsgList)
+    service.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
+    service.port.mp_Flags=EXEC.PA_SIGNAL
+    service.port.mp_SigBit=31
+    service.port.mp_SigTask=EXEC.FindTask(NULL)
+  FI
+  EXEC.Forbid()
+  service.state=IF registered<>0 THEN INPUTDEVICE.RUNNING ELSE INPUTDEVICE.STOPPING FI
+  Notify(service)
+  EXEC.Permit()
+  IF registered<>0 THEN
+    DO
+      again=Control()
+      again=Drain() OR again
+      EXEC.Forbid()
+      IF service.stopping<>0 AND service.opens=0 AND service.active=NULL THEN
+        service.state=INPUTDEVICE.STOPPING
+        EXEC.Permit()
+        EXIT
+      FI
+      EXEC.Permit()
+      IF again<>0 THEN
+        EXEC.Yield()
+      ELSE
+        bits=EXEC.Wait(INPUTDEVICE.REQUEST_MASK OR INPUTDEVICE.KEYBOARD_MASK
+            OR INPUTDEVICE.STOP_MASK OR INPUTDEVICE.POINTER_MASK)
+        IF (bits & INPUTDEVICE.STOP_MASK)<>0 THEN
+          service.stopping=1
+        FI
+      FI
+    OD
+    registered=EXEC.UnregisterResident()
+  FI
+  WHILE allocated<>0 DO
+    allocated==-1
+    EXEC.FreeSignal(31-allocated)
+  OD
+  EXEC.Forbid()
+  service.state=INPUTDEVICE.STOPPED
+  Notify(service)
+  IF EXEC.ReleaseTask(@service.workerLease)=0 THEN
+    HEAPCORE.Abort($fca4)
+  FI
+  EXEC.RemTask(NULL)
+
+RETURN
+
+INCLUDE "input-device-lifetime.inc"
 ENDMODULE

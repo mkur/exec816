@@ -1,0 +1,116 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "IM2",
+  "checks": 33,
+  "mode": "opt",
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "native_nmi_count": 10,
+    "return_s": 11278,
+    "return_d": 3328,
+    "return_p": 0,
+    "return_e": 0,
+    "switches": 73,
+    "live_tasks": 0
+  },
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 182,
+      "remaining_above_floor": 1098
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1536,
+      "peak": 149,
+      "remaining_above_floor": 1131
+    },
+    "2": {
+      "base": 14448,
+      "bytes": 1536,
+      "peak": 18,
+      "remaining_above_floor": 1262
+    },
+    "3": {
+      "base": 16016,
+      "bytes": 1536,
+      "peak": 18,
+      "remaining_above_floor": 1262
+    },
+    "4": {
+      "base": 17584,
+      "bytes": 1536,
+      "peak": 24,
+      "remaining_above_floor": 1256
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 258,
+      "remaining_above_floor": 1022
+    }
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "on",
+    "burstio": false,
+    "accuratedisk": false,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": true,
+    "diskemu": "generic",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "xex_sha256": "7b986d045b1babec30ad05eeb1c8bdfc06ec966fa0df13fdfe45a8f065d311f8",
+  "fixture_capture_sha256": "ecd8ef046d8d2c80308d8a9f208cb033f54891cc92e91354e8d16e5bb7405d2a",
+  "host": {
+    "cases": 718,
+    "skipped": 5,
+    "status": "pass"
+  },
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "production_task_delta": 0
+  },
+  "scope": "Isolated generic service; capture adapter fixture only; no production startup change"
+}

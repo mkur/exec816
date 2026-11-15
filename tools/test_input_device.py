@@ -40,13 +40,20 @@ def main():
     parser.add_argument('--compiler-dir', type=Path, default=ROOT/'build/actionc')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi',), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    (output/'program').mkdir(exist_ok=True)
+    capture_override=output/'program/inputdevicesource.act'
+    if args.suite == 'service':
+        capture_override.write_text(
+            (ROOT/'tests/programs/input-device-fixture/inputdevicesource.act').read_text())
+    elif capture_override.exists():
+        capture_override.unlink()
     layout = c_layout(output, args.mode == 'opt')
     program = build(compiler(args.compiler_dir, release=True),
-                    ROOT/'tests/programs/input_device_abi.act', output/'program',
+                    ROOT/'tests/programs'/f'input_device_{args.suite}.act', output/'program',
                     tasks=True, console=False, sio_enabled=False,
                     optimize=args.mode == 'opt')
     report = dict(status='running', tier='development', qualification=False,
@@ -57,7 +64,8 @@ def main():
             report['machine'] = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
             report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=2400)
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            require(report['checks'] == 17, 'Incomplete input.device ABI fixture')
+            require(report['checks'] == {'abi': 17, 'service': 33}[args.suite],
+                    'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
             report['bank_zero_delta'] = dict(fixed=0, root=0, kernel=0, idle=0, per_task=0)

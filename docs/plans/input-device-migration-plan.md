@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0/IM1 are recorded; IM2–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM2 are recorded; IM3–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -144,6 +144,10 @@ its ABI is introduced.
 **Commit:** `Add generated input.device ABI and resident dispatch`.
 
 ## IM2 — implement the generic service and handler lifetime
+
+Status: implemented and checked through the isolated capture adapter. The
+[development record](../development/input-device-im2.json) reports 33 optimized
+emitted checks and the host suite; production source ownership is unchanged.
 
 Implement the reusable Task loop, control request queue, attach/detach state
 machine, owner retention and exact completion. Use the selected Worker lifecycle

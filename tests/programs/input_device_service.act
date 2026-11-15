@@ -1,0 +1,140 @@
+MODULE INPUTDEVICESERVICE
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDRIVER
+USE INPUTDEVICESOURCE AS SOURCE
+USE HEAPCORE
+
+CARD checks,calls
+INPUTDEVICE.Consumer consumer
+EXEC.Task POINTER controller,seenTask
+LONGCARD wakeMask,seenContext
+BYTE cleanGuard
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Handler(LONGCARD context INPUT.Event POINTER event)
+
+  seenTask=EXEC.FindTask(NULL)
+  seenContext=context
+  cleanGuard=seenTask.tc_TDNestCnt=$ff
+  calls==+1
+  EXEC.Signal(controller,wakeMask)
+
+RETURN
+
+PROC Await(CARD count)
+
+  WHILE calls<count DO
+    EXEC.Wait(wakeMask)
+  OD
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  controller=EXEC.FindTask(NULL)
+  LET signals=controller.tc_SigAlloc
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  wakeMask=LONGCARD(1) LSH bit
+  SOURCE.caller=controller
+  SOURCE.wakeMask=wakeMask
+  Require(INPUTDRIVER.Start()<>0)
+  Require(INPUTDRIVER.Start()<>0)
+  Require(INPUTDRIVER.Task()<>controller)
+  LET port=EXEC.CreateMsgPort()
+  LET io=EXEC.CreateIORequest(port,INPUTDEVICE.REQUEST_BYTES)
+  Require(port<>NULL AND io<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,0)=0)
+  Require(INPUTDRIVER.Stop()=0)
+  LET packet=INPUTDEVICE.Request POINTER(io)
+  packet.io.io_Data=BYTE POINTER(@consumer)
+  packet.io.io_Length=INPUTDEVICE.CONSUMER_BYTES
+  consumer.version=INPUTDEVICE.VERSION
+  consumer.sources=INPUTDEVICE.KEYBOARD_SET
+  consumer.entry=LONGCARD(ADDRESS(@Handler))
+  consumer.context=$12345678
+  io.io_Command=INPUTDEVICE.ATTACH
+  EXEC.Forbid()
+  LET depth=controller.tc_TDNestCnt
+  EXEC.SendIO(io)
+  EXEC.AbortIO(io)
+  Require(EXEC.WaitIO(io)=EXEC.IOERR_ABORTED)
+  Require(controller.tc_TDNestCnt=depth AND SOURCE.opens=0)
+  EXEC.Permit()
+  Require(EXEC.GetMsg(port)=NULL)
+  Require(EXEC.DoIO(io)=0)
+  Require(SOURCE.lastOpen=INPUTDRIVER.Task())
+  LET duplicate=EXEC.CreateIORequest(port,INPUTDEVICE.REQUEST_BYTES)
+  Require(duplicate<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,duplicate,0)=0)
+  LET other=INPUTDEVICE.Request POINTER(duplicate)
+  other.io.io_Data=BYTE POINTER(@consumer)
+  other.io.io_Length=INPUTDEVICE.CONSUMER_BYTES
+  duplicate.io_Command=INPUTDEVICE.ATTACH
+  Require(EXEC.DoIO(duplicate)=EXEC.IOERR_UNITBUSY)
+  EXEC.CloseDevice(duplicate)
+  EXEC.DeleteIORequest(duplicate)
+  SOURCE.Inject(20)
+  Await(20)
+  Require(calls=20 AND seenTask=INPUTDRIVER.Task() AND cleanGuard<>0)
+  Require(seenContext=$12345678)
+  io.io_Command=INPUTDEVICE.DETACH
+  Require(EXEC.DoIO(io)=0)
+  Require(SOURCE.closes=1 AND SOURCE.lastClose=INPUTDRIVER.Task())
+  SOURCE.Inject(1)
+  EXEC.Yield()
+  Require(calls=20)
+  SOURCE.pauseOpen=1
+  SOURCE.entered=0
+  io.io_Command=INPUTDEVICE.ATTACH
+  EXEC.SendIO(io)
+  WHILE SOURCE.entered=0 DO
+    EXEC.Wait(wakeMask)
+  OD
+  EXEC.AbortIO(io)
+  Require(EXEC.WaitIO(io)=EXEC.IOERR_ABORTED)
+  Require(SOURCE.opens=2 AND SOURCE.closes=2)
+  SOURCE.pauseOpen=0
+  consumer.sources=3
+  SOURCE.failSource=INPUT.SOURCE_POINTER
+  Require(EXEC.DoIO(io)=INT(INPUT.NO_MEMORY))
+  Require(SOURCE.opens=3 AND SOURCE.closes=3)
+  SOURCE.failSource=0
+  consumer.sources=INPUTDEVICE.KEYBOARD_SET
+  Require(EXEC.DoIO(io)=0)
+  SOURCE.pauseClose=1
+  SOURCE.entered=0
+  io.io_Command=INPUTDEVICE.DETACH
+  EXEC.SendIO(io)
+  WHILE SOURCE.entered=0 DO
+    EXEC.Wait(wakeMask)
+  OD
+  EXEC.AbortIO(io)
+  Require(EXEC.WaitIO(io)=0)
+  EXEC.AbortIO(io)
+  Require(EXEC.GetMsg(port)=NULL)
+  SOURCE.pauseClose=0
+  EXEC.CloseDevice(io)
+  EXEC.DeleteIORequest(io)
+  EXEC.DeleteMsgPort(port)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(INPUTDRIVER.Task()=NULL)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(INPUTDRIVER.Start()<>0)
+  Require(INPUTDRIVER.Stop()<>0)
+  EXEC.FreeSignal(bit)
+  Require(EXEC.AvailMem(0)=before AND controller.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE
