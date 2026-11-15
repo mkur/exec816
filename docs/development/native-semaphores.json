@@ -232,6 +232,551 @@
         "Stopped slow debug-host compiler emission; successful image uses the same revision in release-host mode.",
         "Two successful guest runs excluded from timing while correcting host manifest-path and profiler-start setup."
       ]
+    },
+    "NS1": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/native-semaphores/ns1-final",
+          "suite": "native",
+          "mode": "opt",
+          "checks": 12,
+          "results_sha256": "4d3028fa3d223f790142283a28dbe25753f941466deccf358f3df5487a8f5656",
+          "trace_sha256": "a2b3ce795b072c5da996535baeb7767084bcc9ecdba3ebfc6b57f1c64f5b051c",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 166,
+              "remaining_above_floor": 1114
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-raw",
+          "suite": "abi",
+          "mode": "raw",
+          "checks": 13,
+          "results_sha256": "260e71ea56e91f91922a8363a91a69002ff578e5a56da60c3692d4c915481cfd",
+          "trace_sha256": "77414c015eedc37d9e970bf808f93f632d8a06b76ac4592e7ef426fb5b9effb5",
+          "image_sha256": "972bc03209d2495cf41bc8c397d66670bde5843b6b06b53993a6b6ac1b448ce9",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 66,
+              "remaining_above_floor": 1214
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 134,
+              "remaining_above_floor": 1146
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-abi",
+          "suite": "abi",
+          "mode": "opt",
+          "checks": 13,
+          "results_sha256": "8f08adbf0379d3c8d5e8f409b9b8dba38a5af389cd19ba2966b671c9b1ae8a08",
+          "trace_sha256": "aafdfe7a7b63364e93234fa4510cf3142bbb698bf8c08bb88dd558a449134736",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 62,
+              "remaining_above_floor": 1218
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 140,
+              "remaining_above_floor": 1140
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-far-object",
+          "suite": "far-object",
+          "mode": "opt",
+          "checks": 13,
+          "results_sha256": "36c23fbe80b0f7f96549a86fff342124644f06179e9ec790cb02f5c2f140ca97",
+          "trace_sha256": "cd5a51c7b4343b7bda8278e223aba7382fa0836580296ac8e4defdee86d19f34",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 62,
+              "remaining_above_floor": 1218
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 140,
+              "remaining_above_floor": 1140
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-far-task",
+          "suite": "far-task",
+          "mode": "opt",
+          "checks": 9,
+          "results_sha256": "6b7176313f54ae648153585965f34ddb4a2f1c949371603a7ba980bd4b340dfd",
+          "trace_sha256": "a5e778df9b7159992b5226ace5b94254008fa80b961d5d3cba9d812307497fec",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 64,
+              "remaining_above_floor": 1216
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 52,
+              "remaining_above_floor": 1228
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 154,
+              "remaining_above_floor": 1126
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-empty-release",
+          "suite": "empty-release",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "3c5c0655535df2edf44f118bbaaeecc8b1c21168959b89f02ba507b30d29486a",
+          "trace_sha256": "ee655165c1015eaeac9c492f8dd6f79ec2060429ef9cdad9a8473415ee807395",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 114,
+              "remaining_above_floor": 1166
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-extra-release",
+          "suite": "extra-release",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "41bb83fd5a94ed40fe4b552e2671ccf481b9ec82fd0150b384eeb84f3b39b19d",
+          "trace_sha256": "03e12b301faed19c9f5f1413c0d877bf499eb3f6434d5361c885946b5541f0d3",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 114,
+              "remaining_above_floor": 1166
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-owner-removal",
+          "suite": "owner-removal",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "80fd17b84c06c2c08399542cbeb02f696dbb86e2ee8a100040388f6f4eb8b6a5",
+          "trace_sha256": "0794421d39fa2f4a3ea64163190779c536d8b6cd0c234e0e6aa95830260d43ef",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 114,
+              "remaining_above_floor": 1166
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-depth-overflow",
+          "suite": "depth-overflow",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "b7b60191958d8f2bc12c8aa091006aac735894b79db1b33049ee8b9d00b16f4e",
+          "trace_sha256": "fb4125c77c370e8a710839c5502b17db67fac227960a51e09f6dc7f93fd2c109",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 114,
+              "remaining_above_floor": 1166
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-owned-overflow",
+          "suite": "owned-overflow",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "ac3f086305163020eba8aa9a0292ddb2263d1e528b8f2ef3f88d7e9cd91ff152",
+          "trace_sha256": "63fa59c996d65855de86c2a300f2882aa86fbddaa222b6b2a13e1b4718d3facd",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 114,
+              "remaining_above_floor": 1166
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns1-final-wrong-owner",
+          "suite": "wrong-owner",
+          "mode": "opt",
+          "checks": 0,
+          "results_sha256": "fa737a0018d6c22c3e347b0d2281e827d460b8bbce3d6188707ec44c670f14ad",
+          "trace_sha256": "44685e1c2ed7c20b41a03bca5e71d9e9e5f09710e3df0ead1aae09701bebfd0d",
+          "image_sha256": "9e23bf1fcd078692ed17048eebc8c33ffbe5495748c831a46e3418e053ff926f",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 58,
+              "remaining_above_floor": 1222
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 170,
+              "remaining_above_floor": 1110
+            }
+          }
+        }
+      ],
+      "bank_zero_budget": {
+        "fixed_runtime": 11552,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20672,
+        "loading_excluding_os": 21616,
+        "runtime_including_os": 40640,
+        "loading_including_os": 41584
+      },
+      "repurposed_upper_context_bytes": 5,
+      "fast_scratch_bytes": 20,
+      "signal_code_bytes": 11273,
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "scope": "11 selected final guest runs; earlier native/ABI pilots also passed. Development only. No package refresh."
     }
   },
   "cleanup": {

@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import struct
 import subprocess
+import generate_semaphores
 
 from os_boundary import ROOT, PIN as PLATFORM_PIN, emulator, require, run_to, sha256
 
@@ -775,6 +776,11 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                            'FreeVec':'free_vec','AvailMem':'avail_mem','TypeOfMem':'type_of_mem',
                            'Allocate':'allocate','Deallocate':'deallocate'}[operation]
             peak=12 if operation in ('AllocMem','AllocVec') else 0
+        elif tasks and name.startswith('EXEC.') and name[5:] in generate_semaphores.ABI['imports']:
+            shape = generate_semaphores.ABI['imports'][name[5:]]
+            arguments, outgoing = shape['arguments'], shape['outgoing_bytes']
+            result = generate_tasks.RESULTS[shape['result_bytes']]
+            label = generate_semaphores.LABELS[name[5:]]
         elif tasks and name.startswith('EXEC.') and name[5:] in generate_tasks.ABI['imports']:
             shape = generate_tasks.ABI['imports'][name[5:]]
             arguments, outgoing = shape['arguments'], shape['outgoing_bytes']
@@ -1093,7 +1099,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'lib/exec/task-ports.inc','lib/exec/portcore.act','platform/altirraos/ports.s',
                 'abi/tasks.json','lib/exec/taskpolicy.act','lib/exec/taskmemory.act','lib/exec/task-signals.inc','lib/exec/task-wakes.inc',
                 'abi/platform-timer.json','tools/generate_platform_timer.py','platform/altirraos/platform-timer.s','platform/altirraos/platform-timer.inc','abi/sio-adapter.json','tools/generate_sio_adapter.py','platform/altirraos/sio.s','platform/altirraos/sio-state.inc','lib/io/sioadapter.act',
-                'platform/altirraos/signal-irq.s','platform/altirraos/signal-atomic.s','platform/altirraos/fast-services.s','platform/altirraos/fast-getmsg.inc','platform/altirraos/serial-irq.inc',
+                'platform/altirraos/signal-irq.s','platform/altirraos/signal-atomic.s','platform/altirraos/fast-services.s','platform/altirraos/fast-getmsg.inc','platform/altirraos/fast-semaphores.inc','platform/altirraos/serial-irq.inc',
                 'platform/altirraos/heap.s','platform/altirraos/heap-probe.s','lib/exec/task-memory.inc','lib/exec/heap-call-types.inc',
                 'lib/exec/heappolicy.act','lib/exec/heap-system.inc','lib/exec/heapcore.act','lib/exec/heap-constants.inc','lib/exec/exec-memory-types.inc','tools/generate_heap.py',
                 'lib/exec/exec-task-types.inc','lib/exec/execlists.act','tools/generate_tasks.py','platform/altirraos/tasks.s',
@@ -1112,7 +1118,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 'dos.inc','dos-action.inc','dos-storage-action.inc','task-kernel/dosraw.act','task-kernel/doscore.act',
                 'io.inc','io-action.inc','io-storage-action.inc','sio-storage-action.inc','timer-storage-action.inc',
                 'ports.inc','ports-action.inc','port-packets.inc','ports-storage.inc','ports-storage-action.inc',
-                'heappolicy.act','heap-storage.inc','heap.inc','heap-action.inc','heap.json','tasks.inc','tasks-action.inc','tasks-bindings.inc','signal-gateway.inc',
+                'heappolicy.act','heap-storage.inc','heap.inc','heap-action.inc','heap.json','tasks.inc','tasks-action.inc','tasks-bindings.inc','signal-gateway.inc','semaphore-abi.inc','semaphore-action.inc','semaphore-gateway.inc',
                 'task-kernel/processstate.act','task-kernel/exec.act','task-kernel/taskpolicy.act','task-kernel/taskmemory.act','task-kernel/task-wakes.inc',
                 'task-kernel/task-console.inc','task-kernel/task-signals.inc','task-kernel/exectasks.act','task-kernel/taskstacks.act','task-kernel/taskinspect.act','task-kernel/deviceinspect.act')})
     if tasks:
@@ -1290,8 +1296,13 @@ def execute(bridge, program, expected_status=0, timer_irq=False, before_run=None
         result['signal_nmi_checkpoints'] = bridge.peek16(adapter.PROBE0) if program['build'].get('signal_probe') else 0
         result['wake_queue'] = list(read_task(task_constants['WAKE'],9))
         result['root_task'] = list(read_task(task_constants['ROOT'],task_constants['TASK_SIZE']))
-        padding=min(value for key,value in program['build']['task_storage'].items() if key.startswith('TCB_PADDING') or key=='TCB_LIFETIMEPAD')
-        require(all(r[padding:] == [0]*(64-padding) for r in task_records), 'Context stride padding changed')
+        # Reserved fields are interspersed with live semaphore metadata.
+        from generate_tasks import ABI as task_abi, WIDTHS
+        for name, kind, offset in task_abi['context']['fields']:
+            if name.startswith('padding') or name in ('lifetimePad', 'semaphorePad'):
+                size = WIDTHS[kind][0]
+                require(all(r[offset:offset+size] == [0]*size for r in task_records),
+                        'Context reserved field changed: '+name)
     for address in guards:
         require(bridge.memdump(address, 16) == bytes([0xA5])*16, f"Guard changed at ${address:04x}")
     from native_abi import FIELDS

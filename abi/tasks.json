@@ -1,6 +1,6 @@
 {
   "abi": "exec816.tasks",
-  "version": 2048,
+  "version": 2304,
   "services": {
     "ADD_TASK": 17,
     "REM_TASK": 18,
@@ -493,19 +493,19 @@
         48
       ],
       [
-        "padding6",
+        "semaphoreOwned",
         "CARD",
         50
       ],
       [
-        "padding7",
-        "CARD",
+        "semaphoreWait",
+        "BYTE POINTER",
         52
       ],
       [
-        "padding8",
-        "CARD",
-        54
+        "semaphorePad",
+        "BYTE",
+        55
       ],
       [
         "padding9",

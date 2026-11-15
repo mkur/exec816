@@ -7,6 +7,7 @@
 .export fast_entry, fast_complete, fast_general, fast_return
 
 FAST_LOCAL = 20                 ; Task/port pointer, frame, context, selector, links
+.include "semaphore-abi.inc"
 
 fast_entry:
     cpy #P_SERVICE_GET_MSG
@@ -15,6 +16,14 @@ fast_entry:
     beq fast_exclusion
     cpy #T_SERVICE_PERMIT
     beq fast_exclusion
+    cpy #SEM_SERVICE_ATTEMPT_SEMAPHORE
+    bne :+
+    jmp fast_semaphore_validate
+:
+    cpy #SEM_SERVICE_RELEASE_SEMAPHORE
+    bne :+
+    jmp fast_semaphore_validate
+:
     jml dispatch_frame
 
 fast_exclusion:
@@ -39,6 +48,7 @@ fast_tag:
     beq :+
     jml context_fault
 :
+fast_setup:
     ; Save scratch below the already validated full frame. The normal Task
     ; floor leaves 256 bytes of interrupt reserve; this adds twenty bytes to its
     ; 13-byte COP frame. No nested native subroutine frame is retained.
@@ -80,6 +90,13 @@ fast_tag:
     cpy #P_SERVICE_GET_MSG
     bne :+
     jmp fast_getmsg
+:
+    cpy #SEM_SERVICE_ATTEMPT_SEMAPHORE
+    beq :+
+    cpy #SEM_SERVICE_RELEASE_SEMAPHORE
+    bne :++
+:
+    jmp fast_semaphore_call
 :
     lda f:T_BASE+T_TCB_LOCKDEPTH,x
     ldy 8
@@ -154,3 +171,4 @@ fast_return:
     jml restore_selected
 
 .include "fast-getmsg.inc"
+.include "fast-semaphores.inc"

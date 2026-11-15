@@ -1,0 +1,37 @@
+{
+  "abi": "exec816.semaphores",
+  "version": 256,
+  "services": {
+    "OBTAIN_SEMAPHORE": 80,
+    "ATTEMPT_SEMAPHORE": 81,
+    "RELEASE_SEMAPHORE": 82
+  },
+  "record": {
+    "size": 12,
+    "alignment": 2,
+    "fields": [
+      ["owner", "Task POINTER", 0],
+      ["pad", "BYTE", 3],
+      ["depth", "CARD", 4],
+      ["head", "Task POINTER", 6],
+      ["tail", "Task POINTER", 9]
+    ]
+  },
+  "imports": {
+    "InitSemaphore": {
+      "arguments": [{"alignment": 1, "offset": 0, "size": 3}],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    },
+    "AttemptSemaphore": {
+      "arguments": [{"alignment": 1, "offset": 0, "size": 3}],
+      "outgoing_bytes": 3,
+      "result_bytes": 4
+    },
+    "ReleaseSemaphore": {
+      "arguments": [{"alignment": 1, "offset": 0, "size": 3}],
+      "outgoing_bytes": 3,
+      "result_bytes": 0
+    }
+  }
+}

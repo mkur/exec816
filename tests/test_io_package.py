@@ -151,7 +151,7 @@ class IOPackageTests(unittest.TestCase):
             source=(policy_modules(Path(directory))/'exec.act').read_text()
             for name in ABI['imports']:self.assertIn(' '+name+'(',source)
             for name in ('IORequest','IOStdReq','IOSIOReq'):self.assertIn('PUBLIC TYPE '+name+'=',source)
-        self.assertEqual(tasks['version'],0x800)
+        self.assertEqual(tasks['version'],0x900)
 
 
 if __name__=='__main__':unittest.main()

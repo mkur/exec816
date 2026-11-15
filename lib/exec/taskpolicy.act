@@ -300,6 +300,8 @@ PROC InitSignals(TaskControl POINTER ctx Task POINTER item)
 
   DosReset(ctx,item)
   ctx.waitReason=T_WAIT_NONE
+  ctx.semaphoreOwned=0
+  ctx.semaphoreWait=NULL
   ctx.queued=0
   ctx.wakeNode.mln_Succ=NULL
   ctx.wakeNode.mln_Pred=NULL
@@ -622,7 +624,8 @@ CARD FUNC RemoveTask(TaskControl POINTER caller CARD saved)
     RETURN(T_FAULT)
   FI
 
-  IF target.holds<>0 OR EmptyMemory(item)=0 OR BoundProducer(target)<>0
+  IF target.semaphoreOwned<>0 OR target.semaphoreWait<>NULL
+      OR target.holds<>0 OR EmptyMemory(item)=0 OR BoundProducer(target)<>0
       OR DosCanRemove(target)=0
       OR ProcessCanRemove(caller,target)=0 THEN
     RETURN(T_FAULT)

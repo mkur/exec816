@@ -1,6 +1,9 @@
 MODULE SEMAPHORES
 USE EXEC
 USE HEAPCORE
+USE EXECLISTS
+USE TASKSTACKS
+INCLUDE "semaphore-action.inc"
 
 CONST DONE=$10000
 CONST ITERATIONS=32
@@ -23,8 +26,12 @@ EXEC.Task POINTER parent,worker
 EXEC.TaskLease parentLease,workerLease
 CARD checks
 BYTE variant
+BYTE reached
+PROC POINTER absent()
 VOLATILE CARD counter
 VOLATILE BYTE phase,queued,stop
+EXEC.SignalSemaphore device,second
+LONGINT attempted
 
 ; Stop on the first failed fixture invariant, outside timing loops.
 PROC Require(BYTE okay)
@@ -139,9 +146,14 @@ PROC CounterWorker()
   DO
     CounterTurn()
     IF phase=1 THEN
-      LibraryObtain(@shared,workerWaiter.task,@workerWaiter)
-      phase=2
-      LibraryRelease(@shared,workerWaiter.task)
+      IF variant=1 OR variant=8 THEN
+        attempted=EXEC.AttemptSemaphore(@device)
+        phase=2
+      ELSE
+        LibraryObtain(@shared,workerWaiter.task,@workerWaiter)
+        phase=2
+        LibraryRelease(@shared,workerWaiter.task)
+      FI
     FI
     IF stop<>0 THEN
       EXIT
@@ -183,7 +195,7 @@ PROC Handoff(BYTE unused)
 
 RETURN
 
-PROC Main()
+PROC Baseline(BYTE unused)
 
   parent=EXEC.FindTask(NULL)
   Require(EXEC.AllocSignal(16)=16)
@@ -213,6 +225,177 @@ PROC Main()
   EXEC.Permit()
   Require(EXEC.ReleaseTask(@parentLease)<>0)
   EXEC.FreeSignal(16)
+
+RETURN
+
+; Small emitted import/layout/long-result probe, also run without optimization.
+PROC NativeABI(BYTE unused)
+  CARD index
+  EXEC.SignalSemaphore POINTER target
+
+  target=@device
+  IF variant=9 THEN
+    target=EXEC.SignalSemaphore POINTER(ADDRESS($04fffa))
+  FI
+  Require(SIZEOF(EXEC.SignalSemaphore)=SEM_SIZE)
+  FOR index=0 TO 5 DO
+    target.ss_Private(index)=$ffff
+  OD
+  EXEC.InitSemaphore(target)
+  FOR index=0 TO 5 DO
+    Require(target.ss_Private(index)=0)
+  OD
+  parent=EXEC.FindTask(NULL)
+  EXEC.Forbid()
+  attempted=EXEC.AttemptSemaphore(target)
+  Require(attempted=1)
+  Require(EXEC.AttemptSemaphore(target)=1)
+  Require(target.ss_Private(2)=2)
+  EXEC.ReleaseSemaphore(target)
+  Require(target.ss_Private(2)=1)
+  EXEC.ReleaseSemaphore(target)
+  Require(target.ss_Private(0)=0 AND target.ss_Private(1)=0
+      AND target.ss_Private(2)=0)
+  Require(parent.tc_TDNestCnt=0)
+  EXEC.Permit()
+
+RETURN
+
+; A second Task's failed try must not change ownership or consume any signals.
+PROC NativeCore(BYTE unused)
+
+  parent=EXEC.FindTask(NULL)
+  EXEC.InitSemaphore(@device)
+  EXEC.InitSemaphore(@second)
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.AttemptSemaphore(@device)=1)
+  Require(EXEC.AttemptSemaphore(@second)=1)
+  Require(EXEC.AttemptSemaphore(@device)=1)
+  EXEC.ReleaseSemaphore(@device)
+  Require(device.ss_Private(2)=1)
+  EXEC.Forbid()
+  worker=EXEC.CreateTask(c"semaphore contender",0,@CounterWorker,1)
+  Require(worker<>NULL)
+  Require(EXEC.RetainTask(worker,@workerLease)<>0)
+  phase=1
+  EXEC.Permit()
+  WHILE phase<>2 DO
+  OD
+  Require(attempted=0 AND device.ss_Private(2)=1)
+  EXEC.ReleaseSemaphore(@device)
+  Require(device.ss_Private(2)=0 AND second.ss_Private(2)=1)
+  EXEC.ReleaseSemaphore(@second)
+  stop=1
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.Forbid()
+  Require(EXEC.ReleaseTask(@workerLease)<>0)
+  EXEC.RemTask(worker)
+  EXEC.Permit()
+  EXEC.FreeSignal(16)
+  Require(EXEC.AttemptSemaphore(@device)=1)
+  EXEC.ReleaseSemaphore(@device)
+
+RETURN
+
+; Deliberate invariant-limit injection belongs only to the fault fixture.
+PROC NativeFault(BYTE operation)
+
+  parent=EXEC.FindTask(NULL)
+  EXEC.InitSemaphore(@device)
+  IF operation=8 THEN
+    BEGIN
+      LET bit=EXEC.AllocSignal(16)
+      worker=EXEC.CreateTask(c"semaphore owner",0,@CounterWorker,1)
+      phase=1
+      WHILE phase<>2 DO
+      OD
+      EXEC.ReleaseSemaphore(@device)
+    END
+  ELSEIF operation<>3 THEN
+    attempted=EXEC.AttemptSemaphore(@device)
+  FI
+  IF operation=3 THEN
+    EXEC.ReleaseSemaphore(@device)
+  ELSEIF operation=4 THEN
+    EXEC.ReleaseSemaphore(@device)
+    EXEC.ReleaseSemaphore(@device)
+  ELSEIF operation=5 THEN
+    EXEC.RemTask(NULL)
+  ELSEIF operation=6 THEN
+    device.ss_Private(2)=$ffff
+    attempted=EXEC.AttemptSemaphore(@device)
+  ELSEIF operation=7 THEN
+    BEGIN
+      LET count=CARD POINTER(parent.tc_ExecPrivate+SIZE(SEM_OWNED_OFFSET))
+      count^=$ffff
+      EXEC.InitSemaphore(@second)
+      attempted=EXEC.AttemptSemaphore(@second)
+    END
+  FI
+  reached=1
+  Require(0)
+
+RETURN
+
+PROC FarWorker()
+
+  Require(EXEC.AttemptSemaphore(@device)=1)
+  Require(EXEC.AttemptSemaphore(@device)=1)
+  EXEC.ReleaseSemaphore(@device)
+  EXEC.ReleaseSemaphore(@device)
+  EXEC.Signal(parent,DONE)
+  BEGIN
+    LET ignored=EXEC.Wait(0)
+  END
+
+RETURN
+
+; Caller-prepared public Task crosses a CPU bank; its pool still owns S/D.
+PROC FarTask(BYTE unused)
+  CARD index
+  BYTE POINTER bytes
+
+  parent=EXEC.FindTask(NULL)
+  EXEC.InitSemaphore(@device)
+  Require(EXEC.AllocSignal(16)=16)
+  worker=EXEC.Task POINTER(ADDRESS($06fff0))
+  bytes=BYTE POINTER(worker)
+  FOR index=0 TO EXEC.TASK_SIZE-1 DO
+    bytes(index)=0
+  OD
+  worker.tc_Node.ln_Type=EXEC.NT_TASK
+  worker.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(1))
+  worker.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(1))
+  worker.tc_SPReg=worker.tc_SPUpper-SIZE(2)
+  EXECLISTS.NewList(@worker.tc_MemEntry)
+  EXEC.Forbid()
+  Require(EXEC.AddTask(worker,@FarWorker,absent)=worker)
+  Require(EXEC.RetainTask(worker,@workerLease)<>0)
+  EXEC.Permit()
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.Forbid()
+  Require(EXEC.ReleaseTask(@workerLease)<>0)
+  EXEC.RemTask(worker)
+  EXEC.Permit()
+  EXEC.FreeSignal(16)
+  Require(device.ss_Private(2)=0)
+  Require(worker.tc_State=EXEC.TS_REMOVED)
+
+RETURN
+
+PROC Main()
+
+  IF variant=0 THEN
+    Baseline(0)
+  ELSEIF variant=1 THEN
+    NativeCore(0)
+  ELSEIF variant=2 OR variant=9 THEN
+    NativeABI(0)
+  ELSEIF variant=10 THEN
+    FarTask(0)
+  ELSE
+    NativeFault(variant)
+  FI
 
 RETURN
 

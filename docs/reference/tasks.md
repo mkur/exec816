@@ -1,7 +1,7 @@
 # Classic Exec task API
 
-Status: implemented by `--tasks`, currently reporting version `$0800`.
-The native call packet tag remains `$0600`; it is not the feature version.
+Status: implemented by `--tasks`, currently reporting version `$0900`.
+The native call packet tag remains `$0700`; it is not the feature version.
 This is the only Task implementation; development ABI changes require rebuilding callers.
 [Build and storage instructions](../guides/tasks.md) describe the hosted configuration;
 the [migration record](../history/tasks-exec-update.md) tracks implementation and validation.
