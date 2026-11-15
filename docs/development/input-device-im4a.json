@@ -1,0 +1,140 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "IM4a",
+  "cases": [
+    {
+      "name": "client",
+      "checks": 13,
+      "mode": "opt",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 4,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_e": 0,
+        "switches": 16,
+        "live_tasks": 0
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 251,
+          "remaining_above_floor": 1029
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 206,
+          "remaining_above_floor": 1074
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 224,
+          "remaining_above_floor": 1056
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 24,
+          "remaining_above_floor": 1256
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "xex_sha256": "af04c5b9c547b02dbc2dbbd3b158dc88859d630c97990060c76109c41fbb95ed"
+    },
+    {
+      "name": "stop",
+      "checks": 35,
+      "mode": "opt",
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 11,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_e": 0,
+        "switches": 85,
+        "live_tasks": 0
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 186,
+          "remaining_above_floor": 1094
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 136,
+          "remaining_above_floor": 1144
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 24,
+          "remaining_above_floor": 1256
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "xex_sha256": "43d8e4b5b89f4b27668228ea63f0796d9b40f51ee6e29cb255ef2baaa5a5eae4"
+    }
+  ],
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "production_task_delta": 0
+  },
+  "scope": "Native client and system-stop detach foundation; no console cutover yet"
+}

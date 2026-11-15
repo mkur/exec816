@@ -125,7 +125,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -169,7 +169,8 @@ def main():
                 require(report['keyboard_after'] == report['keyboard_before'],
                         'Keyboard capture hardware was not restored')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            require(report['checks'] == {'abi': 17, 'service': 33, 'keyboard': 25, 'pointer': 10}[args.suite],
+            require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 25,
+                                        'pointer': 10, 'client': 13}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

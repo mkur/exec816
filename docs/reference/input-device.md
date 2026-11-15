@@ -37,6 +37,8 @@ The service Task uses signals and an owned request port, sleeps while idle and
 calls bounded handlers without a driver guard. It never calls AES or draws.
 Stop refuses live opens. This slice starts the Task only in isolated service
 fixtures; production console startup remains unchanged.
+An asynchronous system stop closes new admission while allowing existing
+consumers to detach. The worker retires only after those bindings close.
 
 ATTACH copies the 76-byte consumer descriptor and acquires the requested source
 in the input Task. The service supplies configuration version/source/wake mask;
@@ -56,3 +58,16 @@ does not wait for the input Task. Route zero stops addressed capture, old record
 retain captured tags, and retirement can return BUSY. No event queue is added
 between native INPUT and the bounded handler. Source acquisition, loss and
 durable cancellation retain the [INPUT contract](input.md).
+
+## Native client convenience calls
+
+[INPUTCLIENT](../../lib/input/inputclient.act) provides an opaque handle over
+the public device protocol. Open creates the owner Task's port/control request;
+Attach and Detach use ordinary DoIO/collection. Close requires a detached handle
+and quiesced shared callers, then releases the binding, requests and port.
+
+CreateRoute/PublishRoute/RetireRoute/Discard use a separate borrowed quick
+request, serialized with short Forbid sections. They can run in cooperating
+Tasks without waiting on the owner's reply port. They grant no capture Take
+authority and do not expose the driver's private INPUT lease. Handles and their
+complete lifetime remain caller-owned, as with other Exec resources.

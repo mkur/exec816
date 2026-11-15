@@ -3,6 +3,7 @@ USE EXEC
 USE INPUT
 USE INPUTDEVICE
 USE INPUTDRIVER
+USE INPUTDEVICESTATE AS STATE
 USE INPUTDEVICESOURCE AS SOURCE
 USE HEAPCORE
 
@@ -125,6 +126,15 @@ PROC Main()
   EXEC.AbortIO(io)
   Require(EXEC.GetMsg(port)=NULL)
   SOURCE.pauseClose=0
+  io.io_Command=INPUTDEVICE.ATTACH
+  Require(EXEC.DoIO(io)=0)
+  EXEC.Signal(INPUTDRIVER.Task(),INPUTDEVICE.STOP_MASK)
+  LET serviceState=STATE.Get()
+  WHILE serviceState.stopping=0 DO
+    EXEC.Yield()
+  OD
+  io.io_Command=INPUTDEVICE.DETACH
+  Require(EXEC.DoIO(io)=0)
   EXEC.CloseDevice(io)
   EXEC.DeleteIORequest(io)
   EXEC.DeleteMsgPort(port)

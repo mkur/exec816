@@ -145,8 +145,8 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
     FI
   ELSEIF request.io_Command=INPUTDEVICE.ATTACH
       OR request.io_Command=INPUTDEVICE.DETACH THEN
-    IF service.state<>INPUTDEVICE.RUNNING OR service.stopping<>0
-        OR opened.request<>NULL THEN
+    IF service.state<>INPUTDEVICE.RUNNING OR opened.request<>NULL
+        OR (request.io_Command=INPUTDEVICE.ATTACH AND service.stopping<>0) THEN
       request.io_Error=BYTE(EXEC.IOERR_UNITBUSY)
     ELSE
       opened.request=request

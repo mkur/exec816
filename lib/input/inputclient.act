@@ -1,0 +1,110 @@
+; Ordinary native convenience calls over input.device. Handle storage is opaque.
+; Owner-only controls wait; shared route calls use guaranteed quick BeginIO.
+MODULE INPUTCLIENT
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+
+TYPE ClientState=[
+  EXEC.MsgPort POINTER port
+  EXEC.IORequest POINTER control
+  INPUTDEVICE.Request routePacket
+]
+
+PUBLIC BYTE POINTER FUNC Open()
+
+  LET session=ClientState POINTER(EXEC.AllocMem(SIZEOF(ClientState),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF session=NULL THEN
+    RETURN(NULL)
+  FI
+  session.port=EXEC.CreateMsgPort()
+  IF session.port<>NULL THEN
+    session.control=EXEC.CreateIORequest(session.port,INPUTDEVICE.REQUEST_BYTES)
+    IF session.control<>NULL THEN
+      IF EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,session.control,0)=0 THEN
+        BEGIN
+          LET request=@session.routePacket.io
+          request.io_Message.mn_ReplyPort=session.port
+          request.io_Message.mn_Length=INPUTDEVICE.REQUEST_BYTES
+          request.io_Device=session.control.io_Device
+          request.io_Unit=session.control.io_Unit
+          RETURN(BYTE POINTER(session))
+        END
+      FI
+      EXEC.DeleteIORequest(session.control)
+    FI
+    EXEC.DeleteMsgPort(session.port)
+  FI
+  EXEC.FreeMem(BYTE POINTER(session),SIZEOF(ClientState))
+
+RETURN(NULL)
+
+PUBLIC CARD FUNC Attach(BYTE POINTER handle INPUTDEVICE.Consumer POINTER consumer)
+
+  LET session=ClientState POINTER(handle)
+  LET packet=INPUTDEVICE.Request POINTER(session.control)
+  packet.io.io_Data=BYTE POINTER(consumer)
+  packet.io.io_Length=INPUTDEVICE.CONSUMER_BYTES
+  packet.io.io_Command=INPUTDEVICE.ATTACH
+RETURN(CARD(EXEC.DoIO(session.control)))
+
+PUBLIC CARD FUNC Detach(BYTE POINTER handle)
+
+  LET session=ClientState POINTER(handle)
+  session.control.io_Command=INPUTDEVICE.DETACH
+RETURN(CARD(EXEC.DoIO(session.control)))
+
+; Stop shared route callers and detach before returning this handle's storage.
+PUBLIC PROC Close(BYTE POINTER handle)
+
+  LET session=ClientState POINTER(handle)
+  EXEC.CloseDevice(session.control)
+  EXEC.DeleteIORequest(session.control)
+  EXEC.DeleteMsgPort(session.port)
+  EXEC.FreeMem(BYTE POINTER(session),SIZEOF(ClientState))
+
+RETURN
+
+CARD FUNC Route(BYTE POINTER handle CARD command,source,flags LONGCARD tag
+    LONGCARD POINTER result)
+  CARD status
+
+  LET session=ClientState POINTER(handle)
+  LET packet=@session.routePacket
+  EXEC.Forbid()
+  packet.io.io_Command=command
+  packet.io.io_Flags=EXEC.IOF_QUICK
+  packet.source=source
+  packet.routeFlags=flags
+  packet.route=tag
+  EXEC.BeginIO(EXEC.IORequest POINTER(packet))
+  status=CARD(packet.io.io_Error)
+  IF status>=128 THEN
+    status=status OR $ff00
+  FI
+  IF result<>NULL AND status=0 THEN
+    result^=packet.route
+  FI
+  EXEC.Permit()
+
+RETURN(status)
+
+PUBLIC CARD FUNC CreateRoute(BYTE POINTER handle CARD source,flags
+    LONGCARD POINTER tag)
+
+RETURN(Route(handle,INPUTDEVICE.CREATE_ROUTE,source,flags,0,tag))
+
+PUBLIC CARD FUNC PublishRoute(BYTE POINTER handle CARD source LONGCARD tag)
+
+RETURN(Route(handle,INPUTDEVICE.PUBLISH_ROUTE,source,0,tag,NULL))
+
+PUBLIC CARD FUNC RetireRoute(BYTE POINTER handle CARD source LONGCARD tag)
+
+RETURN(Route(handle,INPUTDEVICE.RETIRE_ROUTE,source,0,tag,NULL))
+
+PUBLIC CARD FUNC Discard(BYTE POINTER handle CARD source LONGCARD tag)
+
+RETURN(Route(handle,INPUTDEVICE.DISCARD,source,0,tag,NULL))
+
+ENDMODULE

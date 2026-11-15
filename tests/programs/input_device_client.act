@@ -1,0 +1,75 @@
+MODULE INPUTDEVICECLIENT
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDRIVER
+USE INPUTCLIENT
+USE TASKSTACKS
+USE EXECLISTS
+USE HEAPCORE
+
+CARD checks,peerResult
+BYTE POINTER client
+LONGCARD tag
+INPUTDEVICE.Consumer consumer
+EXEC.Task peerTask
+PROC POINTER noFinal()
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Handler(LONGCARD context INPUT.Event POINTER event)
+
+RETURN
+
+; This Task shares only quick route authority. It has no reply port of its own.
+PROC Peer()
+
+  peerResult=INPUTCLIENT.PublishRoute(client,INPUT.SOURCE_KEYBOARD,0)
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  LET self=EXEC.FindTask(NULL)
+  LET signals=self.tc_SigAlloc
+  Require(INPUTDRIVER.Start()<>0)
+  client=INPUTCLIENT.Open()
+  Require(client<>NULL)
+  consumer.version=INPUTDEVICE.VERSION
+  consumer.sources=INPUTDEVICE.KEYBOARD_SET
+  consumer.entry=LONGCARD(ADDRESS(@Handler))
+  Require(INPUTCLIENT.Attach(client,@consumer)=INPUT.OK)
+  Require(INPUTCLIENT.CreateRoute(client,INPUT.SOURCE_KEYBOARD,0,@tag)=INPUT.OK)
+  Require(tag<>0)
+  EXEC.Forbid()
+  LET depth=self.tc_TDNestCnt
+  Require(INPUTCLIENT.PublishRoute(client,INPUT.SOURCE_KEYBOARD,tag)=INPUT.OK)
+  Require(self.tc_TDNestCnt=depth)
+  EXEC.Permit()
+  peerTask.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@peerTask.tc_MemEntry)
+  peerTask.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  peerTask.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  peerTask.tc_SPReg=ADDRESS(TASKSTACKS.StackUpper(2)-2)
+  peerTask.tc_State=EXEC.TS_INVALID
+  Require(EXEC.AddTask(@peerTask,@Peer,noFinal)<>NULL)
+  WHILE peerTask.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  Require(peerResult=INPUT.OK)
+  Require(INPUTCLIENT.RetireRoute(client,INPUT.SOURCE_KEYBOARD,tag)=INPUT.OK)
+  Require(INPUTCLIENT.Detach(client)=INPUT.OK)
+  INPUTCLIENT.Close(client)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before AND self.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE
