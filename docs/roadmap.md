@@ -895,7 +895,10 @@ The other possible milestones have no delivery order:
   AM1–AM4 direct cursor completion, common handlers, owner cleanup and native
   UPDATE cutover pass development checks. AM5's unchanged MGVIEW/Counter comparison
   passes pixels/cleanup and lowers presenter work, but does not establish a
-  consistent latency gain. GUI bookkeeping stays outside the kernel semaphore service.
+  consistent latency gain. AP1–AP2 narrow presenter UPDATE to actual UI operations;
+  ordinary key publication owns no UPDATE and the recipient's immediate TRY
+  passes. Matched scroll observations and their limits are recorded separately.
+  GUI bookkeeping stays outside the kernel semaphore service.
 - **Lightweight Exec service fast paths.** Audit frequent calls that can complete
   without the full Action! kernel dispatcher and kernel-stack transition. Start
   with `FindTask(NULL)`, which only returns the calling Task; retain serialized

@@ -5,7 +5,7 @@
 [Native semaphore contract](../../reference/semaphores.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: AM0–AM5 and AP1 complete; AP2 presenter measurement pending, 2026-11-15.
+Status: AM0–AM5 and AP1–AP2 complete, 2026-11-15.
 Implementation resumed
 at the user's request. This revision supersedes the AM1–AM4 plan committed as
 `79feb9de`. Runtime basis: `4c006f30`; donor: MagiC

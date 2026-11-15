@@ -270,3 +270,55 @@ public ABI, Service size or stack/DP reservation changes. Reserved bank-zero
 deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public Task**, including
 guards, alignment and spare capacity. No QED, catalog, demo or release build ran.
 AP2 will measure the unchanged MGVIEW/Counter APPs separately.
+
+## AP2: unchanged APPs with operation-scoped presenter ownership
+
+Only native policy was rebuilt after AP1. The C provider's 50 source and 87
+header hashes were verified before reuse; MGVIEW and Counter APPs, disk,
+document, viewport, parked pointer, ABI, ROM, emulator and PAL 8x/4 MiB
+configuration match AM5. Exact final pixels match, each action still performs
+one physical copy and one exposed-row draw, Counter advances and all four
+application executions retire. Runtime status is zero and guards remain intact.
+No C/provider application, QED, catalog, demo or release build was added.
+
+| Measurement, ms | AM5 down → AP2 down | AM5 up → AP2 up |
+| --- | --- | --- |
+| Offered key to complete-pixel observation | 141.07 → 120.93 | 140.27 → 140.62 |
+| BEGIN wall time | 18.68 → 1.99 | 1.98 → 12.55 |
+| BEGIN viewer CPU | 3.85 → 1.63 | 1.63 → 2.33 |
+| BEGIN off-Task time | 13.84 → 0 | 0 → 9.54 |
+| Two slider setters, viewer CPU | 15.23 → 15.20 | 15.19 → 15.19 |
+| Whole `set_shift`, viewer CPU | 78.28 → 71.18 | 71.48 → 72.17 |
+| Presenter CPU within already-owned UPDATE | 7.63 → 3.55 | 2.82 → 3.55 |
+
+The viewer reaches the acquisition-miss signal site once/zero times in AM5
+down/up and zero times in both AP2 actions. This is source-site evidence from
+`AESLOCKS.Call`'s failed native Attempt branch, without guessing signal arguments.
+The AP2 up BEGIN's 9.54 ms off-Task therefore is not a native semaphore contender
+wait. Ownership and total off-Task time must not be conflated.
+
+These remain two actions, not a distribution or a worst-case bound. Down's
+pixel brackets are 120.38–141.07 before and 104.29–120.93 after; up's are
+121.00–140.27 and 120.12–140.62. Both pairs overlap. The observed down result
+arrives about one PAL frame earlier, while up is effectively unchanged; this
+does not establish a typical latency gain. The operation-scoped ownership and
+ordinary key publication behavior are established separately by AP1's emitted
+regressions. Setters and renderer cost remain outside this follow-up's scope.
+
+Reproduce the frozen capture/comparison without any rebuild:
+
+```sh
+python3 tools/measure_mgview.py --cache build/aes-migration/ap2-provider \
+  --output build/aes-migration/ap2-scroll --presenter --expect-copy-units 1
+python3 tools/compare_mgview_scroll.py \
+  --before build/aes-migration/am5-scroll/results.json \
+  --after build/aes-migration/ap2-scroll/results.json \
+  --output build/aes-migration/ap2-comparison.json
+```
+
+The standalone MagiC model now records the ordinary-key/screen-manager UPDATE
+split explicitly; its source and documentation checker passes 32 pinned sources,
+67 ranges and 39 structural checks. AP1–AP2 are complete at the development tier.
+All fixed/root/kernel/idle/per-public-Task bank-zero reservation deltas remain
+zero, including guards, alignment and spare capacity. There is no public ABI
+change or hosted-system release qualification claim.

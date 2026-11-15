@@ -221,6 +221,13 @@ invokes the scheduler. Resumption continues the same call frame. Input capture,
 readiness, selection for CPU execution and API return are separate transitions.
 [AESEVT], [KERNEL]
 
+Ordinary keys follow `handle_key` → `write_key` into the keyboard recipient's
+buffer, with `event_happened` publishing readiness. That path acquires no UPDATE.
+The separate screen manager waits in `_evnt_multi` before calling `update_1`
+for its UI processing, then calls `update_0` at `scrmg_next`. Key delivery does
+not itself create a screen-manager UPDATE scope; an application drawing in
+response can still encounter an existing owner's scope. [AESEVT], [AESMAIN]
+
 Ordinary `appl_write` copies message bytes into the destination APPL's buffer
 and handles a destination already waiting for a message. Internal `send_msg`
 constructs the usual eight-word message and calls that path. MagiC also has an

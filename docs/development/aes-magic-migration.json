@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "in_progress",
+  "status": "complete",
   "tier": "development",
   "qualification": false,
   "plan": "docs/plans/gem4xe/aes-semaphore-migration-plan.md",
@@ -1978,6 +1978,539 @@
         "build/aes-migration/ap1-cache-state",
         "build/aes-migration/ap1-cache-wake"
       ]
+    },
+    "AP2": {
+      "status": "pass",
+      "capture": "build/aes-migration/ap2-scroll",
+      "results_sha256": "14676fe2cd67fdfdeaeb1bba644042653a90a1a0430951b429e69d6bf0b619be",
+      "comparison_capture": "build/aes-migration/ap2-comparison.json",
+      "comparison_sha256": "b83519d3a499215f49186bf54f44fd6bec2da207aa31e7cb3d6fe628bc4fdfd8",
+      "comparison": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "captures": {
+          "before": {
+            "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/am5-scroll/results.json",
+            "sha256": "7ce183b899aaac199933c57b622f65fc5faf54b42bbbc703c92500983e7ad865"
+          },
+          "after": {
+            "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/ap2-scroll/results.json",
+            "sha256": "14676fe2cd67fdfdeaeb1bba644042653a90a1a0430951b429e69d6bf0b619be"
+          }
+        },
+        "app_sha256": {
+          "mgview": "1135537264b057c0e7b4c385a86b311e430f55a8ed5d53ed1e6491730c5744b9",
+          "counter": "d451f2ce1682023decf4786226c034b7930004960136bf2caa892411600ee2f0"
+        },
+        "before": {
+          "down": {
+            "offered_to_pixels_upper_ms": 141.07155695333523,
+            "pixels_bracket_ms": [
+              120.38021988246058,
+              141.07155695333523
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 18.678449742662245,
+                "charged_cpu_ms": 3.8494232279218865,
+                "off_cpu_ms": 13.843728105850328,
+                "interrupt_ms": 0.9852984088900292
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 22.80889341240719,
+                "charged_cpu_ms": 15.226980217908903,
+                "off_cpu_ms": 4.337878623415691,
+                "interrupt_ms": 3.2440345710825946
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 13.682319324366807,
+                "charged_cpu_ms": 8.04118813779376,
+                "off_cpu_ms": 3.965792615794942,
+                "interrupt_ms": 1.6753385707781032
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 7.011907598054073,
+                "charged_cpu_ms": 5.779491639870929,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.2324159581831433
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 26.97838532011802,
+                "charged_cpu_ms": 6.366836345592412,
+                "off_cpu_ms": 19.097407732678867,
+                "interrupt_ms": 1.514141241846742
+              },
+              "copy": {
+                "elapsed_ms": 23.754650194042956,
+                "charged_cpu_ms": 14.841008826029528,
+                "off_cpu_ms": 5.591862741919341,
+                "interrupt_ms": 3.3217786260940905
+              },
+              "row": {
+                "elapsed_ms": 22.656083701378247,
+                "charged_cpu_ms": 17.99094701140011,
+                "off_cpu_ms": 0.6850357848202442,
+                "interrupt_ms": 3.9801009051578915
+              },
+              "shift": {
+                "elapsed_ms": 143.02777499756832,
+                "charged_cpu_ms": 78.27881851591322,
+                "off_cpu_ms": 47.52170560447941,
+                "interrupt_ms": 17.22725087717567
+              },
+              "slider_helper": {
+                "elapsed_ms": 23.55651915266733,
+                "charged_cpu_ms": 15.843505375828716,
+                "off_cpu_ms": 4.337878623415691,
+                "interrupt_ms": 3.3751351534229235
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 141.07155695333523,
+              "charged_cpu_ms": 80.57906986251355,
+              "off_cpu_ms": 42.7819966477722,
+              "interrupt_ms": 17.710490443049483
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 32.8535944819342,
+                "turns": 5,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 2
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESLOCKS_CALL": 1,
+                  "AESGATE_RELEASE": 1,
+                  "AESGATE_ENTERTASK": 2,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_CALL": 1,
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 7.627516461581186,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 2
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESGATE_ENTERTASK": 2
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+            "copy_units": 1
+          },
+          "up": {
+            "offered_to_pixels_upper_ms": 140.27085662248248,
+            "pixels_bracket_ms": [
+              120.99540584088336,
+              140.27085662248248
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 1.9835659076459833,
+                "charged_cpu_ms": 1.6326956394254695,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 0.350870268220514
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 23.535444381635205,
+                "charged_cpu_ms": 15.19399361977166,
+                "off_cpu_ms": 4.985628274871401,
+                "interrupt_ms": 3.355822486992144
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 8.159108177716002,
+                "charged_cpu_ms": 6.044512171913745,
+                "off_cpu_ms": 0.7350795554985418,
+                "interrupt_ms": 1.3795164503037163
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 6.962780121768477,
+                "charged_cpu_ms": 5.774557746987153,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.1882223747813228
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 23.27472338481968,
+                "charged_cpu_ms": 6.551011518525358,
+                "off_cpu_ms": 15.213094833650278,
+                "interrupt_ms": 1.510617032644045
+              },
+              "copy": {
+                "elapsed_ms": 14.826559568298471,
+                "charged_cpu_ms": 11.577802556884262,
+                "off_cpu_ms": 0.7340222927377326,
+                "interrupt_ms": 2.5147347186764764
+              },
+              "row": {
+                "elapsed_ms": 23.279445825151292,
+                "charged_cpu_ms": 18.524089379584115,
+                "off_cpu_ms": 0.734797618762326,
+                "interrupt_ms": 4.020558826804853
+              },
+              "shift": {
+                "elapsed_ms": 109.47934742923034,
+                "charged_cpu_ms": 71.47667184960368,
+                "off_cpu_ms": 22.40262257552028,
+                "interrupt_ms": 15.600053004106408
+              },
+              "slider_helper": {
+                "elapsed_ms": 24.233167319585156,
+                "charged_cpu_ms": 15.803329390917973,
+                "off_cpu_ms": 4.985628274871401,
+                "interrupt_ms": 3.4442096537957845
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 140.27085662248248,
+              "charged_cpu_ms": 77.18574978960471,
+              "off_cpu_ms": 46.21838255713801,
+              "interrupt_ms": 16.866724275739767
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 14.025013427237063,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 2.8249356126978666,
+                "turns": 2,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+            "copy_units": 1
+          }
+        },
+        "after": {
+          "down": {
+            "offered_to_pixels_upper_ms": 120.93281588544346,
+            "pixels_bracket_ms": [
+              104.28557935884767,
+              120.93281588544346
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 1.9858214015357092,
+                "charged_cpu_ms": 1.630792566456013,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 0.3550288350796965
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 24.227246648124627,
+                "charged_cpu_ms": 15.198927512655434,
+                "off_cpu_ms": 5.829887831469496,
+                "interrupt_ms": 3.1984313039996954
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 8.146491508770348,
+                "charged_cpu_ms": 6.03119066112755,
+                "off_cpu_ms": 0.7374055335723217,
+                "interrupt_ms": 1.3778953140704757
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 7.04764307936942,
+                "charged_cpu_ms": 5.812830658928442,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.2348124204409772
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 22.91687518237783,
+                "charged_cpu_ms": 6.542694384806993,
+                "off_cpu_ms": 14.95462933072448,
+                "interrupt_ms": 1.4195514668463542
+              },
+              "copy": {
+                "elapsed_ms": 14.804638987057695,
+                "charged_cpu_ms": 11.498155428903308,
+                "off_cpu_ms": 0.7341632611058404,
+                "interrupt_ms": 2.5723202970485453
+              },
+              "row": {
+                "elapsed_ms": 22.98651355622312,
+                "charged_cpu_ms": 18.274716336401276,
+                "off_cpu_ms": 0.734797618762326,
+                "interrupt_ms": 3.9769996010595183
+              },
+              "shift": {
+                "elapsed_ms": 109.62102063917878,
+                "charged_cpu_ms": 71.1768321306382,
+                "off_cpu_ms": 22.990883575634463,
+                "interrupt_ms": 15.453304932906105
+              },
+              "slider_helper": {
+                "elapsed_ms": 25.025480032535498,
+                "charged_cpu_ms": 15.821937215508212,
+                "off_cpu_ms": 5.829887831469496,
+                "interrupt_ms": 3.3736549855577906
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 120.93281588544346,
+              "charged_cpu_ms": 72.49650750868012,
+              "off_cpu_ms": 32.585261193240854,
+              "interrupt_ms": 15.851047183522489
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 14.483794981244158,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 3.5471165625145376,
+                "turns": 2,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+            "copy_units": 1
+          },
+          "up": {
+            "offered_to_pixels_upper_ms": 140.62496916316948,
+            "pixels_bracket_ms": [
+              120.11971033819721,
+              140.62496916316948
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 12.545338951392697,
+                "charged_cpu_ms": 2.3274582416451572,
+                "off_cpu_ms": 9.537990270363233,
+                "interrupt_ms": 0.6798904393843066
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 24.37554537137412,
+                "charged_cpu_ms": 15.189271179440045,
+                "off_cpu_ms": 5.826645559003015,
+                "interrupt_ms": 3.3596286329310567
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 8.141205194966302,
+                "charged_cpu_ms": 6.027102578452421,
+                "off_cpu_ms": 0.735854881523135,
+                "interrupt_ms": 1.3782477349907454
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 6.978427610628451,
+                "charged_cpu_ms": 5.746434557549631,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.2319930530788197
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 23.864676005351157,
+                "charged_cpu_ms": 6.54389261593591,
+                "off_cpu_ms": 15.905108552691862,
+                "interrupt_ms": 1.4156748367233876
+              },
+              "copy": {
+                "elapsed_ms": 15.077060358426172,
+                "charged_cpu_ms": 11.7287796791278,
+                "off_cpu_ms": 0.7364187549955665,
+                "interrupt_ms": 2.6118619243028056
+              },
+              "row": {
+                "elapsed_ms": 23.185772344543608,
+                "charged_cpu_ms": 18.42914718366346,
+                "off_cpu_ms": 0.7357843973390811,
+                "interrupt_ms": 4.020840763541069
+              },
+              "shift": {
+                "elapsed_ms": 121.57718229606458,
+                "charged_cpu_ms": 72.1676987900685,
+                "off_cpu_ms": 33.477802415915896,
+                "interrupt_ms": 15.931681090080197
+              },
+              "slider_helper": {
+                "elapsed_ms": 25.123030143266153,
+                "charged_cpu_ms": 15.805514400623645,
+                "off_cpu_ms": 5.826645559003015,
+                "interrupt_ms": 3.490870183639493
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 140.62496916316945,
+              "charged_cpu_ms": 77.44936063796645,
+              "off_cpu_ms": 46.10208365344901,
+              "interrupt_ms": 17.073524871754028
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 22.620630156799116,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 3.5456363946494047,
+                "turns": 2,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+            "copy_units": 1
+          }
+        },
+        "counter_progress": {
+          "before": 2,
+          "after": 2
+        },
+        "scope": "Two actions, not a distribution. PAL pixel matches are upper bounds. CPU includes gateways/bus stalls; other Tasks and IRQ/NMI are separate. Undecoded native signal sites are reported by caller, not guessed as decoded wakes."
+      },
+      "native_acquisition_miss_site_counts": {
+        "before": {
+          "down": 1,
+          "up": 0
+        },
+        "after": {
+          "down": 0,
+          "up": 0
+        }
+      },
+      "app_sha256": {
+        "mgview": "1135537264b057c0e7b4c385a86b311e430f55a8ed5d53ed1e6491730c5744b9",
+        "counter": "d451f2ce1682023decf4786226c034b7930004960136bf2caa892411600ee2f0"
+      },
+      "native_sha256": "56bfd760008e97f9507a8f030670d49fe1c6fe934b7a1d51ba1670cc6686ad9f",
+      "counter_progress": 2,
+      "runtime": {
+        "status": 0,
+        "guards": "intact"
+      },
+      "c_provider_reuse": {
+        "source_inputs": 50,
+        "header_inputs": 87,
+        "verified": true
+      },
+      "scope": "Two actions; PAL brackets overlap. No distribution, worst-case or consistent latency claim. No APP/C/QED/catalog/demo/release builds.",
+      "magic_model_checks": {
+        "status": "pass",
+        "tier": "documentation",
+        "qualification": false,
+        "sources": 32,
+        "ranges": 67,
+        "source_checks": 39,
+        "claims": 16,
+        "pages": 3,
+        "local_links": 246,
+        "evidence_sha256": "595f984edc5f2af52df3ccff7f2a1322b97cd9396a369795ee14ccfe5cb1b524",
+        "checker_sha256": "b762cf6ef171b7070ca0f7142bad2c3ac8b5688bb97d99e3f55efe062b42071e",
+        "model_sha256": "ef66e028cee2505dac75c8851a737a1ef609f97093665f4322f637e5995630ac"
+      }
     }
   }
 }
