@@ -1,0 +1,74 @@
+MODULE INPUTDEVICEABI
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDRIVER
+USE HEAPCORE
+
+CARD checks
+INPUTDEVICE.Consumer consumer
+INPUTDEVICE.Capabilities info
+INPUT.Event captured
+LONGCARD seenContext,seenRoute
+EXEC.Task POINTER seenTask
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Handler(LONGCARD context INPUT.Event POINTER event)
+
+  seenContext=context
+  seenRoute=event.route
+  seenTask=EXEC.FindTask(NULL)
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  LET self=EXEC.FindTask(NULL)
+  LET signals=self.tc_SigAlloc
+  Require(SIZEOF(INPUTDEVICE.Request)=50)
+  Require(SIZEOF(INPUTDEVICE.Consumer)=76)
+  Require(SIZEOF(INPUTDEVICE.Capabilities)=12)
+  consumer.entry=LONGCARD(ADDRESS(@Handler))
+  consumer.context=$12345678
+  captured.route=$abcd1234
+  INPUTDRIVER.Dispatch(consumer.entry,consumer.context,@captured)
+  Require(seenContext=$12345678 AND seenRoute=$abcd1234 AND seenTask=self)
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  LET io=EXEC.CreateIORequest(port,INPUTDEVICE.REQUEST_BYTES)
+  Require(io<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),1,io,0)=EXEC.IOERR_OPENFAIL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,1)=EXEC.IOERR_OPENFAIL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,0)=0)
+  LET packet=INPUTDEVICE.Request POINTER(io)
+  io.io_Command=INPUTDEVICE.QUERY
+  packet.io.io_Data=BYTE POINTER(@info)
+  packet.io.io_Length=INPUTDEVICE.CAPABILITIES_BYTES
+  Require(EXEC.DoIO(io)=0)
+  Require(info.version=INPUTDEVICE.VERSION AND info.sources=0
+      AND info.consumerBytes=76 AND info.eventBytes=24 AND info.routeSlots=16)
+  Require(packet.io.io_Actual=12 AND EXEC.GetMsg(port)=NULL)
+  EXEC.SendIO(io)
+  Require(EXEC.WaitIO(io)=0 AND EXEC.GetMsg(port)=NULL)
+  packet.io.io_Length=11
+  Require(EXEC.DoIO(io)=EXEC.IOERR_BADLENGTH)
+  io.io_Command=EXEC.CMD_INVALID
+  Require(EXEC.DoIO(io)=EXEC.IOERR_NOCMD)
+  EXEC.AbortIO(io)
+  EXEC.CloseDevice(io)
+  Require(io.io_Device=NULL AND io.io_Unit=NULL)
+  EXEC.DeleteIORequest(io)
+  EXEC.DeleteMsgPort(port)
+  Require(EXEC.AvailMem(0)=before AND self.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE

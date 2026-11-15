@@ -356,6 +356,7 @@ ENDMODULE
         init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\nRETURN\n'
     init=init.replace('RETURN\n', '  bytes=BYTE POINTER(ADDRESS(IDEMETA.BASE))\n  FOR i=0 TO 1023 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IDEMETA.NAME))\n  name(0)=$6469 name(1)=$7065 name(2)=$756c name(3)=$2e73 name(4)=$6564 name(5)=$6976 name(6)=$6563 name(7)=0\nRETURN\n')
     policy=policy.replace('MODULE TASKPOLICY\n','MODULE TASKPOLICY\nUSE IDEMETA\n',1)
+    init=init.replace('RETURN\n', '  bytes=BYTE POINTER(ADDRESS(INPUTDEVICEMETA.BASE))\n  FOR i=0 TO INPUTDEVICEMETA.BYTES-1 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(INPUTDEVICEMETA.NAME))\n  name(0)=$6e69 name(1)=$7570 name(2)=$2e74 name(3)=$6564 name(4)=$6976 name(5)=$6563 name(6)=0\nRETURN\n')
     policy=policy.replace('PUBLIC CARD FUNC Init()',init+'\nPUBLIC CARD FUNC Init()')
     if console:
         for module in ('consoledriver','consolekeys','consoleinput','consolecooked','consoleview','consoledisplay','consolebitmap','consolecontrol','consoleforeground','consolewindows','consolecapture'):
@@ -492,6 +493,10 @@ def writable_bindings(image, memory=None):
         for resident in generate_io.ABI['resident_dispatch']['residents'].values():
             arena=resident.get('storage','io_storage')
             if arena not in memory:continue
+            if 'writable_bytes' in resident:
+                base=memory[arena]['BASE']
+                ranges.append((base,base+resident['writable_bytes']))
+                continue
             if 'task_offset' in resident:
                 base=memory[arena]['BASE']+resident['task_offset']
                 ranges.append((base,base+ABI['task']['size']))

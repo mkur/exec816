@@ -109,6 +109,11 @@ CARD FUNC IOOpen(CARD saved IOOpenArgs POINTER args)
 
   request.io_Device=BYTE POINTER(0)
   request.io_Unit=BYTE POINTER(0)
+  IF IOName(args.name,BYTE POINTER(ADDRESS(INPUTDEVICEMETA.NAME)))<>0 THEN
+    MaskResult(saved,LONGCARD(IO_ROUTE_INPUT))
+    RETURN(saved)
+  FI
+
   IF IOName(args.name,BYTE POINTER(ADDRESS(TIMERMETA.NAME)))<>0 THEN
     MaskResult(saved,LONGCARD(IO_ROUTE_TIMER))
     RETURN(saved)

@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0 is recorded; IM1–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0/IM1 are recorded; IM2–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -119,6 +119,11 @@ ABI/fixture work can continue while the placement decision is pending.
 **Commit:** `Record input.device ownership and interface contracts`.
 
 ## IM1 — generate the public ABI and resident boundary
+
+Status: implemented open/query/close and unsupported-control results. The
+[current contract](../reference/input-device.md) and
+[development record](../development/input-device-im1.json) report the bounded
+raw/optimized native and C layout checks. No capture or input Task is active yet.
 
 Add a machine-readable input-device ABI definition, separate from low-level
 input.json, and generate shared Action!/C declarations. Extend static device

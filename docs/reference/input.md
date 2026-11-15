@@ -1,5 +1,8 @@
 # Native input ownership and events
 
+[Shared input.device](input-device.md) is a separate device interface being
+implemented over this capture library; its current subset does not own capture.
+
 [Reference index](README.md) · [Signals and producers](signals.md) ·
 [Console](console.md) · [Keyboard evidence](../history/gem-input.md) ·
 [Mouse evidence](../history/gem-mouse.md) · [Port-2 migration](../history/mouse-port2.md)

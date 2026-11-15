@@ -13,6 +13,7 @@ rebuild programs when the ABI changes.
 | Exec core | [Tasks](tasks.md), [signals and Wait](signals.md), [semaphores](semaphores.md), [lists](lists.md), [memory](memory.md) |
 | Communication | [Messages and ports](ports.md), [device I/O and SIO](device-io.md), [SIO client](sio-client.md), [timer.device](timer.md), [resident drivers](resident-drivers.md) |
 | Input | [Ownership, routes and events](input.md) |
+| Shared input | [input.device](input-device.md) |
 | Files and streams | [DOS](dos.md), [console/NIL streams](streams.md), [pipes](pipes.md), [MyDOS](mydos.md), [SpartaDOS](spartados.md), [RAM:](ram-filesystem.md), [filesystem writes](filesystem-writes.md), [SYS:](sys-volume.md), [ASSIGN](assigns.md) |
 | Console | [Device](console.md), [copied views](console-views.md), [instances and windows](console-windows.md), [cooked input](cooked-console.md), [foreground BREAK](foreground-break.md) |
 | Graphics | [Desktop scene and frames](desktop.md), [AES applications](aes.md), [Layers and regions](layers.md), [minimal GEM/VDI hosting](gem-vdi.md) |

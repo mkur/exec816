@@ -1,0 +1,123 @@
+; Shared input resident. Control entry points execute on the submitting Task.
+MODULE INPUTDRIVER
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDEVICEMETA AS META
+USE HEAPCORE
+
+TYPE Binding=[
+  EXEC.TaskLease owner
+  CARD state,sources
+  INPUTDEVICE.Consumer consumer
+  EXEC.IORequest POINTER request
+  BYTE reserved
+]
+TYPE DeviceState=[CARD opens,generation]
+PROC POINTER handler(LONGCARD context INPUT.Event POINTER captured)
+
+Binding POINTER FUNC BindingAt(BYTE slot)
+
+RETURN(Binding POINTER(ADDRESS(META.BINDINGS+CARD(slot)*INPUTDEVICE.BINDING_BYTES)))
+
+; Only the service's consuming Task dispatches borrowed capture records.
+PUBLIC PROC Dispatch(LONGCARD entry,context INPUT.Event POINTER captured)
+
+  LET target=ADDRESS POINTER(@handler)
+  target^=ADDRESS(entry)
+  handler(context,captured)
+
+RETURN
+
+PUBLIC INT FUNC Open(BYTE POINTER name LONGCARD unit EXEC.IORequest POINTER
+    request LONGCARD flags)
+  BYTE slot
+  Binding POINTER opened
+  DeviceState POINTER service
+
+  request.io_Error=BYTE(EXEC.IOERR_OPENFAIL)
+  IF unit<>INPUTDEVICE.UNIT OR flags<>0
+      OR request.io_Message.mn_Length<INPUTDEVICE.REQUEST_BYTES THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  LET port=request.io_Message.mn_ReplyPort
+  LET self=EXEC.FindTask(NULL)
+  IF port=NULL OR port.mp_SigTask<>self OR port.mp_Flags<>EXEC.PA_SIGNAL THEN
+    RETURN(EXEC.IOERR_OPENFAIL)
+  FI
+
+  FOR slot=0 TO INPUTDEVICE.OPEN_SLOTS-1 DO
+    opened=BindingAt(slot)
+    IF opened.state=INPUTDEVICE.CLOSED THEN
+      IF EXEC.RetainTask(self,@opened.owner)=0 THEN
+        RETURN(EXEC.IOERR_OPENFAIL)
+      FI
+      opened.state=INPUTDEVICE.OPEN
+      opened.sources=0
+      opened.request=NULL
+      service=DeviceState POINTER(ADDRESS(META.SERVICE))
+      service.opens==+1
+      request.io_Device=BYTE POINTER(ADDRESS(META.DEVICE))
+      request.io_Unit=BYTE POINTER(opened)
+      request.io_Error=0
+      RETURN(0)
+    FI
+  OD
+
+RETURN(EXEC.IOERR_OPENFAIL)
+
+PUBLIC PROC Close(EXEC.IORequest POINTER request)
+
+  LET opened=Binding POINTER(request.io_Unit)
+  LET service=DeviceState POINTER(ADDRESS(META.SERVICE))
+  opened.state=INPUTDEVICE.CLOSED
+  service.opens==-1
+  IF EXEC.ReleaseTask(@opened.owner)=0 THEN
+    HEAPCORE.Abort($fca0)
+  FI
+  request.io_Device=NULL
+  request.io_Unit=NULL
+
+RETURN
+
+PROC Finish(EXEC.IORequest POINTER request)
+
+  IF (request.io_Flags & EXEC.IOF_QUICK)<>0 THEN
+    request.io_Message.mn_Node.ln_Type=EXEC.NT_FREEMSG
+  ELSE
+    EXEC.ReplyMsg(@request.io_Message)
+  FI
+
+RETURN
+
+PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
+  INPUTDEVICE.Capabilities POINTER info
+
+  LET packet=INPUTDEVICE.Request POINTER(request)
+  packet.io.io_Actual=0
+  IF request.io_Command=INPUTDEVICE.QUERY THEN
+    IF packet.io.io_Length<INPUTDEVICE.CAPABILITIES_BYTES THEN
+      request.io_Error=BYTE(EXEC.IOERR_BADLENGTH)
+    ELSE
+      info=INPUTDEVICE.Capabilities POINTER(packet.io.io_Data)
+      info.version=INPUTDEVICE.VERSION
+      info.sources=0
+      info.consumerBytes=INPUTDEVICE.CONSUMER_BYTES
+      info.eventBytes=INPUT.EVENT_BYTES
+      info.routeSlots=INPUTDEVICE.ROUTE_SLOTS
+      info.reserved=0
+      packet.io.io_Actual=INPUTDEVICE.CAPABILITIES_BYTES
+    FI
+  ELSE
+    request.io_Error=BYTE(EXEC.IOERR_NOCMD)
+  FI
+  Finish(request)
+
+RETURN
+
+PUBLIC PROC AbortIO(EXEC.IORequest POINTER request)
+
+RETURN
+
+ENDMODULE

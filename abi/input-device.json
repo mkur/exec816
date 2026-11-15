@@ -1,0 +1,157 @@
+{
+  "abi": "exec816.input-device",
+  "version": 1,
+  "state_bytes": 1024,
+  "fields": {
+    "NAME": 0,
+    "DEVICE": 16,
+    "SERVICE": 32,
+    "BINDINGS": 256,
+    "SOURCES": 640
+  },
+  "constants": {
+    "VERSION": 1,
+    "UNIT": 0,
+    "QUERY": 9,
+    "ATTACH": 10,
+    "DETACH": 11,
+    "CREATE_ROUTE": 12,
+    "PUBLISH_ROUTE": 13,
+    "RETIRE_ROUTE": 14,
+    "DISCARD": 15,
+    "OPEN_SLOTS": 4,
+    "SOURCE_SLOTS": 2,
+    "ROUTE_SLOTS": 16,
+    "BINDING_BYTES": 96,
+    "SOURCE_BYTES": 92,
+    "CLOSED": 0,
+    "OPEN": 1,
+    "ATTACHED": 2,
+    "STOPPED": 0,
+    "STARTING": 1,
+    "RUNNING": 2,
+    "STOPPING": 3,
+    "REQUEST_MASK": 2147483648,
+    "KEYBOARD_MASK": 1073741824,
+    "STOP_MASK": 536870912,
+    "POINTER_MASK": 268435456,
+    "KEYBOARD_SET": 1,
+    "POINTER_SET": 2
+  },
+  "handler": {
+    "abi": "action65816.native.v2",
+    "arguments": [
+      {
+        "name": "context",
+        "size": 4,
+        "offset": 0,
+        "alignment": 2
+      },
+      {
+        "name": "event",
+        "size": 3,
+        "offset": 4,
+        "alignment": 1
+      }
+    ],
+    "outgoing_bytes": 7,
+    "result_bytes": 0
+  },
+  "records": {
+    "Request": {
+      "bytes": 50,
+      "fields": [
+        [
+          "io",
+          "IOStdReq",
+          0
+        ],
+        [
+          "source",
+          "u16",
+          42
+        ],
+        [
+          "routeFlags",
+          "u16",
+          44
+        ],
+        [
+          "route",
+          "u32",
+          46
+        ]
+      ]
+    },
+    "Capabilities": {
+      "bytes": 12,
+      "fields": [
+        [
+          "version",
+          "u16",
+          0
+        ],
+        [
+          "sources",
+          "u16",
+          2
+        ],
+        [
+          "consumerBytes",
+          "u16",
+          4
+        ],
+        [
+          "eventBytes",
+          "u16",
+          6
+        ],
+        [
+          "routeSlots",
+          "u16",
+          8
+        ],
+        [
+          "reserved",
+          "u16",
+          10
+        ]
+      ]
+    },
+    "Consumer": {
+      "bytes": 76,
+      "fields": [
+        [
+          "version",
+          "u16",
+          0
+        ],
+        [
+          "sources",
+          "u16",
+          2
+        ],
+        [
+          "entry",
+          "u32",
+          4
+        ],
+        [
+          "context",
+          "u32",
+          8
+        ],
+        [
+          "keyboard",
+          "InputConfig",
+          12
+        ],
+        [
+          "pointerConfig",
+          "InputConfig",
+          44
+        ]
+      ]
+    }
+  }
+}

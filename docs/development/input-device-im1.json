@@ -1,0 +1,265 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "IM1",
+  "cases": [
+    {
+      "mode": "raw",
+      "status": "pass",
+      "checks": 17,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_e": 0,
+        "switches": 1,
+        "os_busy": 0,
+        "current": 4,
+        "switching": 0,
+        "live_tasks": 0
+      },
+      "c_layout": {
+        "Request size": 50,
+        "Request io": 0,
+        "Request source": 42,
+        "Request routeFlags": 44,
+        "Request route": 46,
+        "Capabilities size": 12,
+        "Capabilities version": 0,
+        "Capabilities sources": 2,
+        "Capabilities consumerBytes": 4,
+        "Capabilities eventBytes": 6,
+        "Capabilities routeSlots": 8,
+        "Capabilities reserved": 10,
+        "Consumer size": 76,
+        "Consumer version": 0,
+        "Consumer sources": 2,
+        "Consumer entry": 4,
+        "Consumer context": 8,
+        "Consumer keyboard": 12,
+        "Consumer pointerConfig": 44
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 190,
+          "remaining_above_floor": 1090
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 24,
+          "remaining_above_floor": 1256
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 264,
+          "remaining_above_floor": 1016
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "xex_sha256": "6abe1656c677ee99a3f826b59c0772ddf1bc505ff3ce541f2f03232433140ebe"
+    },
+    {
+      "mode": "opt",
+      "status": "pass",
+      "checks": 17,
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 1,
+        "return_s": 11278,
+        "return_d": 3328,
+        "return_p": 0,
+        "return_e": 0,
+        "switches": 1,
+        "os_busy": 0,
+        "current": 4,
+        "switching": 0,
+        "live_tasks": 0
+      },
+      "c_layout": {
+        "Request size": 50,
+        "Request io": 0,
+        "Request source": 42,
+        "Request routeFlags": 44,
+        "Request route": 46,
+        "Capabilities size": 12,
+        "Capabilities version": 0,
+        "Capabilities sources": 2,
+        "Capabilities consumerBytes": 4,
+        "Capabilities eventBytes": 6,
+        "Capabilities routeSlots": 8,
+        "Capabilities reserved": 10,
+        "Consumer size": 76,
+        "Consumer version": 0,
+        "Consumer sources": 2,
+        "Consumer entry": 4,
+        "Consumer context": 8,
+        "Consumer keyboard": 12,
+        "Consumer pointerConfig": 44
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 178,
+          "remaining_above_floor": 1102
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 24,
+          "remaining_above_floor": 1256
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 258,
+          "remaining_above_floor": 1022
+        }
+      },
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "override": false,
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "on",
+        "burstio": false,
+        "accuratedisk": false,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": true,
+        "diskemu": "generic",
+        "vbxe": false,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "off",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "xex_sha256": "004892663bcaa25ac3d8b32534b3b500f670bc6d34315362f1879086a56eb627"
+    }
+  ],
+  "host": "718 host cases executed; one arena-order assertion updated and affected package suite rerun passing; five skips",
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 1024,
+    "additional_occupied_tasks": 0
+  },
+  "generated": {
+    "abi/input-device.json": "33613d1d52cd0d6c8337abe1c1e256c4a43e2980549961d567210d37a80856dc",
+    "lib/input/inputdevice.act": "fe34aee745644dfd05f825f83b54ada2f0364cc3789d8040ce2eabf06dc16d56",
+    "c/include/devices/input.h": "bd4a59e845babf902128d406e4a30d5d6f0ff1ca6e02ed114023e434ab413603"
+  }
+}

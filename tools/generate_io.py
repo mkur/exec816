@@ -61,6 +61,7 @@ def constants(abi=ABI,sio=SIO):
         'IMMEDIATE':dict(id=2,module='IOTESTDRIVER',device_offset=0,name_offset=32,test_only=True),
         'CONSOLE':dict(id=3,module='CONSOLEDRIVER',storage='console_storage',device_offset=0,name_offset=107,test_only=False,task_offset=36,lease_offset=136),
         'IDEPLUS':{'id': 5, 'module': 'IDEPLUSDRIVER', 'storage': 'ideplus_storage', 'device_offset': 16, 'name_offset': 0, 'task_offset': 512, 'lease_offset': 60, 'test_only': False},
+        'INPUT':dict(id=6,module='INPUTDRIVER',storage='input_device_storage',device_offset=16,name_offset=0,test_only=False,task_offset=54,lease_offset=42,writable_bytes=1024),
         'TIMER':dict(id=4,module='TIMERDRIVER',storage='timer_device_storage',device_offset=16,name_offset=480,test_only=False)},
         'Unsupported resident dispatch description')
     c['ROUTE_TAG']=dispatch['tag']
@@ -179,6 +180,8 @@ def reserve_metadata(memory):
     memory['upper_reservations'].append(dict(name='device-residents',address=start,size=256))
     memory['profile']['code_origin']=start+256
     memory['io_storage']=dict(BASE=start,BYTES=256)
+    from generate_input_device import reserve_metadata as reserve_input_device
+    reserve_input_device(memory)
 
 
 def registration_include(output,memory,test_device=False):
@@ -186,6 +189,8 @@ def registration_include(output,memory,test_device=False):
     write(Path(output)/'io-storage-action.inc',HEADER+''.join(
         f'CONST IS_{name}=${value:x}\n' for name,value in memory['io_storage'].items())+
         f'CONST IS_TEST_DEVICE={int(test_device)}\n',False)
+    from generate_input_device import generate as generate_input_device
+    generate_input_device(output,memory)
     switching=adapter.addresses(memory['profile'])['SWITCHING']
     meta='MODULE IORESIDENTMETA\n'+f'PUBLIC CONST TAG=${ABI["resident_dispatch"]["tag"]:x}, BASE=${memory["io_storage"]["BASE"]:x}, TEST_DEVICE={int(test_device)}, SWITCHING=${switching:x}\n'
     for name,resident in ABI['resident_dispatch']['residents'].items():

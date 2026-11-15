@@ -47,6 +47,17 @@
         "task_offset": 512,
         "lease_offset": 60,
         "test_only": false
+      },
+      "INPUT": {
+        "id": 6,
+        "module": "INPUTDRIVER",
+        "storage": "input_device_storage",
+        "device_offset": 16,
+        "name_offset": 0,
+        "test_only": false,
+        "task_offset": 54,
+        "lease_offset": 42,
+        "writable_bytes": 1024
       }
     }
   },
