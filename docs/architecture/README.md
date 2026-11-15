@@ -33,3 +33,5 @@ The [library map](../../lib/README.md) connects these parts to source files.
   at a pinned upstream revision.
 - [MagiC to Exec816 mapping](magic-exec-mapping.md): reusable foundations,
   execution/state boundaries, current deviations to review and semantic gaps.
+- [UPDATE and scene-access audit](magic-update-scene-audit.md): current ownership
+  dependencies, MagiC operation boundaries and the next proposed migration slices.

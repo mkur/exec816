@@ -162,12 +162,14 @@ Current implementations include [`AESGATE`](../../lib/aes/aesgate.act),
 [`AESWINDOWSTATE`](../../lib/aes/aeswindowstate.act) and
 [`DESKPAINT`](../../lib/desktop/deskpaint.act).
 
-The first source audit should trace the complete key → UPDATE → setter → draw
-path, assign its mutable state and device lifetimes to MagiC's responsibilities,
-and identify which existing Exec mechanisms supply each requirement. Propose any
-remaining departure with concrete costs and alternatives before implementing it.
-This inventory does not authorize an extra gate, a replacement input service or
-a new Task topology.
+The [UPDATE and scene-access audit](magic-update-scene-audit.md) traces the
+key → UPDATE → setter → draw path and inventories its mutable state, live
+readers and retained device effects. It confirms the second admission boundary
+and deferred setter painting, but the latest saved AP2 scrolls reach neither
+the native acquisition-miss nor scene-wait signal site. Existing Exec mechanisms
+cover the audited path; no new platform service is demonstrated. The audit
+proposes small migration slices without adopting a new gate or Task topology.
+Bring remaining departures to the user before implementation.
 
 ## Reported platform-service gaps
 
@@ -186,6 +188,14 @@ lifecycle parity; their platform-service design and scope remain for discussion:
 | --- | --- | --- |
 | Forced application teardown with owned-resource recovery | Native semaphores have no foreign-owner release or owner-death recovery. Removal is barred while a Task owns or awaits a semaphore; current GUI/Process stop is cooperative. | Full MagiC termination behavior needs coordinated general lifetime/resource support, or an explicitly agreed limitation. Do not emulate recovery by editing kernel ownership from AES. |
 | Automatic reclamation of process-associated heap allocations | `AllocMem`/`FreeMem` exist, but arbitrary allocations require explicit release; automatic `tc_MemEntry` reclamation is deferred. | Matching MagiC's process-associated memory cleanup needs a general allocation-lifetime facility, or an explicitly agreed limitation. Do not add an AES-private replacement allocator. |
+
+The user reviewed these gaps on 2026-11-15. General heap reclamation is not a
+prerequisite for the current C application: hosted C runtime RELEASE already
+reclaims remaining tracked `malloc` allocations, and GEMDOS `Malloc` uses that
+path. Keep the current runtime; revisit a general service only for a concrete
+uncovered requirement. Forced teardown remains unsupported and is needed for
+unresponsive-application termination, not the current cooperative drawing and
+shutdown path. See the [runtime lifetime contract](../reference/c-runtime.md).
 
 See [native semaphores](../reference/semaphores.md),
 [Tasks](../reference/tasks.md), [Process lifetime](../reference/process.md) and

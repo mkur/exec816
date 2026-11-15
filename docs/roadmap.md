@@ -893,8 +893,12 @@ The other possible milestones have no delivery order:
   starting with the extra scene gate and combined presenter. Bring architectural
   departures to the user with concrete reasons and alternatives before
   implementation. [Report missing platform services](architecture/magic-exec-mapping.md#reported-platform-service-gaps)
-  rather than building specialized substitutes; forced owner/resource cleanup
-  and automatic process-associated heap reclamation are known lifecycle gaps.
+  rather than building specialized substitutes. The
+  [UPDATE/scene audit](architecture/magic-update-scene-audit.md) confirms a second
+  scene-admission boundary and deferred setter painting; existing Exec services
+  cover that path. General heap reclamation is not required for the current C
+  application, whose runtime already sweeps allocations. Forced owner/resource
+  recovery remains a separate unsupported termination capability.
 - **AES semaphore migration.** The public native semaphore foundation is delivered
   through [NS0–NS5](plans/native-semaphore-implementation-plan.md): recursive
   ownership, FIFO direct handoff, signalless waits, Action!/C and matching loaded

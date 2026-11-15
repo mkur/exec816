@@ -1,0 +1,763 @@
+{
+  "schema_version": 1,
+  "kind": "source-audit",
+  "status": "analyzed",
+  "date": "2026-11-15",
+  "qualification": false,
+  "exec_revision": "deaf83830c5b57dff10c3f14766bdc0fbded80bc",
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "scope": "UPDATE/scene ownership and ordinary MGVIEW drawing; source inspection and saved AP2 observations, no executable migration or new guest capture.",
+  "inputs": [
+    {
+      "path": "lib/aes/aesgate.act",
+      "bytes": 5322,
+      "sha256": "2da743ea77da35f696b3f17302856760dec427d80311bf4bb1925364da99c6d3"
+    },
+    {
+      "path": "lib/aes/aeslocks.act",
+      "bytes": 9774,
+      "sha256": "08ee73a05bfedd0ec638e47e9fe5e3fac411ff544bb419013ef27de97667fe34"
+    },
+    {
+      "path": "lib/aes/aeslocal.act",
+      "bytes": 8876,
+      "sha256": "2ae3425ea80b8b0abdac004078c7a87d3dbfc24a0cd6a35e7316fe8519143431"
+    },
+    {
+      "path": "lib/aes/aessystem.act",
+      "bytes": 8005,
+      "sha256": "95830bfd2ae8d29b18c4b9606224f00de8df5ddad77c4476e03a8dfafa918909"
+    },
+    {
+      "path": "lib/aes/aesstate.act",
+      "bytes": 2977,
+      "sha256": "1bffd93dec0429a6f723d4bef62daadda7109b50e9eb13781d329990fea035e1"
+    },
+    {
+      "path": "lib/aes/aeswindow.act",
+      "bytes": 20335,
+      "sha256": "940ac3758c6641268d5d4e1909bf55cabe5c0a47053e6131c37a288546800631"
+    },
+    {
+      "path": "lib/aes/aeswindowstate.act",
+      "bytes": 13111,
+      "sha256": "475f3c81653d2cbd0b0a98520fcefa06372d3d11024f1218e5e73d3bd5dd3fb7"
+    },
+    {
+      "path": "lib/aes/aessnapshot.act",
+      "bytes": 8756,
+      "sha256": "2fdc40db354178bbbbb713c0d88aa18aa60f0cf7b55e35e56debf68d0c831df5"
+    },
+    {
+      "path": "lib/aes/aesdefer.act",
+      "bytes": 1044,
+      "sha256": "cf063f3699907eec02598ff46ce491c0a891597ac049d70a1d77aca515320640"
+    },
+    {
+      "path": "lib/aes/aescore.act",
+      "bytes": 13847,
+      "sha256": "6ee21d347e76685ae7a0d06830d6551b33dc24de0f846241c2aecdbd5b5effea"
+    },
+    {
+      "path": "lib/aes/aeshost.act",
+      "bytes": 3286,
+      "sha256": "4c04377a1deb27036b825378356a82b135860ec5de7562d53433ea431c82ef6c"
+    },
+    {
+      "path": "lib/aes/aesroutes.act",
+      "bytes": 1865,
+      "sha256": "0eeeead0ad9cfe768ba9057af2a74b5376926a99677f85e735987a19621520fd"
+    },
+    {
+      "path": "lib/aes/aescursor.act",
+      "bytes": 8302,
+      "sha256": "6cd98848771d5160bea70dad4396ca08865b919b4d81c1f476f3a5cd114ddd77"
+    },
+    {
+      "path": "lib/aes/aesmouse.act",
+      "bytes": 9518,
+      "sha256": "3da8b95c8f178ebce471503bdb841c569210f73fb2c0488cf4027728f2745f3a"
+    },
+    {
+      "path": "lib/aes/aesmenu.act",
+      "bytes": 7897,
+      "sha256": "ad5923debbdd5aef05892baa64eb792fb7d4ee1e8fe9fc8d50946c989e2021d9"
+    },
+    {
+      "path": "lib/desktop/deskhost.act",
+      "bytes": 8687,
+      "sha256": "09886a8e57acde877f333e99818e1076998020c1df21fb5689db834a434a4b6b"
+    },
+    {
+      "path": "lib/desktop/deskinput.act",
+      "bytes": 12027,
+      "sha256": "09a3d3a9244424f1e657b9df74a2525078b36a9088f332d2974629ff48e6e6f0"
+    },
+    {
+      "path": "lib/desktop/deskpaint.act",
+      "bytes": 13923,
+      "sha256": "b31f297ae8694a09ff9bc192a91a03ec16d3d659ab7b986ded438f99036e37a4"
+    },
+    {
+      "path": "lib/desktop/deskdrag.act",
+      "bytes": 17162,
+      "sha256": "1040eabf98fc220881d96e4f855090836b34abbda948cf62d07b54d485264d8e"
+    },
+    {
+      "path": "lib/desktop/deskmenu.act",
+      "bytes": 22397,
+      "sha256": "1edb38df0423869befee15f14c77c10267867b8cd3981d52741116d28f60cbda"
+    },
+    {
+      "path": "lib/desktop/deskcache.act",
+      "bytes": 13588,
+      "sha256": "9ec1f3e24f42496e7d543cad2973890bf4dc83a97c1a3616f5b8ea8165f0597f"
+    },
+    {
+      "path": "lib/desktop/deskmenucache.act",
+      "bytes": 17239,
+      "sha256": "d021834ef75b0798fea8d165e27ce505a5b79f51db1f907d20d4dfcb21617d77"
+    },
+    {
+      "path": "lib/desktop/deskmove.act",
+      "bytes": 4680,
+      "sha256": "4b8704dddb9b55f186778914259d163eecb7ab734de5bd8a39d3b90fe7053140"
+    },
+    {
+      "path": "lib/desktop/deskmenurender.act",
+      "bytes": 792,
+      "sha256": "0377545fd2dea52993e6c7e010a6dec48d3798ebbf253645ebef0573f90d882d"
+    },
+    {
+      "path": "lib/desktop/deskroutes.act",
+      "bytes": 585,
+      "sha256": "09d3c8481427af27bf33e522447358f37e79da9c31bdb27b676afb16b060c990"
+    },
+    {
+      "path": "lib/desktop/desktop-frame.c",
+      "bytes": 10552,
+      "sha256": "732e84d227c32f48e3c42c5f8d6b8886912d14e16f76087d27a3857c0d7e2464"
+    },
+    {
+      "path": "lib/console/consoleview.act",
+      "bytes": 5982,
+      "sha256": "936478dc4ef0cd1f9567d9882c4451db989d720e730e311e253c46829b0e84a4"
+    },
+    {
+      "path": "lib/console/consolecontrol.act",
+      "bytes": 2835,
+      "sha256": "9e5fc297ee404441efe75d13d19f9039977d205ad12f5410847f8d33a19bdc22"
+    },
+    {
+      "path": "lib/console/consolebitmap.act",
+      "bytes": 10477,
+      "sha256": "01b16fe57a56a1dadbfdb8678cf1ccdbb82a2dcf144c035de3908ce20ccedd4d"
+    },
+    {
+      "path": "lib/console/consoleinput.act",
+      "bytes": 2120,
+      "sha256": "71f32e9fcc635ebdb1da6a8801079b19ce7de5c978e2f9e65fa214bf98689b52"
+    },
+    {
+      "path": "lib/console/console-bitmap.c",
+      "bytes": 3579,
+      "sha256": "ee02cb67e108d0096927a954ad4635c87ecac2401ac9dc1d8ce3fa4c0d9636af"
+    },
+    {
+      "path": "lib/display/display-access.inc",
+      "bytes": 8216,
+      "sha256": "f779475038721027d7840312f075c1797ff9543a8df966efa7942d93126da97e"
+    },
+    {
+      "path": "c/calypsi/aes.c",
+      "bytes": 19778,
+      "sha256": "1090a57852cab2edd6bbadf664fa1430fbc9acc86fb4dbf5797a08aea0e3f515"
+    },
+    {
+      "path": "c/calypsi/aes-windows.c",
+      "bytes": 13887,
+      "sha256": "8ae95396dae62d292faf2154e485c4607959d9644fa2a056a4492348176e5ce0"
+    },
+    {
+      "path": "c/calypsi/aes-input.c",
+      "bytes": 12045,
+      "sha256": "87c795226e31105d9c8ca902fe03a3d753e08d9d0c5ac845c38b1f5b4b53cc78"
+    },
+    {
+      "path": "c/calypsi/aes-local.c",
+      "bytes": 638,
+      "sha256": "21591bc31ef54b9d0c13892782e0c8a660b7da0c5e4b97a4ab4f75827ae34d4e"
+    },
+    {
+      "path": "c/runtime/allocation.c",
+      "bytes": 2937,
+      "sha256": "7b609cb6d250c570e33f61ecbcae4d662681649a8550735fe5520cd0911f195c"
+    },
+    {
+      "path": "c/runtime/scope.c",
+      "bytes": 3868,
+      "sha256": "13b64baa39904c6278c104f50e345633e4dac2423d310fc0c3cf76a2b4d9fb35"
+    },
+    {
+      "path": "c/compat/gemdos/allocation.c",
+      "bytes": 795,
+      "sha256": "afab48d141dd4ac36769bb2f2f961beca91ef13e6839efbcd1c95a5e0991dfac"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-drawing.h",
+      "bytes": 6221,
+      "sha256": "b43085db432e910dbe3e2c447bdf0bbc7bb6ff925ed6ad872b7be7cfd4399c91"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-vbxe.c",
+      "bytes": 63692,
+      "sha256": "c0c9bfe6209538a093cdb24285f29ab317ea5d73b00104e7c57f93ffc5fea838"
+    },
+    {
+      "path": "ports/gem4xe/inputs.json",
+      "bytes": 5688,
+      "sha256": "ae3cea7c132a9e846c8cbfd015368ec4e1c0f3c3db28585317022ea8f3ef6bf0"
+    },
+    {
+      "path": "ports/magic/mgview/native.patch",
+      "bytes": 25711,
+      "sha256": "78656fd871fc7d055c190cc3c6c97de5de83ea0b002bab2329df0c867b3e821a"
+    }
+  ],
+  "magic_sources": [
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESMAIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESMAIN.S",
+      "sha256": "180fd7bc8453ecbdddf1bedce4932a299c81c9dfca269e4d3f891e74945927cc",
+      "bytes": 327687,
+      "encoding": "utf-8",
+      "lines": 11576,
+      "id": "AESMAIN",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESMAIN.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESEVT.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESEVT.S",
+      "sha256": "ca75b9b85de9631caaa838ae8a3215c05ac72cbc1b0595cdeef275292ba89c81",
+      "bytes": 111779,
+      "encoding": "utf-8",
+      "lines": 3792,
+      "id": "AESEVT",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESEVT.S"
+    },
+    {
+      "path": "MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "url": "https://gitlab.com/api/v4/projects/5705003/repository/files/MagiC%2FKERNEL%2FAES%2FSRC%2FAESWIN.S/raw?ref=28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "local_path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESWIN.S",
+      "sha256": "29d9ac92d87f66c08c2b428e118e4478171a1272c37627ece557b1e64821ae0a",
+      "bytes": 174460,
+      "encoding": "utf-8",
+      "lines": 5860,
+      "id": "AESWIN",
+      "browse_url": "https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESWIN.S"
+    }
+  ],
+  "magic_ranges": [
+    {
+      "source": "AESEVT",
+      "first": 1433,
+      "last": 1557,
+      "locator": "update_0:",
+      "normalized_sha256": "7fc669705cf2fa66716a0235b2d5f39a2b39bc780ff3957e12a54816e6acaf48"
+    },
+    {
+      "source": "AESEVT",
+      "first": 1646,
+      "last": 1681,
+      "locator": "handle_key:",
+      "normalized_sha256": "e2f35b9155274330086b0a15ad24fb8064e69d2995b377051f434dd1155c5615"
+    },
+    {
+      "source": "AESWIN",
+      "first": 1957,
+      "last": 2009,
+      "locator": "_wind_get:",
+      "normalized_sha256": "4089001157209ed5a16e8a721c40e0226eca0f0646d56fc23cc264e105bcc0ae"
+    },
+    {
+      "source": "AESWIN",
+      "first": 2298,
+      "last": 2326,
+      "locator": "ws_normal:",
+      "normalized_sha256": "e650258a64a7bd8ea6b4080cb6137c03e3a187076a638076654196036fc8b646"
+    },
+    {
+      "source": "AESWIN",
+      "first": 2768,
+      "last": 2796,
+      "locator": "ws_slend:",
+      "normalized_sha256": "eab4ab410f523f0e75cfb003a5d60c0e87e3274bec28adcc4f8ef9b63e6f9a21"
+    },
+    {
+      "source": "AESMAIN",
+      "first": 4235,
+      "last": 4280,
+      "locator": "screnmgr:",
+      "normalized_sha256": "4dfb3694f62b26762de38f502beb6ab523e0d3ccd0b89329b003029c3362bbe1"
+    },
+    {
+      "source": "AESMAIN",
+      "first": 4453,
+      "last": 4455,
+      "locator": "scrmg_next:",
+      "normalized_sha256": "3c26e54fcbba9942e73c81b48c9167c84e00478661e43f6f5304873c61af73b5"
+    },
+    {
+      "source": "AESMAIN",
+      "first": 7200,
+      "last": 7208,
+      "locator": "gm_hide:",
+      "normalized_sha256": "beb5a96bcdce8a58c16418abcdbfd72e339769f21db658df0c73f9e5b2ca0845"
+    },
+    {
+      "source": "AESMAIN",
+      "first": 7244,
+      "last": 7283,
+      "locator": "_graf_mouse:",
+      "normalized_sha256": "f269aa30d85cca7708cb6d8a6167798d34f4eae1a150678530a7d18b909376f8"
+    }
+  ],
+  "gate_inventory": {
+    "module_count": 12,
+    "site_count": 54,
+    "counts": {
+      "Configure": 1,
+      "EnterTask": 8,
+      "Leave": 3,
+      "Offer": 1,
+      "Reclaim": 1,
+      "Reenter": 3,
+      "Release": 17,
+      "Resume": 5,
+      "Suspend": 5,
+      "SystemOwned": 10
+    },
+    "sites": [
+      {
+        "path": "lib/aes/aescore.act",
+        "line": 379,
+        "routine": "Dispatch",
+        "call": "Suspend"
+      },
+      {
+        "path": "lib/aes/aescore.act",
+        "line": 381,
+        "routine": "Dispatch",
+        "call": "Resume"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 52,
+        "routine": "Policy",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 56,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 70,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 76,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 83,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 87,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 131,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 134,
+        "routine": "Policy",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 173,
+        "routine": "DrawingReady",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 178,
+        "routine": "DrawingReady",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 183,
+        "routine": "DrawingReady",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 206,
+        "routine": "Depart",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 212,
+        "routine": "Depart",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 217,
+        "routine": "Depart",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 224,
+        "routine": "Depart",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocal.act",
+        "line": 227,
+        "routine": "Depart",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 284,
+        "routine": "Call",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 287,
+        "routine": "Call",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 296,
+        "routine": "Call",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 298,
+        "routine": "Call",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 308,
+        "routine": "Call",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 322,
+        "routine": "Call",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/aes/aeslocks.act",
+        "line": 326,
+        "routine": "Call",
+        "call": "Release"
+      },
+      {
+        "path": "lib/aes/aesroutes.act",
+        "line": 54,
+        "routine": "Retire",
+        "call": "Leave"
+      },
+      {
+        "path": "lib/aes/aesroutes.act",
+        "line": 60,
+        "routine": "Retire",
+        "call": "Reenter"
+      },
+      {
+        "path": "lib/aes/aessystem.act",
+        "line": 53,
+        "routine": "Start",
+        "call": "Configure"
+      },
+      {
+        "path": "lib/aes/aessystem.act",
+        "line": 87,
+        "routine": "Run",
+        "call": "Reclaim"
+      },
+      {
+        "path": "lib/aes/aessystem.act",
+        "line": 228,
+        "routine": "Run",
+        "call": "Offer"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 177,
+        "routine": "DiscardRoute",
+        "call": "Leave"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 179,
+        "routine": "DiscardRoute",
+        "call": "Reenter"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 203,
+        "routine": "Open",
+        "call": "Leave"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 205,
+        "routine": "Open",
+        "call": "Reenter"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 256,
+        "routine": "Close",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/aes/aeswindow.act",
+        "line": 389,
+        "routine": "SetBounds",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/console/consolebitmap.act",
+        "line": 82,
+        "routine": "Run",
+        "call": "Suspend"
+      },
+      {
+        "path": "lib/console/consolebitmap.act",
+        "line": 112,
+        "routine": "Run",
+        "call": "Resume"
+      },
+      {
+        "path": "lib/console/consoleinput.act",
+        "line": 69,
+        "routine": "Service",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/console/consoleview.act",
+        "line": 100,
+        "routine": "InputWindow",
+        "call": "EnterTask"
+      },
+      {
+        "path": "lib/console/consoleview.act",
+        "line": 126,
+        "routine": "InputWindow",
+        "call": "Release"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 170,
+        "routine": "KeyReady",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 178,
+        "routine": "RouteKey",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 235,
+        "routine": "ReplayKeys",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 348,
+        "routine": "Fresh",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 374,
+        "routine": "Service",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 384,
+        "routine": "Service",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskinput.act",
+        "line": 418,
+        "routine": "Service",
+        "call": "SystemOwned"
+      },
+      {
+        "path": "lib/desktop/deskmenurender.act",
+        "line": 32,
+        "routine": "Run",
+        "call": "Suspend"
+      },
+      {
+        "path": "lib/desktop/deskmenurender.act",
+        "line": 34,
+        "routine": "Run",
+        "call": "Resume"
+      },
+      {
+        "path": "lib/desktop/deskroutes.act",
+        "line": 10,
+        "routine": "Create",
+        "call": "Suspend"
+      },
+      {
+        "path": "lib/desktop/deskroutes.act",
+        "line": 12,
+        "routine": "Create",
+        "call": "Resume"
+      },
+      {
+        "path": "lib/desktop/deskroutes.act",
+        "line": 18,
+        "routine": "Retire",
+        "call": "Suspend"
+      },
+      {
+        "path": "lib/desktop/deskroutes.act",
+        "line": 20,
+        "routine": "Retire",
+        "call": "Resume"
+      }
+    ]
+  },
+  "saved_observations": {
+    "path": "build/aes-migration/ap2-comparison.json",
+    "sha256": "b83519d3a499215f49186bf54f44fd6bec2da207aa31e7cb3d6fe628bc4fdfd8",
+    "capture_inputs": {
+      "before": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/am5-scroll/results.json",
+        "sha256": "7ce183b899aaac199933c57b622f65fc5faf54b42bbbc703c92500983e7ad865"
+      },
+      "after": {
+        "path": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/ap2-scroll/results.json",
+        "sha256": "14676fe2cd67fdfdeaeb1bba644042653a90a1a0430951b429e69d6bf0b619be"
+      }
+    },
+    "app_sha256": {
+      "mgview": "1135537264b057c0e7b4c385a86b311e430f55a8ed5d53ed1e6491730c5744b9",
+      "counter": "d451f2ce1682023decf4786226c034b7930004960136bf2caa892411600ee2f0"
+    },
+    "actions": [
+      {
+        "direction": "down",
+        "failed_update_signal_site_visits": 0,
+        "scene_wait_signal_site_visits": 0,
+        "setter_calls": 2,
+        "setter_viewer_cpu_ms": 15.198927512655434,
+        "setter_wall_ms": 24.227246648124627,
+        "setter_off_task_ms": 5.829887831469496,
+        "presenter_owned_update_cpu_ms": 3.5471165625145376,
+        "owned_update_posts": [
+          {
+            "caller": "AESGATE_RELEASE",
+            "mask": 524288,
+            "count": 1
+          }
+        ]
+      },
+      {
+        "direction": "up",
+        "failed_update_signal_site_visits": 0,
+        "scene_wait_signal_site_visits": 0,
+        "setter_calls": 2,
+        "setter_viewer_cpu_ms": 15.189271179440045,
+        "setter_wall_ms": 24.37554537137412,
+        "setter_off_task_ms": 5.826645559003015,
+        "presenter_owned_update_cpu_ms": 3.5456363946494047,
+        "owned_update_posts": [
+          {
+            "caller": "AESGATE_RELEASE",
+            "mask": 524288,
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Two saved actions; not a latency distribution or worst-case bound.",
+      "Signal-site visits are branch observations; off-Task time is not synonymous with contention.",
+      "No nested-helper CPU attribution or speedup estimate is established."
+    ]
+  },
+  "decisions": {
+    "heap_reclamation": "User reviewed: existing hosted C cleanup covers the current C application; no new general heap service is required for this port.",
+    "forced_termination": "Unsupported general capability; not a prerequisite for the cooperative drawing path.",
+    "migration": "Proposals only; no executable change or new architectural departure adopted."
+  },
+  "documentation_pages": [
+    "docs/architecture/magic-update-scene-audit.md",
+    "docs/architecture/README.md",
+    "docs/architecture/magic-exec-mapping.md",
+    "docs/roadmap.md"
+  ],
+  "validation": {
+    "tier": "development-documentation",
+    "status": "pass",
+    "exec_input_hashes": 43,
+    "magic_source_hashes": 3,
+    "magic_ranges": 9,
+    "gate_modules": 12,
+    "gate_call_sites": 54,
+    "saved_actions": 2,
+    "documentation_pages": 4,
+    "local_links": 351,
+    "guest_executions": 0,
+    "builds": 0
+  },
+  "resource_impact": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_public_task_bank_zero_delta": 0,
+    "upper_memory_delta": 0,
+    "vram_delta": 0,
+    "includes": "Guards, alignment and unused reserved capacity; documentation-only change."
+  }
+}
