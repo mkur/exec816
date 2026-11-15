@@ -26,7 +26,7 @@ PUBLIC BYTE FUNC MouseBlocked()
   LET service=AESSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0
-    AND (service.mouseOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
+    AND (service.updateOwner<>0 OR service.lockCount<>0 OR service.windowPending<>0))
 
 PUBLIC BYTE FUNC NativeReady()
 
@@ -43,6 +43,13 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code BYTE ready,beforeWindows)
 
+  IF service.updateOwner=client.id THEN
+    RETURN(1)
+  FI
+  IF service.updateOwner<>0 THEN
+    RETURN(0)
+  FI
+
   ; Work capture routes input until release. Another client may paint while
   ; that recipient waits; explicit MCTRL must still respect the capture.
   IF (code=AESTYPES.BEG_MCTRL AND AESMOUSE.LockReady(client.id)=0)
@@ -52,17 +59,6 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
 
   IF service.mouseOwner<>0 AND service.mouseOwner<>client.id THEN
     RETURN(0)
-  FI
-
-  IF code=AESTYPES.BEG_UPDATE AND service.updateOwner<>0
-      AND service.updateOwner<>client.id THEN
-    RETURN(0)
-  FI
-
-  ; Existing owners may recurse while native work awaits their release.
-  IF (code=AESTYPES.BEG_UPDATE AND service.updateOwner=client.id)
-      OR (code=AESTYPES.BEG_MCTRL AND service.mouseOwner=client.id) THEN
-    RETURN(1)
   FI
 
   ; A window/exit waiter can itself depend on this mouse owner. Its UPDATE
@@ -78,84 +74,80 @@ BYTE FUNC Eligible(AESSTATE.Service POINTER service
 
 RETURN(ready)
 
+; UPDATE is the common recursive resource; MCTRL adds a routing overlay.
 CARD FUNC Acquire(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code INT window)
+    AESSTATE.Client POINTER client CARD code INT window BYTE painting)
 
-  IF code=AESTYPES.BEG_UPDATE THEN
-    IF service.updates=$ffff THEN
-      RETURN(AESTYPES.OVERFLOW)
-    FI
-
-    service.updateOwner=client.id
-    IF service.updates=0 THEN
-      AESSTATE.mouseDirty=1
-      service.updateWindow=window
-      AESWINDOWSTATE.BeginUpdate(client)
-    FI
-
-    service.updates==+1
-    AESWINDOWSTATE.Updates(client,service.updates)
-  ELSE
-    IF service.mouseHolds=$ffff THEN
-      RETURN(AESTYPES.OVERFLOW)
-    FI
-
+  IF service.updates=$ffff THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+  IF code=AESTYPES.BEG_MCTRL AND service.mouseHolds=$ffff THEN
+    RETURN(AESTYPES.OVERFLOW)
+  FI
+  IF painting<>0 AND service.updateHolds+service.mouseHolds=0 THEN
+    service.updateWindow=window
+    AESWINDOWSTATE.BeginUpdate(client)
+  FI
+  service.updateOwner=client.id
+  service.updates==+1
+  IF code=AESTYPES.BEG_MCTRL THEN
     IF service.mouseHolds=0 THEN
       AESSTATE.mouseDirty=1
     FI
+    service.mouseOwner=client.id
     service.mouseHolds==+1
+  ELSEIF painting<>0 THEN
+    service.updateHolds==+1
   FI
-
-  service.mouseOwner=client.id
-  AESMOUSE.Refresh()
+  IF painting<>0 THEN
+    AESWINDOWSTATE.Updates(client,service.updateHolds+service.mouseHolds)
+  FI
+  IF code=AESTYPES.BEG_MCTRL AND service.mouseHolds=1 THEN
+    AESMOUSE.Refresh()
+  FI
 
 RETURN(AESTYPES.OK)
 
-; Complete a release synchronously, including the final paint journal.
+; Publication and the journal finish before the resource is made available.
 CARD FUNC Release(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code)
+    AESSTATE.Client POINTER client CARD code BYTE painting)
 
-  IF code=AESTYPES.END_UPDATE THEN
-    IF service.updateOwner<>client.id OR service.updates=0 THEN
-      RETURN(AESTYPES.IDENTITY)
-    FI
-
-    service.updates==-1
-    AESWINDOWSTATE.Updates(client,service.updates)
-    IF service.updates=0 THEN
-      AESSTATE.mouseDirty=1
-      AESWINDOWSTATE.EndUpdate(client)
-      service.updateOwner=0
-      service.updateWindow=0
-    FI
-  ELSE
+  IF service.updateOwner<>client.id OR service.updates=0 THEN
+    RETURN(AESTYPES.IDENTITY)
+  FI
+  IF code=AESTYPES.END_MCTRL THEN
     IF service.mouseOwner<>client.id OR service.mouseHolds=0 THEN
       RETURN(AESTYPES.IDENTITY)
     FI
-
     service.mouseHolds==-1
     IF service.mouseHolds=0 THEN
       AESSTATE.mouseDirty=1
+      service.mouseOwner=0
+    FI
+  ELSEIF painting<>0 THEN
+    IF service.updateHolds=0 THEN
+      RETURN(AESTYPES.IDENTITY)
+    FI
+    service.updateHolds==-1
+  FI
+  IF painting<>0 THEN
+    AESWINDOWSTATE.Updates(client,service.updateHolds+service.mouseHolds)
+    IF service.updateHolds+service.mouseHolds=0 THEN
+      AESWINDOWSTATE.EndUpdate(client)
+      service.updateWindow=0
     FI
   FI
-
-  IF service.updates=0 AND service.mouseHolds=0 THEN
-    service.mouseOwner=0
+  service.updates==-1
+  IF service.updates=0 THEN
+    service.updateOwner=0
   FI
-
-  AESMOUSE.Refresh()
+  IF code=AESTYPES.END_MCTRL AND service.mouseHolds=0 THEN
+    AESMOUSE.Refresh()
+  FI
 
 RETURN(AESTYPES.OK)
 
-; Runs under exclusive presenter policy ownership. A pending result changes no
-; ownership and does not enqueue a request or wait.
-PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request
-    BYTE ready,queued)
-  CARD code,status
-
-  request.intout(0)=0
-  code=CARD(request.intin(0))
+PUBLIC CARD FUNC Decode(CARD code)
   IF (code & $fcfc)<>0
       OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
     RETURN(AESTYPES.UNSUPPORTED)
@@ -166,13 +158,50 @@ PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
     RETURN(AESTYPES.UNSUPPORTED)
   FI
 
+RETURN(AESTYPES.OK)
+
+; Recursion uses the common transitions without scene admission. Only outer
+; painting/routing transitions need the guarded policy path.
+PUBLIC BYTE FUNC Nested(AESSTATE.Service POINTER service
+    AESTYPES.Request POINTER request BYTE painting)
+  CARD code,status
+
+  IF service.updateOwner<>request.client OR service.updates=0 THEN
+    RETURN(0)
+  FI
+  code=CARD(request.intin(0)) & $ff
+  LET depth=service.updateHolds+service.mouseHolds
+  IF code=AESTYPES.BEG_UPDATE AND (painting=0 OR depth<>0) THEN
+    status=Acquire(service,AESSTATE.Find(service,request.client),code,0,painting)
+  ELSEIF code=AESTYPES.END_UPDATE AND service.updates>1
+      AND ((painting=0 AND service.updates>depth)
+        OR (painting<>0 AND service.updateHolds<>0 AND depth>1)) THEN
+    status=Release(service,AESSTATE.Find(service,request.client),code,painting)
+  ELSE
+    RETURN(0)
+  FI
+  request.status=status
+  request.intout(0)=INT(status=AESTYPES.OK)
+
+RETURN(1)
+
+; Runs under exclusive presenter policy ownership. A pending result changes no
+; ownership and does not enqueue a request or wait. The caller decodes once.
+PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request
+    BYTE ready,queued,painting)
+  CARD code,status
+
+  request.intout(0)=0
+  code=CARD(request.intin(0))
+
   IF (code & 1)<>0 THEN
     code=code & $ff
     IF Eligible(service,client,code,ready,0)<>0 AND (queued=0
-        OR service.mouseOwner=client.id) THEN
+        OR service.updateOwner=client.id) THEN
       status=Acquire(service,client,code,
           IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
-            request.intin(1) ELSE INT(0) FI)
+            request.intin(1) ELSE INT(0) FI,painting)
       IF status=AESTYPES.OK THEN
         request.intout(0)=1
       FI
@@ -187,7 +216,7 @@ PUBLIC CARD FUNC Attempt(AESSTATE.Service POINTER service
     RETURN(AESTYPES.PENDING)
   FI
 
-  status=Release(service,client,code)
+  status=Release(service,client,code,painting)
   IF status=AESTYPES.OK THEN
     request.intout(0)=1
   FI
@@ -197,7 +226,7 @@ RETURN(status)
 ; Acquire only in the oldest currently eligible caller. The system Task wakes
 ; that caller without taking ownership or changing the BEGIN snapshot.
 PUBLIC CARD FUNC Continue(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER waiting)
+    AESSTATE.Client POINTER waiting BYTE painting)
   BYTE position
   CARD code,status
 
@@ -214,7 +243,7 @@ PUBLIC CARD FUNC Continue(AESSTATE.Service POINTER service
         FI
         status=Acquire(service,client,code,
             IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
-              request.intin(1) ELSE INT(0) FI)
+              request.intin(1) ELSE INT(0) FI,painting)
         AESWAIT.RemoveLock(service,position)
         client.pending=NULL
         request.intout(0)=INT(status=AESTYPES.OK)
@@ -253,6 +282,8 @@ PUBLIC PROC Retire(AESSTATE.Service POINTER service
     AESSTATE.mouseDirty=1
     service.updateOwner=0
     service.updates=0
+    service.updateHolds=0
+    service.paintPrepared=1
     service.updateWindow=0
   FI
 

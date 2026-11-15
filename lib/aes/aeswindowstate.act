@@ -123,6 +123,10 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   FI
   view.pixelsReady=status
   view.paintEpoch=layer.paintEpoch
+  LET service=AESSTATE.Get()
+  view.updates=IF service<>NULL AND client.owner=service.updateOwner
+      AND (service.updateWindow=0 OR view.handle=service.updateWindow) THEN
+        service.updateHolds+service.mouseHolds ELSE CARD(0) FI
   view.revision==+1
   EXEC.Permit()
   client.geometryKind=client.frameKind
@@ -162,28 +166,38 @@ PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
 
 RETURN
 
-; Invalidate cached images even when an update has no visible drawing calls.
+; Resource entry only starts a journal. Cache invalidation is reconciled at
+; END or before a scene mutation could reuse pixels from the active scope.
 PUBLIC PROC BeginUpdate(AESSTATE.Client POINTER client)
-  BYTE index
 
   LET service=AESSTATE.Get()
-  LET desktop=DESKSTATE.Get()
   client.binding.paintCount=0
   client.binding.paintFailed=0
   client.binding.invalidationCount=0
+  service.paintPrepared=0
+
+RETURN
+
+PUBLIC PROC PrepareUpdate(AESSTATE.Client POINTER client)
+  BYTE index
+
+  LET service=AESSTATE.Get()
+  IF service.paintPrepared<>0 THEN
+    RETURN
+  FI
+  LET desktop=DESKSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(index).owner=client.id
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
         LET window=service.windows(index)
-        service.windows(index).view.changed=0
         LAYERS.Touch(@desktop.scene,window.layer)
         DESKCACHE.BeginChange(desktop,window)
       END
     FI
   OD
-  SnapshotAll(client)
+  service.paintPrepared=1
 
 RETURN
 
@@ -192,6 +206,7 @@ RETURN
 PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   BYTE index,report,same,accepted,complete,painted
 
+  PrepareUpdate(client)
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
   LET request=client.binding
@@ -315,6 +330,11 @@ PUBLIC PROC Sync()
     RETURN
   FI
 
+  FOR slot=0 TO AESTYPES.WINDOWS-1 DO
+    IF service.windows(slot).owner<>0 THEN
+      Snapshot(service.windows(slot))
+    FI
+  OD
   AESSTATE.mouseDirty=1
   top=0
   slot=0
@@ -419,6 +439,7 @@ RETURN
 PUBLIC PROC Handoff(DESKTYPES.Window POINTER window)
 
   LET client=FindRecord(window.id)
+  Snapshot(client)
   IF client.paintDirty<>0 THEN
     BEGIN
       LET area=@client.paintDamage

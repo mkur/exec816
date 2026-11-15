@@ -226,17 +226,17 @@ UWORD AESRun(void)
     CHECK(UPDATES == 2 && MOUSE == 0);
     CHECK(wind_update(BEG_MCTRL) == 1);
     CHECK(wind_update(BEG_CHECK | BEG_MCTRL) == 1);
-    CHECK(UPDATES == 2 && MOUSE == 2);
+    CHECK(UPDATES == 4 && MOUSE == 2);
     CHECK(wind_update(END_UPDATE) == 1);
     CHECK(wind_update(END_MCTRL) == 1);
-    CHECK(UPDATES == 1 && MOUSE == 1);
+    CHECK(UPDATES == 2 && MOUSE == 1);
     UPDATES=0xffff;
     CHECK(wind_update(BEG_UPDATE) == 0 && ExecAESDiagnostic() == AES_OVERFLOW);
     CHECK(UPDATES == 0xffff && MOUSE == 1);
-    UPDATES=1;
+    UPDATES=2;
     MOUSE=0xffff;
     CHECK(wind_update(BEG_MCTRL) == 0 && ExecAESDiagnostic() == AES_OVERFLOW);
-    CHECK(MOUSE == 0xffff && UPDATES == 1);
+    CHECK(MOUSE == 0xffff && UPDATES == 2);
     MOUSE=1;
     for (round=0; round<2; ++round) {
         AESReady=AESDone=tried=orderCount=0;
@@ -250,7 +250,7 @@ UWORD AESRun(void)
         while (AESReady < 3) Wait(wake);
         for (i=0; i<3; ++i) Signal(workers[i], starts[i]);
         while (tried < 3) Wait(wake);
-        CHECK(UPDATES == (round ? 0 : 1) && MOUSE == (round ? 0 : 1));
+        CHECK(UPDATES == (round ? 0 : 2) && MOUSE == (round ? 0 : 1));
         for (position=0; position<3; ++position) {
             i=round ? 2-position : position;
             Signal(workers[i], starts[i]);

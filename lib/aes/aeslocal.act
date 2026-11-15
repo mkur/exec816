@@ -7,6 +7,7 @@ USE AESWAIT
 USE AESGATE
 USE AESLOCKS
 USE AESWINDOW
+USE AESWINDOWSTATE
 USE AESCURSOR
 USE CALYPSICALL
 
@@ -21,7 +22,7 @@ RETURN
 
 ; One busy C context pins its descriptor, registration and native stack until
 ; return. Waiter publication precedes scene release; signals are only hints.
-PUBLIC CARD FUNC Call(LONGCARD value)
+CARD FUNC Policy(LONGCARD value BYTE painting)
   BYTE queued,wake,waiting
   CARD status
 
@@ -66,7 +67,8 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     FI
     BEGIN
       LET client=AESSTATE.Find(service,request.client)
-      queued=AESWAIT.Older(service,client)
+      queued=IF request.operation=AESTYPES.OP_UPDATE THEN
+          AESWAIT.Older(service,client) ELSE BYTE(0) FI
       IF waiting<>0 AND client.waitMode=AESWAIT.SYSTEM THEN
         IF client.pending<>NULL THEN
           AESGATE.Release(0)
@@ -83,23 +85,26 @@ PUBLIC CARD FUNC Call(LONGCARD value)
             ELSE INT(0) FI
         IF request.operation=AESTYPES.OP_UPDATE THEN
           IF waiting<>0 THEN
-            status=AESLOCKS.Continue(service,client)
+            status=AESLOCKS.Continue(service,client,painting)
           ELSE
             status=AESLOCKS.Attempt(service,client,request,
-                AESLOCKS.OWNER_READY,queued)
+                AESLOCKS.OWNER_READY,queued,painting)
           FI
         ELSEIF request.operation=AESTYPES.OP_OPEN
             OR request.operation=AESTYPES.OP_CLOSE THEN
+          AESWINDOWSTATE.PrepareUpdate(client)
           status=AESWINDOW.Visibility(service,client,request,queued)
         ELSEIF request.operation=AESTYPES.OP_SET THEN
           IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
             status=AESWINDOW.Frame(service,client,request,queued,@wake)
           ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
+            AESWINDOWSTATE.PrepareUpdate(client)
             status=AESWINDOW.Geometry(service,client,request,queued)
           ELSE
             status=AESWAIT.SYSTEM_WORK
           FI
         ELSE
+          AESWINDOWSTATE.PrepareUpdate(client)
           status=AESWINDOW.Lifecycle(service,client,request,queued)
         FI
         IF status=AESWAIT.SYSTEM_WORK THEN
@@ -137,5 +142,73 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   OD
 
 RETURN(1)
+
+; Private handler scopes use the same resource path without opening a user
+; painting scope or changing the public C context's explicit nesting counts.
+CARD FUNC Scope(AESTYPES.Request POINTER request CARD code)
+  CARD operation,status
+  INT first,second
+
+  operation=request.operation
+  first=request.intin(0)
+  second=request.intin(1)
+  request.operation=AESTYPES.OP_UPDATE
+  request.intin(0)=INT(code)
+  request.intin(1)=0
+  IF AESLOCKS.Nested(AESSTATE.Get(),request,0)=0 THEN
+    BEGIN
+      LET ignored=Policy(LONGCARD(ADDRESS(request)),0)
+    END
+  FI
+  status=request.status
+  request.operation=operation
+  request.intin(0)=first
+  request.intin(1)=second
+
+RETURN(status)
+
+PUBLIC CARD FUNC Call(LONGCARD value)
+  CARD status,result,handled
+
+  LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation=AESTYPES.OP_UPDATE THEN
+    status=AESLOCKS.Decode(CARD(request.intin(0)))
+    IF status<>AESTYPES.OK THEN
+      request.status=status
+      request.intout(0)=0
+      RETURN(1)
+    FI
+    IF AESLOCKS.Nested(AESSTATE.Get(),request,1)<>0 THEN
+      RETURN(1)
+    FI
+    RETURN(Policy(value,1))
+  FI
+  IF request.operation=AESTYPES.OP_CREATE
+      OR request.operation=AESTYPES.OP_DELETE
+      OR request.operation=AESTYPES.OP_OPEN
+      OR request.operation=AESTYPES.OP_CLOSE
+      OR request.operation=AESTYPES.OP_SET THEN
+    status=Scope(request,AESTYPES.BEG_UPDATE)
+    IF status<>AESTYPES.OK THEN
+      request.status=status
+      request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1) ELSE INT(0) FI
+      RETURN(1)
+    FI
+    handled=Policy(value,0)
+    status=request.status
+    result=CARD(request.intout(0))
+    BEGIN
+      LET released=Scope(request,AESTYPES.END_UPDATE)
+      IF released<>AESTYPES.OK THEN
+        status=released
+        result=0
+      FI
+    END
+    request.status=status
+    request.intout(0)=INT(result)
+    RETURN(handled)
+  FI
+
+RETURN(Policy(value,0))
 
 ENDMODULE

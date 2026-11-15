@@ -28,6 +28,7 @@ PUBLIC BYTE FUNC Init(AESSTATE.Service POINTER service BYTE bit)
   FI
 
   service.owner=EXEC.FindTask(NULL)
+  service.paintPrepared=1
   service.mask=LONGCARD(1) LSH bit
   service.port.mp_Node.ln_Type=EXEC.NT_MSGPORT
   service.port.mp_Flags=EXEC.PA_SIGNAL

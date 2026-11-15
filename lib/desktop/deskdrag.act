@@ -225,7 +225,8 @@ RETURN
 BYTE FUNC ApplicationReady()
 
   LET service=AESSTATE.Get()
-  IF service=NULL OR appOwner=0 OR service.updateOwner<>0
+  IF service=NULL OR appOwner=0 OR service.updateHolds<>0
+      OR service.updateOwner<>appOwner
       OR service.windowPending<>0 THEN
     RETURN(0)
   FI

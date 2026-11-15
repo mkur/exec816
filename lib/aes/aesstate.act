@@ -73,6 +73,8 @@ PUBLIC TYPE Service=[
   BYTE POINTER sceneWaiters
   INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
   BYTE pointerHead,pointerCount,pointerLost
+  CARD updateHolds
+  BYTE paintPrepared
 ]
 
 Service POINTER boundService

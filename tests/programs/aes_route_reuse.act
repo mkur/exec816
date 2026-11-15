@@ -35,7 +35,7 @@ PROC Lock(BYTE owner CARD code INT handle)
   LET client=@service.clients(owner)
   client.binding.intin(0)=INT(code)
   client.binding.intin(1)=handle
-  Require(AESLOCKS.Attempt(service,client,client.binding,1,0)=AESTYPES.OK)
+  Require(AESLOCKS.Attempt(service,client,client.binding,1,0,1)=AESTYPES.OK)
   Require(client.binding.intout(0)=1)
 
 RETURN
@@ -204,7 +204,7 @@ PROC Main()
 
   ; Drawing ownership alone must not redirect input to the drawing client.
   Lock(1,AESTYPES.BEG_UPDATE OR AESTYPES.UPDATE_WINDOW,3)
-  Require(service.mouseOwner=22 AND service.mouseHolds=0)
+  Require(service.mouseOwner=0 AND service.mouseHolds=0)
   NormalRoutes()
   Lock(1,AESTYPES.BEG_UPDATE,0)
   Require(service.updates=2)
@@ -223,7 +223,7 @@ PROC Main()
   Require(AESSNAPSHOT.Publish()=1)
   CheckRoute(AESSNAPSHOT.POINTER_HIT,0,-200,239,104,22,4)
   Lock(1,AESTYPES.END_MCTRL,0)
-  Require(service.mouseOwner=22 AND service.mouseHolds=0)
+  Require(service.mouseOwner=0 AND service.mouseHolds=0)
   NormalRoutes()
   Lock(1,AESTYPES.END_UPDATE,0)
   Require(service.mouseOwner=0)

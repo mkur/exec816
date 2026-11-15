@@ -93,6 +93,10 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
     for name in ('GemServiceWorker','GemClientInit','GemVbxeBackend'):
         require(name not in foreign['symbols'],'Unexpected GUI policy: '+name)
     foreign['provenance'].update(extraction=extraction,fixture_bridge=probe,fixture_fault=fault,source_inputs={str(p.relative_to(ROOT)):sha256(p) for p in [*sources,*assembly,ROOT/'abi/console-bitmap.json',ROOT/'c/include/hardware/console-bitmap.h']})
+    header_dirs={ROOT/'c/include',ROOT/'c/calypsi',src,ad,*extra_includes,
+                 PORT/'raster',ROOT/'ports/gem4xe/aes'}
+    foreign['provenance']['header_inputs']={str(p.relative_to(ROOT)):sha256(p)
+        for p in sorted({p for folder in header_dirs for p in folder.rglob('*.h')})}
     if probe:
         end=max([s['address']+len(s['bytes']) for s in foreign['segments']]+
             [s['address']+s['size'] for s in foreign['zero_fill']])

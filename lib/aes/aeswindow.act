@@ -28,13 +28,14 @@ USE HEAPCORE
 PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client)
 
-RETURN((service.mouseOwner=0 OR service.mouseOwner=client.id)
-    AND AESLOCKS.NativeReady()<>0)
+RETURN(service.updateOwner=client.id OR ((service.mouseOwner=0
+    OR service.mouseOwner=client.id) AND AESLOCKS.NativeReady()<>0))
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client BYTE queued)
 
-RETURN((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0)
+RETURN(service.updateOwner=client.id
+    OR ((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0))
 
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
@@ -148,8 +149,6 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         A816MEMORY.Move(BYTE POINTER(@view.full),BYTE POINTER(@bounds),8)
         A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@bounds),8)
         DESKGEOMETRY.Slider(window,@bounds,0,1000)
-        view.updates=IF service.updateOwner=client.id THEN service.updates
-            ELSE CARD(0) FI
         AESWINDOWSTATE.Snapshot(item)
         RETURN(AESTYPES.OK)
       END
@@ -414,7 +413,7 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
     RETURN(AESTYPES.OK)
   FI
 
-  IF same<>0 AND service.updateOwner=0 THEN
+  IF same<>0 AND service.updateHolds+service.mouseHolds=0 THEN
     IF AESGATE.SystemOwned()<>0 THEN
       BEGIN
         LET status=DESKMOVE.Application(desktop,window,

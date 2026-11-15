@@ -152,6 +152,293 @@
       },
       "upper_global_bytes": 3,
       "scope": "Optimized production cursor integration and seven controlled backend C cases. Uses existing native/C bridge; no request/context ABI shape change or new COP. Superseded prototype archived and removed. A completion fixture pilot with an unsuitable direct C entry was replaced by the standard native/C invocation bridge."
+    },
+    "AM2": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/aes-migration/am2-small",
+          "results_sha256": "ef9a72d1cbb6f2f2b0b31d02bda0bc242d247a6185f50f1af9e72d28e7dfdcab",
+          "image_sha256": "0e7d54daa121b45503d6447ef36ca82b09c9caaef676f3f683acfc8872b5abef",
+          "xex_sha256": "2d3855d6a18a24395005cf7d864405f0745b73f03f9fc920fdfa9200ebfea6f4",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 51,
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 605,
+              "remaining_above_floor": 675
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 128,
+              "remaining_above_floor": 928
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 364,
+              "remaining_above_floor": 692
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 62,
+              "remaining_above_floor": 994
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 694,
+              "remaining_above_floor": 1610
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am2-locks",
+          "results_sha256": "35ff49311d2e6a2da909db666549253c9f1c4eadfa6c5d9e9fbef30d6a2e743a",
+          "image_sha256": "5dbf4efe146e3b527ae71a8db56034bb51987bdd255692e79c36db688bb545c1",
+          "xex_sha256": "0b75fe3e184c1fa2ffd674baef1bb9d55ea2122f5fcef327db62b2bb9143e943",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 231,
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 1089,
+              "remaining_above_floor": 191
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 195,
+              "remaining_above_floor": 861
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 388,
+              "remaining_above_floor": 668
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 386,
+              "remaining_above_floor": 670
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 338,
+              "remaining_above_floor": 718
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 716,
+              "remaining_above_floor": 1588
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 129,
+              "remaining_above_floor": 127
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am2-cache",
+          "results_sha256": "6c42bbc98864cd74155eee72a2e6ade14e8fcd47dda0e29eefc4e3b37b9d543b",
+          "image_sha256": "205c552014f2eb17c4bd6b6c0558a85a3d4059ab80985a45bf92224dbdf9465e",
+          "xex_sha256": "2fce8525f47c8b38dc7cc199b4ebfb0aee40742978946e2f7acd6645616064ca",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 224,
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 755,
+              "remaining_above_floor": 525
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 136,
+              "remaining_above_floor": 920
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 358,
+              "remaining_above_floor": 698
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 719,
+              "remaining_above_floor": 1585
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 33,
+              "remaining_above_floor": 223
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am2-routing",
+          "results_sha256": "a0991943b28549b341ce836522a869cb1d251b866fd6429b2e1bc2b0235ebeea",
+          "image_sha256": "b2de32a52459bb4b5bf490730d44092aacc219ac66d0c32cf42d2afa45181273",
+          "xex_sha256": "5c720258ee36f40c1f3e49a3b7a04c92a6f461e1368f2ddf22dee61f16e4cb06",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 838,
+          "pin": "toolchain/altirra-gem-vdi.json"
+        },
+        {
+          "capture": "build/aes-migration/am2-layout-raw",
+          "results_sha256": "f5b4b6091216c244e158e0291d7381dc66346ca6aa97577b5a3d4b161994bc23",
+          "image_sha256": "6a665cd8894f15aae88372a4704bb18cf3268cfe3a749e202f91c83e9baf573f",
+          "xex_sha256": "a723817eeec9a88221497e80de4cf167393eceb37760c2ead75037f0f05a111c",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 19,
+          "pin": "toolchain/altirra-gem-vdi.json"
+        },
+        {
+          "capture": "build/aes-migration/am2-layout-opt",
+          "results_sha256": "e9958ec91ddb11a702e3ca8edf0b670d61c3c24e6c36f86e248a603b6d059b25",
+          "image_sha256": "556ee451ba5993c1563a39bbcde9f7afc2a721f124a855edf2bc47d08edacec1",
+          "xex_sha256": "fbf8ab2834d0fd0fc03335b096c4f09188ec94576627b1a101a3966b3e0b1636",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 19,
+          "pin": "toolchain/altirra-gem-vdi.json"
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skips": 5,
+        "status": "pass"
+      },
+      "private_service_bytes": {
+        "before": 2324,
+        "after": 2328,
+        "rounded_before": 2328,
+        "rounded_after": 2328
+      },
+      "scope": "Common UPDATE/MCTRL/window scopes; lazy conservative cache preparation. Existing wait engine retained until AM4; no native accounting overlay. Excluded build/shutdown/cache-condition pilots recorded in history."
     }
   }
 }

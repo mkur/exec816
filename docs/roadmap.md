@@ -892,7 +892,8 @@ The other possible milestones have no delivery order:
   passes the primitive CPU gate with zero reservation growth. The reassessed
   [AM0–AM5 plan](plans/gem4xe/aes-semaphore-migration-plan.md) follows MagiC's
   handler flow, shared UPDATE/MCTRL dependency and direct ownership handoff.
-  AM1 direct cursor completion passes development checks. Measure MGVIEW latency independently; GUI
+  AM1–AM2 direct cursor completion and common handler boundaries pass development
+  checks. Cleanup/continuations precede native cutover. Measure MGVIEW latency independently; GUI
   bookkeeping stays outside the kernel semaphore service.
 - **Lightweight Exec service fast paths.** Audit frequent calls that can complete
   without the full Action! kernel dispatcher and kernel-stack transition. Start

@@ -27,7 +27,7 @@ PROC Main()
   LET mouse=@service.directory.mouse
   Require(SIZEOF(AESTYPES.MouseState)=100)
   Require(SIZEOF(AESTYPES.Request)=418)
-  Require(SIZEOF(AESSTATE.Client)=376 AND SIZEOF(AESSTATE.Service)=2324)
+  Require(SIZEOF(AESSTATE.Client)=376 AND SIZEOF(AESSTATE.Service)=2328)
   Require(mouse.x=320 AND mouse.y=120 AND mouse.visible=1)
   request.intin(0)=AESTYPES.M_OFF
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)

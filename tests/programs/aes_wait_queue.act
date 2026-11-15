@@ -62,7 +62,7 @@ PROC Main()
   Require(service.windowPending=0 AND service.clients(2).windowWaiting=0)
   AESWAIT.RemoveWindow(service,@service.clients(2))
   Require(service.windowPending=0)
-  Require(SIZEOF(AESSTATE.Client)=376 AND SIZEOF(AESSTATE.Service)=2324 AND offsets(9)=3)
+  Require(SIZEOF(AESSTATE.Client)=376 AND SIZEOF(AESSTATE.Service)=2328 AND offsets(9)=3)
   EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
 
 RETURN

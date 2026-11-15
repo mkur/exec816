@@ -83,8 +83,7 @@ PUBLIC BYTE FUNC Publish()
         FI
       END
     FI
-    ; UPDATE also changes mouseOwner, but input routing uses that owner only
-    ; while MCTRL is held. Keep the copied routes across paint-only handoffs.
+    ; Only MCTRL changes routing. Keep copied routes across paint-only handoffs.
     IF dirty=0 AND desktop.scene.layoutEpoch<>0
         AND layoutEpoch=desktop.scene.layoutEpoch AND clientCount=service.count
         AND published.focus=desktop.focus

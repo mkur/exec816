@@ -262,18 +262,20 @@ message calls remain available. Waits allocate no input signal, make no presente
 RPC, acquire no display grant and hold no Layers transaction while blocked.
 
 `wind_update` arbitrates recursive update and mouse-control ownership between
-registered AES clients. `BEG_UPDATE` acquires update ownership and its implicit
-mouse hold together; `BEG_MCTRL` adds an explicit mouse hold. Matching END calls
-remove only their corresponding hold. Wrong-owner release returns zero with
+registered AES clients. `BEG_UPDATE` acquires the common UPDATE resource.
+`BEG_MCTRL` acquires one level of that same resource and adds a routing overlay;
+UPDATE alone does not change the mouse owner. Matching END calls remove their
+corresponding level and, for MCTRL, restore routing at its last level.
+Wrong-owner release returns zero with
 `AES_IDENTITY`; nesting overflow returns `AES_OVERFLOW` without changing either
 hold. `0x100` on a BEGIN call tries without waiting, returning zero with `AES_OK`
 if unavailable. A normal contended BEGIN waits in arrival order among eligible
-callers; an existing mouse owner can upgrade without waiting behind a dependent
-peer. Exit releases every owned hold. Message and timer service continue.
+callers; an existing owner recurses through the common helper. Exit releases
+every owned hold. Message and timer service continue.
 
 A work-area pointer capture retains its input recipient through release while
-other clients may acquire short UPDATE sections and paint. Their implicit
-mouse hold does not replace that recipient. Explicit MCTRL remains unavailable
+other clients may acquire short UPDATE sections and paint. Painting does not
+replace that recipient. Explicit MCTRL remains unavailable
 to a competing capture owner until release; native frame gestures and pending
 window transactions retain their existing admission rules.
 
@@ -286,7 +288,11 @@ notices; an already delivered notice remains consumable. Closing retires
 pending notices with the window epoch. These report accepted focus changes;
 `WM_TOPPED` remains a request for the application to raise its window.
 
-BEGIN/END UPDATE and MCTRL enter a shared library scene gate. A contended
+Outermost BEGIN/END UPDATE and routing transitions enter a shared scene gate.
+Recursion that needs no outer transition uses the same accounting helper without
+scene admission. Window mutators acquire and balance a temporary UPDATE level;
+they do not open a public painting journal or change explicit binding depth.
+A contended
 BEGIN publishes its waiter before releasing the gate, then sleeps on its private
 reply-port signal. The system Task signals the oldest eligible caller; that
 caller rechecks ownership and acquires its own hold. Signals are hints and do
@@ -469,9 +475,11 @@ corner when a vertical bar or SIZER uses it. Both axes retain state while
 hidden or iconified, and no-op setters preserve the publication revision.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
-caller owns `BEG_UPDATE`. Acquisition publishes a current snapshot for every owned window;
-unchanged geometry may be reused while paint identity and readiness remain fresh.
-no client reads Layers or retains a scene token. A zero-width/height result ends
+caller owns UPDATE or MCTRL painting permission. Geometry changes and paint
+handoffs publish current snapshots. BEGIN starts a journal without rebuilding
+geometry or invalidating caches; END reconciles conservative cache invalidation
+before release, or an intervening owner mutation prepares it before reuse.
+No client reads Layers or retains a scene token. A zero-width/height result ends
 the enumeration, including a completely covered or hidden window. An owner
 mutation invalidates a previous iterator; restart with FIRST. Geometry uses
 half-open internal bounds and GEM x/y/width/height at the binding.

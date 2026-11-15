@@ -201,7 +201,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all', visibility_local='all'):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all', visibility_local='all', reuse_c=False):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -321,7 +321,21 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             renderer=out/'gem-vbxe.c';renderer.write_text(adapter_source)
             bitmap_builder.extract=extract_with_preemption
         try:
-            foreign = drawing(out, True, desktop_style=True, fault=borrowed, renderer_source=renderer,
+            selected_drawing=drawing
+            if reuse_c:
+                from native_program import sha256
+                cached=json.loads((out/'c-image.json').read_text())
+                require(cached['provenance'].get('header_inputs'),'Cached C headers were not recorded')
+                for name,digest in {**cached['provenance']['source_inputs'],
+                                    **cached['provenance']['header_inputs']}.items():
+                    require(sha256(ROOT/name)==digest,'Changed cached C source: '+name)
+                require(cached['provenance']['compiler_flags'][-1]=='-O2','Wrong cached C mode')
+                # This option re-emits the native policy only. C declarations,
+                # emitted record layouts and selected fixture source must match.
+                require((ROOT/'c/calypsi/aes-layout.c').read_text()==files()[ROOT/'c/calypsi/aes-layout.c'],
+                        'Changed generated C layout probe')
+                selected_drawing=lambda *args,**kwargs:cached
+            foreign = selected_drawing(out, True, desktop_style=True, fault=borrowed, renderer_source=renderer,
                 client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else [])+([ROOT/'tests/programs/aes_frame_markers.c'] if suite=='frame' else [])+([ROOT/'tests/programs/aes_geometry_markers.c'] if suite=='geometry' else []),
                 client_entries=entries,
                 client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else [])+extra_roots,
@@ -724,6 +738,7 @@ if __name__ == '__main__':
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--video', choices=('PAL', 'NTSC'), default='PAL')
     parser.add_argument('--suite', choices=('context', 'registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'cursor', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks', 'console'), default='context')
+    parser.add_argument('--reuse-c',action='store_true',help='Rebuild native policy with verified cached C fixture')
     parser.add_argument('--filesystem',choices=('sdfs','mydos'),default='sdfs',help='Resources fixture disk format')
     parser.add_argument('--frame-local',choices=('none','text','all'),default='all',help='Expected migrated fields for the frame comparison fixture')
     parser.add_argument('--geometry-local',choices=('none','query','all'),default='all',help='Expected migrated geometry fields in a frozen comparison image')
@@ -733,6 +748,6 @@ if __name__ == '__main__':
         run(args.output.resolve(), args.mode, args.replay)
     elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'cursor', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
-                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local)
+                     args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local,args.reuse_c)
     elif args.suite == 'console':
         plain_console(args.output.resolve())
