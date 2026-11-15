@@ -4,8 +4,8 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService,VisNative,VisBusy,VisFail,VisFocus,VisHold,VisHeld,VisRelease;
-ULONG VisEpoch,VisWaiting,VisLocks,VisOwner,VisReady;
+ULONG AESService,VisNative,VisBusy,VisFail,VisHold,VisHeld,VisRelease;
+ULONG VisEpoch,VisWaiting,VisOwner,VisReady,VisPeerTask;
 ULONG VisRetireBusy,VisEndpoint;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD VisPhase,VisGo,VisPoint,VisPeerHeld,VisPeerRelease,VisWake;
@@ -35,7 +35,7 @@ void AESClientOne(void)
 {
     struct ExecAESContext *c;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
-    c=ExecAESContext();peerReady=1;
+    c=ExecAESContext();VisPeerTask=(ULONG)FindTask(NULL);peerReady=1;
     for (;;) {
         if (VisWake) { VisWake=0;Signal(c->directory->owner,c->directory->mask); }
         if (VisQueue==1) {

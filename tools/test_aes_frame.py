@@ -39,13 +39,11 @@ ENDMODULE
 ''')
     text=read_source(ROOT/'lib/aes/aeswindow.act')
     text=text.replace('USE EXEC\n','USE EXEC\nUSE FRAMEPROBE\n',1)
-    ready='PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service\n    AESSTATE.Client POINTER client)\n'
-    require(text.count(ready)==1,'Window readiness boundary changed')
-    text=text.replace(ready,ready+'\n  IF FRAMEPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
     if 'PUBLIC CARD FUNC Frame(' in text:
         start=text.index('PUBLIC CARD FUNC Frame(')
         at=text.index('\n\n',start)+2
-        text=text[:at]+'  FRAMEPROBE.Observe()\n'+text[at:]
+        text=text[:at]+('  FRAMEPROBE.Observe()\n'
+            '  IF FRAMEPROBE.busy<>0 THEN\n    RETURN(AESTYPES.PENDING)\n  FI\n')+text[at:]
     else:
         # Freeze the GF4 parent with the same observation, before extraction.
         start=text.index('PUBLIC CARD FUNC Request(')

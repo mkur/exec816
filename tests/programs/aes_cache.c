@@ -3,7 +3,7 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService,AESLockCount;
+ULONG AESService;
 static struct Task *scopeCaller;
 static ULONG scopeWake;
 static volatile UWORD scopeDone;
@@ -99,7 +99,7 @@ void AESClientOne(void)
 {
     CHECK(ExecAESAttach((struct MsgPort *)AESService)); CHECK(appl_init()>0);
     CHECK(wind_update(BEG_MCTRL)); Signal(scopeCaller,scopeWake);
-    while (!*(volatile UBYTE *)AESLockCount) ExecYield();
+    while (scopeCaller->tc_State!=TS_WAIT) ExecYield();
     CHECK(wind_update(END_MCTRL)); CHECK(ExecAESDetach());
     scopeDone=1;RemTask(NULL);
 }

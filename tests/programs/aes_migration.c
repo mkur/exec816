@@ -3,7 +3,8 @@
 #include <clib/alib_protos.h>
 #include <exec816/runtime.h>
 
-ULONG AESService,AESUpdates,AESMouseHolds,AESLockCount,AESPolicyGate;
+ULONG AESService,AESUpdates,AESMouseHolds,AESPolicyGate;
+UWORD AESOwnedOffset;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,progress,phase,stopCounter;
 volatile UWORD callbackReady,callbackX,callbackY;
 static OBJECT menu[]={
@@ -21,8 +22,13 @@ static struct TaskLease peerLease,counterLease;
 #define OTHER 0x80000UL
 #define UPDATES (*(volatile UWORD *)AESUpdates)
 #define MOUSE (*(volatile UWORD *)AESMouseHolds)
-#define QUEUED (*(volatile UBYTE *)AESLockCount)
 #define GATE (*(volatile UBYTE *)AESPolicyGate)
+
+static UWORD owned(void)
+{
+    struct Task *task=FindTask(NULL);
+    return *(UWORD *)((UBYTE *)(ULONG)task->tc_ExecPrivate+AESOwnedOffset);
+}
 
 static void Check(int okay)
 {
@@ -40,6 +46,7 @@ void MigrationCounter(void)
 void MigrationPeer(void)
 {
     struct ExecAESContext *c;
+    UWORD before=owned();
     Check(AllocSignal(16)==16);
     Check(AllocSignal(19)==19);
     Check(ExecAESAttach((struct MsgPort *)AESService));
@@ -51,6 +58,7 @@ void MigrationPeer(void)
     phase=2; Signal(parent,DONE);
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==1 && c->updateDepth==1);
+    Check(owned()==before+1);
     Check((SetSignal(0,OTHER)&OTHER)!=0);
     Check(wind_update(BEG_MCTRL));
     Check(MOUSE==1 && UPDATES==2 && c->mouseDepth==1);
@@ -58,6 +66,7 @@ void MigrationPeer(void)
     Check(wind_update(BEG_MCTRL));
     /* Cooperative departure balances nested holds in this owning Task. */
     Check(ExecAESDetach());
+    Check(owned()==before);
     FreeSignal(16);FreeSignal(19);
     phase=3;Signal(parent,DONE);
     Wait(0);
@@ -84,9 +93,9 @@ static void nested(struct ExecAESContext *c)
 WORD AESRun(void)
 {
     struct ExecAESContext *c;
-    UWORD previous;
+    UWORD previous,before;
     WORD window,message[8];
-    parent=FindTask(NULL);
+    parent=FindTask(NULL);before=owned();
     Check(AllocSignal(16)==16);Check(AllocSignal(19)==19);
     Check(ExecAESAttach((struct MsgPort *)AESService));
     Check(appl_init()>0);
@@ -103,6 +112,7 @@ WORD AESRun(void)
     callbackReady=2;
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==1 && c->view->updates==1);
+    Check(owned()==before+1);
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==2 && c->view->updates==2);
     Check(wind_update(END_UPDATE));
@@ -138,17 +148,18 @@ WORD AESRun(void)
     while (progress==previous) {} /* Actual preemption while UPDATE is owned. */
     Signal(peer,DONE);
     while (phase!=2) Wait(DONE);
-    while (!QUEUED) ExecYield();
+    while (peer->tc_State!=TS_WAIT) ExecYield();
     Signal(peer,OTHER);
     Check(UPDATES==1 && MOUSE==1);
     Check(ExecAESDetach());
+    Check(owned()==before);
     while (phase!=3) Wait(DONE);
     stopCounter=1;Wait(OTHER);
     Forbid();
     Check(ReleaseTask(&peerLease));RemTask(peer);
     Check(ReleaseTask(&counterLease));RemTask(counter);
     Permit();
-    Check(!UPDATES && !MOUSE && !QUEUED);
+    Check(!UPDATES && !MOUSE);
     FreeSignal(16);FreeSignal(19);
     return AESFailures;
 }

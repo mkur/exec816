@@ -174,10 +174,9 @@ ENDMODULE
         (out/(name+'.act')).write_text(text)
 
     for name, routines in (
-        ('aeswindowstate', ('Publish', 'BeginUpdate', 'EndUpdate', 'Sync')),
+        ('aeswindowstate', ('Publish', 'EndUpdate', 'Sync')),
         ('aeswindow', ('Request', 'Query', 'Geometry', 'Lifecycle', 'SetBounds',
                        'Visibility', 'CommitOpen', 'CommitClose')),
-        ('aeslocks', ('Attempt',)),
         ('aeshost', ('Settled', 'Settle')),
         ('deskhost', ('Controls', 'Runnable', 'Cache', 'Ready', 'PaintReady')),
         ('deskpaint', ('Pump', 'Ready', 'Runnable')),
@@ -186,9 +185,11 @@ ENDMODULE
         shadow(name, routines)
     local = read_source(ROOT/'lib/aes/aeslocal.act').replace('USE AESGATE\n',
         'USE AESGATE\nUSE SCENEPROBE\n', 1)
-    needle = '\n      LET client=AESSTATE.Find(service,request.client)'
+    needle = '    AESGATE.EnterTask(request.owner,mask)\n    IF request.operation='
     require(local.count(needle) == 1, 'Local scene admission boundary changed')
-    local = local.replace(needle, needle+'\n      SCENEPROBE.Pause(1,client.id)')
+    local = local.replace(needle,
+        '    AESGATE.EnterTask(request.owner,mask)\n'
+        '    SCENEPROBE.Pause(1,request.client)\n    IF request.operation=')
     (out/'aeslocal.act').write_text(local)
     bitmap = read_source(ROOT/'lib/console/consolebitmap.act').replace('USE AESGATE\n',
         'USE AESGATE\nUSE SCENEPROBE\n', 1)

@@ -4,7 +4,7 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService,GeoNative,GeoBusy,GeoWaiting,GeoLocks;
+ULONG AESService,GeoNative,GeoBusy,GeoWaiting;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD GeoPhase,GeoGo,GeoPoint;
 WORD GeoField,GeoHandle,GeoResult,GeoStatus;

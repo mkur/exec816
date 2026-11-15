@@ -32,8 +32,7 @@ void SceneHolder(void)
     SceneHoldClient=ExecAESContext()->identity;
     Forbid(); ++SceneReady; Permit();
     while (!SceneHolderGo) ExecYield();
-    CHECK(wind_update(BEG_UPDATE));
-    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_find(-1,-1)==0);
     CHECK(ExecAESDetach());
     Forbid(); Signal(parent,holderExit); RemTask(NULL);
 }
@@ -62,8 +61,7 @@ void SceneWaiter(void)
     SceneWaiterTask=(ULONG)FindTask(NULL);
     Forbid(); ++SceneReady; Permit();
     while (!SceneWaiterGo) ExecYield();
-    CHECK(wind_update(BEG_UPDATE));
-    CHECK(wind_update(END_UPDATE));
+    CHECK(wind_find(-1,-1)==0);
     CHECK(ExecAESDetach());
     Forbid(); Signal(parent,waiterExit); RemTask(NULL);
 }

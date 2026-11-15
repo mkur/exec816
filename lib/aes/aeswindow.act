@@ -25,18 +25,6 @@ USE LAYERS
 USE REGIONS
 USE HEAPCORE
 
-PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client)
-
-RETURN(service.updateOwner=client.id OR ((service.mouseOwner=0
-    OR service.mouseOwner=client.id) AND AESLOCKS.NativeReady()<>0))
-
-BYTE FUNC Eligible(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client BYTE queued)
-
-RETURN(service.updateOwner=client.id
-    OR ((queued=0 OR service.mouseOwner=client.id) AND Ready(service,client)<>0))
-
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
 
@@ -212,19 +200,9 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  LET caller=AESGATE.SystemOwned()=0
   LET held=AESGATE.Leave()
   LET status=AESROUTES.Prepare(window,@route)
   AESGATE.Reenter(held,request)
-  IF caller<>0 THEN
-    BEGIN
-      LET eligible=Eligible(service,client,AESWAIT.Older(service,client))
-      IF eligible=0 THEN
-        DiscardRoute(request,route)
-        RETURN(AESTYPES.PENDING)
-      FI
-    END
-  FI
   IF status<>AESTYPES.OK THEN
     RETURN(status)
   FI
@@ -283,12 +261,9 @@ RETURN(AESTYPES.OK)
 
 ; Both transports use the same admission and scene publication policy.
 PUBLIC CARD FUNC Visibility(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   CARD status
 
-  IF Eligible(service,client,queued)=0 THEN
-    RETURN(AESTYPES.PENDING)
-  FI
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
@@ -347,9 +322,6 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE slot
 
-  IF Ready(service,client)=0 THEN
-    RETURN(0)
-  FI
   DESKMOVE.Forget(client.binding)
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(slot).owner=client.id THEN
@@ -444,25 +416,16 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
-; The system only wakes metadata waiters. The caller rechecks and commits.
-PUBLIC BYTE FUNC WaitReady(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client)
-
-RETURN(Eligible(service,client,client.windowLocks<>0))
-
 ; Bounds and focus publication use one policy behind both transports.
 PUBLIC BYTE FUNC GeometryField(INT field)
 
 RETURN(field=AESTYPES.WF_CXYWH OR field=AESTYPES.WF_TOP)
 
 PUBLIC CARD FUNC Geometry(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   CARD result
   BYTE status
 
-  IF Eligible(service,client,queued)=0 THEN
-    RETURN(AESTYPES.PENDING)
-  FI
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
@@ -494,12 +457,8 @@ RETURN(result)
 ; Both transports decode hidden lifetime operations here. Caller stacks avoid
 ; the frame/string/effect scratch of the remaining window dispatcher.
 PUBLIC CARD FUNC Lifecycle(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   CARD result
-
-  IF Eligible(service,client,queued)=0 THEN
-    RETURN(AESTYPES.PENDING)
-  FI
 
   IF request.operation=AESTYPES.OP_CREATE THEN
     result=CreateHidden(service,client,request.view,request.intin(0),
@@ -531,7 +490,7 @@ RETURN(field=AESTYPES.WF_NAME OR field=AESTYPES.WF_INFO
 
 PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request
-    BYTE queued BYTE POINTER changed)
+    BYTE POINTER changed)
   BYTE status
   BYTE POINTER title,current
   CARD length,index
@@ -539,10 +498,6 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
   LAYERTYPES.Rect bounds
 
   changed^=0
-  IF Eligible(service,client,queued)=0 THEN
-    RETURN(AESTYPES.PENDING)
-  FI
-
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)
@@ -661,7 +616,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
 RETURN(AESTYPES.OK)
 
 PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client AESTYPES.Request POINTER request BYTE queued)
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE status
   CARD result
 
@@ -672,26 +627,22 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   FI
 
   IF request.operation=AESTYPES.OP_CREATE OR request.operation=AESTYPES.OP_DELETE THEN
-    RETURN(Lifecycle(service,client,request,queued))
+    RETURN(Lifecycle(service,client,request))
   FI
 
   IF request.operation=AESTYPES.OP_SET AND FrameField(request.intin(1))<>0 THEN
-    RETURN(Frame(service,client,request,queued,@status))
+    RETURN(Frame(service,client,request,@status))
   FI
 
   IF request.operation=AESTYPES.OP_SET AND GeometryField(request.intin(1))<>0 THEN
-    RETURN(Geometry(service,client,request,queued))
+    RETURN(Geometry(service,client,request))
   FI
 
   IF request.operation=AESTYPES.OP_OPEN OR request.operation=AESTYPES.OP_CLOSE THEN
-    RETURN(Visibility(service,client,request,queued))
+    RETURN(Visibility(service,client,request))
   FI
 
-  ; An existing owner may finish mutations before dependent older waiters.
-  IF Eligible(service,client,queued)=0 THEN
-    RETURN(AESTYPES.PENDING)
-  FI
-
+  ; The common handler scope already owns UPDATE.
   LET item=AESWINDOWSTATE.Handle(client,request.intin(0))
   IF item=NULL THEN
     RETURN(AESTYPES.IDENTITY)

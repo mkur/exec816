@@ -8,7 +8,7 @@ from native_program import ROOT,require
 from os_boundary import run_to
 from sio_transaction_trace import read_events,BASE_HZ
 
-ROOTS=['GeoNative','GeoBusy','GeoWaiting','GeoLocks','GeoPhase','GeoGo','GeoPoint',
+ROOTS=['GeoNative','GeoBusy','GeoWaiting','GeoPhase','GeoGo','GeoPoint',
        'GeoField','GeoHandle','GeoResult','GeoStatus','GeoSequence','GeoView',
        'GeoCallBegin','GeoCallEnd']
 
@@ -34,9 +34,8 @@ RETURN
 ENDMODULE
 ''')
     text=read_source(ROOT/'lib/aes/aeswindow.act').replace('USE EXEC\n','USE EXEC\nUSE GEOPROBE\n',1)
-    needle='PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service\n    AESSTATE.Client POINTER client)\n'
-    require(text.count(needle)==1,'Window admission boundary changed')
-    text=text.replace(needle,needle+'\n  IF GEOPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
+    start=text.index('PUBLIC CARD FUNC Geometry(');at=text.index('\n\n',start)+2
+    text=text[:at]+'  IF GEOPROBE.busy<>0 THEN\n    RETURN(AESTYPES.PENDING)\n  FI\n'+text[at:]
     for signature,call in [('INT FUNC FindAt(', '  GEOPROBE.Observe(0)\n')]:
         start=text.index(signature);at=text.index('\n\n',start)+2
         text=text[:at]+call+text[at:]
@@ -56,7 +55,7 @@ ENDMODULE
 def setup(symbols):
     text=''
     for name,field in [('GeoNative','@GEOPROBE.stats(0)'),('GeoBusy','@GEOPROBE.busy'),
-                       ('GeoWaiting','@service.windowPending'),('GeoLocks','@service.lockCount')]:
+                       ('GeoWaiting','@service.windowPending')]:
         text+=f'  BEGIN\n    LET target=LONGCARD POINTER(${symbols[name]:x})\n    target^=LONGCARD(ADDRESS({field}))\n  END\n'
     return text
 

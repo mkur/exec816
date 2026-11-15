@@ -37,24 +37,13 @@ PUBLIC PROC Reset()
 
 RETURN
 
-; A lock cannot transfer a physical sequence. Released deferred native work
-; is not ownership: an update owner must still be able to upgrade or unlock.
+; MCTRL installs routing only after an older foreign capture ends. The caller
+; already owns native UPDATE; this predicate never chooses a resource owner.
 PUBLIC BYTE FUNC LockReady(LONGCARD client)
   BYTE ready
 
   EXEC.Forbid()
   ready=(latest.buttons=0 OR (owner=client AND owner<>0))
-  EXEC.Permit()
-
-RETURN(ready)
-
-; Work capture routes input independently of another client's short painting
-; scope. Unreleased native gestures and release-rearm still exclude admission.
-PUBLIC BYTE FUNC UpdateReady(LONGCARD client)
-  BYTE ready
-
-  EXEC.Forbid()
-  ready=(LockReady(client)<>0 OR (owner<>0 AND needRelease=0 AND manager=0))
   EXEC.Permit()
 
 RETURN(ready)

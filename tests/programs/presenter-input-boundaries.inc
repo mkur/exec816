@@ -1,7 +1,7 @@
 ; Included only by the pointer fixture. Exercise the production Service and
 ; Boundary bodies with deterministic normalized arrivals and real Exec signals.
 PUBLIC CARD boundaryChecks
-BYTE boundaryTesting,boundaryStage
+BYTE boundaryTesting,boundaryStage,boundaryBlocked
 CARD boundaryQueued,boundaryReads,boundaryFreshCount,boundaryReplay,boundaryApplied
 
 PROC BoundaryRequire(BYTE okay)
@@ -139,10 +139,10 @@ PUBLIC PROC CheckBoundaries()
   sample.flags=0
   sample.x=73
   AESINPUT.Push(@sample)
-  aes.mouseOwner=1
+  boundaryBlocked=1
   Boundary()
   BoundaryRequire(AESINPUT.Pending()<>0 AND boundaryReplay=0)
-  aes.mouseOwner=0
+  boundaryBlocked=0
   Boundary()
   BoundaryRequire(AESINPUT.Pending()=0 AND boundaryReplay=1)
   BoundaryRequire(boundaryApplied=24 AND boundaryFreshCount=24)

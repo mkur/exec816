@@ -154,6 +154,11 @@ PUBLIC BYTE FUNC Application()
 
 RETURN(appVisual)
 
+; A retained application outline must be physically erased before painting.
+PUBLIC BYTE FUNC DrawReady()
+
+RETURN(appVisual=0 OR DESKSTATE.outlineVisible=0)
+
 ; Admit geometry once; tracking below follows capture without application RPC.
 PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)

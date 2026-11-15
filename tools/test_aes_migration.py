@@ -10,6 +10,7 @@ from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,PIN,ROM
 from stack_budget import stack_usage
 from desktop_mouse import schedule
+from generate_tasks import ABI as TASKS
 
 
 def inputs():
@@ -42,9 +43,10 @@ def run(out,reuse=False,reuse_c=False):
         sy=foreign['symbols']
         bindings=''
         for name,field in [('AESUpdates','updates'),('AESMouseHolds','mouseHolds'),
-                           ('AESLockCount','lockCount'),('AESPolicyGate','policyGate')]:
+                           ('AESPolicyGate','policyGate')]:
             bindings+=f'  BEGIN\n    LET cell=LONGCARD POINTER(${sy[name]:x})\n    cell^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         source=out/'migration.act'
+        offset=next(o for n,k,o in TASKS['context']['fields'] if n=='semaphoreOwned')
         source.write_text(f'''MODULE AESMIGRATION
 USE EXEC
 USE AESBOOT
@@ -72,6 +74,8 @@ PROC Main()
   LET port=LONGCARD POINTER(${sy['AESService']:x})
   port^=LONGCARD(ADDRESS(AESBOOT.Port()))
 {bindings}
+  LET owned=CARD POINTER(${sy['AESOwnedOffset']:x})
+  owned^={offset}
   LET call=ADDRESS POINTER(@entry)
   call^=${sy['AESRun']:x}
   Require(entry()=0)

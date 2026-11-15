@@ -74,7 +74,7 @@ PUBLIC BYTE FUNC Settled()
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
 
-RETURN(service<>NULL AND service.live=1 AND service.lockCount=0
+RETURN(service<>NULL AND service.live=1
     AND service.windowPending=0 AND AESSTATE.mouseDirty=0
     AND AESCURSOR.Pending()=0
     AND AESCORE.Runnable(service)=0 AND desktop<>NULL
@@ -120,7 +120,8 @@ PUBLIC PROC Settle()
 
   AESWINDOWSTATE.Sync()
   AESMOUSE.Refresh()
-  IF service.lockCount=0 AND service.windowPending=0 THEN
+  IF service.windowPending=0
+      AND (service.updateHint & AESSTATE.UPDATE_REQUESTED)=0 THEN
     RETURN
   FI
 
@@ -132,7 +133,6 @@ PUBLIC PROC Settle()
   FI
 
   AESCORE.Settle(service)
-  AESLOCKS.Wake(service)
   AESMOUSE.Refresh()
 
 RETURN

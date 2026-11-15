@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emitted shared waiter ordering and private record layout."""
+"""Emitted retained-continuation publication and native UPDATE object layout."""
 import argparse
 import json
 from native_program import ROOT, build, compiler, require, verify_machine

@@ -387,8 +387,6 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if suite=='visibility':
             from test_aes_visibility import setup as visibility_setup
             setup+=visibility_setup(sy)
-        if suite == 'cache':
-            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESLockCount"]:x})\n    item^=LONGCARD(ADDRESS(@service.lockCount))\n  END\n'
         if suite == 'menus':
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuNext"]:x})\n    item^=LONGCARD(ADDRESS(@service.nextMenuEpoch))\n  END\n'
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuRevision"]:x})\n    item^=LONGCARD(ADDRESS(@service.menuRevision))\n  END\n'
@@ -399,10 +397,9 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
         if locks:
             setup += ''
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
-                    ('AESLockCount', 'lockCount'), ('AESPolicyGate', 'policyGate')):
+                    ('AESPolicyGate', 'policyGate')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         if locks:
-            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeBusy"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.busy))\n  END\n'
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeReady"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.ready))\n  END\n'
         source.write_text(f'''MODULE AESPROBE
 USE EXEC
@@ -410,7 +407,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -437,12 +434,14 @@ PROC Main()
   BEGIN
     BYTE pending
 
+    LET desktop=DESKSTATE.Get()
     LET bit=EXEC.AllocSignal(-1)
     Require(bit>=0)
     DO
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
           OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+          OR desktop.scene.busy<>0
       AESGATE.Release(0)
       IF pending=0 THEN
         EXIT
@@ -458,12 +457,14 @@ PROC Main()
   BEGIN
     BYTE pending
 
+    LET desktop=DESKSTATE.Get()
     LET bit=EXEC.AllocSignal(-1)
     Require(bit>=0)
     DO
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
           OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+          OR desktop.scene.busy<>0
       AESGATE.Release(0)
       IF pending=0 THEN
         EXIT
@@ -472,7 +473,7 @@ PROC Main()
     OD
     EXEC.FreeSignal(bit)
   END
-''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle') else ''}
+''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
   Require(AESCORE.Idle(service)<>0)
 {exhaustion}
 RETURN
@@ -629,7 +630,7 @@ ENDMODULE
                     report['lifecycle_phase']=int.from_bytes(bridge.memdump(foreign['symbols']['LifePhase'],2),'little')
                     report['lifecycle_admission']={name:int.from_bytes(bridge.memdump(
                         int.from_bytes(bridge.memdump(foreign['symbols'][name],4),'little'),1),'little')
-                        for name in ('LifeGate','LifeWaiting','LifeBusy','LifeLocks')}
+                        for name in ('LifeGate','LifeWaiting','LifeBusy')}
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
@@ -645,7 +646,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[376,2324],
+                require(report['lifecycle_stats'][6:]==[374,2328],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')

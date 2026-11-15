@@ -29,13 +29,13 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; Caller owns policy exclusively; ready=1 supplies established physical readiness.
+; The single fixture Task owns its registered request and the native resource.
 PROC Lock(BYTE owner CARD code INT handle)
 
   LET client=@service.clients(owner)
   client.binding.intin(0)=INT(code)
   client.binding.intin(1)=handle
-  Require(AESLOCKS.Attempt(service,client,client.binding,1,0,1)=AESTYPES.OK)
+  Require(AESLOCKS.Call(client.binding,1)=AESTYPES.OK)
   Require(client.binding.intout(0)=1)
 
 RETURN
@@ -144,6 +144,9 @@ PROC Main()
   service.live=1
   service.count=2
   service.owner=EXEC.FindTask(NULL)
+  service.policyGate=1
+  service.paintPrepared=1
+  AESLOCKS.Init(service)
   service.mask=LONGCARD(1) LSH port.mp_SigBit
   Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
@@ -158,6 +161,9 @@ PROC Main()
       client.endpoint=AESTYPES.Endpoint POINTER(EXEC.AllocMem(
           LONGCARD(SIZEOF(AESTYPES.Endpoint)),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
       Require(client.binding<>NULL AND client.endpoint<>NULL)
+      client.binding.client=client.id
+      client.binding.owner=service.owner
+      client.binding.message.mn_ReplyPort=port
       client.endpoint.input=AESTYPES.InputInbox POINTER(EXEC.AllocMem(
           LONGCARD(AESTYPES.INPUTINBOX_SIZE),EXEC.MEMF_UPPER OR EXEC.MEMF_CLEAR))
       Require(client.endpoint.input<>NULL)

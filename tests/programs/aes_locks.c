@@ -5,11 +5,11 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService, AESUpdates, AESMouseHolds, AESLockCount, AESNativeBusy, AESPolicyGate, AESNativeReady;
+ULONG AESService, AESUpdates, AESMouseHolds, AESNativeBusy, AESPolicyGate, AESNativeReady;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
 static struct Task *controller, *workers[3];
 static ULONG wake, starts[3], hints[3];
-static volatile UWORD tried, orderCount, order[3];
+static volatile UWORD tried, orderCount, order[3], waiting[3];
 
 static void check(BOOL okay)
 {
@@ -20,10 +20,17 @@ static void check(BOOL okay)
 #define CHECK(t) check((t) != 0)
 #define UPDATES (*(volatile UWORD *)AESUpdates)
 #define MOUSE (*(volatile UWORD *)AESMouseHolds)
-#define QUEUED (*(volatile UBYTE *)AESLockCount)
+#define QUEUED queued()
 #define NATIVE_BUSY (*(volatile UBYTE *)AESNativeBusy)
 #define GATE (*(volatile UBYTE *)AESPolicyGate)
 #define NATIVE_READY (*(volatile UBYTE *)AESNativeReady)
+
+static UWORD queued(void)
+{
+    UWORD i,count=0;
+    for (i=0;i<3;++i) if (waiting[i] && workers[i]->tc_State==TS_WAIT) ++count;
+    return count;
+}
 
 /* Test coordination only: the presenter has published its whole-turn boundary.
  * Keep inherited Forbid until the controlled caller operation has completed. */
@@ -72,17 +79,17 @@ static void local_pairs(void)
     await_gate(); sequence=c->sequence; GATE=0;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(c->sequence==sequence);
-    Permit(); await_gate();
+    GATE=1;Permit(); await_gate();
     CHECK(wind_update(END_UPDATE));
     CHECK(c->sequence==sequence && c->updateDepth==0);
     Permit();
-    /* An older unadmitted request prevents a fresh TRY from jumping the port.
-     * Deliberately malformed so admission replies without taking a lock. */
+    /* FIFO starts at native acquisition, independently of port arrival. */
     older.message.mn_Length=sizeof(older);
     older.message.mn_ReplyPort=reply;
     await_gate(); sequence=c->sequence;
     PutMsg(c->service,&older.message);
-    CHECK(!wind_update(BEG_CHECK|BEG_UPDATE));
+    CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
+    CHECK(wind_update(END_UPDATE));
     CHECK(c->diagnostic==AES_OK && c->sequence==sequence && !UPDATES);
     Permit();
     while (!GetMsg(reply)) Wait(1UL<<reply->mp_SigBit);
@@ -115,7 +122,9 @@ static void loop(UWORD who)
     Forbid(); ++tried; Signal(controller, wake); Permit();
     Wait(starts[who]);
     sequence=ExecAESContext()->sequence;
+    waiting[who]=1;
     CHECK(wind_update(code) == 1);
+    waiting[who]=0;
     CHECK(ExecAESContext()->sequence==sequence);
     CHECK(!ExecAESContext()->busy);
     CHECK((SetSignal(0,starts[who]) & starts[who])!=0);
@@ -240,9 +249,7 @@ UWORD AESRun(void)
     MOUSE=1;
     for (round=0; round<2; ++round) {
         AESReady=AESDone=tried=orderCount=0;
-        if (round) {
-            await_gate(); NATIVE_BUSY=1; GATE=0; Permit();
-        }
+        if (round) CHECK(wind_update(BEG_UPDATE));
         for (i=0; i<3; ++i) {
             workers[i]=CreateTask("AES lock peer", 1, (APTR)entries[i], 1024UL);
             CHECK(workers[i] != NULL);
@@ -250,7 +257,7 @@ UWORD AESRun(void)
         while (AESReady < 3) Wait(wake);
         for (i=0; i<3; ++i) Signal(workers[i], starts[i]);
         while (tried < 3) Wait(wake);
-        CHECK(UPDATES == (round ? 0 : 2) && MOUSE == (round ? 0 : 1));
+        CHECK(UPDATES == (round ? 1 : 2) && MOUSE == (round ? 0 : 1));
         for (position=0; position<3; ++position) {
             i=round ? 2-position : position;
             Signal(workers[i], starts[i]);
@@ -268,12 +275,17 @@ UWORD AESRun(void)
             CHECK(wind_update(END_UPDATE) == 1);
             CHECK(evnt_timer(0, 0) == 1);
             CHECK(QUEUED == 3 && orderCount == 0);
+            Forbid();
             CHECK(wind_update(END_MCTRL) == 1);
         } else {
-            NATIVE_BUSY=0;
-            /* A new try must not jump ahead of already eligible queued peers. */
-            CHECK(wind_update(BEG_CHECK | BEG_UPDATE) == 0);
+            Forbid();
+            CHECK(wind_update(END_UPDATE));
         }
+        /* Release installs the FIFO recipient before making it ready. The
+         * releasing Task cannot barge, even before that recipient can run. */
+        CHECK(!wind_update(BEG_CHECK|BEG_UPDATE));
+        CHECK(workers[round ? 2:0]->tc_State==TS_READY && orderCount==0);
+        Permit();
         while (AESDone < 3) Wait(wake);
         CHECK(orderCount == 3);
         for (i=0; i<3; ++i) CHECK(order[i] == (round ? 2-i : i));

@@ -642,6 +642,449 @@
       "private_service_bytes": 2328,
       "private_client_bytes": 376,
       "scope": "Owner-side protected cleanup before release; final RPC only detaches. Caller menus/outline admission. Non-authoritative presenter hints and controller return boundary prepared for AM4. One retained-fence/input variant; no full matrix."
+    },
+    "AM4": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/aes-migration/am4-small",
+          "results_sha256": "2627ef814197d69415244c8b75f8410b7f8ee9d334dce66313d673cc3468c2a1",
+          "image_sha256": "aa13ef683e64ddc8188f769f744f6be4f9ffcfe8df25243bb9b1af6a225c15c6",
+          "xex_sha256": "5f8a1f0bcce0d9176f848a47e1138574890a6eca4fb245d7f9ec9e8155b07545",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "AESChecks": 64,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 626,
+              "remaining_above_floor": 654
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 138,
+              "remaining_above_floor": 918
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 360,
+              "remaining_above_floor": 696
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 62,
+              "remaining_above_floor": 994
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 703,
+              "remaining_above_floor": 1601
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 52,
+              "remaining_above_floor": 204
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am4-fifo",
+          "results_sha256": "47ab3d337b38e2d3ad640306e54b362a134ad24312d71458f64c1135ec7bf9d1",
+          "image_sha256": "23f3635c221111ea3a687829a6ef3ac8b4bdb073100f42b25c2aca040649d5cc",
+          "xex_sha256": "63b2d6296ca4b224d0063a418f14174addd9ea8090ef16999db5e325f2bc9fc4",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "AESChecks": 237,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 1094,
+              "remaining_above_floor": 186
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 182,
+              "remaining_above_floor": 874
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 396,
+              "remaining_above_floor": 660
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 396,
+              "remaining_above_floor": 660
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 347,
+              "remaining_above_floor": 709
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 719,
+              "remaining_above_floor": 1585
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 129,
+              "remaining_above_floor": 127
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am4-cache",
+          "results_sha256": "ff3cb9c82edced9c33d41759451f71fab6b38667266708d1776b7715bda2ea57",
+          "image_sha256": "1eb75c88f33cf8347a4605a26b4f40019885da707c3c955bda55e11d6a60a9d1",
+          "xex_sha256": "4bf9861ca01d0872759643e590bd0f614ad5b47db303bc55861dd109380fee22",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "AESChecks": 224,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 741,
+              "remaining_above_floor": 539
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 156,
+              "remaining_above_floor": 900
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 304,
+              "remaining_above_floor": 752
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 720,
+              "remaining_above_floor": 1584
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 39,
+              "remaining_above_floor": 217
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 301,
+              "remaining_above_floor": 979
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am4-capture",
+          "results_sha256": "7e24136b02ad42dca8ab787128ed2d15013a8c3d40da613465b3cf78f9b0c850",
+          "image_sha256": "94bf8edffe94bcb0e2d01d572bee33297f8d3e9acac9d0d67afebb42cecc57c1",
+          "xex_sha256": "47e08624bd8d17fd41e5dd9a53b787c3647da978bf9fb5d3d7820e9dc7831253",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "AESChecks": 168,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 560,
+              "remaining_above_floor": 720
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 128,
+              "remaining_above_floor": 928
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 496,
+              "remaining_above_floor": 560
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 719,
+              "remaining_above_floor": 1585
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 117,
+              "remaining_above_floor": 139
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 283,
+              "remaining_above_floor": 997
+            }
+          },
+          "boundary_checks": 25
+        },
+        {
+          "capture": "build/aes-migration/am4-independent",
+          "results_sha256": "b37505c932dbdd4ef0cfe22838e42238badf25bae0ce3b8e19d030372e148e86",
+          "image_sha256": "0c1bfb0af2bca4f922bfa26729a97f563a239bf9d0b33c10fda416b60facde90",
+          "xex_sha256": "7d8ffedd38013be7fad7b975a3d990a08d0347850c712273a2ccf58bca857a62",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "cases": [
+            {
+              "variant": 1,
+              "caller_waiting": true,
+              "retained_token": 6,
+              "fence_retired_without_scene": true,
+              "presenter_waiting": true,
+              "peer_progress": 33873,
+              "stacks": {
+                "0": {
+                  "base": 9744,
+                  "bytes": 1536,
+                  "peak": 723,
+                  "remaining_above_floor": 557
+                },
+                "1": {
+                  "base": 12880,
+                  "bytes": 1312,
+                  "peak": 128,
+                  "remaining_above_floor": 928
+                },
+                "2": {
+                  "base": 14224,
+                  "bytes": 1312,
+                  "peak": 311,
+                  "remaining_above_floor": 745
+                },
+                "3": {
+                  "base": 15568,
+                  "bytes": 1312,
+                  "peak": 306,
+                  "remaining_above_floor": 750
+                },
+                "4": {
+                  "base": 16912,
+                  "bytes": 1312,
+                  "peak": 18,
+                  "remaining_above_floor": 1038
+                },
+                "5": {
+                  "base": 18256,
+                  "bytes": 1312,
+                  "peak": 18,
+                  "remaining_above_floor": 1038
+                },
+                "6": {
+                  "base": 19600,
+                  "bytes": 2560,
+                  "peak": 778,
+                  "remaining_above_floor": 1526
+                },
+                "7": {
+                  "base": 22192,
+                  "bytes": 2560,
+                  "peak": 295,
+                  "remaining_above_floor": 2009
+                },
+                "8": {
+                  "base": 24784,
+                  "bytes": 512,
+                  "peak": 24,
+                  "remaining_above_floor": 232
+                },
+                "kernel": {
+                  "base": 11312,
+                  "bytes": 1536,
+                  "peak": 285,
+                  "remaining_above_floor": 995
+                }
+              },
+              "checks": 31,
+              "failures": 0,
+              "first_failure": 0,
+              "scene_checks": 775,
+              "physical_checks": 131
+            }
+          ]
+        },
+        {
+          "capture": "build/aes-migration/am4-layout-raw",
+          "results_sha256": "fafe3aa7366a6534971d62fac3fd5b41635bb902eed92a8e0313934f5b4a5385",
+          "image_sha256": "dfc11151755e5cdbf804325e89fedc430a33cde69fd8dab50cef427be4339c52",
+          "xex_sha256": "c1c072cabf6cd3b24154603a4156abfc71529c555a9a748f3f91cf103fbc6fd9",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "checks": 19
+        },
+        {
+          "capture": "build/aes-migration/am4-layout-opt",
+          "results_sha256": "435dbd20153a60a4b87fbbb14900db78737b2d435546916e21af3d763513f6c6",
+          "image_sha256": "6765e52a59612970ceee7441060c790c8e6a8ae8ac868bad14baf81c2049a5ec",
+          "xex_sha256": "1220791011b6fd5f77c546d52228cc894df8e034a26d1142fc2bec0c82f6597d",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "checks": 19
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skips": 5,
+        "status": "pass"
+      },
+      "private_service_bytes": 2328,
+      "rounded_service_bytes": 2328,
+      "private_client_bytes": 374,
+      "native_object_bytes": 12,
+      "upper_global_bytes": 1,
+      "scope": "Native UPDATE arbitration and FIFO handoff; no AES resource queue. Owner cleanup and retained physical continuations; one scene case. Excluded pilots and independent-slider intermediate capture recorded in history. No release matrix."
     }
   }
 }

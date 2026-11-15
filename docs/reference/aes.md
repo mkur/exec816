@@ -275,15 +275,16 @@ corresponding level and, for MCTRL, restore routing at its last level.
 Wrong-owner release returns zero with
 `AES_IDENTITY`; nesting overflow returns `AES_OVERFLOW` without changing either
 hold. `0x100` on a BEGIN call tries without waiting, returning zero with `AES_OK`
-if unavailable. A normal contended BEGIN waits in arrival order among eligible
-callers; an existing owner recurses through the common helper. Exit releases
+if unavailable. Native semaphore acquisition and FIFO handoff determine order;
+an existing owner recurses through the common helper. Exit releases
 every owned hold. Message and timer service continue.
 
 A work-area pointer capture retains its input recipient through release while
 other clients may acquire short UPDATE sections and paint. Painting does not
 replace that recipient. Explicit MCTRL remains unavailable
-to a competing capture owner until release; native frame gestures and pending
-window transactions retain their existing admission rules.
+to a competing capture owner until release. That routing-readiness wait follows
+native UPDATE acquisition; it cannot transfer the captured input recipient.
+A TRY routing miss balances its temporary native level without waiting.
 
 `wind_set(window,WF_EXEC_FOCUS,enabled,0,0,0)` opts an owned window into native
 `WM_ONTOP`/`WM_UNTOPPED` focus notices. The default is disabled. Enabling an open
@@ -294,24 +295,26 @@ notices; an already delivered notice remains consumable. Closing retires
 pending notices with the window epoch. These report accepted focus changes;
 `WM_TOPPED` remains a request for the application to raise its window.
 
-Outermost BEGIN/END UPDATE and routing transitions enter a shared scene gate.
-Recursion that needs no outer transition uses the same accounting helper without
-scene admission. Window mutators acquire and balance a temporary UPDATE level;
-they do not open a public painting journal or change explicit binding depth.
-A contended
-BEGIN publishes its waiter before releasing the gate, then sleeps on its private
-reply-port signal. The system Task signals the oldest eligible caller; that
-caller rechecks ownership and acquires its own hold. Signals are hints and do
-not transfer ownership. The busy C context and registration lease pin the native
-frame and descriptor until return. No scene gate, display grant or Layers token
-is held across this wait. Unrelated input, message and timer signals remain
-pending.
+One native semaphore owns UPDATE for public painting, MCTRL and temporary
+window/menu handlers. Ordinary and recursive UPDATE entry changes journal/depth
+facts without taking the scene or sweeping geometry/caches. Routing transitions
+and final journal reconciliation use the short scene gate. Temporary handler
+levels do not start a public journal or change explicit binding depth.
 
-These calls do not send or reply to a message and do not advance the transport
-sequence. An older unadmitted request also prevents a new BEGIN from bypassing
-pending work, with the existing owner exception. Window waiters retain their
-older-lock prefix as grants compact the shared queue. TRY failure remains a
-completed zero result, not an error. New signals and Task slots are unnecessary.
+An uncontended native Attempt completes directly. A normal miss publishes a
+presenter quiescence hint, then blocks in native Obtain before taking the scene.
+The kernel installs the FIFO recipient and count before making it ready. The
+resumed caller owns UPDATE; it does not re-enter an AES eligibility contest.
+No scene gate, display grant or Layers token is held across that Obtain.
+The busy C context and registration pin its descriptor/frame. Unrelated input,
+message and timer signals remain pending; native resource waits consume none.
+
+These calls send no RPC and do not advance its sequence. FIFO starts at native
+acquisition, independently of message-port arrival. There is no mixed AES
+UPDATE/window queue or older-window-prefix barrier. TRY failure is a completed
+zero result. Physical input/outline/route continuations retain existing private
+reply-signal hints after ownership has been established; those hints never grant
+UPDATE. No Task, signal or kernel ABI extension is added.
 
 Final local END consumes the binding's paint journal before returning and
 signals the existing AES wake bit. While a caller owns scene metadata, the
@@ -350,19 +353,20 @@ checks. A completed empty update preserves a valid saved image; it never clears
 older unsatisfied damage. This uses existing local/presenter ownership and adds
 114 payload bytes to the request/context, with no new bank-zero reservation.
 
-Update ownership also excludes presenter feedback, background repair and cache
-capture. Mouse ownership defers frame gestures, focus and geometry changes;
-an explicit mouse hold alone allows application painting. Acquisition waits for already admitted drawing and
-hardware/scene tokens to retire. Pending acquisitions stop new conflicting work,
-so continuous output cannot starve an application lock. The service holds no
-Layers token while an application owns a lock.
+The presenter uses native Try, retaining ownership through an actual physical
+continuation. It releases at a settled operation boundary and reacquires through
+the same public primitive. A failed Try leaves independent input and fence
+completion running; a guarded release hint prevents a lost wake. Journal completion
+also wakes new cache/paint work when the presenter never encountered contention.
+Normal Task preemption continues throughout ownership; short final publication
+and release guards do not extend over a drawing scope.
 
-A queued acquisition does not interrupt an already captured native title or
-gadget gesture. Its outline and input tracking continue until release,
-Escape or loss; the waiting UPDATE still cannot acquire while the physical
-button is held. New interactions, focus changes and completed geometry/action
-commits retain the normal queue gates. Active UPDATE/MCTRL ownership continues
-to exclude native gesture work.
+Acquisition hints let the presenter discard idle cache gathering before handoff.
+A captured native gesture retains its resource through release, Escape or loss.
+Control notifications establish the prepared release/reacquire boundary. Application
+outlines are separately retained physical effects; a new painting scope waits for
+their erasure while already owning UPDATE. The service retains no Layers token
+across an application's completed BEGIN.
 
 Input capture and the serialized cursor path continue. Sixteen copied pointer
 records retain deferred gestures, coalescing adjacent motion; overflow reports
@@ -389,14 +393,10 @@ permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
 Hidden creation and ordinary closed-window deletion execute in the caller under
-the shared scene gate when eligible. Ordinary and parameter-block entries use
-the same policy. They honor earlier queued work, with the existing logical
-owner exception, and do not advance transport sequence numbers. Scene admission
-can sleep on the caller's owned signal. An operation that needs system admission
-falls back to RPC before applying any mutation. View storage is allocated before
-scene entry and freed after release. Console-bound deletion remains a system
-operation because it can retire physical presentation state. Open/close and
-other unmigrated operations retain their established transport.
+the common UPDATE scope and short scene gate. Ordinary/PB calls use the same
+helpers and preserve transport sequence. View storage is allocated before entry
+and freed after release. A real physical effect can retain a presenter continuation
+while the owning caller waits; the presenter cannot release that caller's semaphore.
 
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
@@ -404,15 +404,15 @@ text or bounded slider values, cache/menu changes, derived geometry, damage and
 view publication under scene ownership. Changed attributes wake frame work
 after release; unchanged values retain their existing publication and do not
 request a frame wake. Physical repaint remains deferred, including while the
-caller owns UPDATE. A readiness or older-work miss publishes a waiter before mutation.
-The caller resumes and rechecks when eligible; physical extensions use the
-system continuation described below.
+caller owns UPDATE. Separate unheld setter calls may be presented and cached
+between calls; they are separate resource scopes. Equal setters remain no-ops.
+Physical extensions use the retained continuation described below.
 
 Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/system geometry helper.
 Bounds changes inside the owner's UPDATE, ordinary resizes, hidden/iconified
 normal bounds and no-op geometry commit their values and published views before
-return. Effect-free stacking/focus changes use the caller too. Earlier waiters
-and peer ownership retain the same exclusion rule as other window mutations;
+return. Effect-free stacking/focus changes use the caller too. Native ownership
+serializes mutations;
 changed geometry invalidates an existing visible-rectangle walk.
 
 An unheld move needing a screen copy defers to the system before reserving a move or
@@ -423,11 +423,10 @@ mutation. Frame drawing and interactive gesture work remain in the presenter,
 using the same bounds/top policy. No physical effect runs under caller scene
 ownership.
 
-Eligible ordinary/PB opens prepare an unpublished keyboard route outside the
-scene gate. Re-admission checks older work, ownership and physical/focus
-readiness before publishing a fresh open epoch. If admission changes, the
-caller retires its unused route before publishing a waiter. Route exhaustion
-and exhausted GUI epochs leave the hidden window and input tag pool intact.
+Ordinary/PB opens retain UPDATE while preparing an unpublished keyboard route
+outside the scene gate. Re-entering the scene does not re-arbitrate ownership.
+Route exhaustion and exhausted GUI epochs leave the hidden window and tag pool
+intact; failed preparation retires its unused route before return.
 Console-bound windows and caret/widget focus effects retain system admission.
 
 Eligible ordinary/PB closes withdraw the open epoch, GUI facts and capture,
@@ -611,8 +610,7 @@ capture or busy visual returns `AES_BUSY`. The presenter owns tracking and
 retires it on release, loss, source close, final MCTRL release or detach, without
 native move/size completion. No client pointer is retained. The owner may acquire
 UPDATE for feedback; the outline is suspended around drawing. Other clients'
-UPDATE requests still wait for MCTRL release, and a queued lock may pause native
-painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
+UPDATE requests wait on the same native resource until MCTRL releases it. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile: version 24 has a 418-byte request. Init, final exit detach, cold display

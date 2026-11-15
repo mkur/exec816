@@ -77,11 +77,11 @@ ENDMODULE
     (out/'displayborrowprobe.act').write_text(source)
     host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE', 'USE AESCORE\nUSE DISPLAYBORROWPROBE')
     # The notification-only fast path must see this fixture's private work.
-    needle='RETURN(service<>NULL AND service.live=1 AND service.lockCount=0'
+    needle='RETURN(service<>NULL AND service.live=1'
     require(host.count(needle)==1,'Settled observation hook changed')
     host=host.replace(needle,
         'RETURN(DISPLAYBORROWPROBE.Pending()=0 AND service<>NULL AND '
-        'service.live=1 AND service.lockCount=0')
+        'service.live=1')
     needle = '  changed=service.directory.changed<>0'
     require(host.count(needle) == 1, 'Admission hook changed')
     (out/'aeshost.act').write_text(host.replace(needle, '  DISPLAYBORROWPROBE.Pump()\n'+needle))

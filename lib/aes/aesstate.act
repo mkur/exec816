@@ -39,7 +39,7 @@ PUBLIC TYPE Client=[
   AESTYPES.MouseForm currentForm
   AESTYPES.MouseForm previousForm,savedForm
   DESKTYPES.GuiPending gui
-  BYTE guiNext,windowWaiting,closeRequested,windowLocks,waitMode
+  BYTE guiNext,windowWaiting,closeRequested,waitMode
 ]
 
 PUBLIC TYPE Service=[
@@ -66,8 +66,6 @@ PUBLIC TYPE Service=[
   LONGCARD cursorHides
   LONGCARD cursorOwner
   INT updateWindow
-  BYTE ARRAY lockOrder(AESTYPES.CLIENTS)
-  BYTE lockCount
   BYTE policyGate,policyWaiting,policyEffects
   EXEC.Task POINTER sceneOwner
   BYTE POINTER sceneWaiters
@@ -76,9 +74,10 @@ PUBLIC TYPE Service=[
   CARD updateHolds
   BYTE paintPrepared
   BYTE updateHint
+  EXEC.SignalSemaphore updateResource
 ]
 
-PUBLIC CONST UPDATE_WAITING=1, CONTROLLER_LOAN=2
+PUBLIC CONST UPDATE_WAITING=1, CONTROLLER_LOAN=2, UPDATE_REQUESTED=4
 
 Service POINTER boundService
 

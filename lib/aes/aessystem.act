@@ -236,6 +236,8 @@ PUBLIC PROC Run()
   OD
 
 
+  AESLOCKS.SystemStop()
+
 RETURN
 
 PUBLIC PROC Stop()

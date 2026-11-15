@@ -115,4 +115,55 @@ byte also marks prepared departure. Public layouts, APP ABI and Task ABI are
 unchanged; the generated RPC-operation set reflects the current caller entries.
 Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle, 0 per public
 Task**, including guards, alignment and spare capacity. Stack evidence is in the
-development record. No QED, demo refresh or release matrix ran. AM4–AM5 remain.
+development record. No QED, demo refresh or release matrix ran.
+
+## AM4: native UPDATE cutover
+
+One native semaphore now arbitrates UPDATE, MCTRL and temporary handlers.
+Uncontended/recursive calls use native Attempt; normal misses use blocking Obtain
+before scene access. The native FIFO owns handoff before Ready. The mixed AES
+lock queue, prefix barriers, eligibility lottery and retry scan are removed.
+Published client/depth facts support GUI permissions and cleanup, without granting
+ownership. All journal, routing and cache publication precedes native release.
+
+The presenter tries the resource, retains it through an actual hardware/scene
+continuation, and releases through the public primitive at a settled boundary.
+Control notifications use the prepared release/reacquire boundary. A failed Try
+publishes a guarded wake hint and leaves independent input/fence work active.
+An application contender hints that idle gathering should settle, then waits in
+the kernel. A separate journal-completion wake remains necessary even if the
+presenter slept through the entire painting scope: a cache test caught and fixed
+that missed-work case.
+
+MCTRL obtains UPDATE before waiting for any older foreign physical capture;
+this is operation readiness, not another ownership queue. A TRY readiness miss
+balances the attempted native level without changing routing. Application outline
+erasure similarly retains the already established owner while physical work
+finishes. Neither continuation can hand ownership to a Task. Forced foreign
+release/owner-death recovery remains unsupported.
+
+Development checks pass: 64 tiny owner/contender/Counter assertions, including
+native per-Task ownership counts and held cleanup; 237 lock assertions with three
+FIFO contenders in both orders, non-barging and ownership before the recipient
+runs; 224 cache/journal/move checks with exact pixels; 168 pointer assertions and
+25 normalized-input boundaries; one retained-copy/input scene case with 31
+application assertions and native physical/scene guards. The small native-object
+and private-layout probes pass 19 assertions in both raw and optimized modes.
+Host checks pass 718 tests, five skips. Observer boundaries for the other changed
+private-layout fixtures were checked without running a qualification matrix.
+
+Excluded pilots exposed the missed journal wake and fixture assumptions about
+old ownership fields, scene checks on the now scene-free BEGIN, and background
+drain before shutdown. The frame-cache observer now permits a valid intermediate
+capture between two independent slider setters: each call releases UPDATE.
+This capture has two snapshots there; equal setters still cause none. It does
+not claim that separate unheld setters coalesce into one presentation.
+
+Client shrinks 376→374 bytes (eight bytes across four slots). Removing the old
+queue and alignment leaves room for the 12-byte native object: Service and its
+rounded allocation remain **2328 bytes**. One upper global byte records the
+presenter's retained native scope. Reserved bank-zero deltas are **0 fixed,
+0 root, 0 kernel, 0 idle, 0 per public Task**, including guards, alignment and
+unused capacity. Stack peaks and image/compiler hashes are in the evidence.
+No Task/kernel/APP layout or ABI changed. No QED, demo refresh or release matrix
+ran. Matched scrolling remains AM5.

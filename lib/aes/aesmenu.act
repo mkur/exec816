@@ -171,8 +171,7 @@ RETURN
 PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client)
 
   IF client.menu<>NULL THEN
-    IF AESLOCKS.NativeReady()=0 OR (service.mouseOwner<>0
-        AND service.mouseOwner<>client.id) THEN
+    IF AESLOCKS.NativeReady()=0 THEN
       RETURN(0)
     FI
     Withdraw(service,client)
@@ -185,8 +184,7 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
   LONGCARD location,value
   INT operation,item
 
-  IF AESLOCKS.NativeReady()=0 OR (service.mouseOwner<>0
-      AND service.mouseOwner<>client.id) THEN
+  IF AESLOCKS.NativeReady()=0 THEN
     RETURN(AESTYPES.PENDING)
   FI
 

@@ -25,8 +25,8 @@ RETURN
 
 ; One busy C context pins its descriptor, registration and native stack until
 ; return. Waiter publication precedes scene release; signals are only hints.
-CARD FUNC Policy(LONGCARD value BYTE painting)
-  BYTE queued,wake,waiting
+CARD FUNC Policy(LONGCARD value)
+  BYTE wake,waiting
   CARD status
 
   LET service=AESSTATE.Get()
@@ -34,8 +34,7 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
     RETURN(0)
   FI
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
-  IF request.operation<>AESTYPES.OP_UPDATE
-      AND request.operation<>AESTYPES.OP_CREATE
+  IF request.operation<>AESTYPES.OP_CREATE
       AND request.operation<>AESTYPES.OP_DELETE
       AND request.operation<>AESTYPES.OP_OPEN
       AND request.operation<>AESTYPES.OP_CLOSE
@@ -79,8 +78,6 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
     FI
     BEGIN
       LET client=AESSTATE.Find(service,request.client)
-      queued=IF request.operation=AESTYPES.OP_UPDATE THEN
-          AESWAIT.Older(service,client) ELSE BYTE(0) FI
       IF waiting<>0 AND client.waitMode=AESWAIT.SYSTEM THEN
         IF client.pending<>NULL THEN
           AESGATE.Release(0)
@@ -91,35 +88,27 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
           RETURN(1)
         FI
       ELSE
-        wake=request.operation<>AESTYPES.OP_UPDATE
-            OR (request.intin(0)=AESTYPES.END_UPDATE AND service.updates=1)
+        wake=1
         request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
             ELSE INT(0) FI
-        IF request.operation=AESTYPES.OP_UPDATE THEN
-          IF waiting<>0 THEN
-            status=AESLOCKS.Continue(service,client,painting)
-          ELSE
-            status=AESLOCKS.Attempt(service,client,request,
-                AESLOCKS.OWNER_READY,queued,painting)
-          FI
-        ELSEIF request.operation=AESTYPES.OP_MENU THEN
+        IF request.operation=AESTYPES.OP_MENU THEN
           status=AESMENU.Request(service,client,request)
         ELSEIF request.operation=AESTYPES.OP_OPEN
             OR request.operation=AESTYPES.OP_CLOSE THEN
           AESWINDOWSTATE.PrepareUpdate(client)
-          status=AESWINDOW.Visibility(service,client,request,queued)
+          status=AESWINDOW.Visibility(service,client,request)
         ELSEIF request.operation=AESTYPES.OP_SET THEN
           IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
-            status=AESWINDOW.Frame(service,client,request,queued,@wake)
+            status=AESWINDOW.Frame(service,client,request,@wake)
           ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
             AESWINDOWSTATE.PrepareUpdate(client)
-            status=AESWINDOW.Geometry(service,client,request,queued)
+            status=AESWINDOW.Geometry(service,client,request)
           ELSE
             status=AESWAIT.SYSTEM_WORK
           FI
         ELSE
           AESWINDOWSTATE.PrepareUpdate(client)
-          status=AESWINDOW.Lifecycle(service,client,request,queued)
+          status=AESWINDOW.Lifecycle(service,client,request)
         FI
         IF status=AESWAIT.SYSTEM_WORK THEN
           AESWAIT.Window(service,client,request)
@@ -129,15 +118,9 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
           ; A metadata retry can discover physical work after its first wake.
           waiting=0
         ELSEIF status=AESTYPES.PENDING AND waiting=0 THEN
-          IF request.operation=AESTYPES.OP_UPDATE THEN
-            status=AESWAIT.Lock(service,client,request)
-          ELSE
-            AESWAIT.Window(service,client,request)
-          FI
-          IF status=AESTYPES.PENDING THEN
-            client.waitMode=AESWAIT.CALLER
-            request.status=AESTYPES.PENDING
-          FI
+          AESWAIT.Window(service,client,request)
+          client.waitMode=AESWAIT.CALLER
+          request.status=AESTYPES.PENDING
         FI
         IF status<>AESTYPES.PENDING THEN
           client.pending=NULL
@@ -145,7 +128,7 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
           client.waitMode=AESWAIT.RPC
           request.status=status
           ; Removing a failed waiter also unblocks deferred paint and peers.
-          AESGATE.Release(waiting<>0 OR ((wake OR queued) AND status=AESTYPES.OK))
+          AESGATE.Release(waiting<>0 OR (wake AND status=AESTYPES.OK))
           RETURN(1)
         FI
         AESGATE.Release(waiting=0)
@@ -169,17 +152,39 @@ CARD FUNC Scope(AESTYPES.Request POINTER request CARD code BYTE painting)
   request.operation=AESTYPES.OP_UPDATE
   request.intin(0)=INT(code)
   request.intin(1)=0
-  IF AESLOCKS.Nested(AESSTATE.Get(),request,painting)=0 THEN
-    BEGIN
-      LET ignored=Policy(LONGCARD(ADDRESS(request)),painting)
-    END
-  FI
-  status=request.status
+  status=AESLOCKS.Call(request,painting)
   request.operation=operation
   request.intin(0)=first
   request.intin(1)=second
 
 RETURN(status)
+
+; This wait is for a retained physical effect after native acquisition. It is
+; never resource arbitration: the caller already owns UPDATE throughout.
+PROC DrawingReady(AESTYPES.Request POINTER request)
+
+  IF DESKDRAG.DrawReady()<>0 THEN
+    RETURN
+  FI
+  LET service=AESSTATE.Get()
+  LET client=AESSTATE.Find(service,request.client)
+  LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
+  DO
+    AESGATE.EnterTask(request.owner,mask)
+    IF DESKDRAG.DrawReady()<>0 THEN
+      client.pending=NULL
+      AESWAIT.RemoveWindow(service,client)
+      client.waitMode=AESWAIT.RPC
+      AESGATE.Release(0)
+      RETURN
+    FI
+    AESWAIT.Window(service,client,request)
+    client.waitMode=AESWAIT.CALLER
+    AESGATE.Release(1)
+    EXEC.Wait(mask)
+  OD
+
+RETURN
 
 ; Cooperative owner cleanup retains its context through every actual wait.
 ; UI withdrawal precedes final resource release; cursor repair follows it.
@@ -242,16 +247,18 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     RETURN(1)
   FI
   IF request.operation=AESTYPES.OP_UPDATE THEN
-    status=AESLOCKS.Decode(CARD(request.intin(0)))
-    IF status<>AESTYPES.OK THEN
-      request.status=status
-      request.intout(0)=0
-      RETURN(1)
+    request.status=AESLOCKS.Call(request,1)
+    IF request.status=AESTYPES.OK AND request.intout(0)<>0 THEN
+      IF (CARD(request.intin(0)) & $ff)=AESTYPES.BEG_UPDATE THEN
+        DrawingReady(request)
+      ELSEIF DESKDRAG.Application()<>0 THEN
+        BEGIN
+          LET service=AESSTATE.Get()
+          EXEC.Signal(service.owner,service.mask)
+        END
+      FI
     FI
-    IF AESLOCKS.Nested(AESSTATE.Get(),request,1)<>0 THEN
-      RETURN(1)
-    FI
-    RETURN(Policy(value,1))
+    RETURN(1)
   FI
   IF request.operation=AESTYPES.OP_CREATE
       OR request.operation=AESTYPES.OP_DELETE
@@ -265,7 +272,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1) ELSE INT(0) FI
       RETURN(1)
     FI
-    handled=Policy(value,0)
+    handled=Policy(value)
     status=request.status
     result=CARD(request.intout(0))
     BEGIN
@@ -280,6 +287,6 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     RETURN(handled)
   FI
 
-RETURN(Policy(value,0))
+RETURN(Policy(value))
 
 ENDMODULE

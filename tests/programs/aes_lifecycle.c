@@ -6,7 +6,7 @@
 #include <exec816/console-view.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService,LifeNative,LifeGate,LifeOwner,LifeWaiting,LifeNext,LifeBusy,LifeLocks;
+ULONG AESService,LifeNative,LifeGate,LifeOwner,LifeWaiting,LifeNext,LifeBusy;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD LifeFailAlloc;
 volatile UWORD LifePhase;
@@ -201,14 +201,14 @@ UWORD AESRun(void)
     reused=create(1);CHECK(reused>windows[2] && reused>peerWindows[2]);windows[1]=reused;
     /* A queued UPDATE cannot prevent its current owner from completing work. */
     LifePhase=4;done=entered=0;command=3;Signal(peer,peerWake);
-    while (!entered || !(*(volatile UBYTE *)LifeLocks)) ExecYield();
+    while (!entered || peer->tc_State!=TS_WAIT) ExecYield();
     last=create(0);CHECK(last>reused);
     release();while (done!=3) Wait(wake);
     stable();remove_hidden(last,1);release();
     /* The old lock must precede this window, without the window's barrier
      * preventing that predecessor from acquiring and releasing UPDATE. */
     LifePhase=5;stable();done=entered=0;command=6;Signal(peer,peerWake);
-    while (!entered || !(*(volatile UBYTE *)LifeLocks)) ExecYield();
+    while (!entered || peer->tc_State!=TS_WAIT) ExecYield();
     for (;;) { Forbid();if (GATE==1) break;Permit();ExecYield(); }
     release();sequence=c->sequence;system=NATIVE(1);
     last=wind_create(AES_WINDOW_KIND,32,24,128,64);

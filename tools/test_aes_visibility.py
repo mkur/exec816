@@ -5,10 +5,11 @@ from generate_desktop import ABI as DESKTOP_ABI,layout as desktop_layout
 from library_paths import read_source
 from native_program import ROOT,require
 from os_boundary import run_to
+from generate_tasks import ABI as TASKS
 import adapter_state as adapter
 
-ROOTS=['VisNative','VisBusy','VisFail','VisFocus','VisHold','VisHeld','VisRelease',
-       'VisEpoch','VisWaiting','VisLocks','VisOwner','VisPhase','VisGo','VisPoint',
+ROOTS=['VisNative','VisBusy','VisFail','VisHold','VisHeld','VisRelease',
+       'VisEpoch','VisWaiting','VisPeerTask','VisOwner','VisPhase','VisGo','VisPoint',
        'VisOperation','VisResult','VisStatus','VisSequence','VisView',
        'VisPeerHeld','VisPeerRelease','VisWake','VisReady','VisRetireBusy',
        'VisEndpoint','VisPublisherHeld','VisPublisherGo','VisExitPending','VisQueue']
@@ -22,7 +23,7 @@ USE AESSTATE
 USE AESTYPES
 USE HEAPCORE
 PUBLIC CARD ARRAY stats(8)
-PUBLIC BYTE busy,failRoute,focusBusy,hold,held,release,ready,retireBusy
+PUBLIC BYTE busy,failRoute,hold,held,release,ready,retireBusy
 
 PUBLIC PROC Outside()
 
@@ -119,11 +120,9 @@ ENDMODULE
 ''')
     source=read_source(ROOT/'lib/aes/aeswindow.act').replace(
         'USE EXEC\n','USE EXEC\nUSE VISPROBE\n',1)
-    needle='PUBLIC BYTE FUNC Ready(AESSTATE.Service POINTER service\n    AESSTATE.Client POINTER client)\n'
-    require(source.count(needle)==1,'Window readiness boundary changed')
-    source=source.replace(needle,needle+'\n  IF VISPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
     start=source.index('PUBLIC CARD FUNC Visibility(')
     at=source.index('\n\n',start)+2
+    source=source[:at]+'  IF VISPROBE.busy<>0 THEN\n    RETURN(AESTYPES.PENDING)\n  FI\n'+source[at:]
     source=source[:at]+'''  IF request.operation=AESTYPES.OP_OPEN THEN
     VISPROBE.Observe(client,request.operation)
   FI
@@ -144,12 +143,6 @@ ENDMODULE
     if needle in routes:
         routes=routes.replace(needle,'LET result=VISPROBE.Retire(INPUT.Lease POINTER(desktop.keyboard),\n      window.keyRoute,held)',1)
     (out/'aesroutes.act').write_text(routes)
-    core=read_source(ROOT/'lib/desktop/deskcore.act').replace(
-        'USE EXEC\n','USE EXEC\nUSE VISPROBE\n',1)
-    start=core.index('PUBLIC BYTE FUNC FocusMetadataReady(')
-    at=core.index('\n\n',start)+2
-    core=core[:at]+'  IF VISPROBE.focusBusy<>0 THEN\n    RETURN(0)\n  FI\n'+core[at:]
-    (out/'deskcore.act').write_text(core)
     driver=read_source(ROOT/'lib/aes/aessystem.act').replace(
         'USE AESGATE\n','USE AESGATE\nUSE VISPROBE\n',1)
     require(driver.count('    AESGATE.Offer()')==1,'Presenter offer boundary changed')
@@ -161,12 +154,12 @@ ENDMODULE
 
 def setup(symbols):
     fields={'VisNative':'@VISPROBE.stats(0)','VisBusy':'@VISPROBE.busy',
-            'VisFail':'@VISPROBE.failRoute','VisFocus':'@VISPROBE.focusBusy',
+            'VisFail':'@VISPROBE.failRoute',
             'VisHold':'@VISPROBE.hold','VisHeld':'@VISPROBE.held',
             'VisRelease':'@VISPROBE.release','VisReady':'@VISPROBE.ready',
             'VisRetireBusy':'@VISPROBE.retireBusy',
             'VisEpoch':'@service.nextGuiEpoch','VisWaiting':'@service.windowPending',
-            'VisLocks':'@service.lockCount','VisOwner':'@service.sceneOwner'}
+            'VisOwner':'@service.sceneOwner'}
     text=''
     for name,field in fields.items():
         text+=f'  BEGIN\n    LET target=LONGCARD POINTER(${symbols[name]:x})\n    target^=LONGCARD(ADDRESS({field}))\n  END\n'
@@ -206,28 +199,30 @@ def physical(b,p,foreign,report):
         old_tags=b.memdump(tags,64);epoch=get(pointer('VisEpoch'),4)
         if number==3:
             b.poke16(sy['VisQueue'],1)
-            reach('db($%x)>0'%pointer('VisLocks'))
+            state=next(o for n,k,o in TASKS['task']['fields'] if n=='tc_State')
+            reach('db($%x)=%d'%(val('VisPeerTask',4)+state,TASKS['states']['WAIT']))
             report['close_with_waiting_peer']=True
         if number==7:b.poke(pointer('VisFail'),1)
         if number==8:b.memload(pointer('VisEpoch'),bytes(4))
         if number==9:b.poke(pointer('VisHold'),1)
         if number==11:b.poke(pointer('VisBusy'),1)
-        if number==13:b.poke(pointer('VisFocus'),1)
         if number in (16,18):b.poke(pointer('VisRetireBusy'),1)
         b.poke16(sy['VisGo'],number*2-1)
         if number==9:
-            reach('dw($%x)=1'%sy['VisPeerHeld'])
-            require(get(pointer('VisHeld'),1)==1,'Peer acquired UPDATE before resource release')
+            reach('db($%x)=1'%pointer('VisHeld'))
+            state=next(o for n,k,o in TASKS['task']['fields'] if n=='tc_State')
+            reach('db($%x)=%d'%(val('VisPeerTask',4)+state,TASKS['states']['WAIT']))
+            require(val('VisPeerHeld')==0,'Route preparation lost native UPDATE')
             b.poke(pointer('VisRelease'),1)
-        if number in (9,11):
+            reach('dw($%x)=1'%sy['VisPeerHeld'])
+            b.poke16(sy['VisPeerRelease'],1)
+        if number==11:
             reach('db($%x)>0'%pointer('VisWaiting'))
             require(b.memdump(tags,64)==old_tags,'Pending open leaked its unpublished route')
-            if number==9:b.poke16(sy['VisPeerRelease'],1)
-            else:
-                b.poke(pointer('VisBusy'),0);b.poke16(sy['VisWake'],1)
+            b.poke(pointer('VisBusy'),0);b.poke16(sy['VisWake'],1)
         phase(number,3)
         operation=val('VisOperation')
-        direct=number not in (13,16,18) and (operation==101 or report['visibility_local']=='all')
+        direct=number not in (16,18) and (operation==101 or report['visibility_local']=='all')
         attempts=[get(pointer('VisNative')+2*i)-before[i] for i in range(8)]
         require(val('VisSequence',4)==0,
                 f'Phase {number}: wrong transport; sequence={val("VisSequence",4)}, attempts={attempts}')
@@ -252,7 +247,6 @@ def physical(b,p,foreign,report):
         if number==7:b.poke(pointer('VisFail'),0)
         if number==8:b.memload(pointer('VisEpoch'),epoch.to_bytes(4,'little'))
         if number==9:b.poke(pointer('VisHold'),0)
-        if number==13:b.poke(pointer('VisFocus'),0)
         b.poke16(sy['VisGo'],number*2)
     reach('(dw($%x)=1)&(dw($%x)=1)'%(sy['VisPublisherHeld'],sy['VisExitPending']))
     endpoint=val('VisEndpoint',4);ef=layout()['Endpoint']['fields']

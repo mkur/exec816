@@ -96,8 +96,13 @@ def physical(b,p,foreign,report):
                     'Snapshot does not use outer geometry')
         if phase>=27:
             require(valid,'Frame update did not produce a usable image')
-        if phase in (27,29,32):
+        if phase in (27,32):
             require(row['captures']==previous['captures']+1,'Changed frame was not recaptured')
+        if phase==29:
+            # Two separate setter calls each release UPDATE. Presentation may
+            # capture their valid intermediate state before the second call.
+            row['frame_captures']=row['captures']-previous['captures']
+            require(1<=row['frame_captures']<=2,'Changed slider states were not recaptured')
         if phase in (28,30,31):
             require(row['captures']==previous['captures'],'Unchanged frame/exposure recaptured pixels')
         if phase==31:
