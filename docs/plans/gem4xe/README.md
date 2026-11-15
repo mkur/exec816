@@ -4,8 +4,8 @@ The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common
 UPDATE handler scopes with MCTRL built on UPDATE, protected owner cleanup and
 continuations, then native FIFO ownership cutover and matched measurement.
-AM0 source reassessment is complete; AM1–AM5 implementation remains stopped.
-The earlier uncommitted accounting prototype is superseded. Each executable
+AM0–AM1 are complete; the [execution record](../../history/aes-magic-migration.md)
+records synchronous cursor completion and the pending UPDATE slices. Each executable
 slice has a separate commit and focused development checks.
 
 The [original MGVIEW port plan](mgview-port-plan.md) orders MP1–MP6: a first
@@ -27,8 +27,8 @@ the loaded Mouse/Counter proof and the refreshed demo. See the
 [execution record](../../history/gem-mouse-calls.md).
 The adopted [inline cursor follow-up](gem-mouse-plan.md#inline-cursor-completion)
 applies eligible changes in the caller before requesting presenter continuation,
-preserving required waiter wakes and normal Task preemption. Implementation is
-pending; MGVIEW keeps its standard mouse calls.
+preserving required waiter wakes and normal Task preemption. AM1 implements
+this flow; MGVIEW keeps its standard mouse calls.
 
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before

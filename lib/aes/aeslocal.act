@@ -8,6 +8,16 @@ USE AESGATE
 USE AESLOCKS
 USE AESWINDOW
 USE AESCURSOR
+USE CALYPSICALL
+
+ADDRESS mouseApply
+
+; Startup binds the resident ordinary C device helper before client admission.
+PUBLIC PROC ConfigureMouse(ADDRESS entry)
+
+  mouseApply=entry
+
+RETURN
 
 ; One busy C context pins its descriptor, registration and native stack until
 ; return. Waiter publication precedes scene release; signals are only hints.
@@ -37,7 +47,16 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     IF request.operation=AESTYPES.OP_GRAF_MOUSE THEN
       request.status=AESCURSOR.Call(service,
           AESSTATE.Find(service,request.client),request)
-      AESGATE.Release(AESCURSOR.Pending())
+      AESGATE.Release(0)
+      IF request.status=AESTYPES.OK THEN
+        BEGIN
+          LET ignored=CALYPSICALL.Invoke(mouseApply,value)
+        END
+      FI
+      AESCURSOR.Wake()
+      IF AESCURSOR.Pending()<>0 THEN
+        EXEC.Signal(service.owner,service.mask)
+      FI
       RETURN(1)
     FI
     IF request.operation=AESTYPES.OP_FIND THEN

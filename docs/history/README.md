@@ -1,5 +1,8 @@
 # Historical records
 
+- [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
+  UPDATE/MCTRL handler flow and native ownership cutover evidence.
+
 - [Native semaphore delivery](native-semaphores.md): measured composition
   baseline and incremental native-service development evidence.
 

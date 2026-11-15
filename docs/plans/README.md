@@ -3,7 +3,7 @@
 - [MagiC-led AES migration](gem4xe/aes-semaphore-migration-plan.md): reassessed
   AM0–AM5 flow, with MCTRL built on UPDATE, shared handler scopes, protected
   cleanup, synchronous cursor completion and native FIFO cutover. Implementation
-  remains stopped; the earlier accounting prototype is superseded.
+  has resumed; AM1 direct cursor completion passes development checks.
 
 - [Cheap native Task semaphores](native-semaphore-design.md): implemented public
   recursive exclusive semaphore, one native request per operation, FIFO direct

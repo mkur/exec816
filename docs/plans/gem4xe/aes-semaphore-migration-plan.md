@@ -5,16 +5,15 @@
 [Native semaphore contract](../../reference/semaphores.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: reassessed, 2026-11-15. AM0 source reassessment is complete; AM1–AM5
-implementation is pending and remains stopped. This revision supersedes the
-AM1–AM4 plan committed as `79feb9de`. Runtime basis: `4c006f30`; donor:
-MagiC `28cfdd29aa16fef692cc287bad3046b44ddcce3d`.
+Status: AM0–AM1 complete, AM2–AM5 pending, 2026-11-15. Implementation resumed
+at the user's request. This revision supersedes the AM1–AM4 plan committed as
+`79feb9de`. Runtime basis: `4c006f30`; donor: MagiC
+`28cfdd29aa16fef692cc287bad3046b44ddcce3d`.
+[Execution record](../../history/aes-magic-migration.md).
 
-The unfinished AM1 source changes are an uncommitted, superseded prototype.
-Reassessing this plan does not accept, complete or roll back that code. Before
-implementation resumes, reconcile it with the flow below. In particular, the
-added native accounting under the old admission queue is not the intended
-cutover, and releasing UPDATE before window cleanup is the wrong ordering.
+The superseded uncommitted prototype was archived locally and removed before
+AM1. Its native accounting under the old admission queue and UPDATE release
+before protected window cleanup were not adopted.
 
 ## Reassessment
 

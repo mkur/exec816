@@ -57,6 +57,7 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
         assembly.append(ROOT/'c/calypsi/aes-local.s')
         sources.append(ROOT/'c/calypsi/aes-windows.c')
         sources.append(ROOT/'c/calypsi/aes-input.c')
+        extra_roots.append('ExecAESMouseApply')
         sources.append(ROOT/'c/calypsi/vdi.c')
         sources.append(PORT/'raster/client.c')
         # A second binding of the same extracted donor routines isolates the
@@ -186,7 +187,8 @@ RETURN
         text=text.replace('USE EXEC\n', 'USE EXEC\nUSE AESBOOT\nUSE AESLOCAL\n', 1)
         binding=binding.replace('  BindDisplay()',
             f'  LET localEntry=ADDRESS POINTER(${sy["ExecAESLocalEntry"]:x})\n'
-            '  localEntry^=ADDRESS(@AESLOCAL.Call)\n  BindDisplay()',1)
+            '  localEntry^=ADDRESS(@AESLOCAL.Call)\n'
+            f'  AESLOCAL.ConfigureMouse(ADDRESS(${sy["ExecAESMouseApply"]:x}))\n  BindDisplay()',1)
         # Applications inspect the endpoint after presenter readiness.
         binding=binding.replace('  IF CONSOLEDRIVER.Start()=0 THEN',
             '  BEGIN\n    LET enabled=AESBOOT.Enable()\n  END\n\n  IF CONSOLEDRIVER.Start()=0 THEN',1)

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "status": "in-progress",
+  "tier": "development",
+  "qualification": false,
+  "plan": "docs/plans/gem4xe/aes-semaphore-migration-plan.md",
+  "donor_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "slices": {
+    "AM1": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/aes-migration/am1-cursor",
+          "results_sha256": "66c6f2f6636bd29e2980af0ed40633e33f1cc4798f7136ec2217d77d44cb7fd5",
+          "image_sha256": "b5c09a8419fdc7b63cf4fbe1d1833f21a878bd0876bc730081de825de0ba3139",
+          "xex_sha256": "5aaa84ec030b2853485947103c54afdfdc33fbb8808d81fa0389e0eb402f613c",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 431,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 794,
+              "remaining_above_floor": 486
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 138,
+              "remaining_above_floor": 918
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 76,
+              "remaining_above_floor": 980
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 320,
+              "remaining_above_floor": 736
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 716,
+              "remaining_above_floor": 1588
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          },
+          "pin": "toolchain/altirra-gem-vdi.json"
+        },
+        {
+          "capture": "build/aes-migration/am1-completion-final",
+          "results_sha256": "cd1d0d8b6d63cf363b7c2e8c74d69e4524148e0cdfa665338853c745bb02acf0",
+          "image_sha256": "37573675968b238bf5c2a57be5ec2dcc4f5b081c8659722d80d5796b68901f92",
+          "xex_sha256": "27a7fae8339a05cbf07e2eaac1635b25913cc1890ca8e8e25f1b6aa2dea1b170",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "checks": 37,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 137,
+              "remaining_above_floor": 1143
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 46,
+              "remaining_above_floor": 1234
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 21,
+              "remaining_above_floor": 1259
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 258,
+              "remaining_above_floor": 1022
+            }
+          },
+          "pin": "toolchain/altirra-gem-vdi.json"
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skips": 5,
+        "status": "pass"
+      },
+      "upper_global_bytes": 3,
+      "scope": "Optimized production cursor integration and seven controlled backend C cases. Uses existing native/C bridge; no request/context ABI shape change or new COP. Superseded prototype archived and removed. A completion fixture pilot with an unsuitable direct C entry was replaced by the standard native/C invocation bridge."
+    }
+  }
+}

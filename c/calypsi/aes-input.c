@@ -23,28 +23,28 @@ WORD ExecAESMouseState(struct ExecAESContext *c,WORD *x,WORD *y,WORD *buttons,WO
 WORD graf_mkstate(WORD *x,WORD *y,WORD *buttons,WORD *qualifiers)
 { return ExecAESMouseState(ExecAESContext(),x,y,buttons,qualifiers); }
 
-/* Admitted caller. The registration and its busy context outlive the copied
- * target. The existing reply bit is a hint; the revision is the completion. */
-WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
+/* Called in this Task by the native mouse handler after logical publication
+ * and scene release. The ordinary C bridge preserves the outer native frame.
+ * Physical completion precedes the handler's waiter notification and return. */
+LONG EXEC_CALL ExecAESMouseApply(ULONG value)
 {
+    struct ExecAESContext *c=(struct ExecAESContext *)value;
     struct AESMouseState *mouse=&c->directory->mouse;
     ULONG target,mask=1UL<<c->replies->mp_SigBit;
     UWORD status=DISPLAY_OK;
-    c->request.intin[0]=mode;c->request.intin[1]=raw;c->request.intin[2]=reset;
-    ExecAESLocal(c,AES_OP_GRAF_MOUSE);
-    c->busy=1;
     c->diagnostic=c->request.status;
     if (c->diagnostic!=AES_OK) return 0;
     target=c->request.mouseWait;
     if (!target) return 1;
     if (c->workstation && mouse->completed<target && !mouse->status)
         status=GemDrawingMouseBorrow(&c->workstation->grant,mouse);
-    if (status!=DISPLAY_OK) c->diagnostic=AES_DISPLAY_ERROR;
+    if (status!=DISPLAY_OK && status!=DISPLAY_BUSY) c->diagnostic=AES_DISPLAY_ERROR;
     for (;;) {
         Forbid();
         if (mouse->completed>=target || mouse->status || c->diagnostic!=AES_OK) {
             if (mouse->status) c->diagnostic=AES_DISPLAY_ERROR;
             c->request.mouseWait=0;
+            c->request.status=c->diagnostic;
             Permit();
             return c->diagnostic==AES_OK;
         }
@@ -52,6 +52,16 @@ WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
         Permit();
         Wait(mask);
     }
+}
+
+/* Admitted caller; one native handler owns the complete logical/device flow. */
+WORD ExecAESMouseControl(struct ExecAESContext *c,WORD mode,WORD raw,WORD reset)
+{
+    c->request.intin[0]=mode;c->request.intin[1]=raw;c->request.intin[2]=reset;
+    ExecAESLocal(c,AES_OP_GRAF_MOUSE);
+    c->busy=1;
+    c->diagnostic=c->request.status;
+    return c->diagnostic==AES_OK;
 }
 
 /* Owned request copy precedes any policy wait; no application pointer escapes. */
