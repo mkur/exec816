@@ -88,7 +88,13 @@ Raw [VDI hide/show](gem-vdi.md#mouse-device-calls) retains separate device state
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
 its GEM entry and `ExecAESDetach()` before ordinary Task removal. Detach calls
-`appl_exit` if needed, collects its reply, then deletes the private port/context.
+`appl_exit` if needed, collects its final detach reply, then deletes the private
+port/context. The owning Task obtains or retains UPDATE, restores MCTRL routing,
+withdraws menus/windows and finishes protected effects before releasing its
+levels. Cursor contributions are repaired after release. The registration and
+its storage remain live through that owner phase; held ownership is supported.
+Failed preparation retains the context for retry. A raw exit RPC without owner
+preparation reports `AES_BUSY` and cannot release another Task's resource.
 Failure to detach must prevent Task/image retirement. There is no forced client
 recovery or discovery by name in this profile.
 
@@ -432,8 +438,8 @@ drain continuation; success is returned only after the route retires. This
 continuation borrows the pinned local descriptor, completes its status and
 signals the caller without `PutMsg` or `ReplyMsg`. Copied moves and physical
 focus/console effects use the same mechanism. Transport-sequence exhaustion
-therefore cannot interrupt window retirement. Registration exit still uses RPC
-and shares these retirement helpers.
+therefore cannot interrupt window retirement. Owner-side exit shares these
+retirement helpers; only final registration detach uses RPC.
 
 Pointer-sample routing and window-capture cancellation use one bounded Task
 transaction. It contains no drawing or wait; IRQ/NMI capture uses separate
@@ -565,7 +571,7 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The presenter handles registration, retirement, physical window continuations,
+The presenter handles registration, prepared detach, physical window continuations,
 waiter wake hints and its own pending GUI delivery. Pending publishers retain an exit wake path; lock settlement and
 native input/drawing gates remain active. Application message matching and
 timer waits stay caller-local. There is no presenter application-message FIFO,
@@ -609,9 +615,9 @@ UPDATE requests still wait for MCTRL release, and a queued lock may pause native
 painting. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 24 has a 418-byte request. Init, exit, cold display delegation,
-menu publication, session mouse preferences and application outline admission
-use the RPC endpoint. Window mutations, UPDATE and cursor policy use caller
+profile: version 24 has a 418-byte request. Init, final exit detach, cold display
+delegation and session mouse preferences use the RPC endpoint. Window/menu
+mutations, UPDATE, outline admission, owner-side exit and cursor policy use caller
 entries; `wind_find` uses the caller scene query.
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
@@ -619,6 +625,13 @@ uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each 
 bindings and service together. Current implementation and
 development evidence are tracked in the
 [hybrid implementation plan](../plans/gem4xe/hybrid-aes-implementation-plan.md).
+
+Presenter UPDATE-release hints only request another turn. Independent captured
+input and fence completion continue while ownership excludes new drawing.
+Window-control notifications establish a controller return boundary: erase the
+native outline while retaining gesture identity, publish availability, then
+resume tracking after resource reacquisition. Current native frame controls
+notify on release; this does not add MagiC's real-time slider callbacks.
 
 The registration owns its upper-memory inbox, ordinary messages and GUI record
 until endpoint withdrawal and publisher holds retire. It adds no signal, Task or

@@ -803,9 +803,7 @@
     "OP_INIT",
     "OP_EXIT",
     "OP_DISPLAY",
-    "OP_MOUSE_PROFILE",
-    "OP_MENU",
-    "OP_DRAG_OUTLINE"
+    "OP_MOUSE_PROFILE"
   ],
   "public_constants": [
     "NAME",

@@ -75,4 +75,44 @@ The private Service grows 2324→2328 bytes, consuming its old four-byte allocat
 rounding space; its rounded allocation stays 2328. Client and public wire/C
 layouts are unchanged. Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel,
 0 idle, 0 per public Task**, including guards, alignment and unused capacity.
-No QED, demo/package refresh or release matrix ran. AM3–AM5 remain pending.
+No QED, demo/package refresh or release matrix ran.
+
+## AM3: owner cleanup and continuation boundaries
+
+Cooperative exit now obtains or retains UPDATE in the calling Task, restores
+MCTRL, closes admission and waits for retained publishers, withdraws menus and
+windows, finishes painting and releases its levels. Cursor repair follows final
+release using the AM1 device-completion path. Only then does the existing RPC
+detach registration and release storage/Task leases. Raw unprepared exit returns
+BUSY. No presenter force-release path remains. Overflow preparation fails before
+withdrawal and preserves the live registration for retry.
+
+Menu mutations and application-outline admission use caller handlers; menus use
+the common UPDATE scope. Presenter release hints schedule work without granting
+ownership. Controller notifications mark a return boundary that erases an outline
+without withdrawing capture/gesture identity before availability publication.
+AM4 supplies the native Try/Release pair at these prepared boundaries. Current
+frame controls notify on release; real-time slider callbacks remain unsupported.
+Retained physical effects still complete through their existing lifetimes.
+
+Development checks pass: the tiny owner/contender/Counter case has 60 assertions,
+including a real arrow callback followed by application reacquisition/setter,
+nested held departure in both Tasks, failed preparation/retry, a live menu,
+unrelated signals, preemption and last-client shutdown. The selected scene case
+passes 33 application assertions and its native scene/physical guards: captured
+input, retained copy/fence completion and a peer advance while scene ownership
+is unavailable. The optimized private-layout probe passes 19 assertions.
+
+Excluded fixture pilots omitted pointer-profile metadata, left a debugger
+breakpoint installed or stopped before unrelated frame/cache work drained.
+The refreshed fixtures drain before shutdown and use the actual pointer profile.
+The scene observer was updated for the current routine boundaries. No product
+shutdown retry/polling path was added to accommodate them.
+
+The private hint occupies the old final padding byte: Client remains 376 bytes,
+Service 2328, with no rounded allocation growth. The existing continuation-mode
+byte also marks prepared departure. Public layouts, APP ABI and Task ABI are
+unchanged; the generated RPC-operation set reflects the current caller entries.
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle, 0 per public
+Task**, including guards, alignment and spare capacity. Stack evidence is in the
+development record. No QED, demo refresh or release matrix ran. AM4–AM5 remain.

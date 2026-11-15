@@ -388,7 +388,11 @@ PUBLIC PROC Control(DESKTYPES.Window POINTER window BYTE kind
 
   LET client=FindRecord(window.id)
   IF client<>NULL THEN
-    AESGUI.Post(AESSTATE.Get(),client,kind,x,y,width,height)
+    BEGIN
+      LET service=AESSTATE.Get()
+      AESGUI.Post(service,client,kind,x,y,width,height)
+      service.updateHint=service.updateHint OR AESSTATE.CONTROLLER_LOAN
+    END
   FI
 
 RETURN

@@ -16,6 +16,7 @@ USE DESKHOST
 USE DESKMENU
 USE DESKPAINT
 USE DESKINPUT
+USE DESKDRAG
 CONST STOP_MASK=$20000000
 CONST PAINT_STEPS=4
 BYTE FUNC POINTER consoleInput(LONGCARD bits BYTE pending)
@@ -71,6 +72,7 @@ PUBLIC PROC Run()
   BYTE again,writing,stopping,accepted,inputPending
   BYTE handoff,deferOutput,paintSteps,paintProgress
   BYTE schedule,policyReady,workChecked,workPending
+  BYTE resourceReady
 
   LET self=EXEC.FindTask(NULL)
   LET batch=CONSOLEBATCH.Get()
@@ -84,6 +86,7 @@ PUBLIC PROC Run()
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
     AESGATE.Reclaim()
+    resourceReady=AESLOCKS.SystemReady()
     DESKINPUT.ReplayKeys()
     IF consoleStopping()<>0 AND CONSOLEBITMAP.Pending()=0
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
@@ -219,6 +222,10 @@ PUBLIC PROC Run()
 
       policyReady=stopping=0 AND consoleStopping()=0 AND AESLOCKS.NativeReady()<>0
     FI
+    IF AESLOCKS.ControllerLoan()<>0 THEN
+      DESKDRAG.Loan()
+    FI
+    AESLOCKS.SystemRelease()
     AESGATE.Offer()
     ; No shared-state hints after publication: schedule or reclaim next turn.
     IF schedule=1 THEN

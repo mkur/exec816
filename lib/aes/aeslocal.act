@@ -6,6 +6,9 @@ USE AESSTATE
 USE AESWAIT
 USE AESGATE
 USE AESLOCKS
+USE AESCORE
+USE AESMENU
+USE DESKDRAG
 USE AESWINDOW
 USE AESWINDOWSTATE
 USE AESCURSOR
@@ -39,7 +42,10 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
       AND request.operation<>AESTYPES.OP_FIND
       AND request.operation<>AESTYPES.OP_SET
       AND request.operation<>AESTYPES.OP_GRAF_MOUSE THEN
-    RETURN(0)
+    IF request.operation<>AESTYPES.OP_MENU
+        AND request.operation<>AESTYPES.OP_DRAG_OUTLINE THEN
+      RETURN(0)
+    FI
   FI
   LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
   waiting=0
@@ -63,6 +69,12 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
     IF request.operation=AESTYPES.OP_FIND THEN
       request.status=AESWINDOW.Query(request)
       AESGATE.Release(0)
+      RETURN(1)
+    FI
+    IF request.operation=AESTYPES.OP_DRAG_OUTLINE THEN
+      request.status=DESKDRAG.Outline(service,
+          AESSTATE.Find(service,request.client),request)
+      AESGATE.Release(1)
       RETURN(1)
     FI
     BEGIN
@@ -90,6 +102,8 @@ CARD FUNC Policy(LONGCARD value BYTE painting)
             status=AESLOCKS.Attempt(service,client,request,
                 AESLOCKS.OWNER_READY,queued,painting)
           FI
+        ELSEIF request.operation=AESTYPES.OP_MENU THEN
+          status=AESMENU.Request(service,client,request)
         ELSEIF request.operation=AESTYPES.OP_OPEN
             OR request.operation=AESTYPES.OP_CLOSE THEN
           AESWINDOWSTATE.PrepareUpdate(client)
@@ -145,7 +159,7 @@ RETURN(1)
 
 ; Private handler scopes use the same resource path without opening a user
 ; painting scope or changing the public C context's explicit nesting counts.
-CARD FUNC Scope(AESTYPES.Request POINTER request CARD code)
+CARD FUNC Scope(AESTYPES.Request POINTER request CARD code BYTE painting)
   CARD operation,status
   INT first,second
 
@@ -155,9 +169,9 @@ CARD FUNC Scope(AESTYPES.Request POINTER request CARD code)
   request.operation=AESTYPES.OP_UPDATE
   request.intin(0)=INT(code)
   request.intin(1)=0
-  IF AESLOCKS.Nested(AESSTATE.Get(),request,0)=0 THEN
+  IF AESLOCKS.Nested(AESSTATE.Get(),request,painting)=0 THEN
     BEGIN
-      LET ignored=Policy(LONGCARD(ADDRESS(request)),0)
+      LET ignored=Policy(LONGCARD(ADDRESS(request)),painting)
     END
   FI
   status=request.status
@@ -167,10 +181,66 @@ CARD FUNC Scope(AESTYPES.Request POINTER request CARD code)
 
 RETURN(status)
 
+; Cooperative owner cleanup retains its context through every actual wait.
+; UI withdrawal precedes final resource release; cursor repair follows it.
+CARD FUNC Depart(AESTYPES.Request POINTER request)
+  CARD status
+  BYTE ready
+
+  LET service=AESSTATE.Get()
+  LET client=AESSTATE.Find(service,request.client)
+  LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
+  status=Scope(request,AESTYPES.BEG_UPDATE,0)
+  IF status<>AESTYPES.OK THEN
+    RETURN(status)
+  FI
+  WHILE service.mouseHolds<>0 DO
+    status=Scope(request,AESTYPES.END_MCTRL,1)
+  OD
+  DO
+    AESGATE.EnterTask(request.owner,mask)
+    ready=AESCORE.PrepareExit(service,client,request)
+    IF ready<>0 THEN
+      client.pending=NULL
+      AESWAIT.RemoveWindow(service,client)
+      client.waitMode=AESWAIT.RPC
+      AESGATE.Release(0)
+      EXIT
+    FI
+    AESWAIT.Window(service,client,request)
+    client.waitMode=AESWAIT.CALLER
+    AESGATE.Release(1)
+    EXEC.Wait(mask)
+  OD
+  WHILE service.updateHolds<>0 DO
+    status=Scope(request,AESTYPES.END_UPDATE,1)
+  OD
+  status=Scope(request,AESTYPES.END_UPDATE,0)
+  AESGATE.EnterTask(request.owner,mask)
+  ready=AESCURSOR.Retire(service,client,request)
+  request.status=AESTYPES.OK
+  AESGATE.Release(0)
+  IF ready=0 THEN
+    BEGIN
+      LET ignored=CALYPSICALL.Invoke(mouseApply,LONGCARD(ADDRESS(request)))
+    END
+  FI
+  AESCURSOR.Wake()
+  IF request.status=AESTYPES.OK THEN
+    client.waitMode=AESWAIT.DEPARTED
+  FI
+
+RETURN(request.status)
+
 PUBLIC CARD FUNC Call(LONGCARD value)
   CARD status,result,handled
 
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation=AESTYPES.OP_EXIT THEN
+    request.status=Depart(request)
+    request.intout(0)=INT(request.status=AESTYPES.OK)
+    RETURN(1)
+  FI
   IF request.operation=AESTYPES.OP_UPDATE THEN
     status=AESLOCKS.Decode(CARD(request.intin(0)))
     IF status<>AESTYPES.OK THEN
@@ -187,8 +257,9 @@ PUBLIC CARD FUNC Call(LONGCARD value)
       OR request.operation=AESTYPES.OP_DELETE
       OR request.operation=AESTYPES.OP_OPEN
       OR request.operation=AESTYPES.OP_CLOSE
-      OR request.operation=AESTYPES.OP_SET THEN
-    status=Scope(request,AESTYPES.BEG_UPDATE)
+      OR request.operation=AESTYPES.OP_SET
+      OR request.operation=AESTYPES.OP_MENU THEN
+    status=Scope(request,AESTYPES.BEG_UPDATE,0)
     IF status<>AESTYPES.OK THEN
       request.status=status
       request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1) ELSE INT(0) FI
@@ -198,7 +269,7 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     status=request.status
     result=CARD(request.intout(0))
     BEGIN
-      LET released=Scope(request,AESTYPES.END_UPDATE)
+      LET released=Scope(request,AESTYPES.END_UPDATE,0)
       IF released<>AESTYPES.OK THEN
         status=released
         result=0

@@ -5,6 +5,16 @@
 
 ULONG AESService,AESUpdates,AESMouseHolds,AESLockCount,AESPolicyGate;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,progress,phase,stopCounter;
+volatile UWORD callbackReady,callbackX,callbackY;
+static OBJECT menu[]={
+    {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
+    {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
+    {1,3,3,G_IBOX,0,0,0,8,0,424,11},
+    {2,-1,-1,G_TITLE,0,0,(ULONG)"Test",0,0,64,11},
+    {0,5,5,G_IBOX,0,0,0,0,11,640,229},
+    {4,6,6,G_BOX,0,0,0x1100,8,0,112,11},
+    {5,-1,-1,G_STRING,LASTOB,0,(ULONG)"Exit",0,0,112,11}
+};
 static struct Task *parent,*peer,*counter;
 static struct TaskLease peerLease,counterLease;
 #define DONE 0x10000UL
@@ -44,8 +54,9 @@ void MigrationPeer(void)
     Check((SetSignal(0,OTHER)&OTHER)!=0);
     Check(wind_update(BEG_MCTRL));
     Check(MOUSE==1 && UPDATES==2 && c->mouseDepth==1);
-    Check(wind_update(END_MCTRL));
-    Check(wind_update(END_UPDATE));
+    Check(wind_update(BEG_UPDATE));
+    Check(wind_update(BEG_MCTRL));
+    /* Cooperative departure balances nested holds in this owning Task. */
     Check(ExecAESDetach());
     FreeSignal(16);FreeSignal(19);
     phase=3;Signal(parent,DONE);
@@ -74,21 +85,35 @@ WORD AESRun(void)
 {
     struct ExecAESContext *c;
     UWORD previous;
-    WORD window;
+    WORD window,message[8];
     parent=FindTask(NULL);
     Check(AllocSignal(16)==16);Check(AllocSignal(19)==19);
     Check(ExecAESAttach((struct MsgPort *)AESService));
     Check(appl_init()>0);
     c=ExecAESContext();
-    window=wind_create(NAME|CLOSER|MOVER|VSLIDE|HSLIDE,48,48,192,96);
+    window=wind_create(NAME|CLOSER|MOVER|DNARROW|VSLIDE|HSLIDE,48,48,192,96);
     Check(window>0 && wind_open(window,48,48,192,96));
+    callbackX=c->view->work.right+5;callbackY=c->view->work.bottom-5;
+    callbackReady=1;
+    do { Check(evnt_mesag(message)); } while (message[0]==WM_REDRAW);
+    Check(message[0]==WM_ARROWED && message[3]==window);
+    Check(wind_update(BEG_UPDATE));
+    Check(wind_set(window,WF_VSLIDE,100,0,0,0));
+    Check(wind_update(END_UPDATE));
+    callbackReady=2;
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==1 && c->view->updates==1);
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==2 && c->view->updates==2);
     Check(wind_update(END_UPDATE));
     Check(UPDATES==1 && c->view->updates==1);
+    UPDATES=0xffff;
+    Check(!appl_exit() && c->diagnostic==AES_OVERFLOW);
+    Check(c->identity && c->endpoint->state==AES_ENDPOINT_ACCEPTING);
+    Check(c->updateDepth==1 && UPDATES==0xffff);
+    UPDATES=1;
     nested(c);
+    Check(menu_bar(menu,1));
     Check(wind_set(window,WF_VSLIDE,250,0,0,0));
     Check(wind_set(window,WF_HSLIDE,500,0,0,0));
     Check(c->view->vslide==250 && c->view->hslide==500);
@@ -116,7 +141,6 @@ WORD AESRun(void)
     while (!QUEUED) ExecYield();
     Signal(peer,OTHER);
     Check(UPDATES==1 && MOUSE==1);
-    Check(wind_update(END_MCTRL));
     Check(ExecAESDetach());
     while (phase!=3) Wait(DONE);
     stopCounter=1;Wait(OTHER);

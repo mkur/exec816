@@ -224,16 +224,20 @@ static WORD exit_application(struct ExecAESContext *c)
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     if (!ExecAESFormFinish(c)) return 0;
     c->busy = 1;
-    if (!ExecVDIClose(c)) {
-        c->busy = 0;
-        return 0;
-    }
     if (!ExecAESTimerClose(c)) {
         c->diagnostic = AES_TIMER_ERROR;
         c->busy = 0;
         return 0;
     }
     c->busy = 0;
+    if (!c->identity) { c->diagnostic=AES_IDENTITY; return 0; }
+    ExecAESLocal(c,AES_OP_EXIT);
+    c->diagnostic=c->request.status;
+    if (c->diagnostic!=AES_OK) return 0;
+    c->updateDepth=c->mouseDepth=0;
+    c->busy=1;
+    if (!ExecVDIClose(c)) { c->busy=0; return 0; }
+    c->busy=0;
     result = ExecAESSubmit(c, AES_OP_EXIT);
     if (result) {
         c->busy = 1;

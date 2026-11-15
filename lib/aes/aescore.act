@@ -215,9 +215,9 @@ CARD FUNC Register(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
-; The exit reply and lease retirement are indivisible to Tasks. No descriptor
-; access is permitted after Reply: the caller may collect and free it at once.
-PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+; Owner-side wind_new preparation. Registration and its pool stay retained
+; through publisher drainage, protected UI withdrawal and native release.
+PUBLIC BYTE FUNC PrepareExit(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
 
   LET endpoint=client.endpoint
@@ -229,19 +229,28 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.guiWaiting=0
   client.gui.count=0
   IF endpoint.holds<>0 THEN
-    client.pending=request
     EXEC.Permit()
-    RETURN
+    RETURN(0)
   FI
 
   EXEC.Permit()
   IF AESMENU.Retire(service,client)=0
-      OR AESWINDOW.Retire(service,client,request)=0
-      OR AESCURSOR.Retire(service,client,request)=0 THEN
-    AESWAIT.Window(service,client,request)
+      OR AESWINDOW.Retire(service,client,request)=0 THEN
+    RETURN(0)
+  FI
 
+RETURN(1)
+
+; Final RPC only detaches a prepared registration. No presenter can release
+; a peer's UPDATE or run its protected UI cleanup.
+PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+    AESTYPES.Request POINTER request)
+
+  IF client.waitMode<>AESWAIT.DEPARTED THEN
+    AESSTATE.Reply(request,AESTYPES.BUSY)
     RETURN
   FI
+  LET endpoint=client.endpoint
 
   AESWAIT.RemoveWindow(service,client)
 
@@ -257,7 +266,6 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.input=NULL
   endpoint.owner=NULL
   EXEC.Permit()
-  AESLOCKS.Retire(service,client)
   client.binding=NULL
   client.replies=NULL
   request.client=0
@@ -360,9 +368,6 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
   ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
     request.intout(0)=DESKMOUSE.Profile(request.intin(0))
     AESSTATE.Reply(request,AESTYPES.OK)
-  ELSEIF request.operation=AESTYPES.OP_DRAG_OUTLINE THEN
-    status=DESKDRAG.Outline(service,client,request)
-    AESSTATE.Reply(request,status)
   ELSEIF request.operation=AESTYPES.OP_DISPLAY THEN
     BEGIN
       LET grant=DISPLAY.Grant POINTER(request.displayGrant)
@@ -382,13 +387,6 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       request.intout(0)=INT(status=AESTYPES.OK)
       AESSTATE.Reply(request,status)
     END
-  ELSEIF request.operation=AESTYPES.OP_MENU THEN
-    status=AESMENU.Request(service,client,request)
-    IF status=AESTYPES.PENDING THEN
-      AESWAIT.Window(service,client,request)
-    ELSE
-      AESSTATE.Reply(request,status)
-    FI
   ELSE
     AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
   FI
@@ -410,10 +408,12 @@ PUBLIC PROC Settle(AESSTATE.Service POINTER service)
       IF client.windowWaiting<>0 THEN
         BEGIN
           LET request=client.pending
-          IF request.operation=AESTYPES.OP_EXIT THEN
-            Retire(service,client,request)
-          ELSEIF client.waitMode=AESWAIT.CALLER THEN
-            IF AESWINDOW.WaitReady(service,client)<>0 THEN
+          IF client.waitMode=AESWAIT.CALLER THEN
+            IF (request.operation=AESTYPES.OP_EXIT AND client.endpoint.holds=0)
+                OR (request.operation=AESTYPES.OP_MENU AND AESLOCKS.NativeReady()<>0)
+                OR (request.operation<>AESTYPES.OP_EXIT
+                  AND request.operation<>AESTYPES.OP_MENU
+                  AND AESWINDOW.WaitReady(service,client)<>0) THEN
               AESWAIT.Signal(client)
             FI
           ELSE
@@ -449,8 +449,8 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       LET client=@service.clients(index)
       LET endpoint=client.endpoint
       IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
-          AND endpoint.holds=0 THEN
-        Retire(service,client,client.pending)
+          AND endpoint.holds=0 AND client.pending<>NULL THEN
+        AESWAIT.Signal(client)
       ELSEIF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
         AESGUI.Publish(service,client)
       FI

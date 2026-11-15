@@ -75,7 +75,10 @@ PUBLIC TYPE Service=[
   BYTE pointerHead,pointerCount,pointerLost
   CARD updateHolds
   BYTE paintPrepared
+  BYTE updateHint
 ]
+
+PUBLIC CONST UPDATE_WAITING=1, CONTROLLER_LOAN=2
 
 Service POINTER boundService
 

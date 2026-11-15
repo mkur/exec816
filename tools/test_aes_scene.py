@@ -25,6 +25,9 @@ USE EXEC
 USE AESBOOT
 USE AESSTATE
 USE AESCORE
+USE AESGATE
+USE DESKPAINT
+USE CONSOLEBITMAP
 USE DESKSTATE
 USE HEAPCORE
 USE SCENEPROBE
@@ -48,6 +51,23 @@ PROC Main()
   IF result<>0 OR service.count<>0 THEN
     HEAPCORE.Abort($fc80)
   FI
+  BEGIN
+    BYTE pending
+
+    LET bit=EXEC.AllocSignal(-1)
+    DO
+      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
+      pending=desktop.scene.busy<>0 OR DESKPAINT.Runnable()
+          OR CONSOLEBITMAP.Pending()<>0 OR service.policyEffects<>0
+          OR AESCORE.Runnable(service)<>0
+      AESGATE.Release(0)
+      IF pending=0 THEN
+        EXIT
+      FI
+      EXEC.Yield()
+    OD
+    EXEC.FreeSignal(bit)
+  END
 
 RETURN
 ENDMODULE
@@ -160,15 +180,15 @@ ENDMODULE
         ('aeslocks', ('Attempt',)),
         ('aeshost', ('Settled', 'Settle')),
         ('deskhost', ('Controls', 'Runnable', 'Cache', 'Ready', 'PaintReady')),
-        ('deskpaint', ('Pump', 'Ready', 'Runnable', 'Sync')),
+        ('deskpaint', ('Pump', 'Ready', 'Runnable')),
         ('deskcache', ('Pump', 'Capture', 'Patch', 'Restore')),
     ):
         shadow(name, routines)
     local = read_source(ROOT/'lib/aes/aeslocal.act').replace('USE AESGATE\n',
         'USE AESGATE\nUSE SCENEPROBE\n', 1)
-    needle = '  LET client=AESSTATE.Find(service,request.client)'
+    needle = '\n      LET client=AESSTATE.Find(service,request.client)'
     require(local.count(needle) == 1, 'Local scene admission boundary changed')
-    local = local.replace(needle, needle+'\n  SCENEPROBE.Pause(1,client.id)')
+    local = local.replace(needle, needle+'\n      SCENEPROBE.Pause(1,client.id)')
     (out/'aeslocal.act').write_text(local)
     bitmap = read_source(ROOT/'lib/console/consolebitmap.act').replace('USE AESGATE\n',
         'USE AESGATE\nUSE SCENEPROBE\n', 1)

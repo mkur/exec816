@@ -8,6 +8,7 @@ USE AESSTATE
 PUBLIC CONST RPC=0
 PUBLIC CONST CALLER=1
 PUBLIC CONST SYSTEM=2
+PUBLIC CONST DEPARTED=3
 PUBLIC CONST SYSTEM_WORK=256
 
 ; Reuse the registration-owned private reply signal as a hint, never a reply.

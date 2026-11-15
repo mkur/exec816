@@ -233,7 +233,9 @@ WORD ExecAESDragOutline(WORD window,WORD dx,WORD dy,WORD width,WORD height)
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->request.intin[0]=window;c->request.intin[1]=dx;c->request.intin[2]=dy;
     c->request.intin[3]=width;c->request.intin[4]=height;
-    return ExecAESSubmit(c,AES_OP_DRAG_OUTLINE);
+    ExecAESLocal(c,AES_OP_DRAG_OUTLINE);
+    c->diagnostic=c->request.status;
+    return c->diagnostic==AES_OK ? c->request.intout[0]:0;
 }
 
 WORD ExecAESWindowDelete(struct ExecAESContext *c, WORD handle)

@@ -572,6 +572,21 @@ PUBLIC PROC Advance()
 RETURN
 
 ; Erase only the native outline; retain the gesture for ownership release.
+PUBLIC PROC Loan()
+  BYTE drawn
+
+  IF DESKSTATE.outlineVisible<>0 AND DISPLAY.Blocked()=0
+      AND CONSOLEBITMAP.Pending()=0 THEN
+    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
+    IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
+      DESKSTATE.outlineVisible=0
+      dirty=1
+    FI
+  FI
+
+RETURN
+
+; Queued drawing uses the same erase without withdrawing capture or routing.
 PUBLIC PROC Suspend()
   BYTE drawn
 

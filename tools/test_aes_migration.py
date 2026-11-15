@@ -5,10 +5,11 @@ from pathlib import Path
 from build_bitmap_console import drawing,prepare
 from generate_aes_server import expected_layout
 from native_program import ROOT,build,compiler,read_build,require,sha256,verify_machine
-from os_boundary import emulator
+from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_mouse_observe import BRIDGE,PIN,ROM
 from stack_budget import stack_usage
+from desktop_mouse import schedule
 
 
 def inputs():
@@ -52,6 +53,7 @@ USE AESCORE
 USE AESGATE
 USE DESKPAINT
 USE CONSOLEBITMAP
+USE DESKSTATE
 USE HEAPCORE
 CARD checks
 CARD FUNC POINTER entry()
@@ -76,12 +78,14 @@ PROC Main()
   BEGIN
     BYTE pending
 
+    LET desktop=DESKSTATE.Get()
     LET bit=EXEC.AllocSignal(-1)
     Require(bit>=0)
     DO
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
           OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+          OR desktop.scene.busy<>0
       AESGATE.Release(0)
       IF pending=0 THEN
         EXIT
@@ -103,6 +107,9 @@ ENDMODULE
         p=build(compiler(ROOT/'build/actionc',release=True),launcher,out/'program',
             optimize=True,tasks=True,task_capacity=8,foreign_image=foreign,
             console_deferred=True,memory_profile=profile)
+        from generate_mouse_acceleration import metadata
+        p['build']['desktop_mouse']=metadata(None)
+        (p['output']/'build.json').write_text(json.dumps(p['build'],indent=2)+'\n')
         (out/'inputs.json').write_text(json.dumps(frozen,indent=2)+'\n')
     report=dict(status='running',tier='development',qualification=False,build=p['build'],
                 pin=PIN,runner_sha256=sha256(Path(__file__)),reserved_bank_zero_delta=dict(
@@ -110,14 +117,30 @@ ENDMODULE
     try:
         with emulator(BRIDGE,ROM,out,pin=PIN) as b:
             report['machine']=verify_machine(b,ROM,PIN)
+            def before(_):
+                sy=foreign['symbols']
+                def reach(condition):
+                    b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
+                    run_to(b,p['labels']['native_irq'],condition=condition,timeout=90,frame_limit=4500)
+                def frames(count):reach(f'@frame>={b.eval_expr("@frame")+count}')
+                b._cmd_ok('MOUSE ST')
+                reach(f'dw(${sy["callbackReady"]:x})=1');frames(30)
+                def cell(name):return b.eval_expr(f'dw(${sy[name]:x})')
+                at=lambda name:next(d['address'] for d in p['image']['data'] if '_DESKINPUT_'+name.upper()+'_' in d['name'])
+                current=[int.from_bytes(b.memdump(at(n),2),'little') for n in ('cursorX','cursorY')]
+                target=schedule(b,p,current,(cell('callbackX'),cell('callbackY')))
+                reach(f'(dw(${at("cursorX"):x})={target[0]})&(dw(${at("cursorY"):x})={target[1]})')
+                frames(4);b._cmd_ok('MOUSE AT 2000 0 0 1');frames(4)
+                b._cmd_ok('MOUSE AT 2000 0 0 0')
+                b.bp_clear_all()
             try:
-                report['runtime'],_=execute(b,p,timeout=180,frame_limit=6000)
+                report['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=6000)
             finally:
-                for name in ('AESChecks','AESFailures','AESFirstFailure','progress','phase'):
+                for name in ('AESChecks','AESFailures','AESFirstFailure','progress','phase','callbackReady'):
                     report[name]=b.eval_expr(f'dw(${foreign["symbols"][name]:x})')
                 report['stack_usage']=stack_usage(b,p['build']['memory'])
             require(report['AESFailures']==0 and report['AESChecks']>=35,'UPDATE migration fixture failed')
-            require(report['progress']>0 and report['phase']==3,'Missing peer/counter progress')
+            require(report['progress']>0 and report['phase']==3 and report['callbackReady']==2,'Missing callback/peer/counter progress')
             ownership(b,p,p['output'])
         report['status']='pass'
     except Exception as error:

@@ -10,9 +10,41 @@ USE DESKSTATE
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE CONSOLETYPES
+USE EXEC
 
 ; Both transports evaluate logical/physical eligibility while owning the scene.
 PUBLIC CONST OWNER_READY=2
+
+; Presenter resource-dependent work never blocks the independent dispatcher.
+; The hint requests a later turn; it neither queues a client nor grants UPDATE.
+PUBLIC BYTE FUNC SystemReady()
+
+  LET service=AESSTATE.Get()
+  EXEC.Forbid()
+  LET ready=(service=NULL OR service.updateOwner=0)
+  IF ready=0 THEN
+    service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
+  FI
+  EXEC.Permit()
+
+RETURN(ready)
+
+PROC Notify(AESSTATE.Service POINTER service)
+
+  EXEC.Forbid()
+  IF (service.updateHint & AESSTATE.UPDATE_WAITING)<>0 THEN
+    service.updateHint=service.updateHint & ($ff-AESSTATE.UPDATE_WAITING)
+    EXEC.Signal(service.owner,service.mask)
+  FI
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC ControllerLoan()
+
+  LET service=AESSTATE.Get()
+
+RETURN(service<>NULL AND (service.updateHint & AESSTATE.CONTROLLER_LOAN)<>0)
 
 PUBLIC BYTE FUNC PaintBlocked()
 
@@ -39,6 +71,17 @@ RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
     AND CONSOLEBITMAP.Pending()=0 AND DESKSTATE.menuReplacing=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)
+
+; The current engine publishes scene availability after this boundary. Native
+; cutover replaces it with the matching public semaphore release.
+PUBLIC PROC SystemRelease()
+
+  LET service=AESSTATE.Get()
+  IF service<>NULL AND NativeReady()<>0 THEN
+    service.updateHint=service.updateHint & ($ff-AESSTATE.CONTROLLER_LOAN)
+  FI
+
+RETURN
 
 BYTE FUNC Eligible(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code BYTE ready,beforeWindows)
@@ -140,6 +183,7 @@ CARD FUNC Release(AESSTATE.Service POINTER service
   service.updates==-1
   IF service.updates=0 THEN
     service.updateOwner=0
+    Notify(service)
   FI
   IF code=AESTYPES.END_MCTRL AND service.mouseHolds=0 THEN
     AESMOUSE.Refresh()
@@ -271,27 +315,6 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       position==+1
     END
   OD
-
-RETURN
-
-; Called before the exit reply. Pending peers become eligible in this turn.
-PUBLIC PROC Retire(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client)
-
-  IF service.updateOwner=client.id THEN
-    AESSTATE.mouseDirty=1
-    service.updateOwner=0
-    service.updates=0
-    service.updateHolds=0
-    service.paintPrepared=1
-    service.updateWindow=0
-  FI
-
-  IF service.mouseOwner=client.id THEN
-    AESSTATE.mouseDirty=1
-    service.mouseOwner=0
-    service.mouseHolds=0
-  FI
 
 RETURN
 

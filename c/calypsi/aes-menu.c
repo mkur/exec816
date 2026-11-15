@@ -14,7 +14,9 @@ static WORD menu_request(struct ExecAESContext *c,OBJECT *tree,WORD operation,WO
     c->request.intin[3]=item;
     c->request.intin[4]=(WORD)(value>>16);
     c->request.intin[5]=(WORD)value;
-    result=ExecAESSubmit(c,AES_OP_MENU);
+    ExecAESLocal(c,AES_OP_MENU);
+    c->diagnostic=c->request.status;
+    result=c->diagnostic==AES_OK ? c->request.intout[0]:0;
     if (result && operation==30) c->menuTree=item ? (ULONG)tree:0;
     return result;
 }

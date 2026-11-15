@@ -439,6 +439,209 @@
         "rounded_after": 2328
       },
       "scope": "Common UPDATE/MCTRL/window scopes; lazy conservative cache preparation. Existing wait engine retained until AM4; no native accounting overlay. Excluded build/shutdown/cache-condition pilots recorded in history."
+    },
+    "AM3": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/aes-migration/am3-owner",
+          "results_sha256": "7d814fc43b1b237d4756a8a3ffcc66f92b847ddcd23e5955222c41629ec2a481",
+          "image_sha256": "568a4da0b3ea8bbea3bf20dd86d08ed071eb5e5d8812b650dad3f19b42910083",
+          "xex_sha256": "c2512296938d64d8409bc84efb424da8db0e229045055addcc6a46bbed462f62",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "AESChecks": 60,
+          "AESFailures": 0,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 623,
+              "remaining_above_floor": 657
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 128,
+              "remaining_above_floor": 928
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 420,
+              "remaining_above_floor": 636
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 62,
+              "remaining_above_floor": 994
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 694,
+              "remaining_above_floor": 1610
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 49,
+              "remaining_above_floor": 207
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/am3-independent",
+          "results_sha256": "d3110a81b4350eb58d45e82f3dfc1dd3f64bb53757e82ef5f804987510d400e9",
+          "image_sha256": "7ca7189896448ad2579ea7906af5c6c9ad2bab8aff0b49df8d13e06cb2123bee",
+          "xex_sha256": "79a6af85175dfd90c39bd10fbae9d0bcfb1621fe2891b23c79f9c79aa8c948d7",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "cases": [
+            {
+              "variant": 1,
+              "caller_waiting": true,
+              "retained_token": 6,
+              "fence_retired_without_scene": true,
+              "presenter_waiting": true,
+              "peer_progress": 33837,
+              "runtime": {
+                "status": 0,
+                "guards": "intact",
+                "switches": 874,
+                "gateway_calls": 10552,
+                "native_nmi_count": 469,
+                "native_irq_count": 27228,
+                "live_tasks": 0
+              },
+              "stacks": {
+                "0": {
+                  "base": 9744,
+                  "bytes": 1536,
+                  "peak": 728,
+                  "remaining_above_floor": 552
+                },
+                "1": {
+                  "base": 12880,
+                  "bytes": 1312,
+                  "peak": 128,
+                  "remaining_above_floor": 928
+                },
+                "2": {
+                  "base": 14224,
+                  "bytes": 1312,
+                  "peak": 320,
+                  "remaining_above_floor": 736
+                },
+                "3": {
+                  "base": 15568,
+                  "bytes": 1312,
+                  "peak": 304,
+                  "remaining_above_floor": 752
+                },
+                "4": {
+                  "base": 16912,
+                  "bytes": 1312,
+                  "peak": 18,
+                  "remaining_above_floor": 1038
+                },
+                "5": {
+                  "base": 18256,
+                  "bytes": 1312,
+                  "peak": 18,
+                  "remaining_above_floor": 1038
+                },
+                "6": {
+                  "base": 19600,
+                  "bytes": 2560,
+                  "peak": 794,
+                  "remaining_above_floor": 1510
+                },
+                "7": {
+                  "base": 22192,
+                  "bytes": 2560,
+                  "peak": 318,
+                  "remaining_above_floor": 1986
+                },
+                "8": {
+                  "base": 24784,
+                  "bytes": 512,
+                  "peak": 24,
+                  "remaining_above_floor": 232
+                },
+                "kernel": {
+                  "base": 11312,
+                  "bytes": 1536,
+                  "peak": 287,
+                  "remaining_above_floor": 993
+                }
+              },
+              "checks": 33,
+              "failures": 0,
+              "first_failure": 0,
+              "scene_checks": 843,
+              "physical_checks": 130
+            }
+          ]
+        },
+        {
+          "capture": "build/aes-migration/am3-layout",
+          "results_sha256": "4e2f02474b5a3f631c79701b34e386b3838ded955ddddeccf9356671733ca326",
+          "image_sha256": "d62170027e37d5e935fd6cc76895b941c12c8ab16d5799e0d61913237231a634",
+          "xex_sha256": "54cc78ae4d321a91ac250b5b780250231e2c858b23512205a9fc11f776236905",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "host_profile": "release",
+            "override": false
+          },
+          "pin": "toolchain/altirra-gem-vdi.json",
+          "checks": 19
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skips": 5,
+        "status": "pass"
+      },
+      "private_service_bytes": 2328,
+      "private_client_bytes": 376,
+      "scope": "Owner-side protected cleanup before release; final RPC only detaches. Caller menus/outline admission. Non-authoritative presenter hints and controller return boundary prepared for AM4. One retained-fence/input variant; no full matrix."
     }
   }
 }
