@@ -16,12 +16,24 @@
   device I/O and driver responsibilities. Consider QNX and BeOS as references
   for specific improvements; document the chosen semantics and the reason for
   departing from the Amiga model.
-- For GEM work: **Use GEM4XE for rendering; use MagiC for multitasking
-  ownership.** Reuse GEM4XE drawing algorithms and artwork; use pinned MagiC
-  source to guide application state, shared ownership, input routing and cleanup.
-  Map that structure onto Exec primitives, preserving normal Task preemption
-  and IRQ/NMI protocols, and document deliberate semantic differences. See the
+- For GEM work: **Port MagiC's GUI structure and flow onto Exec; use GEM4XE
+  as the primary graphics code quarry.** Follow pinned MagiC source for
+  application/window/menu/form/object/resource/workstation responsibilities,
+  ownership, input/events, execution boundaries and cleanup. Use existing Exec
+  platform services and adapt GEM4XE graphics implementations and ideas.
+  Preserve normal Task preemption and IRQ/NMI protocols. See the
   [GEM architecture guidance](docs/contributing/README.md#gem-architecture-guidance).
+- Every architectural departure from MagiC needs a source-based explanation,
+  a concrete platform reason, costs and alternatives, and an explicit user
+  decision before implementation. Do not decide these departures independently
+  or treat existing Exec GUI code as the target architecture by default.
+  Honor prior explicit user decisions; routine implementation and mechanical
+  ABI adaptations within the agreed model do not require repeated approval.
+- If an Exec platform service needed by the GUI port is missing, report the
+  required capability, why existing public services are insufficient and the
+  general service needed. Do not create a GUI-specific substitute or silently
+  introduce a new platform service. Discuss the gap with the user before
+  implementation. GEM application/window policy still belongs in AES.
 - Keep device-specific queue, active-request, cancellation and lifecycle policy
   in the driver, using general public kernel primitives for coordination.
 - Treat correct API use and live application-owned pointers/handles as caller

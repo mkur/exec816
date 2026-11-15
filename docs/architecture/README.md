@@ -26,9 +26,10 @@ The [library map](../../lib/README.md) connects these parts to source files.
 ## Reference architectures
 
 - [GEM architecture guidance](../contributing/README.md#gem-architecture-guidance):
-  GEM4XE rendering and MagiC multitasking ownership, mapped onto Exec primitives.
+  MagiC GUI structure and flow over Exec services, GEM4XE graphics reuse,
+  user decisions on departures and reporting missing platform services.
 - [MagiC: Atari source model](magic.md): implemented components, execution
   contexts, state lifetimes, GEM drawing, events, UI coordination and VDI devices
   at a pinned upstream revision.
 - [MagiC to Exec816 mapping](magic-exec-mapping.md): reusable foundations,
-  execution/state boundaries, required adaptations and current semantic gaps.
+  execution/state boundaries, current deviations to review and semantic gaps.

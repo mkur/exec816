@@ -17,18 +17,46 @@ public binding outside an existing MIT directory. Preserve third-party notices.
 
 ## GEM architecture guidance
 
-**Use GEM4XE for rendering; use MagiC for multitasking ownership.**
+**Port MagiC's GUI structure and flow onto Exec; use GEM4XE as the primary
+graphics code quarry.** This is the user's governing direction for the whole
+GUI, including application state, windows, menus, forms, objects, resources,
+workstations, input/events, ownership, operation boundaries and cleanup.
+MagiC is the architectural baseline. Existing Exec GUI structure is implementation
+inventory to assess against that baseline.
 
-GEM4XE supplies drawing algorithms, cursor/bitmap handling and artwork. When
-adapting these implementations to multiple applications, use the pinned MagiC
-source to guide application state, shared resource ownership, UPDATE/MCTRL,
-input routing and lifecycle cleanup. Keep application state, shared device state
-and temporary renderer state distinct.
+Exec supplies Tasks, signals, ports, native semaphores, timers, memory, DOS,
+loading and device I/O. Preserve its normal Task preemption, platform ABI and
+IRQ/NMI contracts. Start graphics work from existing GEM4XE implementations,
+algorithms and artwork; adapt them to MagiC's structure and Exec's platform
+contracts. Inspect the donor before writing a replacement. Keep donor revisions,
+provenance and license obligations explicit.
 
-Map that structure onto Exec Tasks, signals, ports, device I/O and display
-ownership, preserving normal Task preemption and the existing IRQ/NMI protocols.
-Document deliberate semantic differences and retain donor pins and provenance.
-Current public contracts remain authoritative until implementation slices land.
+Every architectural departure from MagiC must be brought to the user before
+implementation. Prepare a concrete proposal that identifies the pinned MagiC
+path, the required platform constraint, the affected semantics/flow, alternatives
+and memory/coordination costs. Distinguish measured costs from estimates. A
+written rationale is not itself approval. Existing code or a completed test
+does not establish architectural necessity. Honor prior explicit user decisions
+without requesting them again; routine choices and mechanical ABI adaptations
+within the agreed model can proceed.
+
+If a needed platform service is missing, report the capability and required
+semantics, the existing public Exec services considered, and why they do not
+suffice. Discuss a general platform-service proposal with the user before
+implementation. Do not build a GUI-specific substitute, duplicate an Exec
+mechanism in AES, or silently add a new platform service. AES still implements
+GEM-specific application/window policy above those mechanisms. A mismatch in
+the current GUI design is not, by itself, evidence of a missing Exec service.
+The [reported platform gaps](../architecture/magic-exec-mapping.md#reported-platform-service-gaps)
+track known lifecycle limitations without adopting GUI-specific substitutes.
+
+The [current deviations to review](../architecture/magic-exec-mapping.md#current-deviations-to-review)
+start with broad scene admission, the combined presenter, deferred simple frame
+painting and additional paint/cache protocols. Their presence is not an adopted
+porting decision. Current public contracts continue to describe supported
+behavior until executable migration slices replace it. Keep slices small,
+commit each passing slice, and use focused development checks rather than a
+release matrix.
 
 Consult the [MagiC source model](../architecture/magic.md) and
 [MagiC-to-Exec mapping](../architecture/magic-exec-mapping.md). The

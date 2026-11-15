@@ -885,6 +885,16 @@ The other possible milestones have no delivery order:
 
 ## Deferred API and compiler work
 
+- **MagiC GUI port.** Follow the
+  [governing GUI direction](contributing/README.md#gem-architecture-guidance):
+  MagiC structure and flow over Exec platform services, with GEM4XE as the
+  primary graphics code quarry. Audit the
+  [current deviations](architecture/magic-exec-mapping.md#current-deviations-to-review),
+  starting with the extra scene gate and combined presenter. Bring architectural
+  departures to the user with concrete reasons and alternatives before
+  implementation. [Report missing platform services](architecture/magic-exec-mapping.md#reported-platform-service-gaps)
+  rather than building specialized substitutes; forced owner/resource cleanup
+  and automatic process-associated heap reclamation are known lifecycle gaps.
 - **AES semaphore migration.** The public native semaphore foundation is delivered
   through [NS0–NS5](plans/native-semaphore-implementation-plan.md): recursive
   ownership, FIFO direct handoff, signalless waits, Action!/C and matching loaded

@@ -13,14 +13,24 @@ executable slices, beginning with native I/O coexistence and resource accounting
 
 ## Decision and scope
 
+Direction updated 2026-11-15: follow the
+[governing MagiC port guidance](../../contributing/README.md#gem-architecture-guidance).
+Port MagiC's GUI structure and flow over Exec platform services, with GEM4XE as
+the primary graphics code quarry. The original design and GF0–GF15 record what
+was proposed and delivered; their existing boundaries do not become the target
+by default. Review the [current deviations and platform gaps](../../architecture/magic-exec-mapping.md#current-deviations-to-review).
+Architectural departures require a concrete reason and a user decision before
+implementation. Report missing platform services rather than building GUI-specific
+substitutes. Current runtime contracts remain unchanged by this direction note.
+
 Make GEM the graphical application interface. AES owns every graphical window,
 including the desktop's and terminal's windows. Application bodies use ordinary
 AES/VDI calls, object trees, resources and event loops. Keep platform startup,
 integer/pointer ABI differences, paths and unavoidable porting changes in the
 shared SDK or a small application adapter.
 
-Use MagiC as inspiration for one window model, caller-context GEM operations
-and an AES system Task for input and interaction. Preserve Exec's Amiga-style
+Use MagiC's implementation as the structural and execution-flow baseline for
+the GUI, mapping its responsibilities onto Exec services. Preserve Exec's Amiga-style
 Tasks, signals, ports and request/reply device I/O beneath it. Keep the current
 scheduler and normal Task preemption during rendering. This design introduces
 no GUI-specific kernel operation, scheduler policy or new compiler dependency.

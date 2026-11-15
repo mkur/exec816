@@ -10,6 +10,21 @@ The original inventory maps the pinned Atari MagiC model onto Exec816 revision
 records distinguish current behavior from the original inventory; the original
 mapping evidence remains pinned. The standalone model describes MagiC itself.
 
+## Governing port direction
+
+The [GEM architecture guidance](../contributing/README.md#gem-architecture-guidance)
+sets the target: port MagiC's GUI structure and flow onto existing Exec platform
+services, using GEM4XE as the primary graphics code quarry. This applies to the
+whole GUI, not just UPDATE ownership. Architectural departures require a concrete
+reason and an explicit user decision before implementation. Report missing
+platform capabilities instead of building GUI-specific replacements.
+
+The existing implementations, diagrams and service mappings below are inventory.
+They do not endorse preserving every current Exec GUI boundary. Honor prior
+explicit user decisions, while reviewing differences against the pinned MagiC
+source. The original mapping evidence remains historical; current reference
+contracts continue to describe implemented behavior until migration slices land.
+
 ## Architectural fit
 
 MagiC's GEM responsibilities fit above Exec's existing execution, communication,
@@ -17,7 +32,8 @@ memory, I/O and application-lifetime services. Its tree/object/primitive/device
 hierarchy is useful independently of its embedded scheduler and Atari trap
 environment. The present Exec implementation already combines caller-context
 AES/VDI work with one graphical system loop in the existing presenter Task.
-This is a usable foundation for structural simplification.
+That combined loop is a current implementation fact to review against MagiC's
+execution roles, rather than a required porting boundary.
 
 The inspected MagiC paths use direct pointers and resident shared state. Exec
 also shares one address space, so this mapping does not require an IPC boundary
@@ -36,6 +52,12 @@ roles are already represented separately here. Preserving that split avoids
 importing a second execution model together with otherwise reusable GUI policy.
 
 ## Foundations that can be reused
+
+Reuse platform mechanisms while following MagiC's GUI responsibilities and flow.
+The availability of an existing GUI subsystem is not a reason to retain a
+different architecture. Routine ABI/addressing adaptations remain subject to
+the agreed native contracts; they do not import MagiC's embedded OS underneath
+Exec or make GEM4XE's original multitasking assumptions authoritative.
 
 The distinction between kernel primitives and resident libraries matters here.
 An ordinary library call can run in its caller, including when the library is
@@ -113,7 +135,68 @@ Tasks. Window records, virtual workstations, ports, timers and console instances
 are objects with independent lifetimes; creating another one does not inherently
 justify another execution context.
 
+## Current deviations to review
+
+This initial inventory identifies review work, not new architectural decisions.
+Development checks establish implemented behavior; they do not prove that a
+departure is necessary. Cite existing explicit user approvals where they exist,
+and obtain a user decision before introducing or deliberately retaining a
+different architecture in the port.
+
+| Area | MagiC baseline | Current Exec difference | Review required |
+| --- | --- | --- | --- |
+| Scene admission | `_wind_set` enters UPDATE and dispatches its handler. | `AESGATE` adds another admission stage; the presenter claims the scene across much of its turn. | Account for every reader/mutator and retained effect. A separate broad gate needs a demonstrated reason; normal preemption alone does not establish that reason. |
+| Input and screen manager | Scheduler-side deferred key delivery is separate from `SCRENMGR` UI work. | One presenter combines input delivery, UI, console work, cache maintenance and device retirement. | Map these execution roles onto existing Exec services. Do not preserve the combined loop or add Tasks/queues by default. |
+| Simple frame setters | A changed slider updates and calls `wind_draw` before releasing UPDATE. | Caller mutations invalidate regions for later presenter painting. | Restore the source-shaped operation where possible; retaining deferred completion needs a specific reason and a user decision. |
+| Paint and cache protocols | Ordinary GEM drawing/UPDATE paths define the application contract. | Additional journals and optional completion/preservation hooks support cached images. | Identify which responsibilities can live under standard GEM calls and which extensions, if any, need to remain. |
+| Modal forms | The inspected modal loop retains MCTRL routing across event waits. | Current forms use an ordinary window and UPDATE for painting; desktop-wide modal ownership is unsupported. | Treat this as a semantic gap to port or an explicitly agreed limitation, rather than assuming current behavior is the target. |
+| Drawing boundaries | Tree/object/primitive/device boundaries define operations; capacity drains need not transfer ownership. | Existing strip/turn budgets, continuation checks and cache work add boundaries. | Inspect MagiC and GEM4XE first. Justify any different boundary with actual device limits, measured coordination cost and peer progress. |
+
+Source baselines are in the [standalone MagiC model](magic.md), especially its
+[drawing sequence](magic.md#drawing-sequence) and
+[input/event path](magic.md#input-events-and-application-messages), and the
+[operation-boundary analysis](../history/magic-operation-boundaries.md).
+Current implementations include [`AESGATE`](../../lib/aes/aesgate.act),
+[`AESSYSTEM`](../../lib/aes/aessystem.act),
+[`AESWINDOW`](../../lib/aes/aeswindow.act),
+[`AESWINDOWSTATE`](../../lib/aes/aeswindowstate.act) and
+[`DESKPAINT`](../../lib/desktop/deskpaint.act).
+
+The first source audit should trace the complete key → UPDATE → setter → draw
+path, assign its mutable state and device lifetimes to MagiC's responsibilities,
+and identify which existing Exec mechanisms supply each requirement. Propose any
+remaining departure with concrete costs and alternatives before implementing it.
+This inventory does not authorize an extra gate, a replacement input service or
+a new Task topology.
+
+## Reported platform-service gaps
+
+Report a demonstrated missing capability before implementation. Include the
+required semantics, relevant MagiC path, public Exec APIs considered, why they
+are insufficient and the general service that would be needed. Any service
+proposal must include its lifetime/failure rules, IRQ/NMI and preemption effects,
+ABI impact and reserved bank-zero costs, separating measured values from estimates.
+Do not implement a GUI-specific substitute or add a general service without the
+user's direction. GEM event/window policy remains AES's responsibility.
+
+Existing published limitations expose at least these gaps for full MagiC
+lifecycle parity; their platform-service design and scope remain for discussion:
+
+| Capability | Current Exec contract | Port consequence |
+| --- | --- | --- |
+| Forced application teardown with owned-resource recovery | Native semaphores have no foreign-owner release or owner-death recovery. Removal is barred while a Task owns or awaits a semaphore; current GUI/Process stop is cooperative. | Full MagiC termination behavior needs coordinated general lifetime/resource support, or an explicitly agreed limitation. Do not emulate recovery by editing kernel ownership from AES. |
+| Automatic reclamation of process-associated heap allocations | `AllocMem`/`FreeMem` exist, but arbitrary allocations require explicit release; automatic `tc_MemEntry` reclamation is deferred. | Matching MagiC's process-associated memory cleanup needs a general allocation-lifetime facility, or an explicitly agreed limitation. Do not add an AES-private replacement allocator. |
+
+See [native semaphores](../reference/semaphores.md),
+[Tasks](../reference/tasks.md), [Process lifetime](../reference/process.md) and
+the cleanup comparison below. This is not an exhaustive platform-gap audit.
+The scene-gate discussion has not established a missing Exec primitive:
+native semaphores, signals and short publication guards already exist.
+
 ## Mismatches that require adaptation
+
+These sections describe the current mapping and its constraints. The choice of
+an adaptation must follow the governing port direction and user-decision rule.
 
 ### Preemption and ambient graphics state
 
@@ -153,8 +236,10 @@ The current implementation already separates the following roles:
 The display's retained lifetime owner is another association: it can delegate
 physical units while retaining responsibility for shutdown and hardware recovery.
 A VDI workstation identifies attributes/target state, not any of these ownership
-roles. Combining them would turn ordinary waits or expensive rendering into
-unnecessarily broad exclusions and can create dependency cycles.
+roles. Distinct responsibilities do not require distinct admission gates. In
+particular, the current scene gate is a deviation to review, not an established
+need for a second lock beside MagiC's UPDATE. Physical scratch and asynchronous
+device lifetimes must still be protected through the platform's mechanisms.
 
 The current system can dispatch published input and device completion while
 scene-dependent continuation work is deferred. Ordinary key delivery also runs

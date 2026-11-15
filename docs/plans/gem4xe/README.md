@@ -1,4 +1,17 @@
-# GEM as a client of an Exec-like kernel
+# MagiC GUI port over Exec
+
+The [governing direction](../../contributing/README.md#gem-architecture-guidance)
+is to port MagiC's GUI structure and flow onto Exec's platform services and use
+GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:
+application/window/menu/form/object/resource/workstation roles, input/events,
+operation boundaries and cleanup. Every architectural departure requires a
+concrete reason and an explicit user decision before implementation. Report
+missing platform services; do not build GUI-specific substitutes.
+
+The [current deviations and platform gaps](../../architecture/magic-exec-mapping.md#current-deviations-to-review)
+provide the initial review inventory. Completed plans below retain implementation
+history and development evidence; they do not endorse all existing GUI choices
+as the port's target architecture.
 
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common
