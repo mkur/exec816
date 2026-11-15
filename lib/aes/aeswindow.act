@@ -583,7 +583,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       ; The caller must establish physical access before a visible mutation.
       ; Check authoritative state under UPDATE; C prepares a missing grant
       ; outside this handler and retries without an intermediate state change.
-      IF request.intin(1)=AESTYPES.WF_VSLIDE AND request.displayGrant=NULL
+      IF horizontal=0 AND request.displayGrant=NULL
           AND layer.shown<>0 AND window.iconified=0
           AND layer.visible.count<>0 AND AESGATE.SystemOwned()=0 THEN
         RETURN(AESTYPES.DISPLAY_ERROR)

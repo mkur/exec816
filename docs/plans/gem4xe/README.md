@@ -18,8 +18,9 @@ The [SCRENMGR migration plan](screnmgr-migration-plan.md) starts with caller
 operations, independent input/device progress and UPDATE scene ownership,
 then replaces the combined loop. SM0 records the direction and responsibility
 map; SM1a delivers scene-independent cursor policy with caller completion, and
-SM1b paints vertical slider positions synchronously in the calling Task.
-Frame rendering and the remaining migration are pending. Execution placement
+SM1b paints vertical slider positions synchronously in the calling Task, and
+SM1c extends that path to slider sizes. Remaining frame fields and the rest
+of the migration are pending. Execution placement
 and Task costs must be resolved explicitly rather than hidden behind a rename.
 
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows

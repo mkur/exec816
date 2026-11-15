@@ -410,16 +410,16 @@ while the owning caller waits; the presenter cannot release that caller's semaph
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
 text or bounded slider values, cache/menu changes, derived geometry, damage and
-view publication under scene ownership. A changed `WF_VSLIDE` paints its visible
-vertical frame rail synchronously in the calling Task before returning or
-releasing its handler UPDATE. The scene gate is dropped around physical drawing;
+view publication under scene ownership. Changed `WF_VSLIDE` and `WF_VSLSIZE`
+setters paint the visible vertical frame rail synchronously in the calling Task
+before returning or releasing their handler UPDATE. The scene gate is dropped around physical drawing;
 UPDATE pins the window and frame-visible geometry. This uses a caller-owned
 console-format packet and the shared GEM4XE frame raster under delegated display
 access. Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
 An open public VDI workstation supplies its existing grant. Otherwise the first
-visible, changed vertical-position setter establishes a standalone 32-byte
+visible, changed vertical slider setter establishes a standalone 32-byte
 upper-heap grant through the existing display-delegation request, using the
 context's reply signal. The native handler checks actual visibility under UPDATE
 before mutation. If access is missing, it returns to the library for cold
@@ -432,7 +432,7 @@ No application source or public wire layout changes are needed.
 
 The remaining frame fields still wake deferred painting after release. Equal
 setters retain their existing publication and do not request painting, acquire
-physical access or establish a grant. Hidden/iconified vertical-position changes
+physical access or establish a grant. Hidden/iconified vertical slider changes
 only update metadata/damage. Separate unheld setter calls remain separate resource
 scopes. Physical extensions use the retained continuation described below.
 
@@ -447,9 +447,9 @@ An unheld move needing a screen copy defers to the system before reserving a mov
 changing geometry. Its existing presenter continuation retains the request and
 old committed bounds until copy completion. Caret restoration, widget focus
 cancellation and console-bound geometry also retain system admission before
-mutation. Frame drawing and interactive gesture work remain in the presenter,
-using the same bounds/top policy. No physical effect runs under caller scene
-ownership.
+mutation. Exposure painting, remaining frame fields and interactive gesture
+work run in the presenter, using the same bounds/top policy. Drawing releases
+scene ownership before physical access.
 
 Ordinary/PB opens retain UPDATE while preparing an unpublished keyboard route
 outside the scene gate. Re-entering the scene does not re-arbitrate ownership.
@@ -565,9 +565,9 @@ cancels. Hold repeat and live resizing remain unsupported.
 
 For application windows the presenter paints exposure and deferred frame fields
 and transfers work-area damage into durable `WM_REDRAW` delivery. Vertical slider
-position setters paint their own frame clips synchronously. Its explicit Layers handoff retires
-manager damage after the complete frame transaction without claiming that the
-application pixels have been drawn. Completed, fully visible clients may use
+position and size setters paint their own frame clips synchronously. The
+presenter's explicit Layers handoff retires manager damage after the complete
+frame transaction without claiming that application pixels have been drawn. Completed, fully visible clients may use
 the shared VRAM snapshots. These contain the outer window, with current title
 pixels drawn live; INFO/slider changes invalidate the saved body. Conventional
 restoration still delivers external exposure, while the opt-in policy below

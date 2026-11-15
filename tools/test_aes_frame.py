@@ -169,7 +169,7 @@ def physical(b,p,foreign,report):
         row=dict(phase=phase,field=field,held=value('FrameHeld'),pb=value('FramePB'),
                  sequence_delta=sequence,helper_attempts=stats,status=value('FrameStatus'),
                  state=s,returned_clock=b.eval_expr('@clk'))
-        if field==9 and row['status']==0:
+        if field in (9,16) and row['status']==0:
             # Device drawing is fenced at return, but rawscreen is the last
             # scanout. Keep the caller parked (and outer UPDATE held) while
             # that image catches up, as in the frame-atlas fixture.

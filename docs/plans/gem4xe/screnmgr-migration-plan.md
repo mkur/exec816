@@ -8,8 +8,8 @@ Direction adopted by the user on 2026-11-15: replace the combined presenter
 with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
-vertical slider positions in the caller. Other frame fields, independent input
-and the remaining migration are pending. The
+vertical slider positions in the caller, and SM1c adds vertical slider sizes.
+Other frame fields, independent input and the remaining migration are pending. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
 replacement slice lands.
@@ -121,6 +121,11 @@ SM1b implements `WF_VSLIDE` with a caller-owned packet, grant-protected renderer
 state and synchronous visible-rail painting. Manager completion preserves client
 repaint obligations; cold AES-only access reuses public display delegation. See
 the [development record](../../history/screnmgr-migration.md#sm1b-synchronous-vertical-slider-position).
+
+SM1c extends the same path to `WF_VSLSIZE`, following MagiC's shared vertical
+position/size handler and frame draw. Cold admission, equal-value return and
+manager completion use the existing SM1b services without another renderer or
+resource. See the [development record](../../history/screnmgr-migration.md#sm1c-synchronous-vertical-slider-size).
 
 Continue with the remaining frame fields in small sub-slices. Preserve explicit
 call state and the existing display grant: equal-value return; changed-value

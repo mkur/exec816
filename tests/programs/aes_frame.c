@@ -1,4 +1,4 @@
-/* Bounded frame policy, synchronous slider and deferred remaining fields. */
+/* Bounded frame policy, synchronous vertical sliders and deferred text. */
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
@@ -75,6 +75,8 @@ void AESClientOne(void)
         ULONG sequence=c->sequence;
         CHECK(wind_set(peerWindow,WF_VSLIDE,100,0,0,0));
         CHECK(c->sequence==sequence && !c->request.displayGrant);
+        CHECK(wind_set(peerWindow,WF_VSLSIZE,500,0,0,0));
+        CHECK(c->sequence==sequence && !c->request.displayGrant);
     }
     AESReady=1;Signal(controller,wake);
     for (;;) {
@@ -121,6 +123,8 @@ UWORD AESRun(void)
     sequence=c->sequence;
     CHECK(wind_set(rootWindow,WF_VSLIDE,0,0,0,0));
     CHECK(c->sequence==sequence && !c->request.displayGrant);
+    CHECK(wind_set(rootWindow,WF_VSLSIZE,1000,0,0,0));
+    CHECK(c->sequence==sequence && !c->request.displayGrant);
     plain=wind_create(AES_WINDOW_KIND,360,32,120,64);CHECK(plain>0);
     peer=CreateTask("frame peer",0,AESClientOne,1024);CHECK(peer!=NULL);
     while (!AESReady) Wait(wake);
@@ -136,17 +140,17 @@ UWORD AESRun(void)
     attribute(rootWindow,WF_INFO,0,(char *)0x1000000UL,1,1,AES_MALFORMED);
     attribute(rootWindow,WF_INFO,0,"",0,1,AES_OK);
     attribute(rootWindow,0x7fff,12,NULL,1,1,AES_UNSUPPORTED);
-    attribute(rootWindow,WF_VSLIDE,250,NULL,0,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,250,NULL,1,1,AES_OK);
     attribute(rootWindow,WF_VSLSIZE,400,NULL,1,1,AES_OK);
     attribute(rootWindow,WF_VSLSIZE,400,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_VSLIDE,250,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_VSLIDE,250,NULL,1,1,AES_OK);
     attribute(rootWindow,WF_VSLIDE,1000,NULL,0,1,AES_OK);
     attribute(rootWindow,WF_VSLSIZE,0,NULL,1,1,AES_OK);
     attribute(rootWindow,WF_VSLIDE,-1,NULL,1,1,AES_MALFORMED);
     attribute(rootWindow,WF_VSLSIZE,1001,NULL,0,1,AES_MALFORMED);
     attribute(rootWindow,WF_INFO,0,limit,1,1,AES_MALFORMED);
     attribute(plain,WF_NAME,0,"Hidden frame",1,1,AES_OK);
-    attribute(plain,WF_VSLIDE,100,NULL,0,1,AES_UNSUPPORTED);
+    attribute(plain,WF_VSLSIZE,100,NULL,0,1,AES_UNSUPPORTED);
     attribute(plain,WF_INFO,0,"Hidden info",0,1,AES_OK);
     send(1);
     attribute(rootWindow,WF_NAME,0,"Covered frame",0,1,AES_OK);
@@ -165,12 +169,12 @@ UWORD AESRun(void)
         WORD handle=graf_handle(&i,&i,&i,&i);
         CHECK(!c->workstation && c->request.displayGrant);
         v_opnvwk(input,&handle,output);CHECK(handle>0 && c->workstation);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,501,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,601,0,0,0));
         CHECK(c->sequence==sequence);
         v_clsvwk(handle);CHECK(!c->workstation && !c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,502,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,602,0,0,0));
         CHECK(c->sequence==sequence+1 && c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,502,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,602,0,0,0));
         CHECK(c->sequence==sequence);
     }
     /* A readiness miss must leave publication untouched until the caller retry. */

@@ -896,9 +896,10 @@ The other possible milestones have no delivery order:
   input/device progress. SM0 records the direction; SM1a removes scene admission
   from caller cursor policy while retaining device completion. SM1b paints changed
   vertical slider positions in the caller before return, using the shared frame
-  renderer and existing display grants. See the
-  [execution record](history/screnmgr-migration.md). Caller frame drawing,
-  execution placement and the remaining migration are pending. Bring architectural
+  renderer and existing display grants. SM1c extends this path to vertical
+  slider sizes. See the [execution record](history/screnmgr-migration.md).
+  Remaining frame fields, execution placement and the rest of the migration
+  are pending. Bring architectural
   departures to the user with concrete reasons and alternatives before
   implementation. [Report missing platform services](architecture/magic-exec-mapping.md#reported-platform-service-gaps)
   rather than building specialized substitutes. The

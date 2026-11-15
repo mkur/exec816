@@ -1,0 +1,564 @@
+{
+  "schema_version": 1,
+  "kind": "implementation-record",
+  "status": "implemented",
+  "slice": "SM1c",
+  "date": "2026-11-15",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "c6c8fe20302dd0a5f539dd0412b8ce75bcdfe6be",
+  "scope": "Extend synchronous caller-context vertical frame painting to WF_VSLSIZE.",
+  "magic_baseline": {
+    "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "source": "KERNEL/AES/SRC/AESWIN.S",
+    "lines": "2750-2794",
+    "flow": "WF_VSLIDE and WF_VSLSIZE share ws_sl_verti and ws_slend, including drawing before UPDATE release."
+  },
+  "source_inputs": [
+    {
+      "path": "c/calypsi/aes-windows.c",
+      "sha256": "639921e66d8ac682a07c972b51fc01fc6029e58c8e5a2bc171c7e1c8fbd86c56"
+    },
+    {
+      "path": "lib/aes/aeslocal.act",
+      "sha256": "83c563f612fdbfca221e01f9d4fc67ca3db32caa674e64f06ca963aac7580790"
+    },
+    {
+      "path": "lib/aes/aeswindow.act",
+      "sha256": "5d84902d5bb9761f2b6ebaa953d9273f1f94d6ef920baddc78bc1c20a7bc3456"
+    },
+    {
+      "path": "tests/programs/aes_frame.c",
+      "sha256": "6d08370302634899aeebba0b39f035c5af029f349c4e246025b074009ab81a68"
+    },
+    {
+      "path": "tools/test_aes_frame.py",
+      "sha256": "62b3a59caccd10284f76f8d60655e4fd262d17202915f3c541fa7e80fd9ccad0"
+    },
+    {
+      "path": "tools/test_aes_server.py",
+      "sha256": "062c6d6976a4013ff8287b031b18441a474cfa4012613954035b006596e37408"
+    }
+  ],
+  "unchanged_renderer_and_completion": {
+    "baseline": "docs/development/screnmgr-sm1-vslide.json",
+    "verified_inputs": [
+      {
+        "path": "lib/aes/aesframe.act",
+        "sha256": "99317841dd9f6d7a30d8337b2e9c0c619fca816268b7a23b1a182d7730c71f76"
+      },
+      {
+        "path": "lib/desktop/desktop-frame.c",
+        "sha256": "1efc3d771c282b5b0d735dbb92f8d7e493dd6d68a3ad59b9acd551206423b38e"
+      },
+      {
+        "path": "lib/display/layers-repaint.inc",
+        "sha256": "57b829c4cc620ba953d0ca2a0019ea3f9e0b519810fa222082887a035a56e1ee"
+      },
+      {
+        "path": "ports/gem4xe/adapter/gem-drawing.h",
+        "sha256": "079657639091bcae019700947c9bc61afd435fe25c3e8d12a9ffe96cc08ebe8f"
+      },
+      {
+        "path": "ports/gem4xe/adapter/gem-vbxe.c",
+        "sha256": "1c5b6da26157a8ab0776ffe383a199c50f23c46f588f33a757d14d401a1eb920"
+      }
+    ]
+  },
+  "commands": [
+    "python3 tools/test_aes_server.py --suite frame --mode opt --output build/screnmgr/sm1-vslsize",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "frame_run": {
+    "capture": "build/screnmgr/sm1-vslsize",
+    "results_sha256": "4714682d056d4d0c180ec2d07c5088b19afb9d3223cd769f3921d0f9ab970f31",
+    "image_sha256": "4d1e5a7c88b0230556147dbf9bad4892385e6ad93d7abdb6c3aa902f50870ab7",
+    "xex_sha256": "e59267899b1158b50826709ef68e68a8c14e14b42d22882c39cb5116ec89a86c",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "build_profile": "release",
+      "override": false
+    },
+    "c_compiler": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "c_mode": "opt",
+    "native_mode": "opt",
+    "c_image_sha256": "f8245a4fce4cccd24aa2dd4eb2b9e6d684102eaaf941d24539d5b6c428c1358d",
+    "platform_pin": {
+      "path": "toolchain/altirra-gem-vdi.json",
+      "sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "runtime": {
+      "status": 0,
+      "native_nmi_count": 1365,
+      "native_irq_count": 32325,
+      "os_busy": 0,
+      "switching": 0,
+      "live_tasks": 0,
+      "guards": "intact",
+      "return_e": 0,
+      "return_dbr": 0
+    },
+    "application_assertions": 202,
+    "native_assertions": 5,
+    "pixel_checkpoints": 34,
+    "synchronous_slider_checkpoints": [
+      {
+        "phase": 11,
+        "field": 16,
+        "held": 1,
+        "pb": 1,
+        "sequence_delta": 1,
+        "helper_attempts": [
+          2,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 12,
+        "field": 16,
+        "held": 1,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 13,
+        "field": 9,
+        "held": 1,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 14,
+        "field": 9,
+        "held": 1,
+        "pb": 1,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 15,
+        "field": 9,
+        "held": 1,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 16,
+        "field": 16,
+        "held": 1,
+        "pb": 1,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 25,
+        "field": 9,
+        "held": 1,
+        "pb": 1,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 26,
+        "field": 16,
+        "held": 1,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 29,
+        "field": 9,
+        "held": 1,
+        "pb": 1,
+        "sequence_delta": 1,
+        "helper_attempts": [
+          2,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 30,
+        "field": 16,
+        "held": 1,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 33,
+        "field": 9,
+        "held": 0,
+        "pb": 0,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      },
+      {
+        "phase": 34,
+        "field": 16,
+        "held": 0,
+        "pb": 1,
+        "sequence_delta": 0,
+        "helper_attempts": [
+          1,
+          0
+        ],
+        "synchronous_frame_pixels": "exact",
+        "scanout_settle_frames": 2
+      }
+    ],
+    "frame_pixel_hashes": [
+      {
+        "phase": 1,
+        "sha256": "173b93167b51c24e34c5783be370c5bfb5ff52e1b10c8a324693408526f6e59d"
+      },
+      {
+        "phase": 2,
+        "sha256": "173b93167b51c24e34c5783be370c5bfb5ff52e1b10c8a324693408526f6e59d"
+      },
+      {
+        "phase": 3,
+        "sha256": "6cc26b8e79b9f61deef4f58a2956603904ed099a22ec5b122217687ccde3199e"
+      },
+      {
+        "phase": 4,
+        "sha256": "6cc26b8e79b9f61deef4f58a2956603904ed099a22ec5b122217687ccde3199e"
+      },
+      {
+        "phase": 5,
+        "sha256": "c6b6d001b7047ddf413822909370ce999487d8e81193a5f6c965c9419807e087"
+      },
+      {
+        "phase": 6,
+        "sha256": "c6b6d001b7047ddf413822909370ce999487d8e81193a5f6c965c9419807e087"
+      },
+      {
+        "phase": 7,
+        "sha256": "c6b6d001b7047ddf413822909370ce999487d8e81193a5f6c965c9419807e087"
+      },
+      {
+        "phase": 8,
+        "sha256": "c6b6d001b7047ddf413822909370ce999487d8e81193a5f6c965c9419807e087"
+      },
+      {
+        "phase": 9,
+        "sha256": "1d6689e5e657a1247555a721be9e3a383c87a4cc600c8af3ecf07c9909505472"
+      },
+      {
+        "phase": 10,
+        "sha256": "1d6689e5e657a1247555a721be9e3a383c87a4cc600c8af3ecf07c9909505472"
+      },
+      {
+        "phase": 11,
+        "sha256": "541e933ec1c916522c7f4b5c5881962523027d7424564a2ad6aa5ecf4b74ba36"
+      },
+      {
+        "phase": 12,
+        "sha256": "541e933ec1c916522c7f4b5c5881962523027d7424564a2ad6aa5ecf4b74ba36"
+      },
+      {
+        "phase": 13,
+        "sha256": "c0bd92ea7286fc420daaccfa211e7a4489d9586acd91af1e3863eedd77605cfe"
+      },
+      {
+        "phase": 14,
+        "sha256": "c0bd92ea7286fc420daaccfa211e7a4489d9586acd91af1e3863eedd77605cfe"
+      },
+      {
+        "phase": 15,
+        "sha256": "a251cbe22b753dfe8829da482d7f92610a338a34dd05938186175743386133e9"
+      },
+      {
+        "phase": 16,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 17,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 18,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 19,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 20,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 21,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 22,
+        "sha256": "4f76ce0593061a4dbdafbc204a43a0ffdf7a7d4775e35a6dc39c8d961f997ffe"
+      },
+      {
+        "phase": 23,
+        "sha256": "32d24faff56cb9ff6f264423f00d2abfa3f3a1ab4f56763045efaaed4443c5a4"
+      },
+      {
+        "phase": 24,
+        "sha256": "6372babb5d9107a6d3492523d41e1d6db5eda87dfb5b466beabb6b8f038e7ee5"
+      },
+      {
+        "phase": 25,
+        "sha256": "6372babb5d9107a6d3492523d41e1d6db5eda87dfb5b466beabb6b8f038e7ee5"
+      },
+      {
+        "phase": 26,
+        "sha256": "6372babb5d9107a6d3492523d41e1d6db5eda87dfb5b466beabb6b8f038e7ee5"
+      },
+      {
+        "phase": 27,
+        "sha256": "ad2856574b73c5b6025fc82e30e800f77fd688ba0d8e4ed250873b8d34ce09ea"
+      },
+      {
+        "phase": 28,
+        "sha256": "a6d86a1d52fad8881a531d94fd5b2c3b25d3f9da2339b5cba589fa3fbead473c"
+      },
+      {
+        "phase": 29,
+        "sha256": "5700a7b46c3370ef4221a24374f7df1b19ee0ad95473b02e754807757bbf970f"
+      },
+      {
+        "phase": 30,
+        "sha256": "b57654c387aff4ca4314eec4da795ddf3aa7eb6e6dc634dbac8cb20e52ebc7dd"
+      },
+      {
+        "phase": 31,
+        "sha256": "a74b26e195811917e7a97d39b1300cbb9b7c66fbc761d2352494e44e40167b25"
+      },
+      {
+        "phase": 32,
+        "sha256": "8e2fb26dbf6c095d21861e4e830fac2bad198ca979c5182c22a35f4598bd3e7a"
+      },
+      {
+        "phase": 33,
+        "sha256": "25622dd2c372fec90e8815493d31b09a0f11375fe318748b1638b90455affdd4"
+      },
+      {
+        "phase": 34,
+        "sha256": "5e8e76059d91349a92167e9f204b9723f3926bdce3fd1f76426014bf879d950c"
+      }
+    ],
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 1074,
+        "remaining_above_floor": 206
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1312,
+        "peak": 156,
+        "remaining_above_floor": 900
+      },
+      "2": {
+        "base": 14224,
+        "bytes": 1312,
+        "peak": 824,
+        "remaining_above_floor": 232
+      },
+      "3": {
+        "base": 15568,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "4": {
+        "base": 16912,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "5": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 18,
+        "remaining_above_floor": 1038
+      },
+      "6": {
+        "base": 19600,
+        "bytes": 2560,
+        "peak": 736,
+        "remaining_above_floor": 1568
+      },
+      "7": {
+        "base": 22192,
+        "bytes": 2560,
+        "peak": 18,
+        "remaining_above_floor": 2286
+      },
+      "8": {
+        "base": 24784,
+        "bytes": 512,
+        "peak": 24,
+        "remaining_above_floor": 232
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 285,
+        "remaining_above_floor": 995
+      }
+    }
+  },
+  "host_checks": {
+    "tests": 718,
+    "skipped": 5,
+    "log_sha256": "d95ba67aa5d4f4abce73e3e6ef39d92b678fa6eed588ec1841fc36ef6a8e9279"
+  },
+  "resource_impact": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "includes": [
+        "guards",
+        "alignment",
+        "unused reserved capacity"
+      ]
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "idle": 800,
+      "loading_excluding_os": 20368,
+      "loading_including_os": 40336,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "runtime_excluding_os": 26848,
+      "runtime_including_os": 46816
+    },
+    "new_storage_bytes": 0,
+    "new_tasks": 0,
+    "new_signals": 0,
+    "public_abi_change": false,
+    "vram_reservation_delta": 0
+  },
+  "scope_limits": [
+    "One optimized focused frame run and host checks; no raw matrix, QED, catalog or demo build.",
+    "No separate emitted Layers rerun: renderer and completion sources are unchanged and checked against the SM1b record.",
+    "Two PAL frames settle scanout while the caller is parked, retaining any outer UPDATE; no delay is added to the setter.",
+    "Horizontal slider and text setters remain deferred; scene admission and the combined presenter remain pending migration.",
+    "No scrolling-speed, release or hosted-system qualification claim."
+  ]
+}

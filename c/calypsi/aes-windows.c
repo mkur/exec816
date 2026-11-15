@@ -235,7 +235,7 @@ prepare:
          * Cold admission runs outside that handler scope, then retries once
          * with the live grant. No published-view visibility guess is needed. */
         if (c->diagnostic==AES_DISPLAY_ERROR && op==AES_OP_SET &&
-            b==WF_VSLIDE && !c->request.displayGrant) {
+            (b==WF_VSLIDE || b==WF_VSLSIZE) && !c->request.displayGrant) {
             if (display_ensure(c)) goto prepare;
             result=fail;
         } else result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;

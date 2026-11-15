@@ -140,3 +140,50 @@ compiler and Calypsi 5.18 run optimized on the pinned PAL profile. This is a
 focused development check; no raw matrix, QED/catalog/demo build, release
 qualification or scrolling-speed claim is included. Next SM1 work migrates
 remaining frame fields using the same renderer and resource boundary.
+
+
+## SM1c: synchronous vertical slider size
+
+Changed `WF_VSLSIZE` now uses the same native vertical-frame operation as
+`WF_VSLIDE`, completing visible rail painting before returning or releasing the
+handler UPDATE. MagiC routes both fields through `ws_sl_verti` and `ws_slend`
+(AESWIN lines 2750–2794): change the selected value, update the frame, draw the
+open vertical scroll object, then release UPDATE. This slice extends that shared
+path without changing the renderer, scene admission, physical grant lifetime,
+client paint journal or cache policy.
+
+The existing vertical/horizontal selection now controls cold admission for both
+vertical fields. Missing access is detected under UPDATE before mutation;
+the C binding delegates through the existing service outside the handler scope
+and retries. Equal, hidden and unsupported size setters do not establish access.
+Open workstations supply their existing grant. Successful painted clips retire
+only manager damage; failed or incomplete coverage remains outstanding. The
+remaining horizontal slider and text setters still use deferred painting.
+
+The focused fixture starts the root application's visible drawing with a size
+change and the peer's with a position change. It covers ordinary/PB calls,
+unchanged values, invalid and unsupported size requests, zero-size thumb geometry,
+occlusion, held/unheld UPDATE, workstation reuse, grant recreation after close
+and complete heap reclamation. Scanout settles for two PAL frames while the
+caller remains parked, retaining any outer UPDATE. This uses the existing
+observer and adds no delay inside the setter.
+
+Production adds no storage, Task, signal, public ABI field or VRAM reservation.
+Reserved bank-zero changes are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused reserved capacity. The prior
+packet, renderer scratch and optional grant storage are reused unchanged.
+
+The optimized [development run](../development/screnmgr-sm1-vslsize.json) passes
+202 application assertions and five native assertions, 34 frame pixel checkpoints
+and 12 synchronous vertical-slider checkpoints, split equally between position
+and size. Size-first and position-first cold admission each use one RPC and two
+handler attempts; warm and equal calls use no RPC. Host checks pass 718 tests
+with five historical skips. Guards and ownership restoration pass. Root, peer,
+presenter and kernel stack peaks are 1,074, 824, 736 and 285 bytes, within the
+existing reservations. The complete reserved bank-zero budget matches SM1b.
+
+Only the focused frame fixture and host checks ran. Unchanged renderer and layer
+completion sources were checked against the SM1b evidence; its separate Layers
+suite was not repeated. No raw matrix, QED/catalog/demo build, release
+qualification or scrolling-speed claim is included. Next SM1 work is the
+horizontal slider fields, retaining MagiC's shared position/size flow.
