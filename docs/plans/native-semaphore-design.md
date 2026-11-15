@@ -297,17 +297,23 @@ detail of this general public service, not a separate AES gateway.
 
 ## GEM integration boundary
 
-First establish the primitive independently with tiny Tasks. Do not immediately
-replace UPDATE, MCTRL, the scene gate and display grants with one semaphore.
-They protect different resources and have different lifetimes.
+First establish the primitive independently with tiny Tasks. Keep the scene
+metadata guard and physical display grants separate from logical UPDATE.
+MagiC's MCTRL adds routing state while obtaining the same recursive UPDATE
+resource. The reassessed [AES migration plan](gem4xe/aes-semaphore-migration-plan.md)
+adopts that dependency explicitly; it supersedes adding native accounting
+alongside the current AES eligibility queue.
 
-A later AES slice can use recursive acquisition for already-owned window
-setters and a focused logical UPDATE lock. It must explicitly preserve or
-migrate older-window ordering, capture/MCTRL rules, physical continuations and
-registration teardown. In particular, the current presenter can retire client
-policy on another Task's behalf; a Task-owned semaphore cannot be silently
-released by that presenter. Establish an owner-side exit protocol before
-removing existing cleanup paths.
+A later AES slice uses common UPDATE scopes for ordinary window setters and
+actual native blocking/FIFO handoff. It must explicitly migrate older-window
+ordering, capture/MCTRL rules, physical continuations and registration teardown.
+The current presenter can retire client policy on another Task's behalf; a
+Task-owned semaphore cannot be released that way. Complete protected UI cleanup
+in the owner context before final release, and retain registration/service
+storage until ownership and continuations have ended. MagiC's privileged
+process/application semaphore cleanup exceeds this native service's supported
+cooperative cleanup; document that adaptation rather than silently claiming
+identical termination behavior.
 
 Never block obtaining a semaphore while holding the scene/display resource
 that its owner needs to release it. Keep paint/cache accounting, input routing

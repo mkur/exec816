@@ -178,7 +178,11 @@ mouse-control coordination across event waits. Current Exec forms use an owned
 or temporary ordinary window and acquire UPDATE for painting. Desktop-wide modal
 ownership is unsupported. Adopting a MagiC structural model therefore requires
 an explicit decision about these semantics before changing the lock machinery.
-This analysis preserves the current contract.
+This analysis preserves the current contract. The reassessed
+[AES migration plan](../plans/gem4xe/aes-semaphore-migration-plan.md) proposes
+changing these rules to follow MagiC's shared UPDATE/MCTRL dependency and direct
+handoff, with explicit Exec lifetime and presenter adaptations. That plan is
+not a claim that the current runtime has already changed.
 
 ### Signals, queues and copied messages
 

@@ -1,9 +1,12 @@
 # GEM as a client of an Exec-like kernel
 
-The [AES semaphore migration plan](aes-semaphore-migration-plan.md) orders AM1–AM4:
-Task-owned UPDATE and caller cleanup, short nested/owned calls, inline cursor
-completion, then matched MGVIEW/Counter measurement. Each slice has a separate
-commit and focused development checks.
+The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
+MagiC's structure and execution flow: synchronous cursor completion, common
+UPDATE handler scopes with MCTRL built on UPDATE, protected owner cleanup and
+continuations, then native FIFO ownership cutover and matched measurement.
+AM0 source reassessment is complete; AM1–AM5 implementation remains stopped.
+The earlier uncommitted accounting prototype is superseded. Each executable
+slice has a separate commit and focused development checks.
 
 The [original MGVIEW port plan](mgview-port-plan.md) orders MP1–MP6: a first
 source-built viewer, loader/lifetime checks, original copy/strip scrolling,

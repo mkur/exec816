@@ -889,9 +889,11 @@ The other possible milestones have no delivery order:
   through [NS0–NS5](plans/native-semaphore-implementation-plan.md): recursive
   ownership, FIFO direct handoff, signalless waits, Action!/C and matching loaded
   provider bindings. The [development record](history/native-semaphores.md)
-  passes the primitive CPU gate with zero reservation growth. Plan AES ownership
-  migration separately and measure MGVIEW latency independently; GUI bookkeeping
-  stays outside the kernel semaphore service.
+  passes the primitive CPU gate with zero reservation growth. The reassessed
+  [AM0–AM5 plan](plans/gem4xe/aes-semaphore-migration-plan.md) follows MagiC's
+  handler flow, shared UPDATE/MCTRL dependency and direct ownership handoff.
+  Implementation remains stopped. Measure MGVIEW latency independently; GUI
+  bookkeeping stays outside the kernel semaphore service.
 - **Lightweight Exec service fast paths.** Audit frequent calls that can complete
   without the full Action! kernel dispatcher and kernel-stack transition. Start
   with `FindTask(NULL)`, which only returns the calling Task; retain serialized

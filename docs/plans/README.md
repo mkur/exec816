@@ -1,8 +1,9 @@
 # Implementation plans
 
-- [AES semaphore migration](gem4xe/aes-semaphore-migration-plan.md): AM1–AM4 move
-  UPDATE lifetime to its Task owner, shorten nested calls and complete cursor
-  changes before a cursor-only presenter wake, with matched scroll measurements.
+- [MagiC-led AES migration](gem4xe/aes-semaphore-migration-plan.md): reassessed
+  AM0–AM5 flow, with MCTRL built on UPDATE, shared handler scopes, protected
+  cleanup, synchronous cursor completion and native FIFO cutover. Implementation
+  remains stopped; the earlier accounting prototype is superseded.
 
 - [Cheap native Task semaphores](native-semaphore-design.md): implemented public
   recursive exclusive semaphore, one native request per operation, FIFO direct
