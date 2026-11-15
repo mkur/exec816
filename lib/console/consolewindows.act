@@ -1,12 +1,10 @@
 ; Permanent registry entries outlive every borrowed instance pointer.
 MODULE CONSOLEWINDOWS
 USE DISPLAY
-USE DESKSTATE
 USE CONSOLETYPES
 USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE EXEC
-USE AESLOCKS
 USE HEAPCORE
 USE EXECLISTS
 INCLUDE "console-storage-action.inc"

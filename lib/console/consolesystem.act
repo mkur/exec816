@@ -1,0 +1,88 @@
+; Selected display frontend. Text mode has no AES/desktop dependency.
+MODULE CONSOLESYSTEM
+USE EXEC
+USE CONSOLEUI
+USE CONSOLEBATCH
+USE CONSOLETYPES
+USE CONSOLEDISPLAY
+USE CONSOLEBITMAP
+USE CONSOLECAPTURE
+
+CONST REQUEST_MASK=$80000000, STOP_MASK=$20000000
+BYTE FUNC POINTER consoleInput(LONGCARD bits BYTE pending)
+BYTE FUNC POINTER consoleRunnable(BYTE pending)
+BYTE FUNC POINTER consoleStopping()
+BYTE FUNC POINTER consoleStop()
+BYTE FUNC POINTER consoleTurn(BYTE deferred BYTE POINTER again,writing,handoff)
+PROC POINTER consoleControls()
+
+PUBLIC PROC BindConsole(ADDRESS input,runnable,stopping,stop,turn,controls)
+
+  LET inputEntry=ADDRESS POINTER(@consoleInput)
+  LET runnableEntry=ADDRESS POINTER(@consoleRunnable)
+  LET stoppingEntry=ADDRESS POINTER(@consoleStopping)
+  LET stopEntry=ADDRESS POINTER(@consoleStop)
+  LET turnEntry=ADDRESS POINTER(@consoleTurn)
+  LET controlsEntry=ADDRESS POINTER(@consoleControls)
+  inputEntry^=input
+  runnableEntry^=runnable
+  stoppingEntry^=stopping
+  stopEntry^=stop
+  turnEntry^=turn
+  controlsEntry^=controls
+  CONSOLEUI.BindConsole(input,runnable,stopping,stop,turn,controls)
+
+RETURN
+
+PUBLIC BYTE FUNC Start()
+
+RETURN(CONSOLEUI.Start())
+
+PUBLIC PROC Stop()
+
+  CONSOLEUI.Stop()
+
+RETURN
+
+; Source/model/physical work each keeps its own durable wake. No scene gate or
+; display-independent GUI turn is needed to render the standard text console.
+PUBLIC PROC Run()
+  LONGCARD bits
+  BYTE again,writing,handoff,accepted,pending,stopping
+
+  IF CONSOLEUI.Enabled()<>0 THEN
+    CONSOLEUI.Run()
+    RETURN
+  FI
+  LET displayMask=CONSOLEBITMAP.Mask()
+  LET batch=CONSOLEBATCH.Get()
+  bits=0
+  pending=1
+  stopping=0
+  DO
+    CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
+    IF (bits & STOP_MASK)<>0 THEN
+      stopping=1
+    FI
+    IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
+      accepted=consoleStop()
+    FI
+    IF consoleStopping()<>0 AND CONSOLEBITMAP.Pending()=0
+        AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
+      EXIT
+    FI
+    consoleControls()
+    pending=consoleInput(bits,pending)
+    again=0
+    accepted=consoleTurn(0,@again,@writing,@handoff)
+    IF again<>0 OR consoleRunnable(pending)<>0 THEN
+      EXEC.Yield()
+      bits=0
+    ELSE
+      bits=EXEC.Wait(REQUEST_MASK OR STOP_MASK OR CONSOLECAPTURE.WAKE_MASK
+          OR displayMask)
+    FI
+  OD
+
+RETURN
+ENDMODULE

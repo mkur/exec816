@@ -1,0 +1,34 @@
+; Optional GUI hook installation needs no running display or console.
+MODULE INPUTDEVICEFRONTEND
+USE EXEC
+USE CONSOLEUI
+USE CONSOLEVIEWTYPES AS VIEW
+USE DESKBOOT
+USE HEAPCORE
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  Require(CONSOLEUI.Enabled()=0)
+  Require(CONSOLEUI.SystemBegin()<>0 AND CONSOLEUI.PaintBlocked()=0)
+  CONSOLEUI.SystemEnd()
+  Require(DESKBOOT.Enable()<>0)
+  Require(CONSOLEUI.Enabled()<>0)
+  Require(CONSOLEUI.InputWindow(0,0,0)=VIEW.UNSUPPORTED)
+  DESKBOOT.Disable()
+  Require(CONSOLEUI.Enabled()=0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

@@ -1,0 +1,89 @@
+; Optional GEM policy and manager binding, installed before console startup.
+MODULE CONSOLEGEM
+USE EXEC
+USE CONSOLEUI
+USE CONSOLEVIEWTYPES AS VIEW
+USE CONSOLEVIEWCORE AS VIEWS
+USE AESSYSTEM
+USE AESLOCKS
+USE AESGATE
+USE AESSTATE
+USE AESTYPES
+USE AESWINDOWSTATE
+USE DESKSTATE
+USE DESKTYPES
+USE DESKCORE
+USE DESKHOST
+USE DESKINPUT
+USE DESKMENU
+
+PUBLIC PROC Install()
+  CONSOLEUI.Hooks table
+
+  table.bindEntry=ADDRESS(@AESSYSTEM.BindConsole)
+  table.startEntry=ADDRESS(@AESSYSTEM.Start)
+  table.runEntry=ADDRESS(@AESSYSTEM.Run)
+  table.stopEntry=ADDRESS(@AESSYSTEM.Stop)
+  table.idleEntry=ADDRESS(@DESKHOST.Idle)
+  table.paintEntry=ADDRESS(@DESKHOST.PaintReady)
+  table.beginEntry=ADDRESS(@AESLOCKS.SystemBegin)
+  table.endEntry=ADDRESS(@AESLOCKS.SystemEnd)
+  table.blockedEntry=ADDRESS(@AESLOCKS.PaintBlocked)
+  table.suspendEntry=ADDRESS(@AESGATE.Suspend)
+  table.resumeEntry=ADDRESS(@AESGATE.Resume)
+  table.keyEntry=ADDRESS(@DESKINPUT.Key)
+  table.keyReadyEntry=ADDRESS(@DESKINPUT.KeyReady)
+  table.advanceEntry=ADDRESS(@DESKMENU.Advance)
+  table.ownedEntry=ADDRESS(@AESGATE.SystemOwned)
+  table.windowEntry=ADDRESS(@InputWindow)
+  CONSOLEUI.Install(@table)
+
+RETURN
+
+PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
+  CARD status
+  BYTE slot
+  AESSTATE.Client POINTER client
+  DESKTYPES.Window POINTER item
+
+  LET service=AESSTATE.Get()
+  IF service=NULL THEN
+    RETURN(VIEW.UNSUPPORTED)
+  FI
+  LET self=EXEC.FindTask(NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  IF bit=$ff THEN
+    RETURN(VIEW.RESOURCE)
+  FI
+  AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
+  client=NULL
+  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(slot).id<>0 AND service.clients(slot).lease.task=self THEN
+      client=@service.clients(slot)
+    FI
+  OD
+  status=VIEW.NOT_OWNER
+  item=NULL
+  IF client<>NULL THEN
+    item=AESWINDOWSTATE.Handle(client,window)
+  FI
+  IF item<>NULL THEN
+    status=VIEW.OK
+    IF bound<>0 AND VIEWS.Closed(handle)<>0 THEN
+      status=VIEW.CLOSED
+    ELSE
+      item.inputBound=bound
+      IF bound<>0 THEN
+        item.inputUnit=VIEWS.Unit(handle)
+      ELSE
+        item.inputUnit=0
+      FI
+      DESKCORE.PublishInput(DESKSTATE.Get())
+    FI
+  FI
+  AESGATE.Release(0)
+  EXEC.FreeSignal(bit)
+
+RETURN(status)
+
+ENDMODULE

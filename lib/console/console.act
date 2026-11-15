@@ -1,9 +1,7 @@
 ; Application lifetime API. Extra instances are initially hidden.
 MODULE CONSOLE
 USE EXEC
-USE DESKSTATE
-USE AESSTATE
-USE AESGATE
+USE CONSOLEUI
 USE EXECLISTS
 USE HEAPCORE
 USE CONSOLETYPES
@@ -35,7 +33,7 @@ RETURN(CONSOLEFOREGROUND.RequestBreak(unit))
 ; Replace the selected full-screen console, retaining its admitted lower pane.
 PUBLIC CARD FUNC Activate(LONGCARD previous,next)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(CONSOLETYPES.CONTROL_UNSUPPORTED)
   FI
 
@@ -257,7 +255,7 @@ RETURN(1)
 ; Ordinary tiles can change height within their original backing allocation.
 PUBLIC BYTE FUNC ResizeHeight(LONGCARD unit CARD height)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -295,7 +293,7 @@ RETURN
 
 PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -303,7 +301,7 @@ RETURN(CONSOLETILING.Show(unit,left,top))
 
 PUBLIC BYTE FUNC Hide(LONGCARD unit)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(0)
   FI
 
@@ -311,7 +309,7 @@ RETURN(CONSOLETILING.Hide(unit))
 
 PUBLIC BYTE FUNC Focus(LONGCARD unit)
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(0)
   FI
 

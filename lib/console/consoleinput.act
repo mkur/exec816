@@ -2,7 +2,7 @@
 ; stream reads belong to the backend; ingress contains copied records only.
 MODULE CONSOLEINPUT
 USE EXEC
-USE AESGATE
+USE CONSOLEUI
 USE INPUT
 USE CONSOLETYPES
 USE CONSOLECAPTURE
@@ -10,8 +10,6 @@ USE CONSOLEFOREGROUND
 USE CONSOLEWINDOWS
 USE CONSOLEINGRESS
 USE HEAPCORE
-USE DESKINPUT
-USE DESKMENU
 
 ; Route at most RAW_SLOTS events. A full count may leave work; a shorter count
 ; means Take observed EMPTY unless menu input was deferred. Invalid authority is
@@ -23,7 +21,7 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
 
   consumed=0
   WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
-    IF DESKINPUT.KeyReady()=0 THEN
+    IF CONSOLEUI.KeyReady()=0 THEN
       EXIT
     FI
     status=INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)
@@ -35,7 +33,7 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
       HEAPCORE.Abort(4)
     FI
 
-    IF DESKINPUT.Key(@capturedEvent)=0 THEN
+    IF CONSOLEUI.Key(@capturedEvent)=0 THEN
       EXEC.Forbid()
       entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
       IF entry<>NULL THEN
@@ -63,11 +61,11 @@ PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
   IF pending<>0 THEN
     pumped=Pump(instance)
     ; Keep a deferred-key hint before advancement can clear the menu block.
-    pending=(pumped=CONSOLETYPES.RAW_SLOTS OR DESKINPUT.KeyReady()=0)
+    pending=(pumped=CONSOLETYPES.RAW_SLOTS OR CONSOLEUI.KeyReady()=0)
     IF pumped<>0 THEN
       ; Start captured menu feedback in this turn, after the bounded drain.
-      IF AESGATE.SystemOwned()<>0 THEN
-        DESKMENU.Advance()
+      IF CONSOLEUI.SystemOwned()<>0 THEN
+        CONSOLEUI.Advance()
       FI
     FI
   FI

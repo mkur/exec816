@@ -1,13 +1,7 @@
 ; Public console service facade; no renderer or mutable cells cross this API.
 MODULE CONSOLEVIEW
 USE EXEC
-USE DESKTYPES
-USE AESSTATE
-USE AESTYPES
-USE AESWINDOWSTATE
-USE AESGATE
-USE DESKCORE
-USE DESKSTATE
+USE CONSOLEUI
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEVIEWCORE AS VIEWS
@@ -83,50 +77,8 @@ RETURN(status)
 ; external-paint kind and receives normal AES messages. A unit is a scalar;
 ; source retirement is independent of this optional focus association.
 PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
-  CARD status
-  BYTE slot
-  AESSTATE.Client POINTER client
-  DESKTYPES.Window POINTER item
 
-  LET service=AESSTATE.Get()
-  IF service=NULL THEN
-    RETURN(VIEW.UNSUPPORTED)
-  FI
-  LET self=EXEC.FindTask(NULL)
-  LET bit=EXEC.AllocSignal(-1)
-  IF bit=$ff THEN
-    RETURN(VIEW.RESOURCE)
-  FI
-  AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
-  client=NULL
-  FOR slot=0 TO AESTYPES.CLIENTS-1 DO
-    IF service.clients(slot).id<>0 AND service.clients(slot).lease.task=self THEN
-      client=@service.clients(slot)
-    FI
-  OD
-  status=VIEW.NOT_OWNER
-  item=NULL
-  IF client<>NULL THEN
-    item=AESWINDOWSTATE.Handle(client,window)
-  FI
-  IF item<>NULL THEN
-    status=VIEW.OK
-    IF bound<>0 AND VIEWS.Closed(handle)<>0 THEN
-      status=VIEW.CLOSED
-    ELSE
-      item.inputBound=bound
-      IF bound<>0 THEN
-        item.inputUnit=VIEWS.Unit(handle)
-      ELSE
-        item.inputUnit=0
-      FI
-      DESKCORE.PublishInput(DESKSTATE.Get())
-    FI
-  FI
-  AESGATE.Release(0)
-  EXEC.FreeSignal(bit)
-
-RETURN(status)
+RETURN(CONSOLEUI.InputWindow(handle,window,bound))
 
 ; Directory snapshots contain scalar identities and geometry only. Activation
 ; is a coalesced frontend request; it transfers no source or window ownership.
@@ -164,7 +116,7 @@ PUBLIC CARD FUNC Activate(LONGCARD unit)
 
   EXEC.Forbid()
   status=VIEW.UNSUPPORTED
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     status=VIEW.CLOSED
     IF CONSOLEWINDOWS.Find(unit)<>NULL THEN
       status=VIEW.OVERFLOW

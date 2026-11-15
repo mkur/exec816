@@ -125,7 +125,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client', 'frontend'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -137,10 +137,17 @@ def main():
     elif capture_override.exists():
         capture_override.unlink()
     layout = c_layout(output, args.mode == 'opt')
+    options = {}
+    if args.suite == 'frontend':
+        profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
+        profile['image_data_bytes']=8192
+        profile_path=output/'memory-profile.json'
+        profile_path.write_text(json.dumps(profile)+'\n')
+        options.update(memory_profile=profile_path, console_deferred=True)
     program = read_build(args.from_build) if args.from_build else build(compiler(args.compiler_dir, release=True),
                     ROOT/'tests/programs'/f'input_device_{args.suite}.act', output/'program',
                     tasks=True, console=False, sio_enabled=False,
-                    optimize=args.mode == 'opt')
+                    optimize=args.mode == 'opt', **options)
     report = dict(status='running', tier='development', qualification=False,
                   suite=args.suite, mode=args.mode, build=program['build'], c_layout=layout)
     pin, bridge_dir, rom = PIN, ROOT/'build/altirra-irq-bridge', ROOT/'build/firmware/altirraos-816.rom'
@@ -170,7 +177,7 @@ def main():
                         'Keyboard capture hardware was not restored')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 25,
-                                        'pointer': 10, 'client': 13}[args.suite],
+                                        'pointer': 10, 'client': 13, 'frontend': 7}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

@@ -1,0 +1,46 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "slice": "IM4b",
+  "text": {
+    "gui_routines": 0,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 2,
+      "native_nmi_count": 12,
+      "return_s": 11278,
+      "return_d": 3328,
+      "switches": 13
+    },
+    "xex_sha256": "5fb2c09e9ffc212b33d3926214882e8b648083bdec503b55fa1db641bd4c60dd"
+  },
+  "gui_hooks": {
+    "checks": 7,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "native_nmi_count": 1,
+      "return_s": 11278,
+      "return_d": 3328,
+      "switches": 1
+    },
+    "xex_sha256": "a93918440080044de10a4864365694b09e3aed72b37ebb34f9c66713885682ed"
+  },
+  "host": {
+    "cases": 718,
+    "skipped": 5,
+    "status": "pass"
+  },
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "production_task_delta": 0
+  },
+  "scope": "Frontend dependency separation only; console capture cutover follows"
+}

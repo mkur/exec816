@@ -12,9 +12,7 @@ USE CONSOLECORE
 USE CONSOLEDISPLAY
 USE CONSOLEBITMAP
 USE DISPLAY
-USE AESLOCKS
-USE DESKSTATE
-USE DESKHOST
+USE CONSOLEUI
 
 TYPE Frame=[LONGCARD handle,unit,revision CARD first BYTE complete]
 Frame ARRAY frames(4)
@@ -44,7 +42,7 @@ RETURN
 ; Acquire permanent-unit storage before the resident publishes readiness.
 PUBLIC BYTE FUNC Start()
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(1)
   FI
 
@@ -84,12 +82,12 @@ RETURN(view.visible<>0 AND (model.dirtyRows<>0
 PUBLIC BYTE FUNC Runnable()
   BYTE slot
 
-  IF DESKSTATE.Enabled()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 THEN
     RETURN(0)
   FI
 
-  IF DESKSTATE.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
-      OR AESLOCKS.PaintBlocked()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+      OR CONSOLEUI.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
   LET windows=CONSOLEWINDOWS.Registry()
@@ -167,8 +165,8 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
   CONSOLETYPES.Presentation POINTER view
   CONSOLETYPES.Instance POINTER model
 
-  IF DESKSTATE.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
-      OR AESLOCKS.PaintBlocked()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
+      OR CONSOLEUI.PaintBlocked()<>0 THEN
     RETURN(0)
   FI
   LET windows=CONSOLEWINDOWS.Registry()
@@ -196,7 +194,7 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
             AND (frame.first<>0 OR frame.complete<>2) THEN
           Copy(entry,frame)
         FI
-        IF DESKHOST.PaintReady()<>0 THEN
+        IF CONSOLEUI.PaintReady()<>0 THEN
           CONSOLEDISPLAY.Present(view,model)
         FI
         IF frame.handle<>0 AND frame.first=0 AND frame.complete=2

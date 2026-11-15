@@ -1,8 +1,8 @@
 ; One resident console worker; public calls use the unchanged Exec IOStdReq.
 MODULE CONSOLEDRIVER
 USE EXEC
-USE AESSYSTEM
-USE AESLOCKS
+USE CONSOLESYSTEM
+USE CONSOLEUI
 USE TASKSTACKS
 USE A816MEMORY
 USE EXECLISTS
@@ -30,10 +30,6 @@ USE CONSOLEBITMAP
 USE CONSOLECONTROL
 USE DISPLAY
 USE DISPLAYADAPTER
-USE DESKHOST
-USE DESKINPUT
-USE DESKMENUCACHE
-USE DESKSTATE
 INCLUDE "console-storage-action.inc"
 CONST DELETE=127
 
@@ -454,7 +450,7 @@ RETURN(CONSOLEINPUT.Service(GetInstance(),bits,pending))
 
 BYTE FUNC SystemRunnable(BYTE pending)
 
-RETURN((pending<>0 AND DESKINPUT.KeyReady()<>0)
+RETURN((pending<>0 AND CONSOLEUI.KeyReady()<>0)
     OR CONSOLEDISPLAY.CompletionReady()<>0 OR CONSOLEFRONT.Runnable())
 
 BYTE FUNC SystemStopping()
@@ -558,24 +554,24 @@ PUBLIC PROC Worker()
     BOOTDIAG.Report(BOOTDIAG.WORKER,0)
   FI
 
-  AESSYSTEM.BindConsole(ADDRESS(@SystemInput),ADDRESS(@SystemRunnable),
+  CONSOLESYSTEM.BindConsole(ADDRESS(@SystemInput),ADDRESS(@SystemRunnable),
       ADDRESS(@SystemStopping),ADDRESS(@SystemStop),ADDRESS(@SystemTurn),
       ADDRESS(@SystemControls))
   registered=Initialize(service,defaultInstance)
-  IF registered<>0 AND AESSYSTEM.Start()=0 THEN
+  IF registered<>0 AND CONSOLESYSTEM.Start()=0 THEN
     CONSOLECAPTURE.Release()
     registered=0
   FI
 
   IF registered<>0 AND CONSOLEBACKEND.Start(ADDRESS(@BackendTurn))=0 THEN
-    AESSYSTEM.Stop()
+    CONSOLESYSTEM.Stop()
     CONSOLECAPTURE.Release()
     registered=0
   FI
 
   IF registered<>0 AND CONSOLEFRONT.Start()=0 THEN
     CONSOLEBACKEND.Stop()
-    AESSYSTEM.Stop()
+    CONSOLESYSTEM.Stop()
     CONSOLECAPTURE.Release()
     registered=0
   FI
@@ -604,10 +600,10 @@ PUBLIC PROC Worker()
   CONSOLEBACKEND.Wake()
   EXEC.Permit()
 
-  AESSYSTEM.Run()
+  CONSOLESYSTEM.Run()
 
   CONSOLEFRONT.Stop()
-  AESSYSTEM.Stop()
+  CONSOLESYSTEM.Stop()
   CONSOLEBACKEND.Stop()
   registered=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)

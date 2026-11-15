@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM3 and IM4a are recorded; console cutover and IM5–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM3 and IM4a/b are recorded; console capture cutover and IM5–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -217,6 +217,11 @@ IM4a delivers the shared native client wrapper and permits detach during a
 pending system stop. The [development record](../development/input-device-im4a.json)
 covers thirteen client/shared-route assertions plus thirty-five service/stop
 assertions. The Atari console cutover remains the next sub-slice.
+IM4b separates optional GEM hooks from the console core and adds the standard
+text frontend loop. Text startup passes with zero emitted AES/DESK routines,
+GUI hook installation/retirement passes separately, and all 718 host cases
+complete (five skips). See the [boundary record](../development/input-device-im4b.json).
+Capture is still consumed by the frontend until the next sub-slice.
 
 Depends on the placement selection in IM0 and keyboard delivery in IM3a.
 Extract the console consumer: copy captured events to the existing console
