@@ -1,5 +1,9 @@
 # Historical records
 
+- [Cursor drawing-change hint consumption](cursor-drawing-hint.md): consume
+  before presentation, retain late drawing and BUSY retries, with focused
+  emitted checks and a cached MGVIEW/Counter comparison.
+
 - [MGVIEW presenter work and wake reasons](mgview-presenter-audit.md): traced
   scene/display notifications during owned UPDATE, repeated mouse submissions
   and a retained drawing-changed hint; no drawing-limit changes or builds.

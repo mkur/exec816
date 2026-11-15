@@ -347,13 +347,19 @@ PUBLIC BYTE FUNC CopyStart()
 
 RETURN(1)
 
-; Local owner state is sufficient for scheduling; public Poll admits again.
+; Consume the old draw hint before releasing the scene. A new draw during
+; the physical call or Resume stays pending; failed admission needs a retry.
 PUBLIC BYTE FUNC Mouse(BYTE POINTER state)
 
   LET packet=GetPacket()
   packet.text=LONGCARD(ADDRESS(state))
+  drawingChanged=0
+  LET result=Run(OP_MOUSE)
+  IF result=0 THEN
+    drawingChanged=1
+  FI
 
-RETURN(Run(OP_MOUSE))
+RETURN(result)
 
 PUBLIC BYTE FUNC Pending()
 
@@ -421,15 +427,18 @@ PUBLIC BYTE FUNC Outline(CARD x,y,width,height BYTE visible)
 
 RETURN(Run(OP_OUTLINE))
 
+; The non-AES overlay follows the same consume-before-call hint protocol.
 PUBLIC BYTE FUNC Cursor(CARD x,y BYTE visible)
-  BYTE result
 
   LET packet=GetPacket()
   packet.x=x
   packet.y=y
   packet.width=CARD(visible)
-  result=Run(OP_POINTER)
   drawingChanged=0
+  LET result=Run(OP_POINTER)
+  IF result=0 THEN
+    drawingChanged=1
+  FI
 
 RETURN(result)
 

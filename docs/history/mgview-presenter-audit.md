@@ -124,6 +124,9 @@ Then repeat this same two-key capture and compare pixels, mouse-call counts,
 viewer response and presenter CPU. No strip-size, scheduler or wake-policy
 change is justified as part of that fix.
 
+The subsequent [cursor hint fix](cursor-drawing-hint.md) implements this
+consume-before-call protocol for both AES mouse and fallback cursor paths.
+
 ## Reproduction and validation
 
 ```sh

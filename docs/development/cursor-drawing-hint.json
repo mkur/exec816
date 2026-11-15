@@ -1,0 +1,910 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "source_baseline": "c64b09cb",
+  "tier": "development",
+  "qualification": false,
+  "source_sha256": {
+    "lib/console/consolebitmap.act": "01b16fe57a56a1dadbfdb8678cf1ccdbb82a2dcf144c035de3908ce20ccedd4d"
+  },
+  "builds": {
+    "optimized_native_fixture": 1,
+    "optimized_hint_probe": 1,
+    "c_provider": 0,
+    "apps": 0,
+    "qed": 0,
+    "demo": 0
+  },
+  "inputs": {
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "c_provider_json_sha256": "ac4c0c8c8acebd48a9e2988973dddb6c75c8349e13a0e98b80ff111855e1f1a1",
+    "app_sha256": {
+      "mgview": "432d17cb7a03ef402e109eabe4c1f1891e90c07cee60d85add2624ff453a83e5",
+      "counter": "425dba4899f8492859bed640f4d37dfbc04f7e577a601f113baeff6f04a29e81"
+    },
+    "desktop_mouse": {
+      "profile": "mild",
+      "coordinates": "relative-pixel-clamp",
+      "clock": "PAL-VCOUNT-2-scanlines",
+      "parameters": {
+        "version": 1,
+        "default_profile": "mild",
+        "fraction_bits": 2,
+        "diagonal_speed_numerator": 3,
+        "diagonal_speed_denominator": 2,
+        "bands": [
+          {
+            "maximum_age": 16,
+            "gain_quarters": 16
+          },
+          {
+            "maximum_age": 24,
+            "gain_quarters": 12
+          },
+          {
+            "maximum_age": 48,
+            "gain_quarters": 8
+          },
+          {
+            "maximum_age": 96,
+            "gain_quarters": 6
+          }
+        ],
+        "slow_gain_quarters": 4,
+        "off_gain_quarters": 8
+      },
+      "gain_table_sha256": "931bf08d904b4beb7f3dea9189d402372a5545988ed16aba0b92b7b732a2b4ae",
+      "interval_upper_bounds": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        12,
+        16,
+        24,
+        32,
+        48,
+        64,
+        96,
+        128,
+        192,
+        255
+      ],
+      "source_inputs": {
+        "config/mouse.json": "a0d9537abb07efa0e5e4ad3721dd487b64638d345283d2baad775247d851b849",
+        "abi/input-native.json": "9238d4ab309777371293aa4cdefb2738ff03bb33f591d656be5225fa716a429d",
+        "tools/generate_mouse_acceleration.py": "26bb9e36c11eccace936debff315139808d8623df4585caa6989bfcebcdb6002",
+        "lib/desktop/deskmouse.act": "73573b5221912f91db08954357260e7ec300344f448d717341868dc627caf595",
+        "lib/desktop/mouse-gains.inc": "453fe8305f9a9131431f4cb6d661d57802237effbcfd59c0f830e1c9ad363b46",
+        "lib/desktop/deskinput.act": "5d850bb7a089b3778a3e0a2af7e9748a4117cbca6ea2a8b25cf43728d1751af2"
+      }
+    },
+    "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+    "work_xywh": [
+      8,
+      22,
+      488,
+      200
+    ],
+    "pointer": [
+      632,
+      0
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "memory": {
+    "upper_code_bytes_delta": 73,
+    "mouse_local_stack_peak_before": 18,
+    "mouse_local_stack_peak_after": 20,
+    "cursor_local_stack_peak_before": 14,
+    "cursor_local_stack_peak_after": 14,
+    "bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0
+    },
+    "reservation_maps_identical": true
+  },
+  "hint_probe": {
+    "checks": 48,
+    "cases": 12,
+    "status": "pass",
+    "mode": "opt",
+    "source_sha256": "01b16fe57a56a1dadbfdb8678cf1ccdbb82a2dcf144c035de3908ce20ccedd4d",
+    "native_sha256": "d58b2a2786c0aa099bee78709c6a3a49f85ca5d1e6e098533042eb588d2b32c0",
+    "guards": "intact"
+  },
+  "runs": {
+    "baseline": {
+      "status": "pass",
+      "native_sha256": "d8421453e970971b9a4c3efa7d1f9578ff68a7498e8a03dfcd64c492f4ab0f8a",
+      "path": "build/mgview-mouse-fix/baseline-scroll",
+      "trace_sha256": "d0f5f9ffcdf54fcba4705f7f85e3507c092131c886cb84c3358281fdc3b0d92a",
+      "trace_events": 807782,
+      "runtime_status": 0,
+      "guards": "intact",
+      "ownership_restored": true,
+      "process_lifetimes": 4,
+      "counter_progress_including_post_settle": 2,
+      "samples": [
+        {
+          "action": "down",
+          "visible_complete_ms": 222.53717688287924,
+          "complete_bracket_ms": [
+            200.5776883725061,
+            222.53717688287924
+          ],
+          "pixel_sha256": "e7d2bc96fc2b028fcc03151e3e6464f10231234545de63125a501e7b4f71b129",
+          "caller_phases": {
+            "_my_keyed": {
+              "calls": 1,
+              "elapsed_ms": 213.0669923975759,
+              "charged_cpu_ms": 91.2379701118866,
+              "off_cpu_ms": 101.93605956759363,
+              "interrupt_ms": 19.89296271809569
+            },
+            "set_shift": {
+              "calls": 1,
+              "elapsed_ms": 212.96612953019473,
+              "charged_cpu_ms": 91.13710724450542,
+              "off_cpu_ms": 101.93605956759363,
+              "interrupt_ms": 19.89296271809569
+            },
+            "ExecAESBeginUpdate": {
+              "calls": 1,
+              "elapsed_ms": 36.617661362966764,
+              "charged_cpu_ms": 10.148594756822517,
+              "off_cpu_ms": 24.22196033432058,
+              "interrupt_ms": 2.2471062718236654
+            },
+            "vro_cpyfm": {
+              "calls": 1,
+              "elapsed_ms": 89.03745388572258,
+              "charged_cpu_ms": 38.94582444645246,
+              "off_cpu_ms": 41.60871692001032,
+              "interrupt_ms": 8.482912519259804
+            },
+            "_my_draw": {
+              "calls": 1,
+              "elapsed_ms": 26.76679179958809,
+              "charged_cpu_ms": 14.623424149855014,
+              "off_cpu_ms": 8.95388783710823,
+              "interrupt_ms": 3.189479812624845
+            },
+            "GemDrawingMouseBorrow": {
+              "calls": 0,
+              "elapsed_ms": 0,
+              "charged_cpu_ms": 0,
+              "off_cpu_ms": 0,
+              "interrupt_ms": 0
+            },
+            "wind_update": {
+              "calls": 1,
+              "elapsed_ms": 8.609149692900411,
+              "charged_cpu_ms": 7.115025959324987,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 1.494123733575423
+            }
+          },
+          "rpc_delta": 0,
+          "hardware_copy_strips": 12,
+          "copy_fences": 48,
+          "windows": {
+            "whole_shift": {
+              "presenter_cpu_ms": 74.38569509387789,
+              "duration_ms": 212.96612953019473,
+              "mouse_present_cpu_ms": 50.43354821611579,
+              "bitmap_run_cpu_ms": 34.55155847579362,
+              "bitmap_run_calls_intersecting": 11,
+              "mouse_return_status_counts": {
+                "0": 10
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "1": 11
+                },
+                "AESCURSOR_PENDING": {},
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 10
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_ENTERTASK",
+                  "mask": 524288,
+                  "count": 2
+                },
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 3
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 2
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 5.089944867271233,
+                "input": 54.43345517699284,
+                "painting": 0.22829827215071208,
+                "controls": 0.9744438445457224,
+                "console": 0.12666007874493043,
+                "events": 0.1355410859357269,
+                "settlement": 1.216486532586953,
+                "readiness": 7.55759615099968,
+                "cache": 0.3864647811677537,
+                "stop_check": 0.2593113131344457,
+                "scene_publication": 2.7099759085058905,
+                "scene_admission": 1.030549255052659,
+                "signals": 0.09698623725822163,
+                "completion_poll": 0.0563873472431521,
+                "menu_continuation": 0.083594242287973
+              }
+            },
+            "owned_core": {
+              "presenter_cpu_ms": 55.704285015485375,
+              "duration_ms": 167.61491388947232,
+              "mouse_present_cpu_ms": 38.992766913032376,
+              "bitmap_run_cpu_ms": 26.55949781428545,
+              "bitmap_run_calls_intersecting": 8,
+              "mouse_return_status_counts": {
+                "0": 7
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "1": 8
+                },
+                "AESCURSOR_PENDING": {},
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 7
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 2
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 2
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 4.225879254953982,
+                "scene_publication": 0.9403294994636153,
+                "scene_admission": 0.8587792985132067,
+                "input": 42.223057068224456,
+                "stop_check": 0.20602526998966697,
+                "signals": 0.07612291877825535,
+                "readiness": 4.513313757525949,
+                "cache": 0.26135535447201,
+                "completion_poll": 0.0563873472431521,
+                "menu_continuation": 0.083594242287973,
+                "controls": 0.9707081827908637,
+                "painting": 0.1779020805521449,
+                "console": 0.09508316428876526,
+                "events": 0.10347078219118412,
+                "settlement": 0.9122767942101472
+              }
+            }
+          }
+        },
+        {
+          "action": "up",
+          "visible_complete_ms": 200.45701944940575,
+          "complete_bracket_ms": [
+            180.6785935303977,
+            200.45701944940575
+          ],
+          "pixel_sha256": "1508d95ae0a64952d9d92feaa73707e52b2be4b7dc541489f61afa3520d6827c",
+          "caller_phases": {
+            "_my_keyed": {
+              "calls": 1,
+              "elapsed_ms": 220.31861670559744,
+              "charged_cpu_ms": 91.32678018379455,
+              "off_cpu_ms": 108.86669890143351,
+              "interrupt_ms": 20.125137620369365
+            },
+            "set_shift": {
+              "calls": 1,
+              "elapsed_ms": 220.21930449026542,
+              "charged_cpu_ms": 91.22746796846255,
+              "off_cpu_ms": 108.86669890143351,
+              "interrupt_ms": 20.125137620369365
+            },
+            "ExecAESBeginUpdate": {
+              "calls": 1,
+              "elapsed_ms": 28.621724071335635,
+              "charged_cpu_ms": 8.13972502710117,
+              "off_cpu_ms": 18.608881853001005,
+              "interrupt_ms": 1.873117191233459
+            },
+            "vro_cpyfm": {
+              "calls": 1,
+              "elapsed_ms": 77.80008993781885,
+              "charged_cpu_ms": 37.209023667179316,
+              "off_cpu_ms": 32.42075110765896,
+              "interrupt_ms": 8.170315162980579
+            },
+            "_my_draw": {
+              "calls": 1,
+              "elapsed_ms": 31.623363533456725,
+              "charged_cpu_ms": 15.635365580317432,
+              "off_cpu_ms": 12.584739610278849,
+              "interrupt_ms": 3.4032583428604455
+            },
+            "GemDrawingMouseBorrow": {
+              "calls": 0,
+              "elapsed_ms": 0,
+              "charged_cpu_ms": 0,
+              "off_cpu_ms": 0,
+              "interrupt_ms": 0
+            },
+            "wind_update": {
+              "calls": 1,
+              "elapsed_ms": 17.10453791273776,
+              "charged_cpu_ms": 9.796878678393355,
+              "off_cpu_ms": 5.240076179306126,
+              "interrupt_ms": 2.06758305503828
+            }
+          },
+          "rpc_delta": 0,
+          "hardware_copy_strips": 12,
+          "copy_fences": 48,
+          "windows": {
+            "whole_shift": {
+              "presenter_cpu_ms": 82.80383264799211,
+              "duration_ms": 220.21930449026542,
+              "mouse_present_cpu_ms": 62.0175533811968,
+              "bitmap_run_cpu_ms": 39.51244680206209,
+              "bitmap_run_calls_intersecting": 15,
+              "mouse_return_status_counts": {
+                "0": 14,
+                "1": 1
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "1": 14
+                },
+                "AESCURSOR_PENDING": {},
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 14,
+                  "0": 1
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 3
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 1
+                },
+                {
+                  "caller": "DISPLAY_NEXT",
+                  "mask": 65536,
+                  "count": 1
+                },
+                {
+                  "caller": "AESGATE_ENTERTASK",
+                  "mask": 524288,
+                  "count": 2
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 3.8662689479107812,
+                "input": 65.93964580287829,
+                "painting": 0.22872117725503574,
+                "controls": 0.984311630313274,
+                "console": 0.15830747738514955,
+                "events": 0.16866865244107876,
+                "settlement": 1.5297182465226629,
+                "readiness": 6.049164128061305,
+                "cache": 0.31865899610786325,
+                "stop_check": 0.201373313842107,
+                "scene_publication": 2.478223911336535,
+                "scene_admission": 0.6863045001332152,
+                "signals": 0.05984107226179518,
+                "completion_poll": 0.05688073653152969,
+                "menu_continuation": 0.07774405501149598
+              }
+            },
+            "owned_core": {
+              "presenter_cpu_ms": 65.59504862703858,
+              "duration_ms": 174.36877888970494,
+              "mouse_present_cpu_ms": 51.19202852072024,
+              "bitmap_run_cpu_ms": 32.146497147505066,
+              "bitmap_run_calls_intersecting": 12,
+              "mouse_return_status_counts": {
+                "0": 11,
+                "1": 1
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "1": 11
+                },
+                "AESCURSOR_PENDING": {},
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 11,
+                  "0": 1
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 2
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 1
+                },
+                {
+                  "caller": "DISPLAY_NEXT",
+                  "mask": 65536,
+                  "count": 1
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 2.983595511003287,
+                "scene_admission": 0.6863045001332152,
+                "input": 54.37706782974967,
+                "stop_check": 0.1661312218151369,
+                "signals": 0.05984107226179518,
+                "readiness": 3.9914488587905748,
+                "completion_poll": 0.05688073653152969,
+                "menu_continuation": 0.07774405501149598,
+                "controls": 0.9804350001903073,
+                "painting": 0.17797256473619882,
+                "console": 0.12637814200871467,
+                "events": 0.10325932963902229,
+                "settlement": 0.9167877819895994,
+                "cache": 0.1877698663196965,
+                "scene_publication": 0.7034321568583226
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fixed": {
+      "status": "pass",
+      "native_sha256": "3e25e3fc0c964ee38052bfa8407833a8cdf4cb06ed157cbc5749823fb1ed5e8f",
+      "path": "build/mgview-mouse-fix/settled-scroll",
+      "trace_sha256": "146902e0c6cfe6c9a7a545b1c1e94ed3fa850a4faa5019112cb34db99572d352",
+      "trace_events": 777457,
+      "runtime_status": 0,
+      "guards": "intact",
+      "ownership_restored": true,
+      "process_lifetimes": 4,
+      "counter_progress_including_post_settle": 2,
+      "samples": [
+        {
+          "action": "down",
+          "visible_complete_ms": 180.6464527424691,
+          "complete_bracket_ms": [
+            160.1045421417888,
+            180.6464527424691
+          ],
+          "pixel_sha256": "e7d2bc96fc2b028fcc03151e3e6464f10231234545de63125a501e7b4f71b129",
+          "caller_phases": {
+            "_my_keyed": {
+              "calls": 1,
+              "elapsed_ms": 190.34324387950588,
+              "charged_cpu_ms": 92.02612425797776,
+              "off_cpu_ms": 78.28544402921428,
+              "interrupt_ms": 20.03167559231384
+            },
+            "set_shift": {
+              "calls": 1,
+              "elapsed_ms": 190.1433507335289,
+              "charged_cpu_ms": 91.91398392114795,
+              "off_cpu_ms": 78.28544402921428,
+              "interrupt_ms": 19.943922783166684
+            },
+            "ExecAESBeginUpdate": {
+              "calls": 1,
+              "elapsed_ms": 7.755586224007195,
+              "charged_cpu_ms": 6.393620335532909,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 1.3619658884742851
+            },
+            "vro_cpyfm": {
+              "calls": 1,
+              "elapsed_ms": 74.09515928720754,
+              "charged_cpu_ms": 36.81621530944671,
+              "off_cpu_ms": 29.121738873014284,
+              "interrupt_ms": 8.157205104746545
+            },
+            "_my_draw": {
+              "calls": 1,
+              "elapsed_ms": 18.303191946759068,
+              "charged_cpu_ms": 14.457715833144201,
+              "off_cpu_ms": 0.7319077672161144,
+              "interrupt_ms": 3.1135683463987514
+            },
+            "GemDrawingMouseBorrow": {
+              "calls": 1,
+              "elapsed_ms": 7.0517311620445495,
+              "charged_cpu_ms": 2.5989633186209344,
+              "off_cpu_ms": 3.9227267793379843,
+              "interrupt_ms": 0.5300410640856298
+            },
+            "wind_update": {
+              "calls": 1,
+              "elapsed_ms": 39.04006180053258,
+              "charged_cpu_ms": 11.549115493974305,
+              "off_cpu_ms": 24.925181038626743,
+              "interrupt_ms": 2.565765267931529
+            }
+          },
+          "rpc_delta": 0,
+          "hardware_copy_strips": 12,
+          "copy_fences": 48,
+          "windows": {
+            "whole_shift": {
+              "presenter_cpu_ms": 54.92959334854852,
+              "duration_ms": 190.1433507335289,
+              "mouse_present_cpu_ms": 24.378153286184112,
+              "bitmap_run_cpu_ms": 9.437479823902315,
+              "bitmap_run_calls_intersecting": 3,
+              "mouse_return_status_counts": {
+                "0": 2
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "0": 10
+                },
+                "AESCURSOR_PENDING": {
+                  "1": 2,
+                  "0": 8
+                },
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 2
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 3
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 2
+                },
+                {
+                  "caller": "AESGATE_ENTERTASK",
+                  "mask": 524288,
+                  "count": 2
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 3.7358027232269357,
+                "scene_admission": 8.895526932711569,
+                "input": 27.60590601075025,
+                "stop_check": 0.21991065424829317,
+                "signals": 0.07492468764933836,
+                "readiness": 6.2938852150965845,
+                "completion_poll": 0.05688073653152968,
+                "menu_continuation": 0.0772506657231184,
+                "controls": 0.9812103262149007,
+                "painting": 0.1767038494232279,
+                "console": 0.13342656041410866,
+                "events": 0.135400117567619,
+                "settlement": 1.2208565519982972,
+                "cache": 3.0757183395617855,
+                "scene_publication": 2.2461899774309644
+              }
+            },
+            "owned_core": {
+              "presenter_cpu_ms": 36.872461688321756,
+              "duration_ms": 143.27362383154843,
+              "mouse_present_cpu_ms": 22.466269793720986,
+              "bitmap_run_cpu_ms": 8.101945504448256,
+              "bitmap_run_calls_intersecting": 2,
+              "mouse_return_status_counts": {
+                "0": 2
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "0": 8
+                },
+                "AESCURSOR_PENDING": {
+                  "1": 2,
+                  "0": 6
+                },
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 2
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 2
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 2
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 2.907543076409085,
+                "scene_admission": 0.687573215446186,
+                "input": 25.657159290026915,
+                "stop_check": 0.16676557947162235,
+                "signals": 0.05977058807774124,
+                "readiness": 4.074761164342333,
+                "completion_poll": 0.05688073653152968,
+                "menu_continuation": 0.0772506657231184,
+                "controls": 0.9774041802759879,
+                "painting": 0.1767038494232279,
+                "console": 0.10142674085361986,
+                "events": 0.10290690871875259,
+                "settlement": 0.9172106870939231,
+                "cache": 0.19996363016102817,
+                "scene_publication": 0.7091413757666917
+              }
+            }
+          }
+        },
+        {
+          "action": "up",
+          "visible_complete_ms": 180.1384027438083,
+          "complete_bracket_ms": [
+            159.98161772479872,
+            180.1384027438083
+          ],
+          "pixel_sha256": "1508d95ae0a64952d9d92feaa73707e52b2be4b7dc541489f61afa3520d6827c",
+          "caller_phases": {
+            "_my_keyed": {
+              "calls": 1,
+              "elapsed_ms": 170.2539122246359,
+              "charged_cpu_ms": 90.80463334832297,
+              "off_cpu_ms": 59.77425325531204,
+              "interrupt_ms": 19.675025621000902
+            },
+            "set_shift": {
+              "calls": 1,
+              "elapsed_ms": 170.15474097767202,
+              "charged_cpu_ms": 90.70546210135907,
+              "off_cpu_ms": 59.77425325531204,
+              "interrupt_ms": 19.675025621000902
+            },
+            "ExecAESBeginUpdate": {
+              "calls": 1,
+              "elapsed_ms": 7.7073750421142995,
+              "charged_cpu_ms": 6.387840632440486,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 1.3195344096738133
+            },
+            "vro_cpyfm": {
+              "calls": 1,
+              "elapsed_ms": 66.90267120960728,
+              "charged_cpu_ms": 37.21677692742526,
+              "off_cpu_ms": 21.512477815103072,
+              "interrupt_ms": 8.173416467078953
+            },
+            "_my_draw": {
+              "calls": 1,
+              "elapsed_ms": 18.912386749537273,
+              "charged_cpu_ms": 14.907757348328609,
+              "off_cpu_ms": 0.731132441191521,
+              "interrupt_ms": 3.2734969600171415
+            },
+            "GemDrawingMouseBorrow": {
+              "calls": 1,
+              "elapsed_ms": 3.227470787829919,
+              "charged_cpu_ms": 2.6566193811770575,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.5708514066528612
+            },
+            "wind_update": {
+              "calls": 1,
+              "elapsed_ms": 36.68384601179341,
+              "charged_cpu_ms": 9.849459879697594,
+              "off_cpu_ms": 24.71210735023168,
+              "interrupt_ms": 2.1222787818641375
+            }
+          },
+          "rpc_delta": 0,
+          "hardware_copy_strips": 12,
+          "copy_fences": 48,
+          "windows": {
+            "whole_shift": {
+              "presenter_cpu_ms": 40.33675933457292,
+              "duration_ms": 170.15474097767202,
+              "mouse_present_cpu_ms": 15.976015641850125,
+              "bitmap_run_cpu_ms": 5.28899220303956,
+              "bitmap_run_calls_intersecting": 1,
+              "mouse_return_status_counts": {
+                "0": 1
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "0": 7
+                },
+                "AESCURSOR_PENDING": {
+                  "1": 1,
+                  "0": 6
+                },
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 1
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 3
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 1
+                },
+                {
+                  "caller": "AESGATE_ENTERTASK",
+                  "mask": 524288,
+                  "count": 1
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 2.826979654035431,
+                "scene_admission": 8.717342915423208,
+                "input": 19.100015647488856,
+                "stop_check": 0.18445710966916137,
+                "signals": 0.0656912595382722,
+                "readiness": 5.159724209484634,
+                "completion_poll": 0.039541627254260414,
+                "menu_continuation": 0.058219936028554554,
+                "controls": 0.7436786259531223,
+                "painting": 0.12616668945655285,
+                "console": 0.1014972250376738,
+                "events": 0.09733865817849133,
+                "settlement": 0.9117129207377157,
+                "cache": 0.19975217760886635,
+                "scene_publication": 2.0046406786781112
+              }
+            },
+            "owned_core": {
+              "presenter_cpu_ms": 22.56769653457461,
+              "duration_ms": 125.63974969656557,
+              "mouse_present_cpu_ms": 12.21483861236377,
+              "bitmap_run_cpu_ms": 5.28899220303956,
+              "bitmap_run_calls_intersecting": 1,
+              "mouse_return_status_counts": {
+                "0": 1
+              },
+              "cursor_decisions": {
+                "CONSOLEBITMAP_CHANGED": {
+                  "0": 4
+                },
+                "AESCURSOR_PENDING": {
+                  "1": 1,
+                  "0": 3
+                },
+                "CONSOLEBITMAP_MOUSE": {
+                  "1": 1
+                }
+              },
+              "signal_posts": [
+                {
+                  "caller": "AESGATE_RELEASE",
+                  "mask": 524288,
+                  "count": 2
+                },
+                {
+                  "caller": "DISPLAY_LEAVE",
+                  "mask": 65536,
+                  "count": 1
+                }
+              ],
+              "exclusive_presenter_cpu_ms": {
+                "loop_other": 1.9639008202949335,
+                "scene_admission": 0.509741619078095,
+                "input": 15.182998087059243,
+                "stop_check": 0.13095961397222078,
+                "signals": 0.050748612518836896,
+                "readiness": 2.474699702133838,
+                "completion_poll": 0.039541627254260414,
+                "menu_continuation": 0.058219936028554554,
+                "controls": 0.7399429641982634,
+                "painting": 0.08140923258230086,
+                "console": 0.06357673401665401,
+                "events": 0.06477496514557099,
+                "settlement": 0.6078556032811797,
+                "cache": 0.13095961397222078,
+                "scene_publication": 0.4683674030384322
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "comparison": [
+    {
+      "action": "down",
+      "observed_visible_ms_saved": 41.89072414041013,
+      "observed_visible_reduction_percent": 18.824146476189508,
+      "presenter_cpu_ms_saved_whole_shift": 19.456101745329363,
+      "mouse_returns_whole_shift_before": 10,
+      "mouse_returns_whole_shift_after": 2
+    },
+    {
+      "action": "up",
+      "observed_visible_ms_saved": 20.318616705597435,
+      "observed_visible_reduction_percent": 10.13614627285514,
+      "presenter_cpu_ms_saved_whole_shift": 42.46707331341919,
+      "mouse_returns_whole_shift_before": 15,
+      "mouse_returns_whole_shift_after": 1
+    }
+  ],
+  "limits": [
+    "One down/up pair per image; no latency distribution.",
+    "Pixel timings are PAL-frame sampled upper bounds, not exact physical first-pixel timestamps.",
+    "Owned core excludes BEGIN and END execution; whole_shift includes both.",
+    "Mouse-operation counts use C returns inside the interval; boundary-crossing returns are excluded.",
+    "The fixture supervisor busy-yields; no production scheduler or drawing-limit policy changed."
+  ],
+  "discarded_capture": {
+    "path": "build/mgview-mouse-fix/scroll",
+    "reason": "Native-only rebuild initially omitted mouse-profile metadata, so positioning queued motion during scrolling.",
+    "native_bytes_same_as_fixed": true,
+    "valid_stationary_comparison": false
+  }
+}

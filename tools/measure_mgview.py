@@ -159,6 +159,7 @@ def run(cache,out,presenter=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview','counter')}
+    require('desktop_mouse' in p['build'],'Cached MGVIEW fixture is missing mouse-profile metadata')
     require(p['build']['foreign_image']['c_program_provider']['abi']==ABI['version'],'Cached provider ABI changed')
     require(sha256(p['xex'])==p['build']['xex_sha256'],'Cached native image changed')
     shutil.copyfile(cache/'system.atr',out/'system.atr')
@@ -219,7 +220,13 @@ def run(cache,out,presenter=False):
                         context=next(c for c in contexts if c and number(c+layout()['Request']['fields']['global']+4)==number(sy['ap_id']))
                         depth=context+dict(expected_layout())['C context updateDepth']
                         frames(80);reach(f'dw(${depth:x})=0')
-                        position=schedule(b,p,[320,120],(632,0));frames(40)
+                        position=schedule(b,p,[320,120],(632,0))
+                        cursor=lambda name:next(row['address'] for row in p['image']['data']
+                            if '_DESKINPUT_'+name.upper()+'_' in row['name'])
+                        reach(f'(dw(${cursor("cursorX"):x})={position[0]})&(dw(${cursor("cursorY"):x})={position[1]})')
+                        frames(40)
+                        report['pointer_start']=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        require(report['pointer_start']==position,'Pointer did not settle at the requested position')
                         work=[number(window+268+i*2) for i in range(4)];report['work']=work
                         font=font_bytes(cache/'selected/src/vdi/font8x8.c')
                         require(screen(work)==expected(font,work,content,0),'Initial pixels differ')
@@ -257,6 +264,8 @@ def run(cache,out,presenter=False):
                         frames(3);b.profile_stop();b._cmd_ok('KEY CTRL up');frames(60)
                         report['counter_progress']=number(counter+14,4)-before_count
                         require(report['counter_progress']>0,'Counter did not progress')
+                        report['pointer_end']=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        require(report['pointer_start']==report['pointer_end'],'Pointer moved during scroll capture')
                     else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a window')
                     b.poke16(at('go'),stage+1)
                 b.bp_clear_all()
