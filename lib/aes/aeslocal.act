@@ -10,6 +10,7 @@ USE AESCORE
 USE AESMENU
 USE DESKDRAG
 USE AESWINDOW
+USE AESFRAME
 USE AESWINDOWSTATE
 USE AESCURSOR
 USE CALYPSICALL
@@ -84,6 +85,10 @@ CARD FUNC Policy(LONGCARD value)
         ELSEIF request.operation=AESTYPES.OP_SET THEN
           IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
             status=AESWINDOW.Frame(service,client,request,@wake)
+            IF status=AESTYPES.OK AND wake<>0
+                AND request.intin(1)=AESTYPES.WF_VSLIDE THEN
+              status=AESFRAME.Vertical(client,request)
+            FI
           ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
             AESWINDOWSTATE.PrepareUpdate(client)
             status=AESWINDOW.Geometry(service,client,request)

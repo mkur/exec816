@@ -1,4 +1,4 @@
-/* Presenter-owned frame fragments. Compose in the existing widget strip, then
+/* Frame fragments. Compose in the existing widget strip, then
  * publish only complete pixels. Work rectangles are never part of a fragment.
  * The packet/title borrow ends at return; only a scalar glyph offset survives. */
 #include <hardware/console-bitmap.h>
@@ -7,6 +7,7 @@
 
 extern void GemWidgetFill(UWORD,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
+/* Shared scratch is bound only inside a physical-access callback. */
 static struct ConsoleBitmapPacket *paint;
 static WORD glyphs[24];
 
@@ -98,9 +99,10 @@ static void gadgets(WORD l,WORD t,WORD r,WORD b)
     (void)l;
 }
 
-static UWORD fragment(void)
+static UWORD fragment_draw(void *context)
 {
-    struct ConsoleBitmapPacket *p=paint;
+    struct ConsoleBitmapPacket *p=context;
+    paint=p;
     const UBYTE *title=(const UBYTE *)p->text;
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
     WORD nameLeft=l+(p->background ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
@@ -189,25 +191,38 @@ static UWORD fragment(void)
     return !p->fillX;
 }
 
+static UWORD fragment(void *context)
+{
+    UWORD done=fragment_draw(context);
+    paint=0;
+    return done;
+}
+
 UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
 {
     UWORD status;
-    paint=p;
     if (p->clipBottom-p->clipTop>16)
-        status=GemDrawingFrameBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,fragment);
+        status=GemDrawingFrameBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,fragment,p);
     else
         status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
-                                    !p->fillX,fragment);
-    paint=0;
+                                    !p->fillX,fragment,p);
     return status;
+}
+
+/* The same raster and compact strip, using the caller's existing grant. */
+UWORD DesktopFrameBorrow(struct DisplayGrant *grant,struct ConsoleBitmapPacket *p)
+{
+    return GemDrawingFrameBorrow(grant,p->clipLeft,p->clipTop,p->clipRight,
+                                 p->clipBottom,fragment,p);
 }
 
 /* Native popup rows use the same strip, font and disabled stipple as GEM
  * objects. The allocated popup owns its one-pixel outline. */
 extern void GemWidgetStipple(UWORD,UWORD,UWORD,UWORD);
-static UWORD menu_row(void)
+static UWORD menu_row_draw(void *context)
 {
-    struct ConsoleBitmapPacket *p=paint;
+    struct ConsoleBitmapPacket *p=context;
+    paint=p;
     const UBYTE *label=(const UBYTE *)p->text;
     WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height,row=p->fillY;
     UWORD first=p->fillX,n=0,selected=p->foreground && p->background;
@@ -234,20 +249,25 @@ static UWORD menu_row(void)
     return !p->fillX;
 }
 
+static UWORD menu_row(void *context)
+{
+    UWORD done=menu_row_draw(context);
+    paint=0;
+    return done;
+}
+
 UWORD DesktopMenuRow(struct ConsoleBitmapPacket *p)
 {
     UWORD status;
-    paint=p;
     status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
-                                !p->fillX,menu_row);
-    paint=0;
+                                !p->fillX,menu_row,p);
     return status;
 }
 
 /* Neutral desktop paper; publish each complete bounded fragment once. */
-static UWORD background(void)
+static UWORD background(void *context)
 {
-    struct ConsoleBitmapPacket *p=paint;
+    struct ConsoleBitmapPacket *p=context;
     GemWidgetFill(1,1,8,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);
     return 1;
 }
@@ -255,9 +275,7 @@ static UWORD background(void)
 UWORD DesktopBackground(struct ConsoleBitmapPacket *p)
 {
     UWORD status;
-    paint=p;
     status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
-                                1,background);
-    paint=0;
+                                1,background,p);
     return status;
 }

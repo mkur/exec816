@@ -58,8 +58,10 @@ IDs and update tokens never repeat within that lifetime.
 | `FindDamaged(scene,id)` | Borrow the layer only when its maintained visible-damage bit is set; otherwise NULL, including stale IDs. Zero selects the background. |
 | `Hit(scene,x,y)` | Return the frontmost shown layer's ID; zero for background or outside the screen. Uses existing geometry without rebuilding visibility. |
 | `Invalidate(scene,id,rect)` | Accumulate damage clipped to that layer's bounds. Retains eight rectangles, merging containment and exact rectangular unions. Overflow collapses all damage to one bound. Does not rebuild visibility. |
+| `Repaired(scene,id,rect)` | Retire completed manager pixels for a live layer under exclusive scene ownership, without a paint token. Return 1 on completion, 0 while a transaction is active or if the remaining damage cannot fit; rejection retains existing damage. Does not retire external client paint, change its epoch or invalidate cached content. |
 
-All status-returning calls use `LAYERTYPES.OK` on success. Geometry errors return
+`Repaired` is a Boolean completion operation and requires a live layer ID and
+valid completed rectangle. Other status-returning calls use `LAYERTYPES.OK` on success. Geometry errors return
 BAD_ARGUMENT and unknown/retired identities return BAD_ID. Show, Move, Order,
 OrderBelow and Delete reject background ID zero (including OrderBelow's anchor).
 Repeating a no-op Show, Move, Order or OrderBelow succeeds

@@ -71,6 +71,36 @@ PROC ReadinessTransactions()
   Require(LAYERS.FindDamaged(scene,id)=NULL)
   CheckVisible(scene)
 
+  ; Direct frame completion retires only its manager pixels. Client work
+  ; remains pending, and an active paint token prevents concurrent completion.
+  Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
+  Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
+  BEGIN
+    LET layer=LAYERS.Find(scene,id)
+    LET epoch=layer.paintEpoch
+    REGIONS.Assign(@bounds,0,0,16,24)
+    Require(LAYERS.Repaired(scene,id,@bounds)<>0)
+    Require(layer.dirty<>0 AND layer.damage.count=1)
+    Require(layer.damage.rects(0).left=16)
+    Require(layer.pending.count=1 AND layer.paintEpoch=epoch)
+    CheckVisible(scene)
+    Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+    Require(LAYERS.Repaired(scene,id,@bounds)=0)
+    Require(LAYERS.Finish(scene,token,0)=LAYERTYPES.OK)
+    REGIONS.Assign(@bounds,16,0,32,24)
+    Require(LAYERS.Repaired(scene,id,@bounds)<>0)
+    ; Aborting an external handoff restores full manager damage. The earlier
+    ; half must be completed again before the layer can become clean.
+    Require(layer.dirty<>0 AND layer.damage.rects(0).right=16)
+    REGIONS.Assign(@bounds,0,0,16,24)
+    Require(LAYERS.Repaired(scene,id,@bounds)<>0)
+    Require(layer.dirty=0 AND layer.damage.count=0)
+    Require(layer.pending.count=1 AND layer.paintEpoch=epoch)
+    CheckVisible(scene)
+  END
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
+
   ; Every normal slot has an independent bit; the background is the ninth.
   FOR index=0 TO LAYERTYPES.MAX_LAYERS-1 DO
     REGIONS.Assign(@bounds,INT(index*4),0,INT(index*4+4),24)

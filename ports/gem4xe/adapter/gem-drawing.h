@@ -53,11 +53,14 @@ UWORD GemDrawingInvertRows(const WORD *rectangles,UWORD count);
 /* Widget-only strip buffer; first resets it, draw returns nonzero on completion.
  * The complete clipped strip replaces screen pixels only after the final chunk. */
 UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                            UWORD first,UWORD (*draw)(void));
+                            UWORD first,UWORD (*draw)(void *),void *context);
 /* Private solid/atlas frame side, width <=16, height <=240. Uses the same
  * scratch allocation at a compact pitch and publishes once on completion. */
 UWORD GemDrawingFrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                           UWORD (*draw)(void));
+                           UWORD (*draw)(void *),void *context);
+/* Same compact frame renderer in a delegated caller, completed before return. */
+UWORD GemDrawingFrameBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD (*draw)(void *),void *context);
 void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* Flat GEM pattern 2: black dots at odd window-relative X/Y, on white. */
 void GemFramePattern(UWORD left,UWORD top,UWORD right,UWORD bottom,

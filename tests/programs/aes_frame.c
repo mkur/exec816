@@ -1,4 +1,4 @@
-/* Bounded frame policy, transport, publication and deferred feedback. */
+/* Bounded frame policy, synchronous slider and deferred remaining fields. */
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
@@ -69,7 +69,14 @@ void AESClientOne(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
     peerWindow=wind_create(AES_WINDOW_KIND|INFO|UPARROW|DNARROW|VSLIDE,
                           80,64,240,128);
-    CHECK(peerWindow>0);AESReady=1;Signal(controller,wake);
+    CHECK(peerWindow>0);
+    {
+        struct ExecAESContext *c=ExecAESContext();
+        ULONG sequence=c->sequence;
+        CHECK(wind_set(peerWindow,WF_VSLIDE,100,0,0,0));
+        CHECK(c->sequence==sequence && !c->request.displayGrant);
+    }
+    AESReady=1;Signal(controller,wake);
     for (;;) {
         Wait(peerWake);
         if (command==1) CHECK(wind_open(peerWindow,80,64,240,128));
@@ -111,6 +118,9 @@ UWORD AESRun(void)
     rootWindow=wind_create(AES_WINDOW_KIND|INFO|UPARROW|DNARROW|VSLIDE,
                           32,32,240,160);
     CHECK(rootWindow>0);CHECK(wind_open(rootWindow,32,32,240,160));
+    sequence=c->sequence;
+    CHECK(wind_set(rootWindow,WF_VSLIDE,0,0,0,0));
+    CHECK(c->sequence==sequence && !c->request.displayGrant);
     plain=wind_create(AES_WINDOW_KIND,360,32,120,64);CHECK(plain>0);
     peer=CreateTask("frame peer",0,AESClientOne,1024);CHECK(peer!=NULL);
     while (!AESReady) Wait(wake);
@@ -148,6 +158,21 @@ UWORD AESRun(void)
     attribute(rootWindow,WF_INFO,0,"Feedback info",1,0,AES_OK);
     attribute(rootWindow,WF_VSLIDE,500,NULL,0,0,AES_OK);
     attribute(rootWindow,WF_VSLSIZE,600,NULL,1,0,AES_OK);
+    /* Cold AES access is replaced cleanly by a public workstation. A warm
+     * setter then reuses that grant, and closing it permits fresh AES access. */
+    {
+        WORD input[11]={1,1,1,1,1,1,1,1,1,1,2},output[57];
+        WORD handle=graf_handle(&i,&i,&i,&i);
+        CHECK(!c->workstation && c->request.displayGrant);
+        v_opnvwk(input,&handle,output);CHECK(handle>0 && c->workstation);
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,501,0,0,0));
+        CHECK(c->sequence==sequence);
+        v_clsvwk(handle);CHECK(!c->workstation && !c->request.displayGrant);
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,502,0,0,0));
+        CHECK(c->sequence==sequence+1 && c->request.displayGrant);
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLIDE,502,0,0,0));
+        CHECK(c->sequence==sequence);
+    }
     /* A readiness miss must leave publication untouched until the caller retry. */
     CHECK(wind_update(BEG_UPDATE));pendingView=c->view;
     pendingRevision=pendingView->revision;CHECK(wind_update(END_UPDATE));

@@ -44,8 +44,9 @@ static void whole_frame(UWORD number)
         do { frameStatus=DesktopFrame(&p);check(frameStatus==DISPLAY_OK); } while (p.fillX);
     }
 }
-static UWORD tall(void)
+static UWORD tall(void *context)
 {
+    (void)context;
     GemSolidFill(27,0,43,240,0);
     GemFrameGadget(GEM_GADGET_SIZE,29,234,27,0,43,240);
     return 1;
@@ -65,7 +66,7 @@ UWORD FrameRun(void)
         else if (number==8) {
             check(GemDrawingFill(0,0,640,240,3)==DISPLAY_OK);
             check(FrameScratchGuard(1));
-            check(GemDrawingFrameBatch(27,0,43,240,tall)==DISPLAY_OK);
+            check(GemDrawingFrameBatch(27,0,43,240,tall,0)==DISPLAY_OK);
             check(FrameScratchGuard(0));
         } else title(number==9 ? 1:number);
         checkpoint=number;

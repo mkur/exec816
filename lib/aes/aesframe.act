@@ -1,0 +1,84 @@
+; Caller-context frame painting using the shared GEM4XE renderer.
+MODULE AESFRAME
+USE AESTYPES
+USE AESSTATE
+USE AESGATE
+USE AESWINDOWSTATE
+USE DESKTYPES
+USE DESKSTATE
+USE LAYERTYPES
+USE LAYERS
+USE REGIONS
+USE DISPLAY
+USE CONSOLEBITMAP
+USE CALYPSICALL
+
+ADDRESS frameApply
+
+; Bind resident renderer code before application admission.
+PUBLIC PROC Configure(ADDRESS entry)
+
+  frameApply=entry
+
+RETURN
+
+; UPDATE pins the native window, title and visible geometry across physical
+; access. Only the scene gate is dropped. No presenter packet is borrowed.
+PUBLIC CARD FUNC Vertical(AESSTATE.Client POINTER client
+    AESTYPES.Request POINTER request)
+  CONSOLEBITMAP.Packet packet
+  LAYERTYPES.Rect rail,clip
+  CARD index
+
+  LET window=AESWINDOWSTATE.Handle(client,request.intin(0))
+  LET desktop=DESKSTATE.Get()
+  LET layer=LAYERS.Find(@desktop.scene,window.layer)
+  IF layer.shown=0 OR window.iconified<>0 THEN
+    RETURN(AESTYPES.OK)
+  FI
+
+  packet.operation=CONSOLEBITMAP.OP_FRAME
+  packet.x=CARD(layer.bounds.left)
+  packet.y=CARD(layer.bounds.top)
+  packet.width=CARD(layer.bounds.right-layer.bounds.left)
+  packet.height=CARD(layer.bounds.bottom-layer.bounds.top)
+  packet.text=LONGCARD(ADDRESS(@window.title(0)))
+  packet.foreground=CARD(window.id=desktop.focus)
+  packet.background=1
+  packet.fillY=window.frameKind
+  packet.fillWidth=CARD(window.sliderTop)
+  packet.fillHeight=CARD(window.sliderHeight)
+  packet.frameHorizontalLeft=CARD(window.sliderLeft)
+  packet.frameHorizontalWidth=CARD(window.sliderWidth)
+  REGIONS.Assign(@rail,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
+      layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+      layer.bounds.bottom)
+
+  index=0
+  WHILE index<layer.visible.count DO
+    REGIONS.Intersect(@rail,@layer.visible.rects(index),@clip)
+    IF REGIONS.Empty(@clip)=0 THEN
+      BEGIN
+        packet.clipLeft=CARD(clip.left)
+        packet.clipTop=CARD(clip.top)
+        packet.clipRight=CARD(clip.right)
+        packet.clipBottom=CARD(clip.bottom)
+        packet.fillX=0
+        LET held=AESGATE.Leave()
+        LET ignored=CALYPSICALL.Invoke(frameApply,LONGCARD(ADDRESS(@packet)))
+        AESGATE.Reenter(held,request)
+        IF packet.status<>DISPLAY.OK OR packet.fillX<>0 THEN
+          request.intout(0)=0
+          RETURN(AESTYPES.DISPLAY_ERROR)
+        FI
+
+        ; This is manager frame completion, never client-work completion.
+        LET repaired=LAYERS.Repaired(@desktop.scene,window.layer,@clip)
+      END
+    FI
+    index==+1
+  OD
+
+RETURN(AESTYPES.OK)
+
+ENDMODULE

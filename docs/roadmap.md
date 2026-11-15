@@ -894,7 +894,9 @@ The other possible milestones have no delivery order:
   [SCRENMGR replacement](plans/gem4xe/screnmgr-migration-plan.md) moves ordinary
   drawing into callers and narrows the manager to interaction, with independent
   input/device progress. SM0 records the direction; SM1a removes scene admission
-  from caller cursor policy while retaining device completion. See the
+  from caller cursor policy while retaining device completion. SM1b paints changed
+  vertical slider positions in the caller before return, using the shared frame
+  renderer and existing display grants. See the
   [execution record](history/screnmgr-migration.md). Caller frame drawing,
   execution placement and the remaining migration are pending. Bring architectural
   departures to the user with concrete reasons and alternatives before

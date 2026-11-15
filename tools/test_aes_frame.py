@@ -158,7 +158,8 @@ def physical(b,p,foreign,report):
         field=value('FrameField');sequence=value('FrameSequence',4)
         direct=field in ((2,3) if report['frame_local']=='text' else
                          (2,3,9,16) if report['frame_local']=='all' else ())
-        require(sequence==0,f'Frame phase {phase}: unexpected RPC delta {sequence}')
+        expected_sequence=1 if phase in (11,29) else 0
+        require(sequence==expected_sequence,f'Frame phase {phase}: unexpected RPC delta {sequence}')
         stats=[get(value('FrameNative',4)+2*i)-before_stats[i] for i in range(2)]
         if field in (2,3,9,16):
             require(stats[0]>0 if direct else stats[0]==0,f'Frame phase {phase}: wrong execution Task')
@@ -168,10 +169,20 @@ def physical(b,p,foreign,report):
         row=dict(phase=phase,field=field,held=value('FrameHeld'),pb=value('FramePB'),
                  sequence_delta=sequence,helper_attempts=stats,status=value('FrameStatus'),
                  state=s,returned_clock=b.eval_expr('@clk'))
-        if row['held']:
+        if field==9 and row['status']==0:
+            # Device drawing is fenced at return, but rawscreen is the last
+            # scanout. Keep the caller parked (and outer UPDATE held) while
+            # that image catches up, as in the frame-atlas fixture.
+            frames(2)
+            f,raw=scan(phase)
+            require(pixels(f,raw,s,phase) is not None,
+                    f'Frame phase {phase}: vertical slider pixels incomplete at return')
+            row['synchronous_frame_pixels']='exact'
+            row['scanout_settle_frames']=2
+        elif row['held']:
             f,raw=scan(phase)
             require(crop(f,raw)==crop(before_frame,before_pixels),
-                    f'Frame phase {phase}: repaint before UPDATE release')
+                    f'Frame phase {phase}: deferred field repainted before UPDATE release')
             row['held_pixels_unchanged']=True
         b.poke16(sy['FrameGo'],phase*3-1);point(phase,4)
         row['released_clock']=b.eval_expr('@clk')
@@ -181,7 +192,7 @@ def physical(b,p,foreign,report):
             f,raw=scan(phase);pixel_hash=pixels(f,raw,s,phase)
             if pixel_hash is not None:break
             frames(1)
-        require(pixel_hash is not None,f'Frame phase {phase}: deferred frame pixels differ')
+        require(pixel_hash is not None,f'Frame phase {phase}: completed frame pixels differ')
         row.update(frame_pixels='exact',frame_sha256=pixel_hash,
                    feedback_clock=b.eval_expr('@clk'),feedback_sampling='one PAL frame upper bound')
         report['frame_attributes'].append(row)

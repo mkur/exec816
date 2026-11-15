@@ -236,7 +236,7 @@ static WORD exit_application(struct ExecAESContext *c)
     if (c->diagnostic!=AES_OK) return 0;
     c->updateDepth=c->mouseDepth=0;
     c->busy=1;
-    if (!ExecVDIClose(c)) { c->busy=0; return 0; }
+    if (!ExecVDIClose(c) || !ExecAESDisplayClose(c)) { c->busy=0; return 0; }
     c->busy=0;
     result = ExecAESSubmit(c, AES_OP_EXIT);
     if (result) {

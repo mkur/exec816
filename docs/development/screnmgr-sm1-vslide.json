@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "kind": "implementation-record",
+  "status": "implemented",
+  "slice": "SM1b",
+  "date": "2026-11-15",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "900f47e1db1ff28baed7764ba0aa81abf25093db",
+  "scope": "Synchronous caller-context WF_VSLIDE using the shared GEM4XE frame raster and existing delegated display service.",
+  "source_inputs": [
+    {
+      "path": "c/calypsi/aes-private.h",
+      "sha256": "9e498239e08e0a639397fdec26d98628a9f9aa7af24b3d21f491a36b5254ada0"
+    },
+    {
+      "path": "c/calypsi/aes-windows.c",
+      "sha256": "608a8d1f77b60fc8cb9d6e0839520f9f7271d05894f1c739ac90bff0df9cacfd"
+    },
+    {
+      "path": "c/calypsi/aes.c",
+      "sha256": "fcde45d6a6cfb424c6504af91225f909813ec0327e8199caf99f88b24ee0f871"
+    },
+    {
+      "path": "c/calypsi/vdi.c",
+      "sha256": "2d0ea1b4639e720c2529d58e5257c706839929f31ab7f89ae19acdd55b0715c6"
+    },
+    {
+      "path": "lib/aes/aesframe.act",
+      "sha256": "99317841dd9f6d7a30d8337b2e9c0c619fca816268b7a23b1a182d7730c71f76"
+    },
+    {
+      "path": "lib/aes/aeslocal.act",
+      "sha256": "1441c1f32fba58e14c03201e7744f9abffec942f462ac25396147bf4dc3eb319"
+    },
+    {
+      "path": "lib/aes/aeswindow.act",
+      "sha256": "8b58aec0d7b2be78dc7d85d46ab74de34e006e96dddcb84328582069bb8bcca1"
+    },
+    {
+      "path": "lib/desktop/desktop-frame.c",
+      "sha256": "1efc3d771c282b5b0d735dbb92f8d7e493dd6d68a3ad59b9acd551206423b38e"
+    },
+    {
+      "path": "lib/display/layers-repaint.inc",
+      "sha256": "57b829c4cc620ba953d0ca2a0019ea3f9e0b519810fa222082887a035a56e1ee"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-drawing.h",
+      "sha256": "079657639091bcae019700947c9bc61afd435fe25c3e8d12a9ffe96cc08ebe8f"
+    },
+    {
+      "path": "ports/gem4xe/adapter/gem-vbxe.c",
+      "sha256": "1c5b6da26157a8ab0776ffe383a199c50f23c46f588f33a757d14d401a1eb920"
+    },
+    {
+      "path": "ports/gem4xe/aes/menu-render.c",
+      "sha256": "411afe9fc48ad1dfd8a9ee4e8bd77dac72182288bedeff55eaba105f81a92903"
+    },
+    {
+      "path": "tests/programs/aes_frame.c",
+      "sha256": "e4ed0930162ddc788d82fc68cc2c509ba6cd59dfd261e116fcd6a908722bc63e"
+    },
+    {
+      "path": "tests/programs/frame_gadgets.c",
+      "sha256": "d625844caa0e4a709f6a0498ce0a76f32616c3b5a260a27649ab5a5afc5b985f"
+    },
+    {
+      "path": "tests/programs/layers-readiness-checks.inc",
+      "sha256": "f1f0323847f8b5e8a4017e4944d86fe0980f4f56c620acba67d7d6eeb4fa3011"
+    },
+    {
+      "path": "tests/test_vdi_copy.py",
+      "sha256": "9d85c11a28a250a687896416c0a8dcc5385e9ce4d1cd033c3796513bb3972289"
+    },
+    {
+      "path": "tools/build_bitmap_console.py",
+      "sha256": "35ed67d589d9cf282760d605fe231bf1024ab62cc4bceb6d7fbc3b85fec9aa5c"
+    },
+    {
+      "path": "tools/test_aes_frame.py",
+      "sha256": "d6d3266ea71f2fbf290d3e55c632b1d948489f16b686b290aa0c6994eaf5a6fb"
+    },
+    {
+      "path": "tools/test_aes_server.py",
+      "sha256": "aab05bcbb88b95e7ca7a7ace5fb6293540cbb8945c2e8e04108e14fe583396a8"
+    }
+  ],
+  "platform_pin": {
+    "path": "toolchain/altirra-gem-vdi.json",
+    "sha256": "5dd5e563537a016e5c23bdb10a6a7037bb3e229ffc5c08b731970cabb57784e9",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "magic_baseline": {
+    "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "source": "KERNEL/AES/SRC/AESWIN.S",
+    "lines": "2768-2794",
+    "scope": "ws_slend compares, changes frame state, draws the open scroll object, then releases UPDATE."
+  },
+  "changes": [
+    "Pass explicit packet context into grant-protected frame callbacks; share the existing raster and compact strip.",
+    "Compile native frame-visible intersections under UPDATE, release only the scene gate around synchronous physical access.",
+    "Complete manager clips through Layers.Repaired without claiming client-work completion.",
+    "Check cold access in the native handler before mutation; delegate outside the handler scope and retry with the live grant.",
+    "Reuse an open workstation grant or retain a standalone upper-heap grant using the existing reply signal.",
+    "Close standalone access before opening a public workstation or retiring the application; retain live storage on close failure."
+  ],
+  "commands": [
+    "python3 tools/test_aes_server.py --suite frame --mode opt --output build/screnmgr/sm1-vslide-final",
+    "PYTHONPATH=tools python3: test_layers.run(Path('build/screnmgr/sm1-vslide-layers').resolve(), 'opt'); emulator entry serialized after the frame process",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "runs": [
+    {
+      "name": "frame",
+      "capture": "build/screnmgr/sm1-vslide-final",
+      "results_sha256": "2354f03ed919799feabe86a01226b8d5b32804b4589b218b2a40c5c88be2c08d",
+      "image_sha256": "9ad06dc205651f761c6bcfdc99edf91eb3d7da0d5221b6c6bbd26051d2951e5d",
+      "xex_sha256": "d335842dcee8e44933c9ddc47669c972c6543c1d977cf205c7cf5c4e7ff394a9",
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "build_profile": "release",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 1374,
+        "native_irq_count": 33069,
+        "os_busy": 0,
+        "switching": 0,
+        "live_tasks": 0,
+        "guards": "intact",
+        "return_e": 0,
+        "return_dbr": 0
+      },
+      "application_checks": 198,
+      "native_checks": 5,
+      "pixel_phases": 34,
+      "synchronous_slider_checks": [
+        {
+          "phase": 11,
+          "held": 1,
+          "pb": 0,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            2,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        },
+        {
+          "phase": 12,
+          "held": 1,
+          "pb": 1,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        },
+        {
+          "phase": 15,
+          "held": 1,
+          "pb": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        },
+        {
+          "phase": 25,
+          "held": 1,
+          "pb": 1,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        },
+        {
+          "phase": 29,
+          "held": 1,
+          "pb": 1,
+          "sequence_delta": 1,
+          "helper_attempts": [
+            2,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        },
+        {
+          "phase": 33,
+          "held": 0,
+          "pb": 0,
+          "sequence_delta": 0,
+          "helper_attempts": [
+            1,
+            0
+          ],
+          "synchronous_frame_pixels": "exact",
+          "scanout_settle_frames": 2
+        }
+      ],
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 1063,
+          "remaining_above_floor": 217
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1312,
+          "peak": 128,
+          "remaining_above_floor": 928
+        },
+        "2": {
+          "base": 14224,
+          "bytes": 1312,
+          "peak": 800,
+          "remaining_above_floor": 256
+        },
+        "3": {
+          "base": 15568,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "4": {
+          "base": 16912,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "5": {
+          "base": 18256,
+          "bytes": 1312,
+          "peak": 18,
+          "remaining_above_floor": 1038
+        },
+        "6": {
+          "base": 19600,
+          "bytes": 2560,
+          "peak": 736,
+          "remaining_above_floor": 1568
+        },
+        "7": {
+          "base": 22192,
+          "bytes": 2560,
+          "peak": 18,
+          "remaining_above_floor": 2286
+        },
+        "8": {
+          "base": 24784,
+          "bytes": 512,
+          "peak": 24,
+          "remaining_above_floor": 232
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 283,
+          "remaining_above_floor": 997
+        }
+      },
+      "c_tools": {
+        "cc65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+          "version": "Calypsi ISO C compiler for 65816 version 5.18",
+          "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+        },
+        "as65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+          "version": "Calypsi assembler for 65816 version 5.18",
+          "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+        },
+        "ln65816": {
+          "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+          "version": "Calypsi linker for 65816 version 5.18",
+          "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+        }
+      },
+      "c_mode": "opt",
+      "native_mode": "opt",
+      "c_image_sha256": "a9cbc1b31c6d2b3dd7bc0b54ed4631673146f2fc0e04bbdb46085dd27551b4e8"
+    },
+    {
+      "name": "layers",
+      "capture": "build/screnmgr/sm1-vslide-layers",
+      "results_sha256": "3e26dc394a697ea7ca1c797678209a2b6fd58c930153d1be66288bccdbae06cc",
+      "image_sha256": "43aef9d521be209ebc10150aeba463610df116c7f9895ad31df251b0e7c77262",
+      "xex_sha256": "c730069ee5fb7b9ae6712b95de9403fd859e0a614da34556131def802ad3a0db",
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "build_profile": "release",
+        "override": false
+      },
+      "machine": {
+        "ok": true,
+        "basic": false,
+        "machine": "800XL",
+        "memory": "64K",
+        "video": "pal",
+        "selftest": false,
+        "fastboot": false,
+        "fppatch": false,
+        "stereo": false,
+        "stereomono": false,
+        "siopatch": "off",
+        "burstio": false,
+        "accuratedisk": true,
+        "casautoboot": true,
+        "casautobasicboot": false,
+        "artifact": "none",
+        "axlonmemsize": "none",
+        "highbanks": 63,
+        "highbanks_overridden": false,
+        "randmem": false,
+        "randdelay": false,
+        "diskemu": "generic56k",
+        "vbxe": true,
+        "covox": false,
+        "soundboard": false,
+        "rapidus": false,
+        "slightsid": false,
+        "addons": "custom",
+        "exeloadmode": "default",
+        "kernel_id": "$c017f1e4033f056f",
+        "actual_kernel_id": "$c017f1e4033f056f",
+        "basic_id": "$0000000000000000",
+        "actual_basic_id": "$0000000000000005",
+        "debugbrkrun": true
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 255,
+        "native_irq_count": 0,
+        "os_busy": 0,
+        "switching": 0,
+        "live_tasks": 0,
+        "guards": "intact",
+        "return_e": 0,
+        "return_dbr": 0
+      },
+      "checks": 8948,
+      "mode": "opt",
+      "library": {
+        "code_bytes": 40316,
+        "max_local_stack_peak": 56,
+        "mutable_global_bytes": 0,
+        "scene_bytes": 9190
+      }
+    }
+  ],
+  "host_checks": {
+    "tests": 718,
+    "skipped": 5,
+    "log_sha256": "c3f9fb6874bb56f8e86706fbc2e9f28563c2a32825ca066e2f2d29f42365df94"
+  },
+  "resource_impact": {
+    "bank_zero_reserved_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "includes": [
+        "guards",
+        "alignment",
+        "unused reserved capacity"
+      ]
+    },
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "idle": 800,
+      "loading_excluding_os": 20368,
+      "loading_including_os": 40336,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "runtime_excluding_os": 26848,
+      "runtime_including_os": 46816
+    },
+    "upper_binding_bytes": 3,
+    "optional_standalone_grant_payload_bytes": 32,
+    "grant_allocator_overhead": "Existing upper-heap allocator overhead, unchanged.",
+    "frame_packet_stack_bytes": 82,
+    "native_frame_local_stack_peak": 144,
+    "new_tasks": 0,
+    "new_signals": 0,
+    "public_record_layout_change": false,
+    "vram_reservation_delta": 0
+  },
+  "limits": [
+    "Only WF_VSLIDE migrated; remaining frame fields and the combined presenter remain.",
+    "Scene admission is retained until the complete reader/input ownership migration.",
+    "Rawscreen uses two settling PAL frames after fenced drawing; held-UPDATE checks keep the caller parked and presenter painting blocked.",
+    "No scrolling-latency, release, full hosted-system qualification or physical-hardware claim.",
+    "No QED, application catalog, demo build or full qualification matrix."
+  ],
+  "excluded_preliminary_attempts": [
+    "An interrupted initial build predates final grant teardown handling.",
+    "The initial new layer test incorrectly expected an aborted external handoff not to restore manager damage; the assertion was corrected.",
+    "The initial immediate rawscreen check sampled the old scanout. The corrected observer uses the existing frame-atlas settling protocol.",
+    "The intermediate passing 194-check frame run preceded the final cold-admission race fix and is not the final frame evidence."
+  ]
+}

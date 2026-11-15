@@ -2,7 +2,8 @@
 
 [History](README.md) · [Migration plan](../plans/gem4xe/screnmgr-migration-plan.md) ·
 [Current AES contract](../reference/aes.md) ·
-[Development evidence](../development/screnmgr-sm1-cursor.json)
+[Cursor evidence](../development/screnmgr-sm1-cursor.json) ·
+[Vertical slider evidence](../development/screnmgr-sm1-vslide.json)
 
 ## SM1a: cursor policy without scene admission
 
@@ -61,3 +62,81 @@ request, client and service layouts are unchanged. Reserved bank-zero deltas are
 alignment and unused reserved capacity. No stack/DP reservation, upper-memory
 record or VRAM reservation changes. Measured stack use belongs to the selected
 fixtures and is retained in the evidence.
+
+## SM1b: synchronous vertical slider position
+
+A changed `WF_VSLIDE` now completes visible vertical-rail painting in the caller
+before returning, including inside an outer application UPDATE. Equal values
+return without physical access. Hidden/iconified changes retain metadata/damage
+for later exposure. Other frame fields remain deferred for subsequent small
+slices. The current scene gate remains in use; this is not the final SCRENMGR
+loop or input execution map.
+
+This follows the pinned MagiC AESWIN `ws_slend`: compare the previous value,
+change frame state, draw the open window's scroll object and finally release
+UPDATE (lines 2768–2794). Exec's existing UPDATE pins the native window, title and
+frame-visible region while the scene gate is released around device access.
+Frame clipping uses the layer's native visible region, rather than the C view's
+work-only rectangles. No application changes are required.
+
+The existing console-format packet is local to the admitted native call.
+Renderer callbacks receive that packet explicitly; they bind shared packet and
+glyph scratch only after obtaining physical access and end the borrow before
+release. Both presenter and caller use the same frame raster and widget strip.
+The delegated caller uses the existing compact side renderer, retaining its
+16-pixel width and 240-row limits. Successful visible clips retire only manager
+damage through `LAYERS.Repaired`; client repaint epochs and outstanding work
+remain intact. A failed physical draw leaves its damage outstanding. Subtraction
+capacity overflow conservatively retains existing damage.
+
+If a public VDI workstation is open, drawing reuses its grant. Otherwise a
+visible changed setter establishes one 32-byte upper-heap grant through the
+existing display-delegation request. The native handler checks authoritative
+visibility under UPDATE before mutation; missing access returns to the library
+for cold admission outside the handler scope and a fresh attempt. This avoids a
+restore racing a C-side visibility check. It uses the application's existing
+reply signal. This cold resource setup is one
+RPC; warm setters have none. Public workstation opening closes the standalone
+grant before establishing its own. Application exit closes either form, retaining
+storage/identity if close fails. No new Exec service, Task, signal, wire field or
+VRAM allocation is introduced.
+
+The new native frame packet occupies 82 bytes within the caller's existing stack
+reservation. One upper-memory renderer binding holds its three-byte entry
+address. A context without a public workstation can retain the 32-byte grant
+payload, plus the allocator's normal overhead, until workstation opening or
+application exit. Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel,
+0 idle and 0 per public Task**, including guards, alignment and unused reserved
+capacity. Stack/DP reservations are unchanged.
+
+### Development scope
+
+The optimized frame fixture passes 198 application assertions and five native
+assertions across 34 pixel checkpoints. Six vertical-position checkpoints verify
+completed frame pixels while the caller remains parked, including ordinary/PB,
+equal-value, held-UPDATE, occluded and peer cases. The cold visible changes each
+use one delegation RPC and two handler attempts; warm changes and equal values
+use no RPC. Extra checks cover a cold equal setter, a supported hidden setter,
+public-workstation reuse, close/recreation and complete heap reclamation on exit.
+
+The image is sampled after two PAL scanout frames, following the existing frame
+atlas fixture. Held cases retain application UPDATE throughout that settling
+interval, so presenter painting cannot supply their expected pixels. This delay
+belongs to the observer, not the setter. The initial immediate scanout comparison
+sampled an old frame; it is excluded from the passing evidence. The initial new
+layer assertion also incorrectly assumed aborting an external handoff would not
+restore manager damage; the corrected check requires that coverage again.
+
+The optimized Layers run passes 8,948 checks, including manager completion,
+client-obligation preservation, active-token rejection and abort recovery. Host
+checks pass 718 tests with five historical skips. Frame guards and ownership
+restoration pass; root, peer, presenter and kernel stack peaks are 1,063, 800,
+736 and 283 bytes within existing reservations. The native frame routine's
+local stack peak is 144 bytes, including its packet and temporary state.
+
+The [evidence](../development/screnmgr-sm1-vslide.json) retains exact source,
+compiler/image, ROM/emulator, scanout and stack records. The clean pinned Action!
+compiler and Calypsi 5.18 run optimized on the pinned PAL profile. This is a
+focused development check; no raw matrix, QED/catalog/demo build, release
+qualification or scrolling-speed claim is included. Next SM1 work migrates
+remaining frame fields using the same renderer and resource boundary.

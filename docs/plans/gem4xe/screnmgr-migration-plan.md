@@ -7,7 +7,8 @@
 Direction adopted by the user on 2026-11-15: replace the combined presenter
 with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
-map. SM1a implements scene-independent caller cursor policy; frame painting
+map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
+vertical slider positions in the caller. Other frame fields, independent input
 and the remaining migration are pending. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
@@ -116,13 +117,16 @@ geometry merely to update mouse state. Physical completion and fault handling
 retain their existing caller/device flow. See the
 [development record](../../history/screnmgr-migration.md#sm1a-cursor-policy-without-scene-admission).
 
-Then adapt the existing frame renderer for ordinary caller use with explicit
-call state and the existing display grant. Start with one simple slider setter:
-equal-value return; changed-value mutation, visible clipping and frame painting
-before its handler UPDATE release and return. Reuse the graphics implementations
-and donor provenance; do not call the presenter-only packet from another Task.
-Keep journal/cache and failure behavior coherent. Migrate the other frame fields
-in further small sub-slices and remove their superseded deferred routes.
+SM1b implements `WF_VSLIDE` with a caller-owned packet, grant-protected renderer
+state and synchronous visible-rail painting. Manager completion preserves client
+repaint obligations; cold AES-only access reuses public display delegation. See
+the [development record](../../history/screnmgr-migration.md#sm1b-synchronous-vertical-slider-position).
+
+Continue with the remaining frame fields in small sub-slices. Preserve explicit
+call state and the existing display grant: equal-value return; changed-value
+mutation, visible clipping and frame painting before handler UPDATE release and
+return. Reuse the graphics implementations and donor provenance; keep
+journal/cache and failure behavior coherent and remove superseded deferred routes.
 
 The scene gate may remain as the current serialization mechanism during these
 intermediate slices. That is a staged dependency, not the target ownership model.

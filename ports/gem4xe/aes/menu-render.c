@@ -41,8 +41,9 @@ static void checkmark(WORD x,WORD y,UWORD pen)
     }
 }
 
-static UWORD quantum(void)
+static UWORD quantum(void *context)
 {
+    (void)context;
     OBJECT *tree=(OBJECT *)paint->context;
     /* Match the presenter's menu arrays, independent of widget-tree limits. */
     const WORD *parent=(const WORD *)paint->payload;
@@ -102,7 +103,7 @@ uint16_t MenuPaint(struct MenuRenderPacket *p)
     UWORD status;
     paint=p;
     r_set(&gl_clip,p->left,p->top,p->right-p->left,p->bottom-p->top);
-    status=GemDrawingWidgetBatch(p->left,p->top,p->right,p->bottom,!p->index,quantum);
+    status=GemDrawingWidgetBatch(p->left,p->top,p->right,p->bottom,!p->index,quantum,p);
     p->changed=p->index!=0;
     paint=0;
     return status;

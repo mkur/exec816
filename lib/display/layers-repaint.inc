@@ -117,6 +117,25 @@ PUBLIC BYTE FUNC Painted(LAYERTYPES.Scene POINTER scene LONGCARD id,
 
 RETURN(SubtractDamage(scene,@layer.pending,area))
 
+; Complete an independently painted manager rectangle under scene ownership.
+; External work and its epoch are unchanged. If subtraction cannot fit, retain
+; the conservative old damage rather than discarding unpainted coverage.
+PUBLIC BYTE FUNC Repaired(LAYERTYPES.Scene POINTER scene LONGCARD id
+    LAYERTYPES.Rect POINTER area)
+
+  IF scene.busy<>0 THEN
+    RETURN(0)
+  FI
+  LET slot=FindSlot(scene,id)
+  LET layer=@scene.items(slot)
+  IF SubtractDamage(scene,@layer.damage,area)=0 THEN
+    RETURN(0)
+  FI
+  layer.dirty=BYTE(layer.damage.count<>0)
+  UpdateDamage(scene,slot)
+
+RETURN(1)
+
 ; Capturing pixels requires no outstanding work intersecting the source.
 PUBLIC BYTE FUNC PixelsReady(LAYERTYPES.Layer POINTER layer
     LAYERTYPES.Rect POINTER area)

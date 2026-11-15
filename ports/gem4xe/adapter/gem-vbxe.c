@@ -1007,7 +1007,7 @@ static UWORD draw_Batch(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*dra
  * No callback or client pointer survives a call. The presenter freezes the
  * model until the strip retires; a new first chunk discards an abandoned one. */
 static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                            UWORD first,UWORD compact,UWORD (*draw)(void))
+                            UWORD first,UWORD compact,UWORD (*draw)(void *),void *context)
 {
     UWORD complete,lo,hi,rows;
     ULONG screen,scratch;
@@ -1026,7 +1026,7 @@ static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
         stripPitch=compact ? 1U<<stripCompact:320;
     }
     stripRedirect=1;
-    complete=draw();
+    complete=draw(context);
     stripRedirect=0;
     if (complete && !fault) {
         /* Scratch writes precede the copy in the same ordered list when it
@@ -1056,14 +1056,14 @@ static UWORD widget_batch(UWORD left,UWORD top,UWORD right,UWORD bottom,
  * odd clip edges. An 8/16-byte pitch fits all 240 rows in the existing strip.
  * Only solid fills and fixed atlas images use this private destination. */
 static UWORD draw_FrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                            UWORD (*draw)(void))
+                            UWORD (*draw)(void *),void *context)
 {
-    return widget_batch(left,top,right,bottom,1,1,draw);
+    return widget_batch(left,top,right,bottom,1,1,draw,context);
 }
 static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                             UWORD first,UWORD (*draw)(void))
+                             UWORD first,UWORD (*draw)(void *),void *context)
 {
-    return widget_batch(left,top,right,bottom,first,0,draw);
+    return widget_batch(left,top,right,bottom,first,0,draw,context);
 }
 
 /* The admitted disabled pattern is GEM IP_4PATT: alternating AAAA/5555,
@@ -1300,7 +1300,7 @@ NATIVE_UNIT(Outline,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD visible
 NATIVE_UNIT(InvertRows,(const WORD *rectangles,UWORD count),(rectangles,count))
 NATIVE_UNIT(Batch,(UWORD left,UWORD top,UWORD right,UWORD bottom,void (*draw)(void)),(left,top,right,bottom,draw))
 NATIVE_UNIT(WidgetBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,
-                            UWORD first,UWORD (*draw)(void)),(left,top,right,bottom,first,draw))
+                            UWORD first,UWORD (*draw)(void *),void *context),(left,top,right,bottom,first,draw,context))
 
 /* Flush drawing before restoring overlays. Each overlay submission completes
  * synchronously, so no additional fence is needed before the physical handoff.
@@ -1316,6 +1316,18 @@ static UWORD borrow_leave(struct DisplayGrant *grant)
     if (fault) status=DISPLAY_DEVICE_FAULT;
     DisplayLeave(grant);
     return status;
+}
+
+/* The native setter owns UPDATE, but releases scene access around this call.
+ * Bind renderer scratch only after Enter and fence before giving access back. */
+UWORD GemDrawingFrameBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
+    UWORD right,UWORD bottom,UWORD (*draw)(void *),void *context)
+{
+    UWORD status=DisplayEnter(grant),completed;
+    if (status!=DISPLAY_OK) return status;
+    status=draw_FrameBatch(left,top,right,bottom,draw,context);
+    completed=borrow_leave(grant);
+    return status==DISPLAY_OK ? completed:status;
 }
 
 UWORD GemDrawingMouseBorrow(struct DisplayGrant *grant,struct AESMouseState *mouse)
@@ -1518,4 +1530,4 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
     return DISPLAY_OK;
 }
 
-NATIVE_UNIT(FrameBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD (*draw)(void)),(left,top,right,bottom,draw))
+NATIVE_UNIT(FrameBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD (*draw)(void *),void *context),(left,top,right,bottom,draw,context))

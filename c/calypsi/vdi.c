@@ -61,6 +61,7 @@ static void open_virtual(struct ExecAESContext *c,VDIPB *pb)
     if ((UWORD)pb->intin[6]>15 || (UWORD)pb->intin[9]>15) {
         c->diagnostic=AES_MALFORMED; return;
     }
+    if (!ExecAESDisplayClose(c)) return;
     w=AllocMem(sizeof(*w),MEMF_PUBLIC|MEMF_CLEAR);
     if (!w) { c->diagnostic=AES_RESOURCE; return; }
     w->signal=AllocSignal(-1);

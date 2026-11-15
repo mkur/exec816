@@ -17,7 +17,8 @@ The user selected replacing the combined presenter with MagiC's SCRENMGR role.
 The [SCRENMGR migration plan](screnmgr-migration-plan.md) starts with caller
 operations, independent input/device progress and UPDATE scene ownership,
 then replaces the combined loop. SM0 records the direction and responsibility
-map; SM1a delivers scene-independent cursor policy with caller completion.
+map; SM1a delivers scene-independent cursor policy with caller completion, and
+SM1b paints vertical slider positions synchronously in the calling Task.
 Frame rendering and the remaining migration are pending. Execution placement
 and Task costs must be resolved explicitly rather than hidden behind a rename.
 

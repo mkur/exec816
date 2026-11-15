@@ -17,7 +17,7 @@ class CopyPixels(unittest.TestCase):
     def check_backend(self,raster):
         source=(ROOT/'ports/gem4xe/adapter/gem-vbxe.c').read_text()
         source=(source[source.index('static UWORD borrow_leave('):
-                       source.index('UWORD GemDrawingMouseBorrow(')]+
+                       source.index('/* The native setter owns UPDATE,')]+
                 source[source.index('static UWORD raster_span(' if raster else 'UWORD GemDrawingCopyBorrow('):
                        source.index('NATIVE_UNIT(FrameBatch,')])
         prelude=r'''

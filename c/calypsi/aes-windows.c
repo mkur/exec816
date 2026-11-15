@@ -3,6 +3,51 @@
 #include <gem.h>
 #include <exec816/desktop-geometry.h>
 #include <exec816/console.h>
+#include <exec/display.h>
+#include <hardware/console-bitmap.h>
+
+/* AES frame drawing also works before a public VDI workstation is opened.
+ * One standalone grant uses the context's existing reply signal. Its stable
+ * upper-heap storage survives every synchronous resource wait. */
+BOOL ExecAESDisplayClose(struct ExecAESContext *c)
+{
+    struct DisplayGrant *grant=(struct DisplayGrant *)c->request.displayGrant;
+    if (c->workstation || !grant) return TRUE;
+    if (grant->state!=DISPLAY_GRANT_FREE && DisplayGrantClose(grant)!=DISPLAY_OK) {
+        c->diagnostic=AES_DISPLAY_ERROR;return FALSE;
+    }
+    c->request.displayGrant=NULL;
+    FreeMem(grant,sizeof(*grant));
+    return TRUE;
+}
+
+static BOOL display_ensure(struct ExecAESContext *c)
+{
+    struct DisplayGrant *grant;
+    WORD diagnostic;
+    if (c->request.displayGrant) return TRUE;
+    grant=AllocMem(sizeof(*grant),MEMF_PUBLIC|MEMF_CLEAR);
+    if (!grant) { c->diagnostic=AES_RESOURCE;return FALSE; }
+    grant->task=c->request.owner;
+    grant->mask=1UL<<c->replies->mp_SigBit;
+    c->request.displayGrant=(UBYTE *)grant;
+    if (ExecAESSubmit(c,AES_OP_DISPLAY)) return TRUE;
+    diagnostic=c->diagnostic;
+    if (ExecAESDisplayClose(c)) c->diagnostic=diagnostic;
+    return FALSE;
+}
+
+extern UWORD DesktopFrameBorrow(struct DisplayGrant *,struct ConsoleBitmapPacket *);
+
+/* Ordinary C continuation of the admitted native setter. The stack packet and
+ * UPDATE stay owned by this caller; no scene access occurs inside the grant. */
+LONG EXEC_CALL ExecAESFrameApply(ULONG value)
+{
+    struct ConsoleBitmapPacket *packet=(struct ConsoleBitmapPacket *)value;
+    struct ExecAESContext *c=ExecAESContext();
+    packet->status=DesktopFrameBorrow((struct DisplayGrant *)c->request.displayGrant,packet);
+    return 0;
+}
 
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *c, WORD handle)
 {
@@ -179,13 +224,21 @@ WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d
     Forbid();
     c->request.view=view;
     Permit();
+prepare:
     c->request.intin[0] = a; c->request.intin[1] = b;
     c->request.intin[2] = d; c->request.intin[3] = e;
     c->request.intin[4] = f; c->request.intin[5] = g;
     if ((op==AES_OP_CREATE || op==AES_OP_DELETE || op==AES_OP_OPEN || op==AES_OP_CLOSE ||
          op==AES_OP_SET) && ExecAESLocal(c,op)) {
         c->diagnostic=c->request.status;
-        result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;
+        /* The handler checks actual visibility under UPDATE before mutation.
+         * Cold admission runs outside that handler scope, then retries once
+         * with the live grant. No published-view visibility guess is needed. */
+        if (c->diagnostic==AES_DISPLAY_ERROR && op==AES_OP_SET &&
+            b==WF_VSLIDE && !c->request.displayGrant) {
+            if (display_ensure(c)) goto prepare;
+            result=fail;
+        } else result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;
     } else { c->diagnostic=AES_UNSUPPORTED; result=fail; }
     if (op==AES_OP_CREATE) {
         if (result>0) c->views[slot]=view;
