@@ -4,9 +4,10 @@ The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common
 UPDATE handler scopes with MCTRL built on UPDATE, protected owner cleanup and
 continuations, then native FIFO ownership cutover and matched measurement.
-AM0–AM1 are complete; the [execution record](../../history/aes-magic-migration.md)
-records synchronous cursor completion and the pending UPDATE slices. Each executable
-slice has a separate commit and focused development checks.
+AM0–AM5 are complete; the [execution record](../../history/aes-magic-migration.md)
+records native ownership, focused checks and matched scrolling with unchanged
+APPs. Lower coordination cost did not establish a consistent latency gain.
+Each executable slice has a separate commit.
 
 The [original MGVIEW port plan](mgview-port-plan.md) orders MP1–MP6: a first
 source-built viewer, loader/lifetime checks, original copy/strip scrolling,

@@ -5,7 +5,7 @@
 [Native semaphore contract](../../reference/semaphores.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: AM0–AM4 complete, AM5 pending, 2026-11-15. Implementation resumed
+Status: AM0–AM5 complete, 2026-11-15. Implementation resumed
 at the user's request. This revision supersedes the AM1–AM4 plan committed as
 `79feb9de`. Runtime basis: `4c006f30`; donor: MagiC
 `28cfdd29aa16fef692cc287bad3046b44ddcce3d`.

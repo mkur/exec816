@@ -893,8 +893,9 @@ The other possible milestones have no delivery order:
   [AM0–AM5 plan](plans/gem4xe/aes-semaphore-migration-plan.md) follows MagiC's
   handler flow, shared UPDATE/MCTRL dependency and direct ownership handoff.
   AM1–AM4 direct cursor completion, common handlers, owner cleanup and native
-  UPDATE cutover pass development checks. Matched scrolling remains. Measure MGVIEW latency independently; GUI
-  bookkeeping stays outside the kernel semaphore service.
+  UPDATE cutover pass development checks. AM5's unchanged MGVIEW/Counter comparison
+  passes pixels/cleanup and lowers presenter work, but does not establish a
+  consistent latency gain. GUI bookkeeping stays outside the kernel semaphore service.
 - **Lightweight Exec service fast paths.** Audit frequent calls that can complete
   without the full Action! kernel dispatcher and kernel-stack transition. Start
   with `FindTask(NULL)`, which only returns the calling Task; retain serialized

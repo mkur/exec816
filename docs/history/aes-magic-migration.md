@@ -166,4 +166,67 @@ presenter's retained native scope. Reserved bank-zero deltas are **0 fixed,
 0 root, 0 kernel, 0 idle, 0 per public Task**, including guards, alignment and
 unused capacity. Stack peaks and image/compiler hashes are in the evidence.
 No Task/kernel/APP layout or ABI changed. No QED, demo refresh or release matrix
-ran. Matched scrolling remains AM5.
+ran.
+
+## AM5: matched original MGVIEW scrolling
+
+The provider/native fixture was rebuilt once; MGVIEW and Counter APPs were
+reused byte-for-byte from the pre-AM1 baseline. Both captures use ABI 46,
+the same document, viewport, parked pointer, PAL 8x/4 MiB machine, pinned ROM,
+emulator and compiler. Each action completes one hardware copy and one exposed
+text-row draw, with no redraw fallback or scrolling RPC. Exact pixels match;
+Counter advances, all guards remain intact and all applications/service resources
+retire. No APP source or binary changed; no QED, catalog, demo or release build ran.
+
+| Measurement, ms | Down before → after | Up before → after |
+| --- | --- | --- |
+| Offered key to complete-pixel observation | 140.21 → 141.07 | 160.52 → 140.27 |
+| Viewer `set_shift` CPU | 80.82 → 78.28 | 81.67 → 71.48 |
+| Presenter CPU while UPDATE is held | 30.30 → 7.63 | 31.65 → 2.82 |
+| BEGIN call wall time | 7.81 → 18.68 | 7.82 → 1.98 |
+| Two slider setter calls, wall time | 18.99 → 22.81 | 21.08 → 23.54 |
+| Hide call wall time | 12.72 → 13.68 | 12.33 → 8.16 |
+| Copy call wall time | 38.54 → 23.75 | 38.63 → 14.83 |
+| Exposed-row draw wall time | 23.03 → 22.66 | 23.20 → 23.28 |
+| Show call wall time | 18.89 → 7.01 | 20.60 → 6.96 |
+| END call wall time | 17.78 → 26.98 | 40.57 → 23.27 |
+
+These are two observations, not a latency distribution. PAL-frame polling gives
+upper bounds: the down brackets overlap (124.05–140.21 before,
+120.38–141.07 after); up brackets also slightly overlap (140.08–160.52 before,
+121.00–140.27 after). Down is effectively unchanged; the observed up result is
+about one frame earlier. This does **not** establish a consistent latency gain.
+The renderer's existing drawing limits remain unchanged.
+
+BEGIN's viewer CPU falls from about 6.45 ms to 3.85/1.63 ms, but the down call
+spends another 13.84 ms off-Task. END CPU falls from 10.01/10.69 to 6.37/6.55 ms;
+its final handoff/scheduling still costs wall time, much of it after visible
+painting. Two setter calls regress from 13.29/13.97 to 15.23/15.19 ms CPU.
+The remaining measured work includes 11.58–14.84 ms CPU in the copy binding and
+about 18 ms drawing one text row. Native ownership simplifies coordination;
+it does not remove that library/renderer cost.
+
+Within the already-owned UPDATE interval, decoded presenter posts fall from five
+per action to three/one: scene release/entry hints remain; the old display-release
+post disappears. Presenter device mouse returns fall from one to zero there;
+hide/show physical work now completes in the caller. Native acquisition/final
+release hints outside that core interval are retained by source site in the
+comparison. Their arguments were not instruction-traced and are explicitly
+reported as undecoded, rather than counted as decoded presenter wakes.
+
+The passive comparison tool checks matching inputs, final pixels and copy units,
+then pairs emitted APP API call/return sites and separates viewer CPU, off-Task
+time and IRQ/NMI cost. Reanalysis needs no guest execution:
+
+```sh
+python3 tools/compare_mgview_scroll.py \
+  --before build/aes-migration/baseline-scroll/results.json \
+  --after build/aes-migration/am5-scroll/results.json \
+  --output build/aes-migration/am5-comparison.json
+```
+
+The measurement CLI now treats an absent presenter `Present` span as zero;
+the successful capture initially reached a formatting KeyError after writing
+its passing results. Read-only reanalysis confirms the corrected CLI without
+rerunning the guest. This is development evidence, not hosted-system release
+qualification. AM0–AM5 are complete; all reserved bank-zero deltas remain zero.

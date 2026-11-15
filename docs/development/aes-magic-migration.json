@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "in-progress",
+  "status": "complete",
   "tier": "development",
   "qualification": false,
   "plan": "docs/plans/gem4xe/aes-semaphore-migration-plan.md",
@@ -1085,6 +1085,631 @@
       "native_object_bytes": 12,
       "upper_global_bytes": 1,
       "scope": "Native UPDATE arbitration and FIFO handoff; no AES resource queue. Owner cleanup and retained physical continuations; one scene case. Excluded pilots and independent-slider intermediate capture recorded in history. No release matrix."
+    },
+    "AM5": {
+      "status": "pass",
+      "capture": "build/aes-migration/am5-scroll",
+      "results_sha256": "7ce183b899aaac199933c57b622f65fc5faf54b42bbbc703c92500983e7ad865",
+      "baseline_capture": "build/aes-migration/baseline-scroll",
+      "baseline_results_sha256": "95659b69d9ee3f1e565760b6a6f7a8ab939ef394ff402f492db0a4f948c3a03b",
+      "comparison_capture": "build/aes-migration/am5-comparison.json",
+      "comparison_sha256": "85d4bd5491d527121b199308f003aac9b0320e02b9e41c22e855bab308d2f72b",
+      "native_sha256": "4653bc81eed47075f085836c57118942218e87e042e738cfb432b4d47f89f283",
+      "baseline_native_sha256": "5422e5e1d89f3192d2f27ff529de392603c00744f3dda0d5f8a7d20839160fba",
+      "app_sha256": {
+        "mgview": "1135537264b057c0e7b4c385a86b311e430f55a8ed5d53ed1e6491730c5744b9",
+        "counter": "d451f2ce1682023decf4786226c034b7930004960136bf2caa892411600ee2f0"
+      },
+      "app_abi": 46,
+      "aes_abi": 24,
+      "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+      "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+      "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+      "work": [
+        8,
+        22,
+        616,
+        200
+      ],
+      "pointer": [
+        632,
+        0
+      ],
+      "counter_progress": {
+        "before": 2,
+        "after": 2
+      },
+      "samples": {
+        "before": {
+          "down": {
+            "offered_to_pixels_upper_ms": 140.2139054017669,
+            "pixels_bracket_ms": [
+              124.04708907368276,
+              140.2139054017669
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 7.812960349827102,
+                "charged_cpu_ms": 6.447681704702282,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.3652786451248204
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 18.988439184131472,
+                "charged_cpu_ms": 13.294585827886081,
+                "off_cpu_ms": 2.9225562076125735,
+                "interrupt_ms": 2.7712971486328186
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 12.717390844668365,
+                "charged_cpu_ms": 6.917599759789901,
+                "off_cpu_ms": 4.347323504078919,
+                "interrupt_ms": 1.4524675807995444
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 18.88806970603866,
+                "charged_cpu_ms": 3.9820744623114024,
+                "off_cpu_ms": 14.069066042270775,
+                "interrupt_ms": 0.8369292014564852
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 17.776040734219645,
+                "charged_cpu_ms": 10.011855439757873,
+                "off_cpu_ms": 5.650998972340597,
+                "interrupt_ms": 2.1131863221211793
+              },
+              "copy": {
+                "elapsed_ms": 38.53609988454691,
+                "charged_cpu_ms": 14.28791943375826,
+                "off_cpu_ms": 20.95988181212018,
+                "interrupt_ms": 3.288298638668469
+              },
+              "row": {
+                "elapsed_ms": 23.028028740630887,
+                "charged_cpu_ms": 18.313200700894726,
+                "off_cpu_ms": 0.7357843973390811,
+                "interrupt_ms": 3.9790436423970825
+              },
+              "shift": {
+                "elapsed_ms": 148.56853670604852,
+                "charged_cpu_ms": 80.81653107859127,
+                "off_cpu_ms": 50.15478326818245,
+                "interrupt_ms": 17.597222359274802
+              },
+              "slider_helper": {
+                "elapsed_ms": 21.461094844927747,
+                "charged_cpu_ms": 14.618419772787183,
+                "off_cpu_ms": 3.657142373822738,
+                "interrupt_ms": 3.1855326983178247
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 140.2139054017669,
+              "charged_cpu_ms": 71.35001177085874,
+              "off_cpu_ms": 53.150079153738695,
+              "interrupt_ms": 15.713814477169466
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 33.71166893860686,
+                "turns": 5,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 4
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 3
+                  },
+                  {
+                    "caller": "DISPLAY_LEAVE",
+                    "mask": 65536,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 4,
+                  "AESGATE_ENTERTASK": 3,
+                  "DISPLAY_LEAVE": 1,
+                  "AESWAIT_SIGNAL": 2
+                },
+                "undecoded_signal_sites": {
+                  "AESWAIT_SIGNAL": 2
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 30.298754262531034,
+                "turns": 5,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 3
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "DISPLAY_LEAVE",
+                    "mask": 65536,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 3,
+                  "AESGATE_ENTERTASK": 1,
+                  "DISPLAY_LEAVE": 1,
+                  "AESWAIT_SIGNAL": 2
+                },
+                "undecoded_signal_sites": {
+                  "AESWAIT_SIGNAL": 2
+                }
+              }
+            },
+            "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+            "copy_units": 1
+          },
+          "up": {
+            "offered_to_pixels_upper_ms": 160.5195530174984,
+            "pixels_bracket_ms": [
+              140.0819590092179,
+              160.5195530174984
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 7.815850201373313,
+                "charged_cpu_ms": 6.4487389674630915,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.367111233910223
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 21.081748966349437,
+                "charged_cpu_ms": 13.974476267270386,
+                "off_cpu_ms": 4.105069363485527,
+                "interrupt_ms": 3.002203335593526
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 12.329375411451425,
+                "charged_cpu_ms": 6.920137190415843,
+                "off_cpu_ms": 3.960999691279274,
+                "interrupt_ms": 1.448238529756308
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 20.598791337211843,
+                "charged_cpu_ms": 3.980312357710053,
+                "off_cpu_ms": 15.78253655662206,
+                "interrupt_ms": 0.8359424228797301
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 40.56872278429443,
+                "charged_cpu_ms": 10.694001373031906,
+                "off_cpu_ms": 27.528937281763344,
+                "interrupt_ms": 2.3457841294991817
+              },
+              "copy": {
+                "elapsed_ms": 38.62794077636919,
+                "charged_cpu_ms": 14.374262559224336,
+                "off_cpu_ms": 20.961925853457743,
+                "interrupt_ms": 3.291752363687112
+              },
+              "row": {
+                "elapsed_ms": 23.199657728802233,
+                "charged_cpu_ms": 18.447402587333425,
+                "off_cpu_ms": 0.734797618762326,
+                "interrupt_ms": 4.01745752270648
+              },
+              "shift": {
+                "elapsed_ms": 173.20543743189464,
+                "charged_cpu_ms": 81.66805050614693,
+                "off_cpu_ms": 73.80871156321234,
+                "interrupt_ms": 17.7286753625354
+              },
+              "slider_helper": {
+                "elapsed_ms": 21.77954238848345,
+                "charged_cpu_ms": 14.584728332809402,
+                "off_cpu_ms": 4.105069363485527,
+                "interrupt_ms": 3.08974469218852
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 160.5195530174984,
+              "charged_cpu_ms": 75.61881589390157,
+              "off_cpu_ms": 68.40370239321999,
+              "interrupt_ms": 16.49703473037685
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 52.39949307774828,
+                "turns": 6,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 4
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 3
+                  },
+                  {
+                    "caller": "DISPLAY_LEAVE",
+                    "mask": 65536,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 4,
+                  "AESGATE_ENTERTASK": 3,
+                  "DISPLAY_LEAVE": 1,
+                  "AESWAIT_SIGNAL": 3
+                },
+                "undecoded_signal_sites": {
+                  "AESWAIT_SIGNAL": 3
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 31.646693798378582,
+                "turns": 5,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 3
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "DISPLAY_LEAVE",
+                    "mask": 65536,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 3,
+                  "AESGATE_ENTERTASK": 1,
+                  "DISPLAY_LEAVE": 1,
+                  "AESWAIT_SIGNAL": 3
+                },
+                "undecoded_signal_sites": {
+                  "AESWAIT_SIGNAL": 3
+                }
+              }
+            },
+            "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+            "copy_units": 1
+          }
+        },
+        "after": {
+          "down": {
+            "offered_to_pixels_upper_ms": 141.07155695333523,
+            "pixels_bracket_ms": [
+              120.38021988246058,
+              141.07155695333523
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 18.678449742662245,
+                "charged_cpu_ms": 3.8494232279218865,
+                "off_cpu_ms": 13.843728105850328,
+                "interrupt_ms": 0.9852984088900292
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 22.80889341240719,
+                "charged_cpu_ms": 15.226980217908903,
+                "off_cpu_ms": 4.337878623415691,
+                "interrupt_ms": 3.2440345710825946
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 13.682319324366807,
+                "charged_cpu_ms": 8.04118813779376,
+                "off_cpu_ms": 3.965792615794942,
+                "interrupt_ms": 1.6753385707781032
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 7.011907598054073,
+                "charged_cpu_ms": 5.779491639870929,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.2324159581831433
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 26.97838532011802,
+                "charged_cpu_ms": 6.366836345592412,
+                "off_cpu_ms": 19.097407732678867,
+                "interrupt_ms": 1.514141241846742
+              },
+              "copy": {
+                "elapsed_ms": 23.754650194042956,
+                "charged_cpu_ms": 14.841008826029528,
+                "off_cpu_ms": 5.591862741919341,
+                "interrupt_ms": 3.3217786260940905
+              },
+              "row": {
+                "elapsed_ms": 22.656083701378247,
+                "charged_cpu_ms": 17.99094701140011,
+                "off_cpu_ms": 0.6850357848202442,
+                "interrupt_ms": 3.9801009051578915
+              },
+              "shift": {
+                "elapsed_ms": 143.02777499756832,
+                "charged_cpu_ms": 78.27881851591322,
+                "off_cpu_ms": 47.52170560447941,
+                "interrupt_ms": 17.22725087717567
+              },
+              "slider_helper": {
+                "elapsed_ms": 23.55651915266733,
+                "charged_cpu_ms": 15.843505375828716,
+                "off_cpu_ms": 4.337878623415691,
+                "interrupt_ms": 3.3751351534229235
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 141.07155695333523,
+              "charged_cpu_ms": 80.57906986251355,
+              "off_cpu_ms": 42.7819966477722,
+              "interrupt_ms": 17.710490443049483
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 32.8535944819342,
+                "turns": 5,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 2
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESLOCKS_CALL": 1,
+                  "AESGATE_RELEASE": 1,
+                  "AESGATE_ENTERTASK": 2,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_CALL": 1,
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 7.627516461581186,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  },
+                  {
+                    "caller": "AESGATE_ENTERTASK",
+                    "mask": 524288,
+                    "count": 2
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESGATE_ENTERTASK": 2
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+            "copy_units": 1
+          },
+          "up": {
+            "offered_to_pixels_upper_ms": 140.27085662248248,
+            "pixels_bracket_ms": [
+              120.99540584088336,
+              140.27085662248248
+            ],
+            "stages": {
+              "begin": {
+                "calls": 1,
+                "elapsed_ms": 1.9835659076459833,
+                "charged_cpu_ms": 1.6326956394254695,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 0.350870268220514
+              },
+              "setters": {
+                "calls": 2,
+                "elapsed_ms": 23.535444381635205,
+                "charged_cpu_ms": 15.19399361977166,
+                "off_cpu_ms": 4.985628274871401,
+                "interrupt_ms": 3.355822486992144
+              },
+              "hide": {
+                "calls": 1,
+                "elapsed_ms": 8.159108177716002,
+                "charged_cpu_ms": 6.044512171913745,
+                "off_cpu_ms": 0.7350795554985418,
+                "interrupt_ms": 1.3795164503037163
+              },
+              "show": {
+                "calls": 1,
+                "elapsed_ms": 6.962780121768477,
+                "charged_cpu_ms": 5.774557746987153,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 1.1882223747813228
+              },
+              "end": {
+                "calls": 1,
+                "elapsed_ms": 23.27472338481968,
+                "charged_cpu_ms": 6.551011518525358,
+                "off_cpu_ms": 15.213094833650278,
+                "interrupt_ms": 1.510617032644045
+              },
+              "copy": {
+                "elapsed_ms": 14.826559568298471,
+                "charged_cpu_ms": 11.577802556884262,
+                "off_cpu_ms": 0.7340222927377326,
+                "interrupt_ms": 2.5147347186764764
+              },
+              "row": {
+                "elapsed_ms": 23.279445825151292,
+                "charged_cpu_ms": 18.524089379584115,
+                "off_cpu_ms": 0.734797618762326,
+                "interrupt_ms": 4.020558826804853
+              },
+              "shift": {
+                "elapsed_ms": 109.47934742923034,
+                "charged_cpu_ms": 71.47667184960368,
+                "off_cpu_ms": 22.40262257552028,
+                "interrupt_ms": 15.600053004106408
+              },
+              "slider_helper": {
+                "elapsed_ms": 24.233167319585156,
+                "charged_cpu_ms": 15.803329390917973,
+                "off_cpu_ms": 4.985628274871401,
+                "interrupt_ms": 3.4442096537957845
+              }
+            },
+            "viewer_to_pixels": {
+              "elapsed_ms": 140.27085662248248,
+              "charged_cpu_ms": 77.18574978960471,
+              "off_cpu_ms": 46.21838255713801,
+              "interrupt_ms": 16.866724275739767
+            },
+            "presenter": {
+              "whole_shift": {
+                "cpu_ms": 14.025013427237063,
+                "turns": 3,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1,
+                  "AESLOCKS_NOTIFY": 1
+                },
+                "undecoded_signal_sites": {
+                  "AESLOCKS_NOTIFY": 1
+                }
+              },
+              "owned_core": {
+                "cpu_ms": 2.8249356126978666,
+                "turns": 2,
+                "decoded_presenter_posts": [
+                  {
+                    "caller": "AESGATE_RELEASE",
+                    "mask": 524288,
+                    "count": 1
+                  }
+                ],
+                "all_native_signal_sites": {
+                  "AESGATE_RELEASE": 1
+                },
+                "undecoded_signal_sites": {}
+              }
+            },
+            "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+            "copy_units": 1
+          }
+        }
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 509,
+            "untouched_above_floor": 771
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 133,
+            "untouched_above_floor": 923
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 338,
+            "untouched_above_floor": 718
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 177,
+            "untouched_above_floor": 879
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 760,
+            "untouched_above_floor": 296
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 890,
+            "untouched_above_floor": 166
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 716,
+            "untouched_above_floor": 1588
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 131,
+            "untouched_above_floor": 125
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 302,
+          "untouched_from_base": 1234,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "scope": "One provider/native build; unchanged MGVIEW and Counter APPs. Two actions with matching exact pixels, one hardware copy, no repaint fallback/RPC, intact guards and cleanup. Original measure CLI formatting error corrected by read-only reanalysis. Reduced presenter work does not establish a consistent latency gain; polling brackets overlap. No QED/demo/release matrix.",
+      "comparison_tool_sha256": "08971f61e6d29fdf7256200e3d75c8848ba30dc79bbc8bf4650bb33d122084fe",
+      "host_checks": {
+        "tests": 718,
+        "skips": 5,
+        "status": "pass"
+      }
     }
   }
 }

@@ -338,5 +338,5 @@ if __name__=='__main__':
         for row in r['presenter']['samples']:
             held=row['windows']['owned_core']
             print('presenter',row['action'],'UPDATE-held CPU ms',round(held['measured']['charged_cpu_ms'],2),
-                'Present CPU ms',round(held['routine_costs']['DESKINPUT_PRESENT']['cpu_ms'],2),
+                'Present CPU ms',round(held['routine_costs'].get('DESKINPUT_PRESENT',{}).get('cpu_ms',0),2),
                 'signal posts',held['presenter_signal_counts'])

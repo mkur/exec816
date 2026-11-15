@@ -3,10 +3,12 @@
 [Standalone MagiC model](magic.md) · [Architecture index](README.md) ·
 [Source and mapping evidence](../development/magic-exec-mapping.json)
 
-This analysis maps the pinned Atari MagiC model onto Exec816 revision
-`4fd56448`. It distinguishes existing foundations, required adaptations and
-unsupported behavior. It changes no implementation or public contract.
-The standalone model remains the description of MagiC itself.
+The original inventory maps the pinned Atari MagiC model onto Exec816 revision
+`4fd56448`. The ownership/service sections below now include the delivered
+[native semaphore foundation](../history/native-semaphores.md) and
+[MagiC-led AES migration](../history/aes-magic-migration.md). Their execution
+records distinguish current behavior from the original inventory; the original
+mapping evidence remains pinned. The standalone model describes MagiC itself.
 
 ## Architectural fit
 
@@ -52,7 +54,7 @@ a kernel entry or a request to a GUI worker.
 | File access, directory scans and resource loading | Native DOS, filesystem/SIO services and existing caller-side resource/scan bindings | Keep file waits in application/loading contexts. Reuse RSC byte-order, pointer and bitmap conversion rather than importing Atari DOS calls. |
 | Executable loading and launch | Native C program loader, resident provider imports, Process start/collect and image retention | APP ABI 36 already supplies normal C entry and shared services. This is rebuilt source compatibility; Atari executables and trap layouts are a different contract. |
 | Screen-manager execution | Existing `AESSYSTEM` loop and presenter Task | Reuse its input/menu/gesture/window-continuation role. UI focus remains AES policy, independently of which Task receives CPU time. |
-| UPDATE, MCTRL and scene access | `AESLOCKS`, `AESWAIT`, `AESGATE`, short Task guards and ordinary signals | Existing library policy already implements waitable ownership. Preserve its documented semantics or migrate them explicitly; do not substitute a long scheduling exclusion. |
+| UPDATE, MCTRL and scene access | Public native `SignalSemaphore`, `AESLOCKS`, `AESGATE` and short publication guards | One native resource arbitrates UPDATE/MCTRL/handler scopes. Scene access and retained physical readiness remain separate; hints never grant ownership. |
 | Window visibility, overlap and damage | `LAYERS` and `REGIONS` ordinary libraries, used with one serialized shared scene | Reuse geometry and damage operations below AES window policy. AES and the scene refer to one authoritative window record set. |
 | Workstation and object drawing | Current private C workstation/context, prepared object data and ordinary renderer calls | Keep tree/layout and workstation state separate from shared device scratch. MagiC can guide the call structure without replacing these foundations. |
 | Physical screen access and device execution | `DISPLAY` lifetime ownership/delegated access and the VBXE driver | Reuse serialized hardware access, completion, scratch/VRAM discipline and fault retention. They are below GEM's semantic drawing operations. |
@@ -144,7 +146,7 @@ The current implementation already separates the following roles:
 
 | Role | Purpose | Waiting and completion rule |
 | --- | --- | --- |
-| UPDATE / MCTRL | Logical application painting and mouse/gesture policy | Can span calls and CPU handoffs; use AES waitable ownership and matching releases |
+| UPDATE / MCTRL | Logical application painting and mouse/gesture policy | Can span calls and CPU handoffs; native FIFO ownership, with MCTRL's routing overlay on UPDATE |
 | Scene gate / Layers transaction | Serialize geometry, visibility, routing publication and damage metadata | Drop the scene gate before physical work, route/resource operations or renderer callbacks; event waits hold no Layers transaction |
 | Display access / device operation | Protect renderer scratch, cursor saves, DMA and hardware state | Retire dependent hardware and scratch use before release; a trusted borrowed drawing callback cannot wait for an event or issue AES RPC |
 
@@ -166,23 +168,21 @@ In MagiC, `BEG_MCTRL` acquires the recursive UPDATE blockage and additionally
 saves/replaces menu and input routing. The final UPDATE release publishes the
 oldest waiter's ownership before signaling its event.
 
-Exec's AES maintains update and mouse holds separately. `BEG_UPDATE` acquires
-update ownership and an implicit mouse hold; explicit MCTRL has its own hold.
-Eligible waiters are signaled and recheck/acquire in their caller context.
-Owner recursion and a mouse-owner upgrade can affect eligibility. These rules
-are documented behavior, not an interchangeable copy of MagiC's counters and
-semaphore handoff.
+The original Exec inventory used independent update/mouse holds, an implicit
+mouse owner on UPDATE, and an AES eligibility/retry queue. AM1–AM4 replaced that
+structure: MCTRL and window/menu handlers use one native UPDATE semaphore;
+ordinary UPDATE does not redirect input. The kernel hands FIFO ownership to a
+waiter before Ready. GUI depth and window-scope facts do not arbitrate ownership.
+Short scene access and backend grants remain distinct from UPDATE.
 
 The difference also reaches forms. MagiC's inspected modal form loop retains
 mouse-control coordination across event waits. Current Exec forms use an owned
 or temporary ordinary window and acquire UPDATE for painting. Desktop-wide modal
-ownership is unsupported. Adopting a MagiC structural model therefore requires
-an explicit decision about these semantics before changing the lock machinery.
-This analysis preserves the current contract. The reassessed
-[AES migration plan](../plans/gem4xe/aes-semaphore-migration-plan.md) proposes
-changing these rules to follow MagiC's shared UPDATE/MCTRL dependency and direct
-handoff, with explicit Exec lifetime and presenter adaptations. That plan is
-not a claim that the current runtime has already changed.
+ownership is unsupported. This modal difference remains after the
+[AES migration](../plans/gem4xe/aes-semaphore-migration-plan.md). Exec also retains
+normal preemption, independent presenter input/fence work and cooperative-only
+owner cleanup. A MCTRL capture-readiness wait follows native acquisition;
+retained effects and wake hints cannot transfer the native resource.
 
 ### Signals, queues and copied messages
 
@@ -303,14 +303,13 @@ for this analysis.
 | Visibility/damage geometry | Layers/Regions under AES's serialized scene ownership |
 | VBXE mapping, list construction/submission, device dependencies, quiescence and fault retention | Renderer/backend and device adapter, using public coordination primitives |
 
-The supported public Exec interfaces inspected here do not expose an Amiga
-`SignalSemaphore` or MagiC `BLOCKAGE` service. Existing AES locks already compose
-short guards, durable waiter state and `Wait`/`Signal`. That is sufficient for the
-current UI ownership semantics. A reusable waitable-lock library could be
-factored if multiple subsystems need it; its semantics and measured benefit must
-be established before adding another abstraction. A combined kernel operation
-would require a general public contract and ownership rules, rather than a
-private AES-only fast path.
+The original inventory had no public native semaphore. NS0–NS5 delivered
+exclusive recursive Task-owned `SignalSemaphore`, native signalless waits and
+FIFO owner-before-Ready handoff. AES now uses that general public service.
+Its 12-byte upper-memory object fits within the space released by AES's retired
+queue/client fields, without added bank-zero reservation. Shared-mode semaphores
+and forced owner-death recovery remain unsupported. Device/scene protocols are
+separate; this migration does not replace every private driver protocol.
 
 Keep ordinary pure helpers as direct calls. Preserve the existing selective
 caller/system split: loading and application event waits can block in their
