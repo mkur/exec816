@@ -227,7 +227,7 @@ def validate_memory(memory):
     require(c['WRITABLE_POINTER']+4 == c['ENTRY_COUNT']+c['BINDINGS_BYTES'], 'Invalid binding extent')
 
 
-def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False,input_diagnostics=False):
+def policy_modules(output, policy_probe=0, memory=None, manual_wake=False, irq_probe=0, io_test_device=False, dos_test=False, dos_system=False, console=False, sio_request_probe=False,sio_lifetime_probe=False,input_diagnostics=False,semaphore_probe=False):
     if memory is None:
         from generate_memory import layout
         memory=layout()
@@ -337,7 +337,20 @@ ENDMODULE
         task_io=task_io.replace(route,'')
     (directory/'task-io.inc').write_text(task_io)
     policy_includes['task-io.inc']=directory/'task-io.inc'
+    if semaphore_probe:
+        sem_policy=read_source(ROOT/'lib/exec/task-semaphores.inc')
+        sem_policy='PUBLIC EXTERNAL PROC SemaphoreCheckpoint(CARD point)\n'+sem_policy
+        for before, after, point in (
+            ('    SetState(ctx,T_STATE_SEMAPHORE_WAIT,T_TS_WAIT)', False, 43),
+            ('  LET recipient=semaphore.head', True, 44),
+            ('  Ready(incoming)', True, 45)):
+            require(sem_policy.count(before)==1,'Stale semaphore checkpoint')
+            call='  SemaphoreCheckpoint('+str(point)+')'
+            sem_policy=sem_policy.replace(before,call+'\n'+before if after else before+'\n'+call)
+        (directory/'task-semaphores.inc').write_text(sem_policy)
+        policy_includes['task-semaphores.inc']=directory/'task-semaphores.inc'
     policy=read_source(ROOT/'lib/exec/taskpolicy.act', policy_includes)
+
     init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\n  bytes=BYTE POINTER(ADDRESS(IS_BASE+64))\n  FOR i=0 TO 191 DO bytes(i)=0 OD\n  name=CARD POINTER(ADDRESS(IS_BASE+224))\n  name(0)=$6973 name(1)=$2e6f name(2)=$6564 name(3)=$6976 name(4)=$6563 name(5)=0\nRETURN\n'
     if not sio_enabled:
         init='PROC InitResidentStorage()\n  BYTE POINTER bytes\n  CARD POINTER name\n  CARD i\nRETURN\n'

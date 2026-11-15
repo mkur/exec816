@@ -1265,6 +1265,268 @@
         },
         "scope": "One selected APP, matching provider; no application catalog build. Initial console-startup failure used wrong hardware configuration; same image passed with pinned custom addons."
       }
+    },
+    "NS4": {
+      "status": "pass",
+      "checkpoints": [
+        {
+          "point": 21,
+          "capture": "build/native-semaphores/ns4-accepted-21",
+          "checks": 48,
+          "results_sha256": "4e8bb347541555575e67288dea5d0cc85f8aeccbdc248478c412f39d6fd4a8ce",
+          "trace_sha256": "9af50da19fafb474413f724629bec397b0bbb3d80f40fdab400cb599bdad49a2",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 2,
+          "policy_continuations": 6
+        },
+        {
+          "point": 22,
+          "capture": "build/native-semaphores/ns4-accepted-22",
+          "checks": 48,
+          "results_sha256": "297f4fe243d0007968a49d0686ca66030815cdd00803015b7ba8952443b2a9e2",
+          "trace_sha256": "0db2bbfaa9c85f7773f0ef444ea2b59661f8c14901ec8a000248673fa4e97d88",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 30,
+          "capture": "build/native-semaphores/ns4-accepted-30",
+          "checks": 48,
+          "results_sha256": "2c757e155a2dd12f5a4848eef5f2cea3b83d1207e18fed2dc8b3404b011fd758",
+          "trace_sha256": "29452f3da5d63b80da5c4cef68b65bf217ab5dfd4d048dfc4a718645ed375d37",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 0,
+          "policy_continuations": 6
+        },
+        {
+          "point": 31,
+          "capture": "build/native-semaphores/ns4-accepted-31",
+          "checks": 48,
+          "results_sha256": "6af6519d857596c9b3f7ee467e0c8e82d5706294cfc9a8dde9176f213dee53fa",
+          "trace_sha256": "12965b4317f9bb27ff707feec0ffe740353be49fcbadc6494a64c33a407a29bd",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 32,
+          "capture": "build/native-semaphores/ns4-accepted-32",
+          "checks": 48,
+          "results_sha256": "0678f9a98e8ba43ccdc07c8cc65ac46c54ddf052d17b11c2b2bf6fd0e5a446b6",
+          "trace_sha256": "200ca367b07abd966ecccd41f2156d97406b088fb6e721b8080ced2f2d35bb0d",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 33,
+          "capture": "build/native-semaphores/ns4-accepted-33",
+          "checks": 48,
+          "results_sha256": "ade2a0405ba126cf98471d355f3d840bbd47a3ea11a4576e22b73bc183069f23",
+          "trace_sha256": "bc6b0c4f33c0bbd6f4923909567bbdef27d7991543d5fd62c73a16f6671abebf",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 36,
+          "capture": "build/native-semaphores/ns4-accepted-36",
+          "checks": 48,
+          "results_sha256": "405e8d1acdbe050a452b80dbc26eafa7e096e703a490c412b4265a01c02c4677",
+          "trace_sha256": "d3328458a700dba0fca16c610f49c6141a1eea901a7443b1473141289ac04c2a",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 40,
+          "capture": "build/native-semaphores/ns4-accepted-40",
+          "checks": 48,
+          "results_sha256": "49f47965d25569888a9d13d4341c243af9d4574e73bd21aa7ed17b2aec374742",
+          "trace_sha256": "3b70a70d0152c7f14ffb89150e51b9ec42ea4428e01e3786ac1a04418e23704a",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 40,
+          "nmi": 4,
+          "polls": 2,
+          "policy_continuations": 6
+        },
+        {
+          "point": 41,
+          "capture": "build/native-semaphores/ns4-accepted-41",
+          "checks": 48,
+          "results_sha256": "b53dae96f0aa05fec03c845a457d6ef81c5c1944a51aed5b79cd9d40b7357330",
+          "trace_sha256": "e0a8f314e6db553bacbf233cd2faed7813a3bb20c795d21e7d6aba7690d13498",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 46,
+          "nmi": 5,
+          "polls": 0,
+          "policy_continuations": 6
+        },
+        {
+          "point": 42,
+          "capture": "build/native-semaphores/ns4-accepted-42",
+          "checks": 48,
+          "results_sha256": "952b9cf3b061b3e336f4d3fc195edad4be7f4b146c83131bf2d41fec618a6342",
+          "trace_sha256": "354e6ae2fb62c7387e15cca6f633608072b05b69052758a5d826994bd9c1ffdb",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 46,
+          "nmi": 5,
+          "polls": 0,
+          "policy_continuations": 6
+        },
+        {
+          "point": 43,
+          "capture": "build/native-semaphores/ns4-accepted",
+          "checks": 48,
+          "results_sha256": "4ac973be33fcded927916c1b55ff591f1194786c18c2d5b5de30528ae1983540",
+          "trace_sha256": "738900f8d778cefb9a4d100ecc051780ba9242b00d7b819aab9e1112effbe1ce",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 46,
+          "nmi": 5,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 44,
+          "capture": "build/native-semaphores/ns4-accepted-44",
+          "checks": 48,
+          "results_sha256": "ca32846833e1cfb172ef8b25a2602f872cf98648455a0d6b10f6c4d79914ef76",
+          "trace_sha256": "056728a230d99cec2ca6ae22cd93854b3e2398a0e2b1ca83ee0d5a255c6d359f",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 43,
+          "nmi": 5,
+          "polls": 0,
+          "policy_continuations": 6
+        },
+        {
+          "point": 45,
+          "capture": "build/native-semaphores/ns4-accepted-45",
+          "checks": 48,
+          "results_sha256": "4f89fcfea70127908ab6f39960a5dedf33e058c8e6fb2b580a183f019994f5da",
+          "trace_sha256": "027a5362a9520b1b714a06ad53b258226e521ad0037ad4241f9f71e7480ea451",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 43,
+          "nmi": 5,
+          "polls": 0,
+          "policy_continuations": 6
+        },
+        {
+          "point": 46,
+          "capture": "build/native-semaphores/ns4-accepted-46",
+          "checks": 48,
+          "results_sha256": "2f0b7cd8b3e58128f2b9e4bd9c7e17ef01752bbe7356daf787f9af3c45d701f4",
+          "trace_sha256": "ef6050b52519c4996159b49d07b0d35dbf263557916dd5521be63cc1f03d5457",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 43,
+          "nmi": 5,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 47,
+          "capture": "build/native-semaphores/ns4-accepted-47",
+          "checks": 48,
+          "results_sha256": "00af6929e564bac30ba520028784bc5887874478f56aecbd3e194557653ce9ce",
+          "trace_sha256": "2f98ac6fe3d1e698e6dc0d11ec3702f29cb0fdedb2dea34a27672d4eb810dff5",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 49,
+          "nmi": 5,
+          "polls": 1,
+          "policy_continuations": 6
+        },
+        {
+          "point": 48,
+          "capture": "build/native-semaphores/ns4-accepted-48",
+          "checks": 48,
+          "results_sha256": "d71e44479ee7cba512da977608a1586e8ff62cf9a579bd40969139be10ea3aef",
+          "trace_sha256": "53b6a0140d662d2b5e6d1ce0549b292b9bb3d1e1ca45d26b4c753adb4585c96e",
+          "image_sha256": "96a9ea7a42fa7b319ebfa52184bb492448702b0d4b5096f24201661e0ac57fd5",
+          "irq": 43,
+          "nmi": 5,
+          "polls": 1,
+          "policy_continuations": 6
+        }
+      ],
+      "context": {
+        "capture": "build/native-semaphores/ns4-accepted-context",
+        "results_sha256": "e57db5379813f98b598426ec57f64ae18231505c6de4f8f2a3804b4e8aac379e",
+        "overlay_sha256": "9ad9d2067edf9e9e0ad97b7c39bbe68cfedd43f3004343a175b529f36141425d",
+        "cases": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          "masked-contention"
+        ]
+      },
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 74,
+          "remaining_above_floor": 1206
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 73,
+          "remaining_above_floor": 1207
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 68,
+          "remaining_above_floor": 1212
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 68,
+          "remaining_above_floor": 1212
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 26,
+          "remaining_above_floor": 1254
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 178,
+          "remaining_above_floor": 1102
+        }
+      },
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "signal_regression": {
+        "capture": "build/native-semaphores/ns4-signals",
+        "case": "signal-nmi-2-opt",
+        "status": "pass"
+      },
+      "scope": "One diagnostic optimized image reused for 16 runtime-selected checkpoints, nine native overlay cases. No raw compiler ABI changes. Diagnostic scratch borrows existing probe words; production emits none."
     }
   },
   "cleanup": {

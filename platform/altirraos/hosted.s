@@ -44,15 +44,33 @@
 
 ; Test builds wait for a real hardware interrupt at one selected transition.
 ; WAI changes no caller register or flags; production PROBE_NMI=0 emits nothing.
+.macro semaphore_checkpoint number
+    .if PROBE_NMI = 200
+        ; Diagnostic only: preserve widths, hidden B and partial restore state.
+        php
+        rep #$20
+        pha
+        lda #number
+        jsl semaphore_checkpoint_native
+        pla
+        plp
+    .endif
+.endmacro
+
 .macro checkpoint number
     .if PROBE_NMI = number
         wai
+    .elseif PROBE_NMI = 200 .and number >= 21
+        semaphore_checkpoint number
     .endif
 .endmacro
 
 ; Test-only one-shot wait at an exact restore phase. BIT/INC preserve the
 ; registers being restored; their temporary flags are replaced by outer RTI.
 .macro native_work_checkpoint number
+    .if PROBE_NMI = 200 .and number <> 37 .and number <> 38
+        semaphore_checkpoint number
+    .endif
     .if PROBE_NMI = number
         .local complete, waiting
         bit a:E816_PROBE0

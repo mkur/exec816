@@ -117,3 +117,31 @@ needed. The host suite passes 718 tests with five skips; affected generators pas
 The binding adds zero reserved bank-zero bytes in all five categories. Different
 pre-existing console/provider pool sizes in the loaded fixture are not semaphore
 reservation growth. No QED, demo refresh or release qualification was run.
+
+## NS4: asynchronous and admission boundaries
+
+One optimized diagnostic image passes 16 runtime-selected real-NMI checkpoints
+with concurrent POKEY timer IRQs. The sites cover free/recursive mutation,
+nested/final release, pre-mutation native-policy transfer, retired scratch,
+enqueue/state publication, queue-pop/handoff, pre-Ready and partial restoration
+through PLB/PLD/PLY/PLX/PLA. Forced post-mutation work takes Poll with no replay;
+the 48-assertion FIFO/signal scene remains correct at every site. Probe helpers
+borrow existing diagnostic words, preserve partial context and emit no production
+instructions. Two adjacent restore sites are represented by their surrounding
+checkpoints to keep the diagnostic resident code within its existing reservation.
+
+Nine assembly-overlay cases pass: ordinary/masked immediate acquisition,
+M/X/tag/unused-selector-byte/domain rejection, empty Release and genuine masked
+contention by an admitted worker against its live parent owner. D, DBR, widths,
+flags, stack and complete LONG result are checked. This exposed and fixed a
+shared rejection-classifier gap: invalid-domain semaphore calls now take the
+normal Task-service fault path instead of returning the generic context error.
+All rejected operations leave depth/queues unchanged. An earlier synthetic idle
+owner pilot was discarded because idle has no public Task owner object.
+
+The selected existing signal NMI-2 case passes. Host checks pass 718 tests with
+five skips. Every fixed/root/kernel/idle/per-Task reserved bank-zero delta remains
+zero. Diagnostic calls add temporary stack use within the existing guards and
+capacity; production fast scratch stays 20 bytes. Complete stack figures and
+per-case IRQ/NMI, image, trace and result hashes are in the evidence. No package,
+viewer, QED or release qualification was run.

@@ -219,13 +219,31 @@ dispatch_call:
     ; Outgoing arguments need not be popped: this stack is now inactive.
     .if GENERAL_TASKS
         cmp #T_FAULT
+        .if PROBE_NMI = 200
+            bne :+
+            jmp context_fault
+:
+        .else
         beq context_fault
+        .endif
     .endif
     cmp #0
+    .if PROBE_NMI = 200
+        bne :+
+        jmp all_exited
+:
+    .else
     beq all_exited
+    .endif
     tax
     jsr validate_frame
+    .if PROBE_NMI = 200
+        bcc :+
+        jmp context_fault
+:
+    .else
     bcs context_fault
+    .endif
     .if GENERAL_TASKS .and SIGNAL_AUTO
         ; An IRQ may post after policy selection but before its final RTL.
         ; With I=1, either reenter Poll on the selected frame or commit its
@@ -283,6 +301,12 @@ rejected:
     .if GENERAL_TASKS
         lda f:A816_SAVED_FRAME_A_FULL_OFFSET,x
         and #$00ff
+        cmp #SEM_SERVICE_OBTAIN_SEMAPHORE
+        bcc :+
+        cmp #SEM_SERVICE_RELEASE_SEMAPHORE+1
+        bcs :+
+        jmp context_fault
+:
         cmp #T_SERVICE_CREATE_TASK
         beq context_fault
         cmp #T_SERVICE_ADD_TASK
@@ -293,7 +317,11 @@ rejected:
     .endif
     lda #E816_ERROR_CONTEXT
     sta f:A816_SAVED_FRAME_A_FULL_OFFSET,x
+    .if PROBE_NMI = 200
+        jmp context_restore
+    .else
     bra context_restore
+    .endif
 context_fault:
     lda #FAULT_CONTEXT
     jmp finish

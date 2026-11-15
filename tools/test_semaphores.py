@@ -115,7 +115,7 @@ def public_calls(path, definition, program):
     return result
 
 
-def run(out, mode, from_build=None, suite='baseline'):
+def run(out, mode, from_build=None, suite='baseline', diagnostic=False, checkpoint=0, irq=False):
     out.mkdir(parents=True, exist_ok=True)
     frozen_inputs = inputs()
     if from_build:
@@ -126,9 +126,10 @@ def run(out, mode, from_build=None, suite='baseline'):
         source.write_text((ROOT/'tests/programs/semaphores.act').read_text().replace(
             'INCLUDE "semaphore-action.inc"', 'INCLUDE "'+str(out/'program/semaphore-action.inc')+'"'))
         program = build(compiler(ROOT/'build/actionc', release=True), source,
-                        out/'program', tasks=True, optimize=mode == 'opt',
+                        out/'program', tasks=True, optimize=mode == 'opt', probe_nmi=200 if diagnostic else 0,
                         image_data=[(0x04fff0, bytes([0xa5])*32), (0x06ffe0, bytes([0xa5])*96)])
         (out/'inputs.json').write_text(json.dumps(frozen_inputs, indent=2)+'\n')
+    require(program['build']['probe_nmi']==(200 if diagnostic else 0),'Wrong diagnostic image')
     require(program['build']['optimize'] == (mode == 'opt'), 'Wrong semaphore build mode')
     d = definition(program)
     (out/'definition.json').write_text(json.dumps(d, indent=2)+'\n')
@@ -144,10 +145,24 @@ def run(out, mode, from_build=None, suite='baseline'):
             def before(b):
                 at = next(d['address'] for d in program['image']['data'] if '_VARIANT_' in d['name'])
                 b.poke(at, case)
+                if diagnostic:
+                    import adapter_state as adapter
+                    from os_boundary import run_to
+                    b.bp_set(program['labels']['task_start'])
+                    run_to(b,program['labels']['task_start'],frame_limit=300,timeout=30)
+                    b.bp_clear_all()
+                    b.memload(adapter.PROBE0,checkpoint.to_bytes(2,'little')+bytes(6))
                 b.profile_start()
             runtime, _ = execute(bridge, program, timeout=120, frame_limit=1200,
-                                 expected_status=4 if case in FAULTS else 0, before_run=before)
+                                 expected_status=4 if case in FAULTS else 0, before_run=before,timer_irq=irq)
             report['runtime'] = runtime
+            if diagnostic and checkpoint:
+                import adapter_state as adapter
+                require(bridge.peek16(adapter.PROBE0)==256,'Checkpoint not reached')
+                require(runtime['native_nmi_count']>bridge.peek16(adapter.PROBE0+2),'Missing checkpoint NMI')
+                report['checkpoint']=checkpoint
+            if irq:
+                require(runtime['native_irq_count']>0,'Missing concurrent IRQ')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             expected = {0: 14, 1: 12, 2: 13, 9: 13, 10: 9, 11: 48, 12: 23, 13: 25}.get(case, 0)
             require(report['checks'] == expected, 'Semaphore fixture assertions: '+str(report['checks']))
@@ -189,6 +204,9 @@ def run(out, mode, from_build=None, suite='baseline'):
             report['timing'] = analyze(out/'emulator.log', d)
         elif case not in FAULTS:
             report['public_calls'] = public_calls(out/'emulator.log', d, program)
+            if diagnostic and checkpoint in (40,46,47,48):
+                require(sum(c['post_operation_polls'] for c in report['public_calls'])>0,
+                        'Mutation checkpoint did not take post-operation Poll')
         report['status'] = 'pass'
         print('Passed', mode, suite+';', report['checks'], 'checks', flush=True)
         if 'timing' in report:
@@ -212,5 +230,8 @@ if __name__ == '__main__':
     parser.add_argument('--suite', choices=tuple(CASES), default='baseline')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
+    parser.add_argument('--diagnostic',action='store_true')
+    parser.add_argument('--checkpoint',type=int,default=0)
+    parser.add_argument('--irq',action='store_true')
     args = parser.parse_args()
-    run(args.output.resolve(), args.mode, args.from_build.resolve() if args.from_build else None, args.suite)
+    run(args.output.resolve(), args.mode, args.from_build.resolve() if args.from_build else None, args.suite,args.diagnostic,args.checkpoint,args.irq)

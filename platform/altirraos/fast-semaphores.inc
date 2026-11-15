@@ -22,6 +22,10 @@ fast_semaphore_validate:
     jmp fast_setup
 
 fast_semaphore_call:
+    .if PROBE_NMI = 200
+        lda #1
+        sta f:E816_PROBE0+4
+    .endif
     ldx 4
     lda f:T_FRAME_X,x
     sta 10
@@ -53,6 +57,7 @@ fast_semaphore_call:
 :
     inc a
     sta [10],y
+    semaphore_checkpoint 46
     jmp sem_success
 
 sem_other:
@@ -88,6 +93,7 @@ sem_other:
     lda #1
     sta [10],y
 sem_success:
+    semaphore_checkpoint 40
     ldx 8
     cpx #SEM_SERVICE_OBTAIN_SEMAPHORE
     bne :+
@@ -118,6 +124,7 @@ sem_release:
     beq sem_final
     dec a
     sta [10],y
+    semaphore_checkpoint 48
     jmp fast_complete
 sem_final:
     ; Classify a queued release before mutating depth or ownership counts.
@@ -140,16 +147,60 @@ sem_final:
     sta [10],y
     ldy #SEM_OWNER+2
     sta [10],y
+    semaphore_checkpoint 47
     jmp fast_complete
 
 ; Retire native scratch and continue this admitted request, without a COP.
 sem_policy:
+    semaphore_checkpoint 41
     ldy 8
     ldx 4
     txa
     tcs
     lda #E816_KERNEL_DP
     tcd
+    semaphore_checkpoint 42
     jml dispatch_frame
+
+.if PROBE_NMI = 200
+semaphore_checkpoint_native:
+    pha
+    lda f:E816_PROBE0+4
+    beq sem_checkpoint_done
+    pla
+    cmp f:E816_PROBE0
+    bne sem_checkpoint_return
+    lda #$100
+    sta f:E816_PROBE0
+    lda f:E816_NMI_COUNT
+    sta f:E816_PROBE0+2
+sem_checkpoint_wait:
+    lda f:E816_NMI_COUNT
+    cmp f:E816_PROBE0+2
+    beq sem_checkpoint_wait
+    rtl
+sem_checkpoint_done:
+    pla
+sem_checkpoint_return:
+    rtl
+
+.export semaphore_checkpoint_call, semaphore_checkpoint_call_end
+semaphore_checkpoint_call:
+    lda 4,s
+    cmp #43
+    bne :+
+    semaphore_checkpoint 43
+:
+    cmp #44
+    bne :+
+    semaphore_checkpoint 44
+:
+    cmp #45
+    bne :+
+    semaphore_checkpoint 45
+:
+    rtl
+semaphore_checkpoint_call_end:
+.endif
 
 .include "semaphore-gateway.inc"

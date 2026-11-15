@@ -427,7 +427,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
             generate_timer_device.generate(output, generate_tasks.storage(memory)['BASE'], memory)
             generate_tasks.validate_memory(memory)
             task_generate(output)
-            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics)
+            task_modules = generate_tasks.policy_modules(output,policy_probe,memory,manual_wake,irq_probe,io_test_device,dos_test,dos_system,console_native,sio_request_probe=sio_request_probe,sio_lifetime_probe=sio_lifetime_probe,input_diagnostics=input_diagnostics,semaphore_probe=probe_nmi==200)
         memory['config']['stack_checks']=stack_checks_enabled
         generate_memory.reserve_image_data(memory)
         if foreign_image is not None or sdx:
@@ -449,7 +449,7 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
         if console_enabled and not re.search(r'(?mi)^USE\s+CONSOLEDRIVER\s*$',compile_source.read_text()):
             compile_source.write_text(compile_source.read_text().replace('USE EXECMEMORY\n','USE EXECMEMORY\nUSE CONSOLEDRIVER\n',1))
     require(initial_i in (0, 4) and (0 <= probe_nmi <= (24 if tasks else 18 if preemptive else 12 if cooperative else 8)
-            or tasks and heap_probe and 30 <= probe_nmi <= 39), "Invalid qualification mode")
+            or tasks and probe_nmi==200 or tasks and heap_probe and 30 <= probe_nmi <= 39), "Invalid qualification mode")
     require(not cooperative or initial_i == 0, "Cooperative startup requires IRQs enabled")
     require(0 <= probe_flags <= 0x100 and (cooperative or probe_flags == 0x100), "Invalid register probe")
     require(forward_signature in (0, 1, 0x7F), "Invalid COP forwarding probe")
@@ -599,6 +599,9 @@ def build(toolchain, source, output, optimize=True, probe_nmi=0, initial_i=0, co
                 arguments.append({'alignment':2, 'offset':8, 'size':4})
                 outgoing = 13
             peak = 15 + (8 if policy_probe else 0)
+        elif tasks and name == 'TASKPOLICY.SemaphoreCheckpoint' and probe_nmi == 200:
+            label, result, outgoing, peak = 'semaphore_checkpoint_call', 'None', 3, 11
+            arguments = [{'alignment':2, 'offset':0, 'size':2}]
         elif tasks and name == 'TASKPOLICY.ClaimCheckpoint' and irq_probe == 9:
             label, result, outgoing, peak = 'signal_claim_checkpoint', 'None', 3, 15
             arguments = [{'alignment':1, 'offset':0, 'size':3}]
