@@ -1,0 +1,219 @@
+MODULE SEMAPHORES
+USE EXEC
+USE HEAPCORE
+
+CONST DONE=$10000
+CONST ITERATIONS=32
+
+TYPE CompositionWaiter=[
+  BYTE POINTER next
+  EXEC.Task POINTER task
+  LONGCARD mask
+  BYTE granted
+]
+TYPE Composed=[
+  EXEC.Task POINTER owner
+  CARD depth
+  CompositionWaiter POINTER head,tail
+]
+
+Composed shared
+CompositionWaiter parentWaiter,workerWaiter
+EXEC.Task POINTER parent,worker
+EXEC.TaskLease parentLease,workerLease
+CARD checks
+BYTE variant
+VOLATILE CARD counter
+VOLATILE BYTE phase,queued,stop
+
+; Stop on the first failed fixture invariant, outside timing loops.
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+  checks==+1
+
+RETURN
+
+; Fixture comparator only: cached identity and preallocated wait records.
+PROC LibraryObtain(Composed POINTER semaphore EXEC.Task POINTER caller
+    CompositionWaiter POINTER waiter)
+
+  EXEC.Forbid()
+  IF semaphore.owner=caller THEN
+    semaphore.depth==+1
+  ELSEIF semaphore.owner=NULL THEN
+    semaphore.owner=caller
+    semaphore.depth=1
+  ELSE
+    waiter.next=NULL
+    waiter.granted=0
+    IF semaphore.tail=NULL THEN
+      semaphore.head=waiter
+    ELSE
+      semaphore.tail.next=BYTE POINTER(waiter)
+    FI
+    semaphore.tail=waiter
+    queued=1
+    WHILE waiter.granted=0 DO
+      EXEC.Permit()
+      BEGIN
+        LET ignored=EXEC.Wait(waiter.mask)
+      END
+      EXEC.Forbid()
+    OD
+  FI
+  EXEC.Permit()
+
+RETURN
+
+; Ownership is published before the waiter's retained notification.
+PROC LibraryRelease(Composed POINTER semaphore EXEC.Task POINTER caller)
+
+  EXEC.Forbid()
+  semaphore.depth==-1
+  IF semaphore.depth=0 THEN
+    IF semaphore.head=NULL THEN
+      semaphore.owner=NULL
+    ELSE
+      BEGIN
+        LET waiter=semaphore.head
+        semaphore.head=CompositionWaiter POINTER(waiter.next)
+        IF semaphore.head=NULL THEN
+          semaphore.tail=NULL
+        FI
+        semaphore.owner=waiter.task
+        semaphore.depth=1
+        waiter.granted=1
+        EXEC.Signal(waiter.task,waiter.mask)
+      END
+    FI
+  FI
+  EXEC.Permit()
+
+RETURN
+
+; One complete public-composition pair, including its normal call wrappers.
+PROC LibraryPair()
+
+  LibraryObtain(@shared,parent,@parentWaiter)
+  LibraryRelease(@shared,parent)
+
+RETURN
+
+PROC FreePairs(BYTE unused)
+  CARD index
+
+  FOR index=0 TO ITERATIONS-1 DO
+    LibraryPair()
+  OD
+
+RETURN
+
+PROC RecursivePairs(BYTE unused)
+  CARD index
+
+  FOR index=0 TO ITERATIONS-1 DO
+    LibraryPair()
+  OD
+
+RETURN
+
+; Sparse observation boundary; the parent never yields in its progress check.
+PROC CounterTurn()
+
+  counter==+1
+
+RETURN
+
+PROC CounterWorker()
+  BYTE bit
+
+  workerWaiter.task=EXEC.FindTask(NULL)
+  bit=EXEC.AllocSignal(16)
+  IF bit<>16 THEN
+    HEAPCORE.Abort($ff90)
+  FI
+  workerWaiter.mask=LONGCARD(1) LSH bit
+  DO
+    CounterTurn()
+    IF phase=1 THEN
+      LibraryObtain(@shared,workerWaiter.task,@workerWaiter)
+      phase=2
+      LibraryRelease(@shared,workerWaiter.task)
+    FI
+    IF stop<>0 THEN
+      EXIT
+    FI
+    EXEC.Yield()
+  OD
+  EXEC.FreeSignal(16)
+  EXEC.Signal(parent,DONE)
+  BEGIN
+    LET ignored=EXEC.Wait(0)
+  END
+
+RETURN
+
+; Pure Task work must remain preemptible while resource ownership persists.
+PROC Progress(BYTE unused)
+  CARD previous
+
+  LibraryObtain(@shared,parent,@parentWaiter)
+  previous=counter
+  WHILE counter=previous DO
+  OD
+  Require(shared.owner=parent AND shared.depth=1)
+  LibraryRelease(@shared,parent)
+
+RETURN
+
+PROC Handoff(BYTE unused)
+
+  LibraryObtain(@shared,parent,@parentWaiter)
+  phase=1
+  WHILE queued=0 DO
+  OD
+  Require(shared.owner=parent AND shared.head=@workerWaiter)
+  LibraryRelease(@shared,parent)
+  WHILE phase<>2 DO
+  OD
+  Require(shared.head=NULL AND shared.tail=NULL)
+
+RETURN
+
+PROC Main()
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  parentWaiter.task=parent
+  parentWaiter.mask=DONE
+  Require(EXEC.RetainTask(parent,@parentLease)<>0)
+  EXEC.Forbid()
+  worker=EXEC.CreateTask(c"semaphore counter",0,@CounterWorker,1)
+  Require(worker<>NULL)
+  Require(EXEC.RetainTask(worker,@workerLease)<>0)
+  EXEC.Permit()
+  Progress(0)
+  FreePairs(0)
+  Require(shared.owner=NULL AND shared.depth=0)
+  LibraryObtain(@shared,parent,@parentWaiter)
+  RecursivePairs(0)
+  Require(shared.owner=parent AND shared.depth=1)
+  LibraryRelease(@shared,parent)
+  Handoff(0)
+  stop=1
+  Require(EXEC.Wait(DONE)=DONE)
+  Require(shared.owner=NULL AND shared.depth=0)
+  Require(counter<>0)
+  EXEC.Forbid()
+  Require(EXEC.ReleaseTask(@workerLease)<>0)
+  EXEC.RemTask(worker)
+  EXEC.Permit()
+  Require(EXEC.ReleaseTask(@parentLease)<>0)
+  EXEC.FreeSignal(16)
+
+RETURN
+
+ENDMODULE

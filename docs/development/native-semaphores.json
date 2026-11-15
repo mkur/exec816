@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "status": "in-progress",
+  "tier": "development",
+  "qualification": false,
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "slices": {
+    "NS0": {
+      "status": "pass",
+      "capture": "build/native-semaphores/ns0",
+      "results_sha256": "356621e649bfffb586cec11501c8b0c10355a5b9319c677d9d926e236b18a1f4",
+      "trace_sha256": "291b7d297691e0023492c9879007bb82ba00bc87324a8948ed7c0243db9c4cb0",
+      "inputs_sha256": "ba388959e9360a7e01cb62cd9b7e5f5d5977def562061a6ab17bee4d970694a6",
+      "compiler": {
+        "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "build_profile": "release",
+        "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+        "override": false
+      },
+      "pin": {
+        "schema_version": 1,
+        "rom": {
+          "name": "AltirraOS 3.44 for 65C816",
+          "bytes": 16384,
+          "sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+          "source_url": "https://www.virtualdub.org/downloads/Altirra-4.40-src.7z",
+          "source_archive_sha256": "77ff8057e92c17127cc1f5b70084f11ac13d56d6c896d2439b52574deec961ca",
+          "cop0_after_xce": 50931
+        },
+        "emulator": {
+          "revision": "52c18c89e354290199d6f1bbd98eb5048849b15c",
+          "platform": "macOS arm64",
+          "sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "source_patch": "toolchain/patches/altirra-console-probe.patch",
+          "source_patch_sha256": "1012b26fa840ba38fd8ac57085a9b544e816e7740d6f6002abf5b9ea5a6042a2",
+          "build_command": "cmake --build build/altirra-irq-fix/build/latency --target AltirraBridgeServer -j 4",
+          "additional_patch": "toolchain/patches/altirra-shell-keys.patch",
+          "additional_patch_sha256": "6cf35f595a9ca17c7739ede1e9eafd1456d0dd93f5b6324ed37188083c4f2789",
+          "pacing_patch": "toolchain/patches/altirra-headless-frame-pacing.patch",
+          "pacing_patch_sha256": "e558e8d2405e2199a7a30311a2d908063ce75e8274312ecec8561d8f69dcc3cd",
+          "mouse_selection_patch": "toolchain/patches/altirra-mouse-observer.patch",
+          "mouse_selection_patch_sha256": "1b183a66d879634ff8083955a114ba922ae9111ed1d6be432a562b5983a06207"
+        },
+        "machine": {
+          "model": "800XL",
+          "cpu": "65C816",
+          "clock_multiplier": 8,
+          "memory": "64K",
+          "high_banks": 63,
+          "video": "PAL",
+          "basic": false,
+          "dli": false,
+          "shadow_rom": true
+        },
+        "scope": "Shell keyboard bridge plus host pacing only after completed video frames; guest CPU/peripheral timing is unchanged.",
+        "peripherals": [
+          {
+            "name": "fastest-125k",
+            "diskemu": "fastest",
+            "divisor": 0,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "stock-810",
+            "diskemu": "810",
+            "divisor": 40,
+            "source": "src/Altirra/source/diskprofile.cpp",
+            "firmware": "built-in high-level model"
+          },
+          {
+            "name": "happy-none",
+            "diskemu": "happy1050",
+            "divisor": 40,
+            "source": "src/Altirra/source/disk.cpp",
+            "firmware": "built-in high-level model; quiet command only"
+          }
+        ],
+        "configuration": {
+          "siopatch": "off",
+          "burstio": false,
+          "randdelay": false,
+          "accuratedisk": true
+        },
+        "source_sha256": {
+          "src/Altirra/source/diskprofile.cpp": "5d92b50d2552030e7a366e4edf6abe9fd571e8b12a83cdb0bb4054a29cbf22db",
+          "src/Altirra/source/disk.cpp": "883ca6a36503fd3be2eba911d70a297f5d60c8b7b4120c5c953ab9c4b771a920",
+          "src/Kernel/source/Shared/sio.s": "58839bc10ea5e0e4a0a3a8daf5b53b5e083771231f652101816a343f363db72f"
+        },
+        "observer": {
+          "binary_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+          "mode": "same binary, EXEC816_LATENCY_TRACE and EXEC816_MASK_TRACE environment gates; replay with both unset"
+        },
+        "keyboard_input": {
+          "commands": "KEY ALL up; KEY <name|SHIFT|CTRL|BREAK> down|up",
+          "mode": "POKEY matrix scan; PushRawKey/ReleaseRawKey immediate=false; modifier matrix transitions",
+          "initialization": "KEY ALL up enables scan mode before modifier changes",
+          "added_keys": {
+            "ASTERISK": 7,
+            "LESS": 54,
+            "GREATER": 55
+          },
+          "source": "src/AltirraSDL/source/input/keyboard_keymap_sdl3.cpp",
+          "source_sha256": "8bcd649f95b35280fb81c928bd18b6d8b75fdff618f4b26d0f6116a5303e4f37"
+        },
+        "serial_regression_pins": [
+          "toolchain/altirra-sio-queued.json",
+          "toolchain/altirra-sio-sectors.json"
+        ]
+      },
+      "image_sha256": "8433b7c82dc69f3f29422fb07822eaea6a752c7f84144ad3f5cd0dae9a8ab42a",
+      "xex_sha256": "6dbdfd13a125bb08d610c055b46a29d896084697d129970f0a622e91fd2f6d55",
+      "checks": 14,
+      "counter": 5,
+      "stack_usage": {
+        "0": {
+          "base": 9744,
+          "bytes": 1536,
+          "peak": 102,
+          "remaining_above_floor": 1178
+        },
+        "1": {
+          "base": 12880,
+          "bytes": 1536,
+          "peak": 78,
+          "remaining_above_floor": 1202
+        },
+        "2": {
+          "base": 14448,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "3": {
+          "base": 16016,
+          "bytes": 1536,
+          "peak": 18,
+          "remaining_above_floor": 1262
+        },
+        "4": {
+          "base": 17584,
+          "bytes": 1536,
+          "peak": 24,
+          "remaining_above_floor": 1256
+        },
+        "kernel": {
+          "base": 11312,
+          "bytes": 1536,
+          "peak": 166,
+          "remaining_above_floor": 1114
+        }
+      },
+      "bank_zero_budget": {
+        "fixed_runtime": 11552,
+        "public": [
+          1824,
+          1824,
+          1824,
+          1824
+        ],
+        "idle": 1824,
+        "runtime_excluding_os": 20672,
+        "loading_excluding_os": 21616,
+        "runtime_including_os": 40640,
+        "loading_including_os": 41584
+      },
+      "pairs": {
+        "FreePairs": {
+          "elapsed_ms": {
+            "min": 0.28517900868224183,
+            "median": 0.2918397640753391,
+            "max": 0.3019542444870796
+          },
+          "charged_cpu_ms": {
+            "min": 0.28517900868224183,
+            "median": 0.2918397640753391,
+            "max": 0.3019542444870796
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "max": 0.0
+          },
+          "interrupt_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "max": 0.0
+          }
+        },
+        "RecursivePairs": {
+          "elapsed_ms": {
+            "min": 0.2729147606568562,
+            "median": 0.2866239344553475,
+            "max": 1.4786876972676102
+          },
+          "charged_cpu_ms": {
+            "min": 0.2729147606568562,
+            "median": 0.2866239344553475,
+            "max": 0.8532110479729453
+          },
+          "off_cpu_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "max": 0.5943226399428232
+          },
+          "interrupt_ms": {
+            "min": 0.0,
+            "median": 0.0,
+            "max": 0.03115400935184154
+          }
+        }
+      },
+      "host_checks": {
+        "tests": 715,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "execution_scope": {
+        "completed_guest_builds": 1,
+        "guest_runs": 3,
+        "measured_runs": 1,
+        "raw_builds": 0
+      },
+      "excluded_pilots": [
+        "Case-insensitive fixture name/type shadowing rejected before emission.",
+        "Stopped slow debug-host compiler emission; successful image uses the same revision in release-host mode.",
+        "Two successful guest runs excluded from timing while correcting host manifest-path and profiler-start setup."
+      ]
+    }
+  },
+  "cleanup": {
+    "manifest": "build/cleanup-2026-11-15/manifest.json",
+    "manifest_sha256": "efbdf5bae0cd5fda7285ce816d675288ab0d4d746d1398d67d8eeae80f738242",
+    "reclaimed_bytes": 7062302720
+  }
+}

@@ -1,5 +1,8 @@
 # Historical records
 
+- [Native semaphore delivery](native-semaphores.md): measured composition
+  baseline and incremental native-service development evidence.
+
 - [One unit for aligned screen copies](gem-screen-copy.md): one retained
   grant/typed BCB instead of twelve strips, four fences instead of 48,
   focused overlap/failure descriptors and real MGVIEW pixel/preemption checks.

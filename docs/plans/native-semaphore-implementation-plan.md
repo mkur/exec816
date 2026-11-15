@@ -5,7 +5,8 @@
 [Platform contract](../reference/platform.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: proposed, 2026-11-15. Basis: `831ed463`. NS0–NS5 deliver the native
+Status: NS0 complete, NS1–NS5 pending, 2026-11-15. Basis: `831ed463`.
+[Execution record](../history/native-semaphores.md). NS0–NS5 deliver the native
 semaphore service described by the design. No implementation or executable
 validation is delivered by this plan. Complete and commit each slice before
 starting the next; record its actual scope and reservation deltas.
