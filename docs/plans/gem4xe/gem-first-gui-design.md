@@ -100,6 +100,16 @@ events before returning. Preserve each GEM call's synchronous semantics; merely
 queueing a change is insufficient when the call promises completion. Existing
 linked/resident code is sufficient; a new dynamic library loader is unnecessary.
 
+For mouse hide/show and eligible form changes, follow MagiC's inline execution
+structure: publish coherent cursor policy, release the scene gate, apply the
+cursor through the caller's admitted display access, and request presenter
+continuation only if work remains. Preserve required scene/policy wakes and
+normal Task preemption throughout. MagiC itself invokes its scheduler on the
+ordinary AES return path; inline execution does not imply scheduling exclusion.
+The adopted [mouse completion design](gem-mouse-plan.md#inline-cursor-completion)
+specifies revision/wake ordering and fallback. This is a shared-library change;
+ordinary application calls remain unchanged.
+
 The system Task uses the same core for gestures and frame work. If an application
 owns UPDATE or rendering, it defers conflicting work and arms a wake rather than
 blocking its entire input/event loop. Pointer painting can wait for renderer

@@ -12,6 +12,9 @@
   [MagiC cross-check](../history/gem-mouse-magic-review.md) corrects the AES/VDI
   boundaries and establishes the multitasking adaptation. The
   [execution record](../history/gem-mouse-calls.md) retains development evidence.
+  The adopted [inline completion follow-up](gem4xe/gem-mouse-plan.md#inline-cursor-completion)
+  specifies MagiC-style caller execution and ordered fallback wakes;
+  implementation is pending.
 
 - [MGVIEW drawing and window foundations](gem4xe/mgview-foundation-plan.md):
   three executable slices for VDI alignment/inquiry/fill, full/previous window

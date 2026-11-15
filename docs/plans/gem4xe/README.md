@@ -17,6 +17,10 @@ saved forms and small-app package acceptance.
 GM1–GM5 are implemented, including saved/previous forms, lifetime checks,
 the loaded Mouse/Counter proof and the refreshed demo. See the
 [execution record](../../history/gem-mouse-calls.md).
+The adopted [inline cursor follow-up](gem-mouse-plan.md#inline-cursor-completion)
+applies eligible changes in the caller before requesting presenter continuation,
+preserving required waiter wakes and normal Task preemption. Implementation is
+pending; MGVIEW keeps its standard mouse calls.
 
 The [MGVIEW foundation plan](mgview-foundation-plan.md) adds the shared VDI
 bindings, full/previous geometry and horizontal window gadgets needed before

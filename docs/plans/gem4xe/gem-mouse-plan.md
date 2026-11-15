@@ -11,6 +11,11 @@ checks and a separate commit. This plan delivers shared SDK services;
 MGVIEW itself remains a separate application port. Current contracts describe
 the implemented shared SDK.
 
+Design follow-up adopted 2026-11-15: complete eligible cursor changes inline
+before requesting presenter work, following MagiC's call structure. This wake
+ordering change is planned, not implemented by this documentation update;
+see [inline cursor completion](#inline-cursor-completion).
+
 Cross-checked against the pinned multitasking MagiC implementation on
 2026-11-14. GEM4XE supplies forms and rendering algorithms; MagiC supplies the
 application-state and shared-device structure. The review replaces the initial
@@ -184,6 +189,80 @@ continuation through the existing owner-safe pointer path. Competing physical
 access waits for the current quantum; normal Task preemption continues.
 Warm MGVIEW-style hide/draw/show must not add a system round trip per row.
 
+### Inline cursor completion
+
+Adopt MagiC's execution order for eligible mouse calls: update logical state,
+apply the cursor in the caller, then return through normal scheduling. In the
+pinned source, `gm_hide`/`gm_show` update the APPL contribution and call
+`mouse_off`/`mouse_on`. Only outer nesting transitions reach VDI, whose
+`v_hide_c`/`v_show_c` directly call `undraw_sprite`/`draw_sprite`. SCRENMGR does
+not execute that hide/show on the caller's behalf. The ordinary AES trap return
+then calls `appl_yield`; MagiC does not eliminate scheduling at the API boundary.
+See the pinned [AES dispatch][magic-hide], [nested helpers][magic-device],
+[VDI cursor implementation][magic-vdi] and [AES return][magic-return].
+
+The [Exec scroll audit](../../history/gem-screen-copy.md#mouse-handoff) found
+that `AESLOCAL.Call` currently releases with
+`AESGATE.Release(AESCURSOR.Pending())`. This signals the presenter before
+`ExecAESMouseControl` can attempt `GemDrawingMouseBorrow` through its existing
+workstation grant. All four observed hide/show calls entered an uncontended
+scene gate; their main off-CPU delay occurred during release. This identifies
+an unnecessary handoff opportunity, not a reason to inhibit Task scheduling or
+a prediction of the resulting latency improvement.
+
+Use this order in the shared binding/native policy path:
+
+1. Under the existing scene/policy guards, update counters/forms, publish a
+   coherent physical target and retain its completion revision. Copy user form
+   data before any wait. Keep the admitted context and registration alive.
+2. Release the scene gate normally. For a caller with an admitted workstation
+   that will attempt cursor completion, defer only the cursor-pending presenter
+   hint. Preserve scene-waiter wakes, `policyWaiting` and independent system
+   work. `Permit` and ordinary Task preemption remain in place; a required wake
+   may still run the presenter before the caller continues.
+3. If the target remains incomplete, apply it through the existing owner-safe
+   pointer borrow and backend fences. Hold physical ownership through completion,
+   with no hardware wait under the scene gate or a long `Forbid` section. A
+   caller holding UPDATE must not wait for its own UPDATE to end.
+4. Recheck coherent completion and status after the attempt. A completed target
+   or a completed newer revision satisfies the wait. Preserve notification of
+   other callers whose revisions completed, even when the presenter did not run.
+   A delayed caller must not reinstall an older form or visibility state.
+5. If physical work remains, retain the existing continuation and publish its
+   presenter wake before waiting on the reply hint. Recheck the latest shared
+   revision so a concurrent peer change cannot lose its wake. Calls without a
+   workstation use that continuation directly. Preserve truthful display errors,
+   fault retention and cleanup; signals remain hints, revisions remain the
+   completion condition.
+
+Metadata-only calls and inner hide/show nesting that leave no pending physical
+work need no cursor wake. Do not suppress unrelated wake reasons or consume
+unrelated signal bits. Reuse current grants, revision state and reply signals;
+this decision adds no Task, per-call allocation, private kernel operation or
+global scheduling exclusion.
+
+Keep standard `graf_mouse(M_OFF/M_ON)` in MGVIEW unchanged. Ordinary and
+parameter-block AES calls, and the raw VDI bindings sharing this helper, must
+retain their existing semantics. Implement the wake-order change as one small
+library slice, principally in `c/calypsi/aes-input.c` and
+`lib/aes/aeslocal.act`, with any shared completion/wake adjustment kept in the
+existing cursor/gate helpers. It requires no public GEM API change.
+
+For that slice, use focused emitted-code checks for inline completion without a
+redundant cursor wake, nested no-op calls, required policy/scene wakes, pending
+peer revisions, continuation fallback, display failure and UPDATE-held
+completion. Check completion notification, unrelated signals and retirement at
+those boundaries. Repeat only the existing loaded MGVIEW/Counter scroll pair
+with exact pixels, peer progress, guards and cleanup; compare cursor wakes,
+release handoffs, CPU and input-to-pixels time against the saved capture. Reuse
+unchanged APPs and rebuild only affected provider/native fixtures. QED, demo
+refreshes and release matrices are outside this follow-up's development checks.
+Target zero added reserved bank-zero bytes, reported separately for fixed,
+root, kernel, idle and each public Task, including guards, alignment and unused
+capacity.
+
+### Completion and rendering invariants
+
 When a transition requires physical work, acknowledge after that work completes
 or a newer coherent policy revision supersedes it. Retain copied effect data
 and registration lifetime while waiting. A delayed effect must not reinstall an
@@ -328,6 +407,11 @@ The plan itself changes no runtime reservation or executable code. Planning
 validation is limited to source review and documentation content/link checks.
 
 ## Primary source references
+
+[magic-hide]: https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESMAIN.S#L7200-7208
+[magic-device]: https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESOBJ.S#L362-376
+[magic-vdi]: https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/VDI/SRC/MAGICVDI.2/INPUT.S#L233-274
+[magic-return]: https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESEVT.S#L411-427
 
 - [GEM4XE grlib mode dispatcher](https://github.com/slaapliedje/gem4xe/blob/ac476b8bdeda63b8b53ad22ec25b9d88bd7886af/src/aes/grlib.c)
 - [GEM4XE form bookkeeping](https://github.com/slaapliedje/gem4xe/blob/ac476b8bdeda63b8b53ad22ec25b9d88bd7886af/src/aes/graf.c)
