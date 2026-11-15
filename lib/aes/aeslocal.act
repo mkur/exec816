@@ -87,8 +87,10 @@ CARD FUNC Policy(LONGCARD value)
             status=AESWINDOW.Frame(service,client,request,@wake)
             IF status=AESTYPES.OK AND wake<>0
                 AND (request.intin(1)=AESTYPES.WF_VSLIDE
-                OR request.intin(1)=AESTYPES.WF_VSLSIZE) THEN
-              status=AESFRAME.Vertical(client,request)
+                OR request.intin(1)=AESTYPES.WF_VSLSIZE
+                OR request.intin(1)=AESTYPES.WF_HSLIDE
+                OR request.intin(1)=AESTYPES.WF_HSLSIZE) THEN
+              status=AESFRAME.Paint(client,request)
             FI
           ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
             AESWINDOWSTATE.PrepareUpdate(client)

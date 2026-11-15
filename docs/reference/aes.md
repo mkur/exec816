@@ -410,8 +410,8 @@ while the owning caller waits; the presenter cannot release that caller's semaph
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
 text or bounded slider values, cache/menu changes, derived geometry, damage and
-view publication under scene ownership. Changed `WF_VSLIDE` and `WF_VSLSIZE`
-setters paint the visible vertical frame rail synchronously in the calling Task
+view publication under scene ownership. Changed `WF_VSLIDE`, `WF_VSLSIZE`, `WF_HSLIDE` and `WF_HSLSIZE`
+setters paint their visible frame rail synchronously in the calling Task
 before returning or releasing their handler UPDATE. The scene gate is dropped around physical drawing;
 UPDATE pins the window and frame-visible geometry. This uses a caller-owned
 console-format packet and the shared GEM4XE frame raster under delegated display
@@ -419,7 +419,7 @@ access. Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
 An open public VDI workstation supplies its existing grant. Otherwise the first
-visible, changed vertical slider setter establishes a standalone 32-byte
+visible, changed slider setter establishes a standalone 32-byte
 upper-heap grant through the existing display-delegation request, using the
 context's reply signal. The native handler checks actual visibility under UPDATE
 before mutation. If access is missing, it returns to the library for cold
@@ -430,9 +430,9 @@ closes that standalone grant first; application exit closes either form before
 retiring the context. Failed grant close retains the live storage and identity.
 No application source or public wire layout changes are needed.
 
-The remaining frame fields still wake deferred painting after release. Equal
+Text frame fields still wake deferred painting after release. Equal
 setters retain their existing publication and do not request painting, acquire
-physical access or establish a grant. Hidden/iconified vertical slider changes
+physical access or establish a grant. Hidden/iconified slider changes
 only update metadata/damage. Separate unheld setter calls remain separate resource
 scopes. Physical extensions use the retained continuation described below.
 
@@ -564,7 +564,7 @@ Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
 cancels. Hold repeat and live resizing remain unsupported.
 
 For application windows the presenter paints exposure and deferred frame fields
-and transfers work-area damage into durable `WM_REDRAW` delivery. Vertical slider
+and transfers work-area damage into durable `WM_REDRAW` delivery. Slider
 position and size setters paint their own frame clips synchronously. The
 presenter's explicit Layers handoff retires manager damage after the complete
 frame transaction without claiming that application pixels have been drawn. Completed, fully visible clients may use

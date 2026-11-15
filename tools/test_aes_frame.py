@@ -3,7 +3,7 @@ import hashlib
 from pathlib import Path
 
 import adapter_state as adapter
-from generate_aes_server import layout as aes_layout
+from generate_aes_server import layout as aes_layout, ABI as AES_ABI
 from generate_desktop import layout, ABI
 from gem_render_oracle import Raster, font_bytes, PENS, DESKTOP_PALETTE
 from library_paths import read_source
@@ -11,6 +11,11 @@ from native_program import ROOT, require
 from os_boundary import run_to
 from sio_transaction_trace import BASE_HZ
 from desktop_raster import frame as draw_frame, menu_bar
+
+TEXT_FIELDS=tuple(AES_ABI['constants'][name] for name in ('WF_NAME','WF_INFO'))
+SLIDER_FIELDS=tuple(AES_ABI['constants'][name] for name in
+                    ('WF_VSLIDE','WF_VSLSIZE','WF_HSLIDE','WF_HSLSIZE'))
+FRAME_FIELDS=TEXT_FIELDS+SLIDER_FIELDS
 
 ROOTS = ['FrameNative','FrameBusy','FrameWaiting','FramePhase','FrameGo',
          'FramePoint','FrameHeld','FramePB','FrameField','FrameHandle',
@@ -98,7 +103,7 @@ def physical(b,p,foreign,report):
         view=value('FrameView',4)
         raw=b.memdump(view,aes_layout()['WindowView']['size'])
         view_state={n:int.from_bytes(raw[vf[n]:vf[n]+size],'little') for n,size in
-                    [('vslide',2),('vsize',2),('shown',2),('kind',2),('revision',4)]}
+                    [('vslide',2),('vsize',2),('hslide',2),('hsize',2),('shown',2),('kind',2),('revision',4)]}
         for n in ('bounds','work'):
             view_state[n]=[int.from_bytes(raw[vf[n]+2*i:vf[n]+2*i+2],'little',signed=True) for i in range(4)]
         windows=[]
@@ -111,6 +116,7 @@ def physical(b,p,foreign,report):
                 title=raw[wf['title']:wf['title']+65].split(b'\0')[0].decode(),
                 info=raw[wf['info']:wf['info']+65].split(b'\0')[0].decode(),
                 slider=[number('sliderTop'),number('sliderHeight')],
+                hslider=[number('sliderLeft'),number('sliderWidth')],
                 visual_revision=number('visualRevision',4),active=number('id',4)==focus))
         return dict(view=view_state,windows=windows)
     def scan(phase):
@@ -129,8 +135,8 @@ def physical(b,p,foreign,report):
             shown=index==0 or 23<=phase<=30
             if not shown:continue
             draw_frame(raster,bounds,window['title'].encode(),window['active'],3,bool(window['kind']&2),
-                       window['kind'],tuple(window['slider']),window['info'].encode())
-            l,t,r,bt=bounds;work=(l+8,t+21,r-16,bt-2)
+                       window['kind'],tuple(window['slider']),window['info'].encode(),tuple(window['hslider']))
+            l,t,r,bt=bounds;work=(l+8,t+21,r-16,bt-(11 if window['kind']&(32|3584) else 2))
             for y in range(t,bt):
                 for x in range(l,r):
                     if not (work[0]<=x<work[2] and work[1]<=y<work[3]):area.append((x,y,index))
@@ -156,12 +162,12 @@ def physical(b,p,foreign,report):
         b.poke16(sy['FrameGo'],phase*3-2)
         point(phase,3)
         field=value('FrameField');sequence=value('FrameSequence',4)
-        direct=field in ((2,3) if report['frame_local']=='text' else
-                         (2,3,9,16) if report['frame_local']=='all' else ())
+        direct=field in (TEXT_FIELDS if report['frame_local']=='text' else
+                         FRAME_FIELDS if report['frame_local']=='all' else ())
         expected_sequence=1 if phase in (11,29) else 0
         require(sequence==expected_sequence,f'Frame phase {phase}: unexpected RPC delta {sequence}')
         stats=[get(value('FrameNative',4)+2*i)-before_stats[i] for i in range(2)]
-        if field in (2,3,9,16):
+        if field in FRAME_FIELDS:
             require(stats[0]>0 if direct else stats[0]==0,f'Frame phase {phase}: wrong execution Task')
             if direct:require(stats[1]==0,f'Frame phase {phase}: direct setter reached RPC')
         s=state()
@@ -169,14 +175,14 @@ def physical(b,p,foreign,report):
         row=dict(phase=phase,field=field,held=value('FrameHeld'),pb=value('FramePB'),
                  sequence_delta=sequence,helper_attempts=stats,status=value('FrameStatus'),
                  state=s,returned_clock=b.eval_expr('@clk'))
-        if field in (9,16) and row['status']==0:
+        if field in SLIDER_FIELDS and row['status']==0:
             # Device drawing is fenced at return, but rawscreen is the last
             # scanout. Keep the caller parked (and outer UPDATE held) while
             # that image catches up, as in the frame-atlas fixture.
             frames(2)
             f,raw=scan(phase)
             require(pixels(f,raw,s,phase) is not None,
-                    f'Frame phase {phase}: vertical slider pixels incomplete at return')
+                    f'Frame phase {phase}: slider pixels incomplete at return')
             row['synchronous_frame_pixels']='exact'
             row['scanout_settle_frames']=2
         elif row['held']:

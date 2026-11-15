@@ -209,7 +209,7 @@ UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
     return status;
 }
 
-/* The same raster and compact strip, using the caller's existing grant. */
+/* The same raster and bounded strips, using the caller's existing grant. */
 UWORD DesktopFrameBorrow(struct DisplayGrant *grant,struct ConsoleBitmapPacket *p)
 {
     return GemDrawingFrameBorrow(grant,p->clipLeft,p->clipTop,p->clipRight,

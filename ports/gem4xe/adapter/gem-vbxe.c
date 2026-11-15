@@ -1325,7 +1325,16 @@ UWORD GemDrawingFrameBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 {
     UWORD status=DisplayEnter(grant),completed;
     if (status!=DISPLAY_OK) return status;
-    status=draw_FrameBatch(left,top,right,bottom,draw,context);
+    if (bottom-top>16) status=draw_FrameBatch(left,top,right,bottom,draw,context);
+    else {
+        /* A complete short frame strip retains its scratch and grant through
+         * the trusted renderer's bounded glyph continuations. */
+        UWORD first=1;
+        do {
+            status=draw_WidgetBatch(left,top,right,bottom,first,draw,context);
+            first=0;
+        } while (status==DISPLAY_OK && stripActive);
+    }
     completed=borrow_leave(grant);
     return status==DISPLAY_OK ? completed:status;
 }

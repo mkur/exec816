@@ -58,7 +58,8 @@ UWORD GemDrawingWidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
  * scratch allocation at a compact pitch and publishes once on completion. */
 UWORD GemDrawingFrameBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
                            UWORD (*draw)(void *),void *context);
-/* Same compact frame renderer in a delegated caller, completed before return. */
+/* Delegated frame: compact tall sides or complete <=16-row strips. The
+ * trusted bounded renderer finishes its continuations before grant release. */
 UWORD GemDrawingFrameBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,UWORD (*draw)(void *),void *context);
 void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom);

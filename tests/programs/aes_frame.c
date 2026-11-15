@@ -1,4 +1,4 @@
-/* Bounded frame policy, synchronous vertical sliders and deferred text. */
+/* Bounded frame policy, synchronous sliders and deferred text. */
 #include <gem.h>
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
@@ -117,13 +117,14 @@ UWORD AESRun(void)
     CHECK(bit>=0);wake=1UL<<bit;controller=FindTask(NULL);
     CHECK(ExecAESAttach((struct MsgPort *)AESService));CHECK(appl_init()>0);
     c=ExecAESContext();
-    rootWindow=wind_create(AES_WINDOW_KIND|INFO|UPARROW|DNARROW|VSLIDE,
+    rootWindow=wind_create(AES_WINDOW_KIND|INFO|UPARROW|DNARROW|VSLIDE|
+                          LFARROW|RTARROW|HSLIDE|SIZER,
                           32,32,240,160);
     CHECK(rootWindow>0);CHECK(wind_open(rootWindow,32,32,240,160));
     sequence=c->sequence;
-    CHECK(wind_set(rootWindow,WF_VSLIDE,0,0,0,0));
+    CHECK(wind_set(rootWindow,WF_HSLIDE,0,0,0,0));
     CHECK(c->sequence==sequence && !c->request.displayGrant);
-    CHECK(wind_set(rootWindow,WF_VSLSIZE,1000,0,0,0));
+    CHECK(wind_set(rootWindow,WF_HSLSIZE,1000,0,0,0));
     CHECK(c->sequence==sequence && !c->request.displayGrant);
     plain=wind_create(AES_WINDOW_KIND,360,32,120,64);CHECK(plain>0);
     peer=CreateTask("frame peer",0,AESClientOne,1024);CHECK(peer!=NULL);
@@ -140,28 +141,28 @@ UWORD AESRun(void)
     attribute(rootWindow,WF_INFO,0,(char *)0x1000000UL,1,1,AES_MALFORMED);
     attribute(rootWindow,WF_INFO,0,"",0,1,AES_OK);
     attribute(rootWindow,0x7fff,12,NULL,1,1,AES_UNSUPPORTED);
-    attribute(rootWindow,WF_VSLSIZE,400,NULL,1,1,AES_OK);
-    attribute(rootWindow,WF_VSLSIZE,400,NULL,0,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,250,NULL,0,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,250,NULL,1,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,1000,NULL,0,1,AES_OK);
-    attribute(rootWindow,WF_VSLSIZE,0,NULL,1,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,-1,NULL,1,1,AES_MALFORMED);
-    attribute(rootWindow,WF_VSLSIZE,1001,NULL,0,1,AES_MALFORMED);
+    attribute(rootWindow,WF_HSLSIZE,400,NULL,1,1,AES_OK);
+    attribute(rootWindow,WF_HSLSIZE,400,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,250,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,250,NULL,1,1,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,1000,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_HSLSIZE,0,NULL,1,1,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,-1,NULL,1,1,AES_MALFORMED);
+    attribute(rootWindow,WF_HSLSIZE,1001,NULL,0,1,AES_MALFORMED);
     attribute(rootWindow,WF_INFO,0,limit,1,1,AES_MALFORMED);
     attribute(plain,WF_NAME,0,"Hidden frame",1,1,AES_OK);
-    attribute(plain,WF_VSLSIZE,100,NULL,0,1,AES_UNSUPPORTED);
+    attribute(plain,WF_HSLSIZE,100,NULL,0,1,AES_UNSUPPORTED);
     attribute(plain,WF_INFO,0,"Hidden info",0,1,AES_OK);
     send(1);
     attribute(rootWindow,WF_NAME,0,"Covered frame",0,1,AES_OK);
     attribute(rootWindow,WF_INFO,0,"Covered info",1,1,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,0,NULL,1,1,AES_OK);
-    attribute(rootWindow,WF_VSLSIZE,400,NULL,0,1,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,0,NULL,1,1,AES_OK);
+    attribute(rootWindow,WF_HSLSIZE,400,NULL,0,1,AES_OK);
     send(2);send(3);
     attribute(rootWindow,WF_NAME,0,"Feedback title",0,0,AES_OK);
     attribute(rootWindow,WF_INFO,0,"Feedback info",1,0,AES_OK);
-    attribute(rootWindow,WF_VSLIDE,500,NULL,0,0,AES_OK);
-    attribute(rootWindow,WF_VSLSIZE,600,NULL,1,0,AES_OK);
+    attribute(rootWindow,WF_HSLIDE,500,NULL,0,0,AES_OK);
+    attribute(rootWindow,WF_HSLSIZE,600,NULL,1,0,AES_OK);
     /* Cold AES access is replaced cleanly by a public workstation. A warm
      * setter then reuses that grant, and closing it permits fresh AES access. */
     {
@@ -169,12 +170,12 @@ UWORD AESRun(void)
         WORD handle=graf_handle(&i,&i,&i,&i);
         CHECK(!c->workstation && c->request.displayGrant);
         v_opnvwk(input,&handle,output);CHECK(handle>0 && c->workstation);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,601,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,601,0,0,0));
         CHECK(c->sequence==sequence);
         v_clsvwk(handle);CHECK(!c->workstation && !c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,602,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
         CHECK(c->sequence==sequence+1 && c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_VSLSIZE,602,0,0,0));
+        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
         CHECK(c->sequence==sequence);
     }
     /* A readiness miss must leave publication untouched until the caller retry. */

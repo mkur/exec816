@@ -187,3 +187,38 @@ completion sources were checked against the SM1b evidence; its separate Layers
 suite was not repeated. No raw matrix, QED/catalog/demo build, release
 qualification or scrolling-speed claim is included. Next SM1 work is the
 horizontal slider fields, retaining MagiC's shared position/size flow.
+
+
+## SM1d: synchronous horizontal sliders
+
+`WF_HSLIDE` and `WF_HSLSIZE` now mutate and paint their visible bottom rail in
+the caller before handler UPDATE release. Both reuse the common MagiC
+`ws_sl_hori` / `ws_slend` flow, the existing native packet and manager-damage
+completion. The same cold-admission check covers all four slider fields.
+Equal, hidden and unsupported operations retain their existing boundaries.
+
+Delegated frame drawing now selects the existing compact tall-side or short
+widget-strip path from clip geometry. The trusted frame renderer completes
+short-strip continuations before releasing its grant; no scratch or packet
+borrow escapes physical ownership. Pixel/row and glyph-chunk limits are
+unchanged. This also supplies the existing renderer seam needed for text
+setters, without another raster or Task.
+
+The fixture exercises both horizontal fields in a window with both rails,
+arrows and a sizer, plus the existing peer vertical window. Its independent
+raster uses both cached thumb geometries and kind-derived work borders. The
+observer obtains field IDs from the shared AES ABI. An initial observer edit
+used incorrect numeric horizontal IDs and was corrected before accepting the
+run; the C image is reused only after its source/header hashes are verified.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per
+public Task**, including guards, alignment and unused capacity. No data-record,
+Task, signal, heap payload, VRAM allocation or public ABI layout is added.
+
+
+The optimized [development record](../development/screnmgr-sm1-horizontal.json)
+passes 202 application assertions, five native assertions, 34 frame pixel
+checkpoints and 12 synchronous slider checkpoints. Host checks pass 718 tests
+with five historical skips. Guards and stack floors pass; bank-zero reservations
+match SM1c. Only the focused frame fixture and host checks ran. No QED, demo,
+raw matrix or release/performance qualification is included.

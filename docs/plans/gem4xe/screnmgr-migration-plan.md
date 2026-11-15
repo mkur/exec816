@@ -130,6 +130,11 @@ position/size handler and frame draw. Cold admission, equal-value return and
 manager completion use the existing SM1b services without another renderer or
 resource. See the [development record](../../history/screnmgr-migration.md#sm1c-synchronous-vertical-slider-size).
 
+SM1d adds `WF_HSLIDE` and `WF_HSLSIZE` to the same caller operation, using the
+existing short-strip renderer under the delegated grant. Text setters remain
+for the next sub-slice. See the
+[development record](../../history/screnmgr-migration.md#sm1d-synchronous-horizontal-sliders).
+
 Continue with the remaining frame fields in small sub-slices. Preserve explicit
 call state and the existing display grant: equal-value return; changed-value
 mutation, visible clipping and frame painting before handler UPDATE release and

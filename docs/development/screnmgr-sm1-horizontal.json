@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "slice": "SM1d",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "c8cccfc9e1cb584df1122aa0a07c55adec5ac094",
+  "scope": "Synchronous horizontal position and size setters using the shared frame raster.",
+  "source_inputs": {
+    "c/calypsi/aes-windows.c": "b8d35676cdddd05cf9b2c33437b6485eefebf8ca427e8fbe99cb0099882c9921",
+    "lib/aes/aesframe.act": "f5d86ecac896bc6cd21366e93d235c4184a13ed88659af571a7cc269027861fe",
+    "lib/aes/aeslocal.act": "e8fcda6bbeae43d6a5574294106038e7e0dc79873899ef7cfee2a6d12fcc1256",
+    "lib/aes/aeswindow.act": "b7f88aaa8c264f3a3ec5cc20cc2d4c246227e408d28d4f7ab348122f999f78f8",
+    "lib/desktop/desktop-frame.c": "f52463beae8e1c0347f25e7a4b828149b81a4269e36e1ea25daaceb08abec2bb",
+    "ports/gem4xe/adapter/gem-drawing.h": "f94b74b5284246c651b5e3610405c60e335b60681dcf34fb9ad58fa0ed71e8b1",
+    "ports/gem4xe/adapter/gem-vbxe.c": "0f762c54b0959b2e1490b0a438a96fab7859423fd8ae85a9a690ab1c541812bc",
+    "tests/programs/aes_frame.c": "8ac0fece2768924ce38e846db74db5d1cdecebedad93a6b32768993645c514be",
+    "tools/test_aes_frame.py": "bbe312dad42338beba220057b134fc01939eaf5fe47b220c19b6c4720a189eec"
+  },
+  "capture": "build/screnmgr/sm1-horizontal",
+  "results_sha256": "886b4a49ac2f865d4271d6eb84ce2916eea65d63b7be048f998c005c5d355adb",
+  "image_sha256": "67ec4546db05d110e3f5df9986094c0528fb035dc4bd468ac2e01cf1179a7f69",
+  "xex_sha256": "eccb3b31292ac14c885ede9fa2f64fdf9a1addca3be9fd0a439a64fd46fe346f",
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "override": false
+  },
+  "c_tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact"
+  },
+  "application_checks": 202,
+  "native_checks": 5,
+  "frame_pixels": 34,
+  "synchronous_checkpoints": [
+    {
+      "phase": 11,
+      "field": 15,
+      "held": 1,
+      "sequence_delta": 1,
+      "helper_attempts": [
+        2,
+        0
+      ]
+    },
+    {
+      "phase": 12,
+      "field": 15,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 13,
+      "field": 8,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 14,
+      "field": 8,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 15,
+      "field": 8,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 16,
+      "field": 15,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 25,
+      "field": 8,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 26,
+      "field": 15,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 29,
+      "field": 9,
+      "held": 1,
+      "sequence_delta": 1,
+      "helper_attempts": [
+        2,
+        0
+      ]
+    },
+    {
+      "phase": 30,
+      "field": 16,
+      "held": 1,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 33,
+      "field": 8,
+      "held": 0,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    },
+    {
+      "phase": 34,
+      "field": 15,
+      "held": 0,
+      "sequence_delta": 0,
+      "helper_attempts": [
+        1,
+        0
+      ]
+    }
+  ],
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 1083,
+      "remaining_above_floor": 197
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 128,
+      "remaining_above_floor": 928
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 832,
+      "remaining_above_floor": 224
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 737,
+      "remaining_above_floor": 1567
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 24,
+      "remaining_above_floor": 232
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 285,
+      "remaining_above_floor": 995
+    }
+  },
+  "host": {
+    "tests": 718,
+    "skips": 5,
+    "log_sha256": "4bff497160e2955a3239db49a088eb3e6eff710dd3a22990e4d06411a3bcb681"
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "includes_guards_alignment_and_unused_capacity": true
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 40336,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 26848,
+    "runtime_including_os": 46816
+  },
+  "commands": [
+    "python3 tools/test_aes_server.py --suite frame --mode opt --output build/screnmgr/sm1-horizontal",
+    "python3 tools/test_aes_server.py --suite frame --mode opt --reuse-c --output build/screnmgr/sm1-horizontal",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "limits": [
+    "Initial observer used incorrect numeric field IDs; corrected observer reads shared ABI constants.",
+    "No new rendering limits, ABI layouts, Tasks or storage.",
+    "Two PAL frames settle scanout while the caller stays parked and outer UPDATE stays held.",
+    "Text fields, independent input placement and the combined-loop migration remain.",
+    "Development only; no raw matrix, QED/catalog/demo build or latency qualification."
+  ]
+}
