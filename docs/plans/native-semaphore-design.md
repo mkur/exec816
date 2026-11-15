@@ -10,6 +10,10 @@ Status: draft, 2026-11-15. Basis: Exec816 `2f25db70` and pinned MagiC
 service; no semaphore API, ABI change or performance result is delivered by
 this note. Current reference contracts remain authoritative.
 
+The [implementation plan](native-semaphore-implementation-plan.md) sequences
+NS0–NS5 from a measured baseline through native ownership/waiting, C bindings,
+asynchronous boundaries and development acceptance.
+
 ## Purpose and model
 
 Provide an exclusive, recursive, Task-owned semaphore with a short native
@@ -361,8 +365,8 @@ Reuse unchanged MGVIEW/Counter APPs where their ABI permits. Report end-to-end
 latency independently of primitive CPU savings.
 
 For this draft, validation is source/ABI-layout review and documentation link
-checks only: zero builds, guest runs or changed reservations. An implementation
-plan and executable qualification remain subsequent work.
+checks only: zero builds, guest runs or changed reservations. The linked plan
+defines executable delivery; qualification remains subsequent work.
 
 [amiga-init]: https://developer.amigaos3.net/autodocs/exec.library/InitSemaphore.html
 [amiga-obtain]: https://developer.amigaos3.net/autodocs/exec.library/ObtainSemaphore.html

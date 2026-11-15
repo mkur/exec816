@@ -4,6 +4,9 @@
   recursive exclusive semaphore, one native request per operation, FIFO direct
   handoff, signalless waiting and no added reserved bank-zero storage. AES
   policy migration and measured primitive acceptance are separate gates.
+  The proposed [NS0–NS5 implementation plan](native-semaphore-implementation-plan.md)
+  orders baseline, native try/release, blocking handoff, C delivery, interrupt
+  boundaries and measured acceptance, with one commit per slice.
 
 - [Original MagiC MGVIEW port](gem4xe/mgview-port-plan.md): MP1–MP6
   executable slices for the original-source viewer, bounded loader/lifetime,

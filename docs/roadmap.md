@@ -892,6 +892,9 @@ The other possible milestones have no delivery order:
   allocation or signal bits. Establish primitive cost, IRQ/NMI behavior and
   Task-removal rules before a separate AES migration; GUI bookkeeping does not
   belong in the semaphore service. No implementation is delivered by the draft.
+  The proposed [NS0–NS5 plan](plans/native-semaphore-implementation-plan.md)
+  sequences the native service and C delivery using small Task fixtures and
+  measured development acceptance.
 - **Lightweight Exec service fast paths.** Audit frequent calls that can complete
   without the full Action! kernel dispatcher and kernel-stack transition. Start
   with `FindTask(NULL)`, which only returns the calling Task; retain serialized
