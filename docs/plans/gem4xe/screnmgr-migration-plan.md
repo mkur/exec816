@@ -153,11 +153,18 @@ depend on it. Use the smallest cursor or slider/Counter pixel and lifetime case.
 
 ### SM2 — establish independent input and device progress
 
-Resolve the execution-context map above before code depends on it. Implement
-the agreed public-Task/lease arrangement, preserving captured route identities,
-endpoint holds and durable wake rules. Application input delivery does not
-acquire UPDATE. Screen-manager interaction receives its own event readiness.
-Console model/stream processing stays in CONSOLEBACKEND.
+Follow the [input.device migration plan](../input-device-migration-plan.md):
+IM1–IM3 establish the public service/capture, IM4 converts standard Atari text,
+and IM5–IM6 extract AES delivery and switch GUI source ownership. Resolve the
+remaining frontend placement before live cutover. Preserve captured route
+identities, endpoint holds and durable wake rules. Application input delivery
+does not acquire UPDATE. Screen-manager interaction receives its own event
+readiness. Console model/stream processing stays in CONSOLEBACKEND.
+
+Input-service cutover alone does not complete SM3/SM4. Retain the current
+manager loop only until their scene-reader and caller-drawing dependencies
+permit its replacement; no scene work, drawing or UPDATE wait belongs inside
+the generic input Task.
 
 Verify one application holding UPDATE while keys/buttons reach application
 inboxes, console I/O completes and physical completions retire as required.

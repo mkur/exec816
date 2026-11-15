@@ -4,7 +4,10 @@
   input service reusing the resident console/system Task, independent of
   AES/SCRENMGR and display ownership. Covers the standard Atari text console,
   future VBXE text-mode console and GEM consumers; the bounded handler interface
-  and migration boundaries are a design draft, not an installed device.
+  and migration boundaries are a design draft, not an installed device. The
+  [IM0–IM8 migration plan](input-device-migration-plan.md) orders ABI/lifetime,
+  capture, Atari-console and AES cutovers with explicit frontend placement
+  costs and focused development checks. Implementation is pending.
 
 - [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
   MagiC manager role, caller-context drawing, independent input/device progress

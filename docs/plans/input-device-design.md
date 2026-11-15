@@ -10,6 +10,8 @@ the existing resident console/system Task, independent of AES and SCRENMGR.
 It must support a standard Atari text console, a future VBXE text-mode console
 and GEM. This note proposes the delivery interface and migration boundaries;
 `input.device` is not implemented and the current INPUT contract is unchanged.
+The [IM0–IM8 migration plan](input-device-migration-plan.md) sequences the work,
+including the remaining frontend execution-placement decision and resource costs.
 
 ## Role and dependencies
 
@@ -252,6 +254,10 @@ pools reserve 1,600 and 2,848 bytes respectively, including DP and guards; see
 stack peaks and upper-RAM queue/registration costs before setting bounds.
 
 ## Migration and development acceptance
+
+The [migration plan](input-device-migration-plan.md) expands these boundaries
+into separately committed slices. Its frontend placement is a proposal; Task
+reuse for input does not automatically provide a display/SCRENMGR context.
 
 1. Specify the public device/handler ABI, capture-route publication and detach
    protocol. Inventory every remaining Worker duty and name its execution owner,

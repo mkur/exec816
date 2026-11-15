@@ -25,6 +25,10 @@ inside the input dispatcher. Console stream/model work remains in the existing
 CONSOLEBACKEND Task. Remaining Worker duties, including the SCRENMGR execution
 context and standalone display work, still need explicit relocation/costing;
 the complete Task count and stack bounds are not established by this selection.
+The [IM0–IM8 migration plan](../input-device-migration-plan.md) proposes and
+costs a frontend context, records its selection gate, and sequences standalone
+Atari text and AES consumer conversion. That proposal is not an adopted extra
+Task allocation.
 
 The alternatives below retain the earlier comparison. They are not the selected
 implementation map. Task-side delivery is an explicit Exec adaptation of
