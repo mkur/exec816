@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "source_baseline": "8b83448e",
+  "tier": "development",
+  "qualification": false,
+  "sources_sha256": {
+    "platform/altirraos/vbxe.c": "b43867952ade7909eb2ab3348c6e1613dd5af5d46188c65f0dcdbbac342abbb6",
+    "ports/gem4xe/adapter/gem-vbxe.c": "c0c9bfe6209538a093cdb24285f29ab317ea5d73b00104e7c57f93ffc5fea838"
+  },
+  "scope": {
+    "c_provider_rebuilt": true,
+    "native_fixture_rebuilt": true,
+    "apps_rebuilt": [],
+    "qed": false,
+    "demo": false,
+    "encoder_probe_cases": 18,
+    "loaded_scroll_pairs": 1,
+    "reused_baseline": "build/mgview-mouse-fix/settled-scroll"
+  },
+  "inputs": {
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "app_sha256": {
+      "mgview": "432d17cb7a03ef402e109eabe4c1f1891e90c07cee60d85add2624ff453a83e5",
+      "counter": "425dba4899f8492859bed640f4d37dfbc04f7e577a601f113baeff6f04a29e81"
+    },
+    "document_sha256": "4e2b4c68e01f9d1fa52811a56536267ab19b90502051a4cba22b4cacddac4ee3",
+    "work_xywh": [
+      8,
+      22,
+      488,
+      200
+    ],
+    "pointer": [
+      632,
+      0
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "typed_bound": {
+    "screen_wh": [
+      640,
+      240
+    ],
+    "max_copy_bytes": 76800,
+    "max_bus_accesses": 153600,
+    "command_bytes": 21,
+    "raw_list_work_limit": 8192,
+    "generic_strip_rows": 16,
+    "new_kernel_operations": 0,
+    "new_abi_operations": 0
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "private_idle": 0,
+    "per_public_task": 0
+  },
+  "reservation_maps_identical": true,
+  "probe": {
+    "status": "pass",
+    "cases": [
+      "viewer-up",
+      "viewer-down",
+      "left",
+      "right",
+      "down-right",
+      "up-left",
+      "full-width-up",
+      "full-width-down",
+      "full-height-right",
+      "full-height-left",
+      "last-row",
+      "same",
+      "empty-height",
+      "empty-width",
+      "busy-before-admission",
+      "submit-fault",
+      "non-screen-fallback",
+      "invalid-screen-height"
+    ],
+    "native_sha256": "b928367f5c385f093d0b9d65a0ef5744999e27b4e03793e1032b31c1f54d6ce4",
+    "guards": "intact"
+  },
+  "runs": {
+    "before": {
+      "path": "build/mgview-mouse-fix/settled-scroll",
+      "native_sha256": "3e25e3fc0c964ee38052bfa8407833a8cdf4cb06ed157cbc5749823fb1ed5e8f",
+      "trace_sha256": "146902e0c6cfe6c9a7a545b1c1e94ed3fa850a4faa5019112cb34db99572d352",
+      "trace_events": 777457,
+      "status": "pass",
+      "runtime_status": 0,
+      "guards": "intact",
+      "ownership_restored": true,
+      "process_lifetimes": 4,
+      "counter_progress_including_post_settle": 2,
+      "samples": [
+        {
+          "action": "down",
+          "visible_complete_ms": 180.6464527424691,
+          "visible_bracket_ms": [
+            160.1045421417888,
+            180.6464527424691
+          ],
+          "pixel_sha256": "e7d2bc96fc2b028fcc03151e3e6464f10231234545de63125a501e7b4f71b129",
+          "copy": {
+            "calls": 1,
+            "elapsed_ms": 74.09515928720754,
+            "charged_cpu_ms": 36.81621530944671,
+            "off_cpu_ms": 29.121738873014284,
+            "interrupt_ms": 8.157205104746545
+          },
+          "whole_scroll": {
+            "calls": 1,
+            "elapsed_ms": 190.1433507335289,
+            "charged_cpu_ms": 91.91398392114795,
+            "off_cpu_ms": 78.28544402921428,
+            "interrupt_ms": 19.943922783166684
+          },
+          "text_row": {
+            "calls": 1,
+            "elapsed_ms": 18.303191946759068,
+            "charged_cpu_ms": 14.457715833144201,
+            "off_cpu_ms": 0.7319077672161144,
+            "interrupt_ms": 3.1135683463987514
+          },
+          "physical_copy_completions": 12,
+          "display_enters": 12,
+          "display_leaves": 12,
+          "fence_calls": 48,
+          "async_completion_irqs": 0,
+          "copy_calls": 1,
+          "text_calls": 1,
+          "rpc_delta": 0,
+          "presenter_cpu_ms": 54.92959334854852
+        },
+        {
+          "action": "up",
+          "visible_complete_ms": 180.1384027438083,
+          "visible_bracket_ms": [
+            159.98161772479872,
+            180.1384027438083
+          ],
+          "pixel_sha256": "1508d95ae0a64952d9d92feaa73707e52b2be4b7dc541489f61afa3520d6827c",
+          "copy": {
+            "calls": 1,
+            "elapsed_ms": 66.90267120960728,
+            "charged_cpu_ms": 37.21677692742526,
+            "off_cpu_ms": 21.512477815103072,
+            "interrupt_ms": 8.173416467078953
+          },
+          "whole_scroll": {
+            "calls": 1,
+            "elapsed_ms": 170.15474097767202,
+            "charged_cpu_ms": 90.70546210135907,
+            "off_cpu_ms": 59.77425325531204,
+            "interrupt_ms": 19.675025621000902
+          },
+          "text_row": {
+            "calls": 1,
+            "elapsed_ms": 18.912386749537273,
+            "charged_cpu_ms": 14.907757348328609,
+            "off_cpu_ms": 0.731132441191521,
+            "interrupt_ms": 3.2734969600171415
+          },
+          "physical_copy_completions": 12,
+          "display_enters": 12,
+          "display_leaves": 12,
+          "fence_calls": 48,
+          "async_completion_irqs": 0,
+          "copy_calls": 1,
+          "text_calls": 1,
+          "rpc_delta": 0,
+          "presenter_cpu_ms": 40.33675933457292
+        }
+      ]
+    },
+    "after": {
+      "path": "build/mgview-screen-copy/scroll",
+      "native_sha256": "5137d0adfedae07d65a4b68af66f9bafce9d9ddf3edf90899767b27cb33751b0",
+      "trace_sha256": "eddce9c5aa940712ab048c465e59694aee7792e45cbbc6377abfc968c50c9ac8",
+      "trace_events": 762501,
+      "status": "pass",
+      "runtime_status": 0,
+      "guards": "intact",
+      "ownership_restored": true,
+      "process_lifetimes": 4,
+      "counter_progress_including_post_settle": 2,
+      "samples": [
+        {
+          "action": "down",
+          "visible_complete_ms": 120.1247851994491,
+          "visible_bracket_ms": [
+            100.55781183260288,
+            120.1247851994491
+          ],
+          "pixel_sha256": "e7d2bc96fc2b028fcc03151e3e6464f10231234545de63125a501e7b4f71b129",
+          "copy": {
+            "calls": 1,
+            "elapsed_ms": 28.56498430317221,
+            "charged_cpu_ms": 9.67529346090031,
+            "off_cpu_ms": 16.717650226465683,
+            "interrupt_ms": 2.172040615806219
+          },
+          "whole_scroll": {
+            "calls": 1,
+            "elapsed_ms": 127.94141072684701,
+            "charged_cpu_ms": 63.22452454893647,
+            "off_cpu_ms": 50.95012680104712,
+            "interrupt_ms": 13.766759376863426
+          },
+          "text_row": {
+            "calls": 1,
+            "elapsed_ms": 18.614450103541266,
+            "charged_cpu_ms": 14.653238959709832,
+            "off_cpu_ms": 0.732260188136384,
+            "interrupt_ms": 3.2289509556950517
+          },
+          "physical_copy_completions": 1,
+          "display_enters": 1,
+          "display_leaves": 1,
+          "fence_calls": 4,
+          "async_completion_irqs": 0,
+          "copy_calls": 1,
+          "text_calls": 1,
+          "rpc_delta": 0,
+          "presenter_cpu_ms": 34.99250753123507,
+          "physical_grant_intervals": [
+            {
+              "start": 157522859.125,
+              "end": 157548118.5,
+              "elapsed_ms": 14.243091492699953,
+              "charged_cpu_ms": 6.239682877559105,
+              "off_cpu_ms": 6.535645966401599,
+              "interrupt_ms": 1.4677626487392494
+            }
+          ]
+        },
+        {
+          "action": "up",
+          "visible_complete_ms": 140.48907565631347,
+          "visible_bracket_ms": [
+            120.34920684147684,
+            140.48907565631347
+          ],
+          "pixel_sha256": "1508d95ae0a64952d9d92feaa73707e52b2be4b7dc541489f61afa3520d6827c",
+          "copy": {
+            "calls": 1,
+            "elapsed_ms": 14.559213058181873,
+            "charged_cpu_ms": 12.051949663015115,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 2.507263395166759
+          },
+          "whole_scroll": {
+            "calls": 1,
+            "elapsed_ms": 156.92676270371692,
+            "charged_cpu_ms": 66.22024333959703,
+            "off_cpu_ms": 76.45426492749293,
+            "interrupt_ms": 14.252254436626965
+          },
+          "text_row": {
+            "calls": 1,
+            "elapsed_ms": 23.297983165557483,
+            "charged_cpu_ms": 15.586026651479676,
+            "off_cpu_ms": 4.203042379320505,
+            "interrupt_ms": 3.5089141347573016
+          },
+          "physical_copy_completions": 1,
+          "display_enters": 1,
+          "display_leaves": 1,
+          "fence_calls": 4,
+          "async_completion_irqs": 0,
+          "copy_calls": 1,
+          "text_calls": 1,
+          "rpc_delta": 0,
+          "presenter_cpu_ms": 52.881957317597504,
+          "physical_grant_intervals": [
+            {
+              "start": 158043808.0,
+              "end": 158065133.875,
+              "elapsed_ms": 12.025095188890564,
+              "charged_cpu_ms": 9.912613708609925,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 2.1124814802806395
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "comparison": [
+    {
+      "action": "down",
+      "observed_visible_ms_saved": 60.521667543020016,
+      "copy_cpu_reduction_percent": 73.7200215188395,
+      "copy_elapsed_reduction_percent": 61.44824496233463
+    },
+    {
+      "action": "up",
+      "observed_visible_ms_saved": 39.64932708749484,
+      "copy_cpu_reduction_percent": 67.61689039726069,
+      "copy_elapsed_reduction_percent": 78.23821860181397
+    }
+  ],
+  "limits": [
+    "One down/up pair per image; saved baseline reused; not a latency distribution.",
+    "Visible timings are PAL-frame/COP sampled upper bounds.",
+    "The CPU descriptor probe substitutes admission, overlay and submit boundaries; the viewer checks real hardware.",
+    "Masked-edge and other raster algorithms are unchanged; their full matrices were not rerun.",
+    "No full-screen hardware maximum, forced hardware timeout or release qualification run.",
+    "Grant intervals begin after successful Enter returns and end before Leave starts; peer execution is ordinary preemption."
+  ]
+}

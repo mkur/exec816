@@ -146,9 +146,15 @@ overlap, because their first pass would otherwise change source pixels.
 Modes 8 and 14 invert after the combining pass. Packed source and destination
 edge bytes are staged before writes; outside nibbles are preserved. Row and
 combining units retain the sixteen-row and 8,192 estimated raster-access limits,
-including edge work and each combining/inversion pass. Same-parity S_ONLY reuses the
-existing whole-source edge capture, at most 480 bytes, before its bounded copy
-strips; that auxiliary read is not a sixteen-row strip.
+including edge work and each combining/inversion pass. Each even-X, even-width
+screen-to-screen S_ONLY fragment uses one overlap-safe hardware rectangle, bounded by
+the 640×240 screen. One physical grant covers source/destination overlay erasure,
+the complete synchronous copy, its fence and overlay restoration. Normal Task
+preemption continues while competing drawing waits for that grant.
+Same-parity copies with masked edge bytes retain whole-source edge capture,
+at most 480 bytes, before their bounded copy strips; that auxiliary read is
+not a sixteen-row strip. The typed whole-screen bound does not enlarge raw
+command lists, other raster modes or memory-copy units.
 
 Different-parity screen-to-screen S_ONLY captures each complete band into the
 shared 16 KiB VRAM workspace at `$4C000–$4FFFF`. Source and disjoint output
@@ -209,9 +215,10 @@ negative dimensions are errors. A horizontal displacement that changes packed
 pixel parity currently requires reconstruction.
 
 Even horizontal displacements work at either X parity. Overlapping copies use
-safe row/byte order, with all source edge bytes captured before any write. Each
-strip retains physical access through its fence and overlay restoration, then
-releases it before the next strip. The copy records destination damage; the
+safe row/byte order, with all source edge bytes captured before any write.
+Even-X, even-width copies use the single synchronous screen operation described
+above. Masked-edge copies retain physical access through each strip's fence and
+overlay restoration, releasing it before the next strip. The copy records destination damage; the
 caller acknowledges only after repairing dependent overlays and exposed strips.
 An operational failure marks the UPDATE failed and follows normal display recovery.
 That includes a failure after a completed strip has already changed pixels:

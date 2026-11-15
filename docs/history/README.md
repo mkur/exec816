@@ -1,5 +1,9 @@
 # Historical records
 
+- [One unit for aligned screen copies](gem-screen-copy.md): one retained
+  grant/typed BCB instead of twelve strips, four fences instead of 48,
+  focused overlap/failure descriptors and real MGVIEW pixel/preemption checks.
+
 - [Cursor drawing-change hint consumption](cursor-drawing-hint.md): consume
   before presentation, retain late drawing and BUSY retries, with focused
   emitted checks and a cached MGVIEW/Counter comparison.

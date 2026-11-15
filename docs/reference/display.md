@@ -170,6 +170,16 @@ redirection and ordering. It reserves capacity for the entire fill fragment,
 then writes one complete-byte record and up to two AND/OR edge pairs. It drains
 only at the existing count/work limits or a caller's completion boundary.
 
+The typed even-pixel screen-to-screen copy in `GemDrawingCopyBorrow` retains
+one grant for the complete rectangle, at most 640×240. It uses the driver's
+overlap-safe BCB encoder, synchronous completion and ordinary timeout recovery.
+The maximum is one record and 153,600 source/destination bus accesses. It needs
+no staging; masked-edge copies retain their sixteen-row/work-bounded units.
+Other Tasks can preempt the drawing owner while its grant remains held.
+This operation-specific bound does not change raw-list, generic callback,
+text, object, fill or native presenter limits. See the
+[screen-copy record](../history/gem-screen-copy.md) for development evidence.
+
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.
 The borrower acknowledges with `GrantClose`, which releases the retained Task.

@@ -40,7 +40,7 @@ kernel operation or public raw-list API.
 There is no cached authorization across calls. Acquisition, retirement and fault
 transitions retain their separate mandatory ownership checks.
 
-The GEM producer drains at 64 records or 8,192 work units. General rectangles
+The generic GEM producer drains at 64 records or 8,192 work units. General rectangles
 derive their extents from renderer clipping and fixed surface layouts before
 splitting; the private builder does not revalidate them. Atlas glyphs derive extents
 from the fixed atlas, admitted screen clip and widget-strip mapping. Pointer
@@ -49,6 +49,16 @@ records / 1,440 work units. Admitted XOR outlines use four records and at most
 3,348 work units. Each producer initializes every field it varies and retains
 the immutable records until synchronous submission returns. No externally
 supplied records enter the prepared path.
+
+The typed synchronous `VbxeOwnerCopyRect` encoder emits one BCB when both
+surfaces describe the 640×240 screen at offset zero and pitch 320. Validated
+coordinates and even pixel extents bound it to 320 bytes × 240 rows, or
+153,600 source/destination accesses. The existing reverse-row/byte encoding
+handles overlap. Generic surfaces keep sixteen-row/work-budget chunks; raw
+lists keep their 8,192-access limit. The typed screen operation uses the same
+synchronous upload, fences, timeout and recovery, with no completion IRQ or
+new asynchronous state. [Development evidence](../../docs/history/gem-screen-copy.md)
+separates emitted descriptor checks from the real loaded viewer.
 
 The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-screen-scrolling)
 adds one active operation to the same owner. Start validates and uploads a copy

@@ -122,9 +122,19 @@ def analyze(out,d,base,samples):
                 'Expected one copy and one text-row draw')
         require(not counts['redraw_window'] and not counts['update_window'],'Unexpected repaint fallback')
         copy=copy_spans[0]
+        enters=sorted((s for s in selected if s['kind']=='DisplayEnter'
+            and copy['start']<=s['start']<s['end']<=copy['end']),key=lambda s:s['start'])
+        leaves=sorted((s for s in selected if s['kind']=='DisplayLeave'
+            and copy['start']<=s['start']<s['end']<=copy['end']),key=lambda s:s['start'])
+        require(len(enters)==len(leaves) and enters,'Unbalanced copy grants')
+        owned=[]
+        for entered,left in zip(enters,leaves):
+            require(entered['return_a']==0 and entered['end']<=left['start'],'Copy grant was not owned')
+            owned.append(dict(start=entered['end'],end=left['start'],
+                **timeline.measure(entered['end'],left['start'])))
         physical=[dict(tick=t,status=int(e[5],16)) for t,e in events
             if copy['start']<=t<=copy['end'] and int(e[9],16)==dp and int(e[4],16) in d['copy_returns']]
-        require(len(physical)==12 and all(row['status']==0 for row in physical),'Owned hardware copy did not complete twelve strips')
+        require(physical and all(row['status']==0 for row in physical),'Owned hardware copy did not complete')
         physical_irqs=sum(copy['start']<=t<=copy['end'] and d['points'].get(int(e[4],16))=='blitter_irq_complete' for t,e in events)
         boundaries=[dict(name=points[int(e[4],16)],ms=(t-start)*1000/BASE_HZ,
             dp=int(e[9],16),a=int(e[5],16),x=int(e[6],16),s=int(e[8],16))
@@ -143,6 +153,7 @@ def analyze(out,d,base,samples):
             capture_ms=(input_tick-start)*1000/BASE_HZ if input_tick is not None else None,
             cpu_to_complete=timeline.measure(start,pixels_end),spans=selected,boundaries=boundaries,
             scope_task_charges=scope_charges,owned_copy_completions=physical,copy_completion_irqs=physical_irqs,
+            copy_owned_intervals=owned,
             copy_display_enters=sum(s['kind']=='DisplayEnter' and copy['start']<=s['start']<s['end']<=copy['end'] for s in selected),
             copy_display_leaves=sum(s['kind']=='DisplayLeave' and copy['start']<=s['start']<s['end']<=copy['end'] for s in selected),
             copy_fences=sum(s['kind']=='VbxeOwnerFence' and copy['start']<=s['start']<s['end']<=copy['end'] for s in selected),
@@ -155,7 +166,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out,presenter=False):
+def run(cache,out,presenter=False,expect_copy_units=None):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview','counter')}
@@ -173,6 +184,7 @@ def run(cache,out,presenter=False):
     (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
     at=lambda name:next(r['address'] for r in p['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in r['name'])
     report=dict(status='running',tier='development',qualification=False,builds_run=0,samples=[],
+        expected_copy_units=expect_copy_units,
         source_cache=str(cache),native_sha256=sha256(p['xex']),app_sha256={n:a['sha256'] for n,a in apps.items()},
         rom_sha256=sha256(ROM),emulator_sha256=sha256(BRIDGE/'AltirraBridgeServer'),
         app_abi=ABI['version'],aes_abi=AES['version'],base_clock_hz=BASE_HZ,
@@ -272,6 +284,9 @@ def run(cache,out,presenter=False):
             report['runtime'],_=execute(b,p,before_run=before,timeout=300,frame_limit=30000)
             ownership(b,p,p['output']);require(number(at('completed'))==4,'Incomplete cleanup')
         report['audit']=analyze(out,d,report['loaded_base'],report['samples'])
+        if expect_copy_units is not None:
+            require(all(len(s['owned_copy_completions'])==expect_copy_units for s in report['audit']['samples']),
+                'Unexpected physical copy-unit count')
         if presenter:
             report['presenter']=mgview_presenter_trace.analyze(out,d,report['audit'],foreign,cache/'drawing')
         report['status']='pass'
@@ -299,6 +314,9 @@ def reanalyze(cache,out):
         d['pcs']=sorted(set(d['pcs'])|set(d['presenter']['pcs']))
     require(json.loads(json.dumps(d))==json.loads((out/'definition.json').read_text()),'Captured markers changed')
     r['audit']=analyze(out,d,r['loaded_base'],r['samples'])
+    if r.get('expected_copy_units') is not None:
+        require(all(len(s['owned_copy_completions'])==r['expected_copy_units'] for s in r['audit']['samples']),
+            'Unexpected captured physical copy-unit count')
     if 'presenter' in d:
         r['presenter']=mgview_presenter_trace.analyze(out,d,r['audit'],foreign,cache/'drawing')
     r.update(status='pass');r.pop('error',None)
@@ -312,8 +330,9 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/mgview-audit')
     parser.add_argument('--analyze-only',action='store_true')
     parser.add_argument('--presenter',action='store_true',help='Trace presenter phases and signal sites')
+    parser.add_argument('--expect-copy-units',type=int,help='Assert the measured physical copy count per scroll')
     args=parser.parse_args()
-    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter)
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
     if 'presenter' in r:
         for row in r['presenter']['samples']:

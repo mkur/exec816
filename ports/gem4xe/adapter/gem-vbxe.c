@@ -1473,10 +1473,14 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
         if (status!=DISPLAY_OK) return status;
     }
 
-    /* Each admission is a bounded synchronous strip. Downward moves start at
-     * the bottom; the device chooses the horizontal overlap direction. */
-    limit=(UWORD)VBXE_LIST_WORK/(width+(leftEdge+rightEdge)*6);
-    if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    /* An even-pixel screen copy is one typed hardware rectangle, with no
+     * staging or masked edges. Retain access through its synchronous fence.
+     * Edge work keeps the ordinary strip limits and bottom-up overlap order. */
+    limit=height;
+    if (leftEdge || rightEdge) {
+        limit=(UWORD)VBXE_LIST_WORK/(width+(leftEdge+rightEdge)*6);
+        if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    }
     while (remaining) {
         n=remaining<limit ? remaining:limit;
         first=dy>sy ? remaining-n:height-remaining;

@@ -569,6 +569,16 @@ UWORD VbxeOwnerCopyRect(struct VbxeDisplay *d,const struct VbxeCopy *c)
     status=prepare_copy(c,&copy);
     if (status!=DISPLAY_OK || !copy.rows) return status;
     rows=copy.rows;
+    /* A typed screen copy fits one BCB (at most 640x240, 153600 accesses).
+     * The same overlap-safe encoder serves asynchronous copies. Generic
+     * surfaces and raw lists retain their existing work/chunk limits. */
+    if (c->source.offset==VBXE_SCREEN && c->destination.offset==VBXE_SCREEN &&
+        c->source.pitch==320 && c->destination.pitch==320 &&
+        c->source.width==640 && c->destination.width==640 &&
+        c->source.height==240 && c->destination.height==240) {
+        copy_record(bcb,&copy,rows);
+        return submit(d,bcb,1);
+    }
     limit=(UWORD)VBXE_LIST_WORK/(copy.bytes*2);
     if (limit>VBXE_CHUNK_ROWS) limit=VBXE_CHUNK_ROWS;
     while (rows) {
