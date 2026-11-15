@@ -1,10 +1,10 @@
 # Implementation plans
 
-- [Cheap native Task semaphores](native-semaphore-design.md): draft public
+- [Cheap native Task semaphores](native-semaphore-design.md): implemented public
   recursive exclusive semaphore, one native request per operation, FIFO direct
   handoff, signalless waiting and no added reserved bank-zero storage. AES
-  policy migration and measured primitive acceptance are separate gates.
-  The proposed [NS0–NS5 implementation plan](native-semaphore-implementation-plan.md)
+  policy migration remains separate; primitive development acceptance passes.
+  The completed [NS0–NS5 implementation plan](native-semaphore-implementation-plan.md)
   orders baseline, native try/release, blocking handoff, C delivery, interrupt
   boundaries and measured acceptance, with one commit per slice.
 

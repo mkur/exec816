@@ -5,7 +5,7 @@
 [Platform contract](../reference/platform.md) ·
 [Testing policy](../contributing/testing.md)
 
-Status: NS0–NS4 complete, NS5 pending, 2026-11-15. Basis: `831ed463`.
+Status: NS0–NS5 complete (development acceptance), 2026-11-15. Basis: `831ed463`.
 [Execution record](../history/native-semaphores.md). NS0–NS5 deliver the native
 semaphore service described by the design. Progress and executable evidence are recorded in the execution record. Complete and commit each slice before
 starting the next; record its actual scope and reservation deltas.

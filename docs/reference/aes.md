@@ -990,7 +990,7 @@ Windows; Ctrl+Tab/Ctrl+Shift+Tab retain window switching. The window selector
 uses registered, shown window lifetimes independently of keyboard/pointer wait
 interest. Iconified windows remain in the menu and cycling skips them.
 
-The private C context is 678 bytes and the current APP ABI is 45. Rebuild
+The private C context is 678 bytes and the current APP ABI is 46. Rebuild
 bindings and applications together. The server request is 418 bytes; all
 bank-zero reservations are unchanged.
 

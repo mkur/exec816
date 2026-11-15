@@ -19,7 +19,7 @@ from sio_transaction_trace import read_events
 PIN = json.loads((ROOT/'toolchain/altirra-shell-paced.json').read_text())
 CASES = {'baseline': 0, 'native': 1, 'abi': 2, 'empty-release': 3,
          'extra-release': 4, 'owner-removal': 5, 'depth-overflow': 6, 'owned-overflow': 7,
-         'wrong-owner': 8, 'far-object': 9, 'far-task': 10, 'blocking': 11, 'waiter-removal': 12, 'granted-removal': 13}
+         'wrong-owner': 8, 'far-object': 9, 'far-task': 10, 'blocking': 11, 'waiter-removal': 12, 'granted-removal': 13, 'native-bench': 14, 'coexist': 15}
 FAULTS = set(range(3, 9)) | {12,13}
 
 
@@ -35,7 +35,7 @@ def inputs():
 
 def definition(program):
     names = ('LibraryPair', 'LibraryObtain', 'LibraryRelease', 'FreePairs',
-             'RecursivePairs', 'CounterTurn')
+             'RecursivePairs', 'CounterTurn', 'NativePair','NativeFreePairs','NativeRecursivePairs')
     native = native_markers(program, [('SEMAPHORES_'+name.upper(), name) for name in names])
     require(set(native) == set(names), 'Missing semaphore observation boundary')
     restore = program['labels']['context_restore']
@@ -54,18 +54,23 @@ def definition(program):
         pcs.update(span['returns'])
     for name in ('fast_entry', 'fast_complete', 'fast_general', 'sem_policy'):
         pcs.add(program['labels'][name])
+    for name in ('native_timer_work','exec_reply_msg_native'):
+        pcs.add(program['labels'][name])
     return dict(native=native, public=public, labels={name: program['labels'][name] for name in
                 ('fast_entry', 'fast_complete', 'fast_general', 'sem_policy')}, timeline=timeline, pcs=sorted(pcs))
 
 
-def analyze(path, definition):
+def analyze(path, definition, native_case=False):
     events = read_events(path, kinds={'cpu'})
     irqs = {definition['timeline']['points'][n] for n in ('native_irq', 'native_nmi')}
     while events and int(events[-1][1][4], 16) in irqs:
         events.pop()
-    profile = analyze_events(events, definition['timeline'], include_segments=True)
+    timeline_definition=definition['timeline']
+    if native_case:
+        timeline_definition=dict(timeline_definition,points=dict(timeline_definition['points'],turn=definition['native']['NativePair']['entry']))
+    profile = analyze_events(events, timeline_definition, include_segments=True)
     native = definition['native']
-    root_dps = {int(e[9], 16) for _, e in events if int(e[4], 16) == native['LibraryPair']['entry']}
+    root_dps = {int(e[9], 16) for _, e in events if int(e[4], 16) == native['NativePair' if native_case else 'LibraryPair']['entry']}
     require(len(root_dps) == 1, 'No unique semaphore benchmark Task')
     root = root_dps.pop()
     timeline = Timeline(profile['segments'], root)
@@ -73,12 +78,12 @@ def analyze(path, definition):
                               {pc for v in native.values() for pc in v['returns']})
     require(not unfinished, 'Unfinished semaphore spans: '+str(unfinished))
     result = {}
-    for name in ('FreePairs', 'RecursivePairs'):
+    for name in (('NativeFreePairs','NativeRecursivePairs') if native_case else ('FreePairs','RecursivePairs')):
         windows = [s for s in spans if s['kind'] == name]
         require(len(windows) == 1, 'Missing measured batch '+name)
         a, b = windows[0]['start'], windows[0]['end']
         pairs = [dict(s, **timeline.measure(s['start'], s['end'])) for s in spans
-                 if s['kind'] == 'LibraryPair' and a <= s['start'] < s['end'] <= b]
+                 if s['kind'] == ('NativePair' if native_case else 'LibraryPair') and a <= s['start'] < s['end'] <= b]
         require(len(pairs) == 32, 'Wrong pair count: '+str((name, len(pairs))))
         result[name] = dict(samples=pairs, **{
             key: dict(min=min(p[key] for p in pairs), median=statistics.median(p[key] for p in pairs),
@@ -105,7 +110,7 @@ def public_calls(path, definition, program):
                      and lo<=int(e[6],16)<hi and int(e[7],16) in sem.ABI['services'].values()]
             expected = int(span['kind']!='InitSemaphore')
             require(len(posts)==expected, 'Wrong public semaphore request count: '+str((span, len(posts))))
-            result.append(dict(span, requests=len(posts),
+            result.append(dict(span, task_dp=pool['dp'], requests=len(posts),
                 policy_continuations=sum(int(e[4],16)==definition['labels']['sem_policy'] and
                                          lo<=int(e[9],16)<hi for _,e in selected),
                 native_completions=sum(int(e[4],16)==definition['labels']['fast_complete'] and
@@ -164,7 +169,7 @@ def run(out, mode, from_build=None, suite='baseline', diagnostic=False, checkpoi
             if irq:
                 require(runtime['native_irq_count']>0,'Missing concurrent IRQ')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            expected = {0: 14, 1: 12, 2: 13, 9: 13, 10: 9, 11: 48, 12: 23, 13: 25}.get(case, 0)
+            expected = {0: 14, 1: 12, 2: 13, 9: 13, 10: 9, 11: 48, 12: 23, 13: 25, 14: 3, 15: 18}.get(case, 0)
             require(report['checks'] == expected, 'Semaphore fixture assertions: '+str(report['checks']))
             report['counter'] = data(bridge, program['image'], 'counter', True)[0]
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
@@ -200,13 +205,27 @@ def run(out, mode, from_build=None, suite='baseline', diagnostic=False, checkpoi
                 raw = read(bridge, base, size, out)
                 require(raw[:begin] == bytes([0xa5])*begin and raw[end:] == bytes([0xa5])*(size-end),
                         'Cross-bank record guards changed')
-        if case == 0:
-            report['timing'] = analyze(out/'emulator.log', d)
+        if case in (0,14):
+            report['timing'] = analyze(out/'emulator.log', d,case==14)
+            if case==14:
+                report['public_calls']=public_calls(out/'emulator.log',d,program)
+                require(all(c['policy_continuations']==0 for c in report['public_calls']),
+                        'Uncontended benchmark entered policy')
         elif case not in FAULTS:
             report['public_calls'] = public_calls(out/'emulator.log', d, program)
             if diagnostic and checkpoint in (40,46,47,48):
                 require(sum(c['post_operation_polls'] for c in report['public_calls'])>0,
                         'Mutation checkpoint did not take post-operation Poll')
+            if case==15:
+                from sio_transaction_trace import BASE_HZ
+                events=read_events(out/'emulator.log',kinds={'cpu'})
+                replies=sum(int(e[4],16)==program['labels']['exec_reply_msg_native'] for _,e in events)
+                require(replies==1,'Expected one native timer reply')
+                blocked=next(c for c in report['public_calls'] if c['kind']=='ObtainSemaphore' and c['policy_continuations'])
+                release=next(c for c in report['public_calls'] if c['kind']=='ReleaseSemaphore' and c['policy_continuations'])
+                report['coexistence']=dict(native_timer_replies=replies,
+                    blocked_obtain_ms=(blocked['end']-blocked['start'])/BASE_HZ*1000,
+                    queued_release_to_obtain_return_ms=(blocked['end']-release['start'])/BASE_HZ*1000)
         report['status'] = 'pass'
         print('Passed', mode, suite+';', report['checks'], 'checks', flush=True)
         if 'timing' in report:

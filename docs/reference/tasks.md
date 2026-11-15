@@ -2,6 +2,8 @@
 
 Status: implemented by `--tasks`, currently reporting version `$0900`.
 The native call packet tag remains `$0700`; it is not the feature version.
+[Semaphore](semaphores.md) ownership and queued waiting both bar Task removal;
+release resources before default retirement or RemTask.
 This is the only Task implementation; development ABI changes require rebuilding callers.
 [Build and storage instructions](../guides/tasks.md) describe the hosted configuration;
 the [migration record](../history/tasks-exec-update.md) tracks implementation and validation.

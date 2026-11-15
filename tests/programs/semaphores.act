@@ -3,6 +3,7 @@ USE EXEC
 USE HEAPCORE
 USE EXECLISTS
 USE TASKSTACKS
+USE TIMER
 INCLUDE "semaphore-action.inc"
 
 CONST DONE=$10000
@@ -152,6 +153,9 @@ PROC CounterWorker()
   workerWaiter.mask=LONGCARD(1) LSH bit
   DO
     CounterTurn()
+    IF variant=15 AND counter=1 THEN
+      EXEC.Signal(parent,DONE)
+    FI
     IF phase=1 THEN
       IF variant=1 OR variant=8 THEN
         attempted=EXEC.AttemptSemaphore(@device)
@@ -497,6 +501,116 @@ PROC Blocking(BYTE unused)
 
 RETURN
 
+; Matched complete-call timings; the comparator remains fixture-local.
+PROC NativePair()
+
+  EXEC.ObtainSemaphore(@device)
+  EXEC.ReleaseSemaphore(@device)
+
+RETURN
+
+PROC NativeFreePairs(BYTE unused)
+  CARD index
+
+  FOR index=0 TO ITERATIONS-1 DO
+    NativePair()
+  OD
+
+RETURN
+
+PROC NativeRecursivePairs(BYTE unused)
+  CARD index
+
+  FOR index=0 TO ITERATIONS-1 DO
+    NativePair()
+  OD
+
+RETURN
+
+PROC NativeBench(BYTE unused)
+
+  parent=EXEC.FindTask(NULL)
+  EXEC.InitSemaphore(@device)
+  NativeFreePairs(0)
+  Require(device.ss_Private(2)=0)
+  EXEC.ObtainSemaphore(@device)
+  NativeRecursivePairs(0)
+  Require(device.ss_Private(2)=1)
+  EXEC.ReleaseSemaphore(@device)
+  Require(device.ss_Private(2)=0)
+
+RETURN
+
+PROC CoexistWaiter()
+
+  EXEC.ObtainSemaphore(@device)
+  phase=2
+  EXEC.ReleaseSemaphore(@device)
+  EXEC.Signal(parent,$20000)
+  BEGIN
+    LET ignored=EXEC.Wait(0)
+  END
+
+RETURN
+
+; Real timer completion and unrelated signals continue while a waiter sleeps.
+PROC Coexist(BYTE unused)
+  CARD previous
+  EXEC.MsgPort POINTER reply
+  TIMER.TimerRequest POINTER alarm
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  Require(EXEC.AllocSignal(17)=17)
+  EXEC.InitSemaphore(@device)
+  reply=EXEC.CreateMsgPort()
+  Require(reply<>NULL)
+  alarm=TIMER.TimerRequest POINTER(EXEC.CreateIORequest(reply,
+      SIZEOF(TIMER.TimerRequest)))
+  Require(alarm<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"timer.device"),TIMER.UNIT_VBLANK,
+      @alarm.tr_Request,0)=0)
+  EXEC.ObtainSemaphore(@device)
+  EXEC.Forbid()
+  worker=EXEC.CreateTask(c"semaphore counter",0,@CounterWorker,1)
+  peers(0).task=EXEC.CreateTask(c"semaphore waiter",0,@CoexistWaiter,1)
+  Require(worker<>NULL AND peers(0).task<>NULL)
+  Require(EXEC.RetainTask(worker,@workerLease)<>0)
+  Require(EXEC.RetainTask(peers(0).task,@peers(0).lease)<>0)
+  EXEC.Permit()
+  previous=counter
+  WHILE counter=previous DO
+  OD
+  WHILE peers(0).task.tc_State<>EXEC.TS_WAIT DO
+  OD
+  Require(phase=0 AND device.ss_Private(2)=1)
+  alarm.tr_Request.io_Command=TIMER.TR_ADDREQUEST
+  alarm.seconds=0
+  alarm.microseconds=100000
+  EXEC.SendIO(@alarm.tr_Request)
+  Require(EXEC.WaitIO(@alarm.tr_Request)=0)
+  Require(counter>previous AND phase=0 AND device.ss_Private(2)=1)
+  Require((EXEC.SetSignal(0,0) & DONE)=DONE)
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.ReleaseSemaphore(@device)
+  Require(EXEC.Wait($20000)=$20000)
+  stop=1
+  Require(EXEC.Wait(DONE)=DONE)
+  EXEC.Forbid()
+  Require(EXEC.ReleaseTask(@workerLease)<>0)
+  EXEC.RemTask(worker)
+  Require(EXEC.ReleaseTask(@peers(0).lease)<>0)
+  EXEC.RemTask(peers(0).task)
+  EXEC.Permit()
+  EXEC.CloseDevice(@alarm.tr_Request)
+  EXEC.DeleteIORequest(@alarm.tr_Request)
+  EXEC.DeleteMsgPort(reply)
+  EXEC.FreeSignal(16)
+  EXEC.FreeSignal(17)
+  Require(device.ss_Private(2)=0 AND phase=2)
+
+RETURN
+
 PROC Main()
 
   IF variant=0 THEN
@@ -505,6 +619,10 @@ PROC Main()
     NativeCore(0)
   ELSEIF variant=2 OR variant=9 THEN
     NativeABI(0)
+  ELSEIF variant=14 THEN
+    NativeBench(0)
+  ELSEIF variant=15 THEN
+    Coexist(0)
   ELSEIF variant>=11 THEN
     Blocking(0)
   ELSEIF variant=10 THEN

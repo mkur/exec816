@@ -5,9 +5,9 @@ using the large-code/huge-data ABI. It is separate from the
 [native o65 contract](program-loading.md). Its constants and import ordinals
 are defined in [abi/c-program.json](../../abi/c-program.json).
 
-Current APP ABI 45 adds `vsc_form` and owned custom mouse forms to the shared
-native cursor policy and 678-byte caller context. The provider also exports
-graf_mouse, v_hide_c, v_show_c and vq_mouse.
+Current APP ABI 46 adds the four native [semaphore calls](semaphores.md).
+The shared cursor policy retains owned custom mouse forms, `vsc_form`,
+graf_mouse, v_hide_c, v_show_c and vq_mouse with a 678-byte caller context.
 Rebuild C providers and APPs together; earlier APP ABI versions are
 rejected. The runtime invocation record and runtime contract version stay 1.
 

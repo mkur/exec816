@@ -4,6 +4,8 @@
 
 [Documentation home](../README.md)
 
+- [Task semaphores](semaphores.md): protect a shared resource while Tasks remain preemptible.
+
 ## Running Exec816
 
 - [Original MagiC MGVIEW](mgview.md): run the source-ported text viewer, scroll

@@ -103,3 +103,8 @@ and revision-specific timing discussion remain in the
 [historical signal design](../history/signals-wait-design.md) and
 [delivery review](../history/signals-delivery-review.md). Use the
 [testing policy](../contributing/testing.md) for present qualification scope.
+
+Semaphore waiting is a separate private state with public TS_WAIT. It does not
+allocate, clear or consume signal bits. Signal delivery alone cannot make a
+[semaphore waiter](semaphores.md) runnable; its FIFO ownership grant does that.
+Ordinary Wait remains permitted while a Task owns a semaphore.

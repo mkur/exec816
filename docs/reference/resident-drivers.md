@@ -105,8 +105,8 @@ SIODRIVER.Worker entry checks that the calling Task owns the driver's current
 startup lease; an unrelated duplicate invocation returns without touching hardware.
 Helpers in the same registered module are not admitted as Task entries.
 
-The public Task API reports version `$0800`. Its unchanged native packet tag
-is `$0600`; the packet format tag and available-feature version are separate.
+The public Task API reports version `$0900`. Its unchanged native packet tag
+is `$0700`; the packet format tag and available-feature version are separate.
 All calls below use COP `$50`, execute in Task context with IRQs enabled, and
 return BYTE 1 for success or 0 for a rejected state. Invalid execution context
 faults. Their selectors and record layouts are generated from `abi/tasks.json`.

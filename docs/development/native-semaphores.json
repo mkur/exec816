@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "in-progress",
+  "status": "complete",
   "tier": "development",
   "qualification": false,
   "reserved_bank_zero_delta": {
@@ -1527,6 +1527,660 @@
         "status": "pass"
       },
       "scope": "One diagnostic optimized image reused for 16 runtime-selected checkpoints, nine native overlay cases. No raw compiler ABI changes. Diagnostic scratch borrows existing probe words; production emits none."
+    },
+    "NS5": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/native-semaphores/ns5-final",
+          "results_sha256": "528c1b4a630e3d813514a187a582103b22fdfc6dae022d0d7f6c8dc886f64df2",
+          "trace_sha256": "8cbf28667e382fe7ea71768eb8912410096af2092ad3212b40389df8be677e54",
+          "image_sha256": "f7cb9853e16c88e76195ab33702794dae5eb125c6493bb3406bc47daa2883913",
+          "xex_sha256": "e8612394b4cf09224f69d8ca3896df3116abe19973a4824561bcb46b35792a3f",
+          "checks": 14,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 108,
+              "remaining_above_floor": 1172
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 78,
+              "remaining_above_floor": 1202
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 166,
+              "remaining_above_floor": 1114
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "timing": {
+            "FreePairs": {
+              "elapsed_ms": {
+                "min": 0.28940805972547823,
+                "median": 0.2987119720205983,
+                "max": 0.3063242638984239
+              },
+              "charged_cpu_ms": {
+                "min": 0.28940805972547823,
+                "median": 0.2987119720205983,
+                "max": 0.3063242638984239
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              }
+            },
+            "RecursivePairs": {
+              "elapsed_ms": {
+                "min": 0.2770733275160387,
+                "median": 0.29078250131453004,
+                "max": 1.9576982120981874
+              },
+              "charged_cpu_ms": {
+                "min": 0.2770733275160387,
+                "median": 0.29078250131453004,
+                "max": 1.252856371558786
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.5994679853787609
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.1053738551606405
+              }
+            }
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns5-final-native-bench",
+          "results_sha256": "9cd6f6945b17e2f4a0d29be58f3884e7ec7f8f8950b7fc84f48104fd7d45aea5",
+          "trace_sha256": "8f1ecb185ef493ba317a2f49693e972fdbad802e8ebc0f41a466694e040bb759",
+          "image_sha256": "f7cb9853e16c88e76195ab33702794dae5eb125c6493bb3406bc47daa2883913",
+          "xex_sha256": "e8612394b4cf09224f69d8ca3896df3116abe19973a4824561bcb46b35792a3f",
+          "checks": 3,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 79,
+              "remaining_above_floor": 1201
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 140,
+              "remaining_above_floor": 1140
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "timing": {
+            "NativeFreePairs": {
+              "elapsed_ms": {
+                "min": 0.1561224676794774,
+                "median": 0.15760263554461015,
+                "max": 0.16049248709082167
+              },
+              "charged_cpu_ms": {
+                "min": 0.1561224676794774,
+                "median": 0.15760263554461015,
+                "max": 0.16049248709082167
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              }
+            },
+            "NativeRecursivePairs": {
+              "elapsed_ms": {
+                "min": 0.1406864313716645,
+                "median": 0.1471357342126,
+                "max": 0.6765776827337714
+              },
+              "charged_cpu_ms": {
+                "min": 0.1406864313716645,
+                "median": 0.1471357342126,
+                "max": 0.5712743117571848
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.10530337097658655
+              }
+            }
+          },
+          "public_calls": {
+            "count": 131,
+            "requests": 130,
+            "policy_continuations": 0,
+            "post_operation_polls": 1
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns5-final-coexist",
+          "results_sha256": "603e59cd1b841fdf85bcafafcac9f352164a5aa5c6df42db2f187b14b61bdfcf",
+          "trace_sha256": "73be2573b0d70932855ad5def2605284f0ee036ba94395e72560a2717fabab49",
+          "image_sha256": "f7cb9853e16c88e76195ab33702794dae5eb125c6493bb3406bc47daa2883913",
+          "xex_sha256": "e8612394b4cf09224f69d8ca3896df3116abe19973a4824561bcb46b35792a3f",
+          "checks": 18,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 215,
+              "remaining_above_floor": 1065
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 135,
+              "remaining_above_floor": 1145
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 50,
+              "remaining_above_floor": 1230
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 278,
+              "remaining_above_floor": 1002
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "coexistence": {
+            "native_timer_replies": 1,
+            "blocked_obtain_ms": 132.43301535568432,
+            "queued_release_to_obtain_return_ms": 1.3783182191747994
+          },
+          "counter": 241,
+          "nmi": 9,
+          "irq": 87,
+          "public_calls": {
+            "count": 5,
+            "requests": 4,
+            "policy_continuations": 2,
+            "post_operation_polls": 0
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns5-final-blocking",
+          "results_sha256": "516daa063cf05141e728d8005bd6254906887b5ddd3dcccceff667244ff4e907",
+          "trace_sha256": "32dbdea5771c78a8d5bbafe88c20d4051aa121d2b808cf4e20114c9d5ec26e4b",
+          "image_sha256": "f7cb9853e16c88e76195ab33702794dae5eb125c6493bb3406bc47daa2883913",
+          "xex_sha256": "e8612394b4cf09224f69d8ca3896df3116abe19973a4824561bcb46b35792a3f",
+          "checks": 48,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 66,
+              "remaining_above_floor": 1214
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 60,
+              "remaining_above_floor": 1220
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 21,
+              "remaining_above_floor": 1259
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 164,
+              "remaining_above_floor": 1116
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "public_calls": {
+            "count": 22,
+            "requests": 21,
+            "policy_continuations": 6,
+            "post_operation_polls": 0
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns5-final-abi",
+          "results_sha256": "f55b9ab37e4ac9b084de8f749618a4dc89db5a247e5657f9a57b0da1d4de1ca4",
+          "trace_sha256": "bcf3ca55db5a2ee4a4a3e58791120657e9a0509afc6f14015398a8b4647a927d",
+          "image_sha256": "f7cb9853e16c88e76195ab33702794dae5eb125c6493bb3406bc47daa2883913",
+          "xex_sha256": "e8612394b4cf09224f69d8ca3896df3116abe19973a4824561bcb46b35792a3f",
+          "checks": 13,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 62,
+              "remaining_above_floor": 1218
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 140,
+              "remaining_above_floor": 1140
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "public_calls": {
+            "count": 5,
+            "requests": 4,
+            "policy_continuations": 0,
+            "post_operation_polls": 0
+          }
+        },
+        {
+          "capture": "build/native-semaphores/ns5-c-final",
+          "results_sha256": "e0cbe4ddad363bdd7769e5b5c0a65fbe93a04ca928328aaf890beac2219f7bc1",
+          "trace_sha256": "1c0aad768b5535f7a71eadad2be62e6b9fee2c25352017424a307cb015173030",
+          "image_sha256": "f4baf492f300244b80a78d742fb4cab7010a11dd60e5c2a2251aeca291ca6b40",
+          "xex_sha256": "ebc1e532654672f943784f37236e8abcc47f68bd10b8b02a59082c2d9d6e445a",
+          "checks": 12,
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 88,
+              "remaining_above_floor": 1192
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1536,
+              "peak": 51,
+              "remaining_above_floor": 1229
+            },
+            "2": {
+              "base": 14448,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "3": {
+              "base": 16016,
+              "bytes": 1536,
+              "peak": 18,
+              "remaining_above_floor": 1262
+            },
+            "4": {
+              "base": 17584,
+              "bytes": 1536,
+              "peak": 24,
+              "remaining_above_floor": 1256
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 164,
+              "remaining_above_floor": 1116
+            }
+          },
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "host_profile": "release",
+            "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+            "override": false
+          },
+          "timing": {
+            "ComposedPair-free": {
+              "elapsed_ms": {
+                "min": 0.25888840803012214,
+                "median": 0.26015712334309304,
+                "max": 0.26163729120822576
+              },
+              "charged_cpu_ms": {
+                "min": 0.25888840803012214,
+                "median": 0.26015712334309304,
+                "max": 0.26163729120822576
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              }
+            },
+            "ComposedPair-recursive": {
+              "elapsed_ms": {
+                "min": 0.24401624519474077,
+                "median": 0.24443915029906438,
+                "max": 0.2581130820055288
+              },
+              "charged_cpu_ms": {
+                "min": 0.24401624519474077,
+                "median": 0.24443915029906438,
+                "max": 0.2581130820055288
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              }
+            },
+            "NativePair-free": {
+              "elapsed_ms": {
+                "min": 0.1429419252613906,
+                "median": 0.14932074391827216,
+                "max": 0.6072212456246944
+              },
+              "charged_cpu_ms": {
+                "min": 0.1429419252613906,
+                "median": 0.14932074391827216,
+                "max": 0.5758557837206909
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.03136546190400336
+              }
+            },
+            "NativePair-recursive": {
+              "elapsed_ms": {
+                "min": 0.13934723187463963,
+                "median": 0.14019304208328692,
+                "max": 0.14301240944544455
+              },
+              "charged_cpu_ms": {
+                "min": 0.13934723187463963,
+                "median": 0.14019304208328692,
+                "max": 0.14301240944544455
+              },
+              "off_cpu_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              },
+              "interrupt_ms": {
+                "min": 0.0,
+                "median": 0.0,
+                "max": 0.0
+              }
+            }
+          },
+          "public_calls": {
+            "count": 146,
+            "requests": 144,
+            "policy_continuations": 0,
+            "post_operation_polls": 0
+          }
+        }
+      ],
+      "cost_gate": {
+        "status": "pass",
+        "tier": "development",
+        "qualification": false,
+        "gate_minimum_saving_percent": 25,
+        "samples_per_case": 32,
+        "inputs": {
+          "build/native-semaphores/ns5-final/results.json": "528c1b4a630e3d813514a187a582103b22fdfc6dae022d0d7f6c8dc886f64df2",
+          "build/native-semaphores/ns5-final-native-bench/results.json": "9cd6f6945b17e2f4a0d29be58f3884e7ec7f8f8950b7fc84f48104fd7d45aea5",
+          "build/native-semaphores/ns5-c-final/results.json": "e0cbe4ddad363bdd7769e5b5c0a65fbe93a04ca928328aaf890beac2219f7bc1"
+        },
+        "cases": [
+          {
+            "language": "Action!",
+            "batch": "free",
+            "composition_ms": 0.2987119720205983,
+            "native_ms": 0.15760263554461015,
+            "saving_percent": 47.23926380368098
+          },
+          {
+            "language": "C",
+            "batch": "free",
+            "composition_ms": 0.26015712334309304,
+            "native_ms": 0.14932074391827216,
+            "saving_percent": 42.60363045245191
+          },
+          {
+            "language": "Action!",
+            "batch": "recursive",
+            "composition_ms": 0.29078250131453004,
+            "native_ms": 0.1471357342126,
+            "saving_percent": 49.400072718458375
+          },
+          {
+            "language": "C",
+            "batch": "recursive",
+            "composition_ms": 0.24443915029906438,
+            "native_ms": 0.14019304208328692,
+            "saving_percent": 42.64705882352941
+          }
+        ]
+      },
+      "memory_layouts": {
+        "4": {
+          "bank_zero_budget": {
+            "fixed_runtime": 11552,
+            "public": [
+              1824,
+              1824,
+              1824,
+              1824
+            ],
+            "idle": 1824,
+            "runtime_excluding_os": 20672,
+            "loading_excluding_os": 21616,
+            "runtime_including_os": 40640,
+            "loading_including_os": 41584
+          },
+          "task_size": 62,
+          "context_size": 64,
+          "metadata_bytes": 768,
+          "managed_stride": 64,
+          "kernel_stack": [
+            11296,
+            12864
+          ],
+          "upper_table": false
+        },
+        "12": {
+          "bank_zero_budget": {
+            "fixed_runtime": 10528,
+            "public": [
+              1824,
+              1600,
+              1600,
+              1600,
+              1600,
+              1600,
+              2848,
+              2848,
+              1600,
+              1600,
+              1600,
+              2848
+            ],
+            "idle": 800,
+            "runtime_excluding_os": 34496,
+            "loading_excluding_os": 20368,
+            "runtime_including_os": 54464,
+            "loading_including_os": 40336
+          },
+          "task_size": 62,
+          "context_size": 64,
+          "metadata_bytes": 1792,
+          "managed_stride": 64,
+          "kernel_stack": [
+            11296,
+            12864
+          ],
+          "upper_table": true
+        }
+      },
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5,
+        "status": "pass"
+      },
+      "production_signal_code_bytes": 11364,
+      "signal_code_reserved_bytes": 12288,
+      "signal_code_growth_from_ns0": 457,
+      "policy_semaphore_call_code_bytes": 1033,
+      "fast_scratch_bytes": 20,
+      "complete_cop_frame_bytes": 13,
+      "upper_context_repurposed_bytes": 5,
+      "caller_object_bytes": 12,
+      "caller_object_allocation": "Static caller storage; no allocator or rounding added by service.",
+      "scope": "Development only. Same-image complete pairs, 32 per free/recursive/language. One native timer reply, owner/waiter/counter. Selected final blocking/ABI regressions. No demo, QED or release qualification."
     }
   },
   "cleanup": {

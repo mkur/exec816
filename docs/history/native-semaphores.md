@@ -4,6 +4,10 @@
 [Implementation plan](../plans/native-semaphore-implementation-plan.md) ·
 [Development evidence](../development/native-semaphores.json)
 
+NS0–NS5 are complete at the development tier. The
+[current contract](../reference/semaphores.md) covers Action!/C and loaded APPs;
+the [guide](../guides/semaphores.md) shows ordinary use. AES migration is separate.
+
 ## NS0: composition baseline
 
 At NS0 runtime/kernel APIs were unchanged.
@@ -145,3 +149,63 @@ zero. Diagnostic calls add temporary stack use within the existing guards and
 capacity; production fast scratch stays 20 bytes. Complete stack figures and
 per-case IRQ/NMI, image, trace and result hashes are in the evidence. No package,
 viewer, QED or release qualification was run.
+
+## NS5: matched cost and coexistence acceptance
+
+The final optimized Action! image runs both the minimal composition and native
+service; the final C image similarly measures both C paths. Each free/recursive
+case has 32 complete pair spans including wrappers. Cached caller identity and
+comparison resources are established before timing. The original NS0 capture
+remains frozen. Charged Task CPU includes kernel work and bus stalls; native
+interrupt and off-Task time are recorded separately in every sample and in
+min/median/max distributions in the development evidence.
+
+| Language and pair | Composition median | Native median | CPU reduction |
+| --- | ---: | ---: | ---: |
+| Action! free | 0.299 ms | 0.158 ms | 47.2% |
+| Action! recursive | 0.291 ms | 0.147 ms | 49.4% |
+| C free | 0.260 ms | 0.149 ms | 42.6% |
+| C recursive | 0.244 ms | 0.140 ms | 42.6% |
+
+All four pass the unchanged 25% gate on the pinned PAL 8x/4 MiB machine. This is
+primitive CPU evidence, not a viewer-latency result. Init issues zero requests;
+each stateful operation issues one. The Action! native timing scene records
+131 complete public calls, one post-operation Poll and no pre-mutation policy
+continuation. Each timed C native pair records exactly Obtain and Release
+requests and no policy continuation. The service sources call no public
+FindTask/Forbid/Permit/Wait/Signal API and allocate no memory.
+
+The owner/waiter/counter scene passes 18 assertions. A pure owner loop remains
+preemptible with ownership held. While a competitor sleeps, one native timer
+reply completes, an unrelated signal stays pending and the counter advances
+241 times. The run has nine NMIs and 87 POKEY timer IRQs. Its controlled blocked
+Obtain lasts 132.433 ms, including the intentional timer delay. Queued Release
+entry to resumed Obtain return is 1.378 ms, including policy, ready-queue delay
+and restoration; this is not an isolated ownership-store cost. Final FIFO and
+ABI cases also pass on the same final Action! image. Root/kernel stack peaks
+in the timer scene are 215/278 bytes, leaving 1065/1002 bytes above their floors.
+The C timing scene peaks at 88/164 bytes for root/kernel.
+
+Production SIGNAL_CODE uses 11,364 of its existing 12,288 bytes, 457 more than
+NS0. The compiled slow semaphore policy uses 1033 upper code bytes. Native fast
+scratch remains 20 bytes below the 13-byte complete COP frame. Each static
+caller object uses 12 bytes; the service introduces no allocator rounding.
+Five upper private-context padding bytes are repurposed, preserving its 64-byte
+stride and the public 62-byte Task. Generated four/twelve-Task layouts pass;
+all reserved bank-zero deltas remain **0 fixed, 0 root, 0 kernel, 0 idle and 0
+per public Task**, including guards, alignment and spare capacity.
+
+The host suite passes 718 tests with five existing skips; affected generators,
+documentation links and whitespace checks pass. NS5 uses development checks:
+two final small optimized images, selected replays and passive traces. Earlier
+pilots passed functionality; one Action! timing analysis was excluded because
+the observer lacked an initial ownership boundary. C and Action! ABI raw probes
+were already delivered in NS1/NS3 and were not rebuilt as full-system raw cases.
+No QED, demo/package refresh or release matrix ran.
+
+Reproduce with `tools/test_semaphores.py` (`baseline`, `native-bench`, `coexist`),
+`tools/test_semaphores_c.py --measured` and `tools/semaphore_cost.py`. Reused
+images reject changed build inputs. Exact commands can use the capture paths
+in the development record; compiler, ROM/emulator, image, trace and result
+hashes are retained there. A package refresh must rebuild ABI 46 APPs together
+with their provider and use the normal OF816 packaging workflow.

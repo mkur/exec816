@@ -5,10 +5,11 @@
 [Native fast paths](../history/kernel-fast-path-implementation.md) ·
 [MagiC mapping](../architecture/magic-exec-mapping.md)
 
-Status: draft, 2026-11-15. Basis: Exec816 `2f25db70` and pinned MagiC
-`28cfdd29aa16fef692cc287bad3046b44ddcce3d`. This proposes a public kernel
-service; no semaphore API, ABI change or performance result is delivered by
-this note. Current reference contracts remain authoritative.
+Status: implemented through NS0–NS5 at the development tier, 2026-11-15. Design basis: Exec816 `2f25db70` and pinned MagiC
+`28cfdd29aa16fef692cc287bad3046b44ddcce3d`. This design is delivered by the linked implementation plan. The
+[current contract](../reference/semaphores.md) and
+[execution record](../history/native-semaphores.md) describe the supported API
+and measured results.
 
 The [implementation plan](native-semaphore-implementation-plan.md) sequences
 NS0–NS5 from a measured baseline through native ownership/waiting, C bindings,
@@ -147,7 +148,7 @@ Offsets 55–63 remain padding. Recursion changes the object's depth, not
 existing state/reason bytes; public Task state remains `TS_WAIT`. Initialize
 these fields at Task admission/reuse. No new public Task fields are needed.
 
-This layout is a draft allocation against [tasks.json](../../abi/tasks.json),
+This layout is allocated in [tasks.json](../../abi/tasks.json),
 not permission to change generated fields by hand. No other use of these
 padding fields was found in the inspected implementation; recheck that fact
 when the ABI slice lands.
@@ -364,9 +365,10 @@ After the primitive passes, plan and measure one AES migration separately.
 Reuse unchanged MGVIEW/Counter APPs where their ABI permits. Report end-to-end
 latency independently of primitive CPU savings.
 
-For this draft, validation is source/ABI-layout review and documentation link
-checks only: zero builds, guest runs or changed reservations. The linked plan
-defines executable delivery; qualification remains subsequent work.
+The original draft used source/ABI review and documentation checks only.
+The linked execution record now documents emitted-code development acceptance,
+including the unchanged reservations and the cost gate. Hosted release
+qualification and AES migration remain separate work.
 
 [amiga-init]: https://developer.amigaos3.net/autodocs/exec.library/InitSemaphore.html
 [amiga-obtain]: https://developer.amigaos3.net/autodocs/exec.library/ObtainSemaphore.html
