@@ -157,8 +157,12 @@ roles. Combining them would turn ordinary waits or expensive rendering into
 unnecessarily broad exclusions and can create dependency cycles.
 
 The current system can dispatch published input and device completion while
-scene-dependent continuation work is deferred. Preserve that separation when
-reorganizing the drawing path. A synchronous driver fence is a bounded hardware
+scene-dependent continuation work is deferred. Ordinary key delivery also runs
+outside UPDATE, matching MagiC's `handle_key`/`write_key` event path. The presenter
+acquires UPDATE at pending menu/gesture, paint, cache-transfer and console-control
+operations, then releases at their settled boundaries. A retained effect can keep
+ownership until its existing scene/hardware dependency retires. Readiness hints
+never replace actual native acquisition. A synchronous driver fence is a bounded hardware
 completion operation under physical ownership; an application event or file
 wait is a different kind of blocking operation.
 

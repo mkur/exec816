@@ -5,7 +5,8 @@
 [Native semaphore contract](../../reference/semaphores.md) ·
 [AES contract](../../reference/aes.md)
 
-Status: AM0–AM5 complete, 2026-11-15. Implementation resumed
+Status: AM0–AM5 and AP1 complete; AP2 presenter measurement pending, 2026-11-15.
+Implementation resumed
 at the user's request. This revision supersedes the AM1–AM4 plan committed as
 `79feb9de`. Runtime basis: `4c006f30`; donor: MagiC
 `28cfdd29aa16fef692cc287bad3046b44ddcce3d`.
@@ -185,6 +186,27 @@ existing scroll trace and follows MagiC's synchronous mouse flow. AM2/AM3
 prepare operation and lifetime boundaries before AM4 changes ownership. This
 avoids treating the unfinished accounting prototype as a delivered foundation.
 The AM4 commit must not retain two live UPDATE arbitration paths.
+
+## Presenter follow-up: acquire UPDATE for actual UI operations
+
+MagiC's `handle_key`/`write_key` publishes the ordinary key to the recipient's
+buffer and `event_happened` makes its waiter ready, without acquiring UPDATE.
+Its screen manager waits in `_evnt_multi` before `update_1`, and balances that
+level at `scrmg_next`. Exec's combined presenter instead acquired UPDATE before
+input delivery and retained it through housekeeping. Narrow that scope while
+preserving independent capture, scene access and normal Task preemption.
+
+| Slice | Work | Development evidence |
+| --- | --- | --- |
+| AP1 | Remove the loop-wide acquisition. Acquire at pending menu/gesture, painting, cache-transfer and console-control entries; balance nested scopes and retain actual physical/scene continuations. Keep ordinary key delivery and cursor refresh independent. | Tiny owner/contender/Counter scene, observer at key publication before the recipient can run, immediate recipient TRY, pointer ordering/capture and cache pixels. Host checks and reserved-memory accounting. |
+| AP2 | Reuse the unchanged MGVIEW/Counter APPs and C provider, rebuild only native policy, and capture the same down/up actions. | Exact pixels and copy units, BEGIN CPU/off-Task split, guards, progress and cleanup. Report observations as samples with PAL brackets; do not infer a latency distribution or worst-case bound. |
+
+Readiness checks are hints. Each protected operation must still succeed at
+native Attempt before mutation. Failed attempts retain the existing release
+wake protocol. Retained client-owned effects can complete without trying to
+acquire the client's semaphore; they retain their existing effect authority.
+Nested presenter scopes are lifetime bookkeeping for its one native hold,
+not another admission queue. No public ABI or reserved bank-zero growth.
 
 ## Validation, ABI and memory budget
 

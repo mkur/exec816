@@ -13,7 +13,7 @@ def instrument(out):
     from library_paths import read_source
     from native_program import ROOT
     host=read_source(ROOT/'lib/desktop/deskhost.act')
-    start=host.index('PUBLIC BYTE FUNC Cache()')
+    start=host.index('BYTE FUNC Capture()')
     needle='          LET layer=LAYERS.Find(@service.scene,window.layer)'
     require(host[start:].count(needle)==1,'Window candidate inspection boundary changed')
     host=host[:start]+'PUBLIC LONGCARD candidateInspections\n'+host[start:].replace(
@@ -56,6 +56,10 @@ def physical(b,p,foreign,report):
                  restores=get(at('DESKCACHE','restores')),
                  patches=get(at('DESKCACHE','patches')),
                  patched_bytes=get(at('DESKCACHE','patchedBytes')))
+        if phase==2:
+            scene=service+records['Service']['fields']['scene']
+            row['manager_damage']=get(scene+layers_layout()['Scene']['fields']['visibleDamage'],2)
+            require(row['manager_damage']==0,'Title repaint missed final ownership release wake')
         if phase==1 and not valid:
             scene=service+records['Service']['fields']['scene']
             scene_fields=layers_layout()['Scene']['fields']

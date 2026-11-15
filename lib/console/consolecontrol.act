@@ -1,6 +1,7 @@
 ; Preallocated presentation transaction. The worker alone touches display RAM.
 MODULE CONSOLECONTROL
 USE EXEC
+USE AESLOCKS
 USE HEAPCORE
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
@@ -42,6 +43,10 @@ PUBLIC PROC Process()
     EXEC.Permit()
     RETURN
   FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    EXEC.Permit()
+    RETURN
+  FI
 
   IF service.worker<>BYTE POINTER(EXEC.FindTask(NULL))
       OR windows.presenting=0 OR windows.presenter.task=NULL THEN
@@ -56,6 +61,7 @@ PUBLIC PROC Process()
   control.result=result
   control.state=CONSOLETYPES.CTL_DONE
   EXEC.Permit()
+  AESLOCKS.SystemEnd()
 
 RETURN
 

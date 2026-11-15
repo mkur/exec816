@@ -14,6 +14,10 @@ def producer(out, symbols):
         'BYTE FUNC MouseReady()\n\n'
         '  IF boundaryTesting<>0 AND boundaryBlocked<>0 THEN\n'
         '    RETURN(0)\n  FI\n',1)
+    desktop = desktop.replace('BYTE FUNC MouseEnter()\n',
+        'BYTE FUNC MouseEnter()\n\n'
+        '  IF boundaryTesting<>0 AND boundaryBlocked<>0 THEN\n'
+        '    RETURN(0)\n  FI\n',1)
     start = desktop.index('PUBLIC PROC Service(')
     end = desktop.index('; Commit retained gestures', start)
     service = desktop[start:end]

@@ -3,7 +3,7 @@
 import argparse,json
 from pathlib import Path
 from build_bitmap_console import drawing,prepare
-from generate_aes_server import expected_layout
+from generate_aes_server import expected_layout,layout
 from native_program import ROOT,build,compiler,read_build,require,sha256,verify_machine
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
@@ -136,15 +136,44 @@ ENDMODULE
                 reach(f'(dw(${at("cursorX"):x})={target[0]})&(dw(${at("cursorY"):x})={target[1]})')
                 frames(4);b._cmd_ok('MOUSE AT 2000 0 0 1');frames(4)
                 b._cmd_ok('MOUSE AT 2000 0 0 0')
+                reach(f'dw(${sy["keyboardReady"]:x})=1');frames(30)
+                records=layout()
+                inbox=int.from_bytes(b.memdump(sy['keyboardInbox'],4),'little')
+                require(inbox!=0,'Missing registered keyboard inbox')
+                tail=inbox+records['InputInbox']['fields']['keyTail']
+                head=inbox+records['InputInbox']['fields']['keyHead']
+                previous=b.memdump(tail,1)[0]
+                prior_head=b.memdump(head,1)[0]
+                # Observe publication before its recipient consumes the key.
+                # IRQ rendezvous also covers native fast calls that do not
+                # enter the slow COP policy dispatcher.
+                marker=p['labels']['native_irq']
+                condition=f'(db(${tail:x})={(previous+1)&255})&(db(${head:x})={prior_head})'
+                report['keyboard_observer']=dict(inbox=inbox,
+                    prior_head=prior_head,prior_tail=previous)
+                held=next(d['address'] for d in p['image']['data']
+                          if '_AESLOCKS_SYSTEMHELD_' in d['name'])
+                depth=next(d['address'] for d in p['image']['data']
+                           if '_AESLOCKS_SYSTEMDEPTH_' in d['name'])
+                b.bp_clear_all();b.bp_set(marker,condition=condition)
+                b._cmd_ok('KEY A down')
+                run_to(b,marker,condition=condition,timeout=60,frame_limit=3000)
+                report['keyboard_delivery']=dict(
+                    presenter_held=b.memdump(held,1)[0],
+                    presenter_depth=int.from_bytes(b.memdump(depth,2),'little'))
+                require(report['keyboard_delivery']==dict(presenter_held=0,presenter_depth=0),
+                        'Ordinary key delivery retained presenter UPDATE')
+                b._cmd_ok('KEY A up')
                 b.bp_clear_all()
             try:
                 report['runtime'],_=execute(b,p,before_run=before,timeout=180,frame_limit=6000)
             finally:
-                for name in ('AESChecks','AESFailures','AESFirstFailure','progress','phase','callbackReady'):
+                for name in ('AESChecks','AESFailures','AESFirstFailure','progress','phase','callbackReady','keyboardReady'):
                     report[name]=b.eval_expr(f'dw(${foreign["symbols"][name]:x})')
                 report['stack_usage']=stack_usage(b,p['build']['memory'])
             require(report['AESFailures']==0 and report['AESChecks']>=35,'UPDATE migration fixture failed')
             require(report['progress']>0 and report['phase']==3 and report['callbackReady']==2,'Missing callback/peer/counter progress')
+            require(report['keyboardReady']==2,'Missing key/UPDATE completion')
             ownership(b,p,p['output'])
         report['status']='pass'
     except Exception as error:

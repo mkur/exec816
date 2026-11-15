@@ -13,11 +13,13 @@ USE CONSOLEBITMAP
 USE CONSOLEBATCH
 USE CONSOLETYPES
 BYTE systemHeld
+CARD systemDepth
 
 PUBLIC PROC Init(AESSTATE.Service POINTER service)
 
   EXEC.InitSemaphore(@service.updateResource)
   systemHeld=0
+  systemDepth=0
 
 RETURN
 
@@ -67,11 +69,33 @@ PUBLIC BYTE FUNC PaintBlocked()
 
   LET service=AESSTATE.Get()
 
-RETURN(service<>NULL AND service.live<>0 AND systemHeld=0)
+; A scheduling hint only. Protected entries must still acquire the native
+; resource: a peer may acquire or receive FIFO ownership after this read.
+RETURN(service<>NULL AND service.live<>0 AND systemHeld=0
+    AND service.updates<>0)
 
 PUBLIC BYTE FUNC MouseBlocked()
 
 RETURN(PaintBlocked())
+
+; Pending work can become blocked after its operation-entry attempt. Arm the
+; existing release wake before deciding to sleep; recheck under the same guard
+; as final release. This hint neither acquires nor grants the native resource.
+PUBLIC BYTE FUNC SystemBlocked()
+  BYTE blocked
+
+  IF PaintBlocked()=0 THEN
+    RETURN(0)
+  FI
+  LET service=AESSTATE.Get()
+  EXEC.Forbid()
+  blocked=(systemHeld=0 AND service.updates<>0)
+  IF blocked<>0 THEN
+    service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
+  FI
+  EXEC.Permit()
+
+RETURN(blocked)
 
 PUBLIC BYTE FUNC NativeReady()
 
@@ -96,12 +120,30 @@ RETURN(service<>NULL AND (service.updateHint & AESSTATE.CONTROLLER_LOAN)<>0)
 PUBLIC PROC SystemRelease()
 
   LET service=AESSTATE.Get()
-  IF systemHeld<>0 AND NativeReady()<>0 THEN
+  IF systemDepth=0 AND systemHeld<>0 AND NativeReady()<>0 THEN
     service.updateHint=service.updateHint &
         ($ff-AESSTATE.CONTROLLER_LOAN-AESSTATE.UPDATE_REQUESTED)
     systemHeld=0
     ReturnResource(service,1)
   FI
+
+RETURN
+
+; Nested presenter operations share one native level. A retained effect can
+; keep that level between scopes; independent input never enters a scope.
+PUBLIC BYTE FUNC SystemBegin()
+
+  IF SystemReady()=0 THEN
+    RETURN(0)
+  FI
+  systemDepth==+1
+
+RETURN(1)
+
+PUBLIC PROC SystemEnd()
+
+  systemDepth==-1
+  SystemRelease()
 
 RETURN
 

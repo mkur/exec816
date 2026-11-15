@@ -7,6 +7,8 @@ ULONG AESService,AESUpdates,AESMouseHolds,AESPolicyGate;
 UWORD AESOwnedOffset;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,progress,phase,stopCounter;
 volatile UWORD callbackReady,callbackX,callbackY;
+volatile UWORD keyboardReady;
+volatile ULONG keyboardInbox;
 static OBJECT menu[]={
     {-1,1,4,G_IBOX,0,0,0,0,0,640,240},
     {4,2,2,G_BOX,0,0,0x1100,0,0,640,11},
@@ -110,6 +112,14 @@ WORD AESRun(void)
     Check(wind_set(window,WF_VSLIDE,100,0,0,0));
     Check(wind_update(END_UPDATE));
     callbackReady=2;
+    /* Ordinary key delivery must leave UPDATE free for its recipient. */
+    keyboardInbox=(ULONG)c->endpoint->input;
+    keyboardReady=1;
+    Check((evnt_keybd()&255)=='a');
+    Check(wind_update(BEG_CHECK|BEG_UPDATE));
+    Check(owned()==before+1);
+    Check(wind_update(END_UPDATE));
+    keyboardReady=2;
     Check(wind_update(BEG_UPDATE));
     Check(UPDATES==1 && c->view->updates==1);
     Check(owned()==before+1);

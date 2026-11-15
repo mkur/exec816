@@ -74,7 +74,8 @@ PUBLIC BYTE FUNC Ready()
 
   LET service=DESKSTATE.Get()
 
-RETURN((service=NULL OR service.scene.busy=0) AND AESLOCKS.MouseBlocked()=0)
+; The console-control entry checks actual work and obtains UPDATE itself.
+RETURN(service=NULL OR service.scene.busy=0)
 
 PUBLIC BYTE FUNC PaintReady()
 
@@ -169,6 +170,7 @@ PUBLIC PROC Controls()
     FI
     DESKCACHE.Pump(service)
     DESKMOVE.Pump()
+    AESLOCKS.SystemRelease()
     IF priorToken<>0 AND service.scene.busy=0 THEN
       ; Only one scene continuation can own the token. Service input after
       ; its retirement, before a control can acquire the newly free scene.
@@ -246,7 +248,7 @@ RETURN(candidates<>0)
 ; Caller has just settled input, controls, model writes and painting. This
 ; hint never keeps the presenter awake: an occluded candidate can wait until
 ; the next real wake. Return whether one new transfer changed scheduling.
-PUBLIC BYTE FUNC Cache()
+BYTE FUNC Capture()
   BYTE index,visible,started
   CARD rect
   LAYERTYPES.Rect client
@@ -315,6 +317,27 @@ PUBLIC BYTE FUNC Cache()
   OD
 
 RETURN(0)
+
+; Candidate inspection does not own UPDATE. Starting a cache transfer does;
+; its existing scene token retains that ownership until completion.
+PUBLIC BYTE FUNC Cache()
+  BYTE started
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live<>1 OR CachePending(service)=0 THEN
+    RETURN(0)
+  FI
+  IF service.scene.busy<>0 OR DISPLAY.Blocked()<>0
+      OR CONSOLEBITMAP.Pending()<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(0)
+  FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  started=Capture()
+  AESLOCKS.SystemEnd()
+
+RETURN(started)
 
 PUBLIC PROC Stop()
 

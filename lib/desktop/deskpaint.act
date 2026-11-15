@@ -197,11 +197,11 @@ BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
     RETURN(1)
   FI
 
-  IF AESLOCKS.PaintBlocked()<>0 THEN
+  IF service.scene.visibleDamage=0 THEN
     RETURN(0)
   FI
 
-RETURN(service.scene.visibleDamage<>0)
+RETURN(AESLOCKS.SystemBlocked()=0)
 
 ; Painting work only, independent of pending control messages.
 PUBLIC BYTE FUNC PaintPending()
@@ -347,7 +347,7 @@ RETURN(0)
 ; One strip step. Return 2 for an unfinished strip, 1 for completed-strip
 ; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
-PUBLIC BYTE FUNC Pump()
+BYTE FUNC Paint()
   BYTE count,slot,status,done
   DESKTYPES.Window POINTER window
   LAYERTYPES.Layer POINTER candidate
@@ -480,5 +480,27 @@ PUBLIC BYTE FUNC Pump()
   DESKMENUCACHE.Notify()
 
 RETURN(1)
+
+; A ready strip owns UPDATE through its physical/scene continuation. Empty
+; paint probes do not acquire it, and retirement releases it at this boundary.
+PUBLIC BYTE FUNC Pump()
+  BYTE progress
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0
+      OR DISPLAY.Blocked()<>0 THEN
+    RETURN(0)
+  FI
+  IF paintToken=0 AND (service.scene.busy<>0
+      OR service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0) THEN
+    RETURN(0)
+  FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  progress=Paint()
+  AESLOCKS.SystemEnd()
+
+RETURN(progress)
 
 ENDMODULE

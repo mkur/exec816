@@ -230,3 +230,43 @@ the successful capture initially reached a formatting KeyError after writing
 its passing results. Read-only reanalysis confirms the corrected CLI without
 rerunning the guest. This is development evidence, not hosted-system release
 qualification. AM0–AM5 are complete; all reserved bank-zero deltas remain zero.
+
+## AP1: presenter UPDATE scopes follow actual work
+
+MagiC's ordinary key path (`handle_key` → `write_key` → `event_happened` in
+the pinned AESEVT source) needs no UPDATE. Its screen manager acquires UPDATE
+after `_evnt_multi` returns, for its own UI operation. Exec's loop-wide Try
+before input delivery has been removed. Pending menu/gesture actions, paint,
+cache transfer and console display controls enter a common presenter scope;
+ordinary key delivery, cursor refresh and no-work probes acquire no UPDATE.
+Nested scopes share one native hold, with one upper-memory CARD of nesting
+state. Actual scene/hardware continuations retain their existing authority and
+ownership until retirement. Client-owned effects can still finish without the
+presenter obtaining the client's semaphore. Normal Task preemption remains on.
+
+The cache regression exposed a late-work wake race: frame damage could arrive
+after the paint attempt while its private handler still owned UPDATE. The
+presenter observed blocked work at scheduling and slept without arming a release
+wake. A diagnostic extra wake made the unchanged image pass, identifying the
+missing notification rather than a rendering defect. Pending-work readiness now
+registers the existing hint under the final-release guard; a released owner is
+rechecked before sleeping. Empty probes acquire no resource. The cache check
+explicitly requires the title repaint to finish before the next copied move.
+
+Development checks pass on the pinned optimized compiler, PAL 8x/4 MiB machine,
+ROM and emulator: 68 tiny owner/contender/Counter assertions; 168 pointer checks,
+25 input-boundary checks and five native checks; 224 cache checks over 32 phases
+and five native checks, including exact pixels, copied moves and mixed-owner
+menu restoration. The tiny observer stops after key publication and before
+consumption: presenter native hold and scope depth are both zero; the recipient's
+immediate UPDATE TRY succeeds. Runtime status is zero, guards remain intact and
+cleanup passes. Root/kernel peaks are at most 758/287 bytes across these scenes;
+the presenter's peak is at most 734 bytes in its existing 2560-byte reservation.
+
+Observer pilots and the artificial-wake diagnosis are excluded from acceptance.
+Final captures use the direct fixture-owned inbox pointer and native IRQ
+rendezvous, covering native fast paths without an upper-bank breakpoint. No
+public ABI, Service size or stack/DP reservation changes. Reserved bank-zero
+deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public Task**, including
+guards, alignment and spare capacity. No QED, catalog, demo or release build ran.
+AP2 will measure the unchanged MGVIEW/Counter APPs separately.

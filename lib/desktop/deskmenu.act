@@ -22,6 +22,7 @@ USE HEAPCORE
 
 PUBLIC CONST BAR_HEIGHT=DESKTYPES.MENU_BAR_HEIGHT
 PUBLIC CONST ROW_HEIGHT=DESKTYPES.MENU_ROW_HEIGHT, ROWS=9, LABEL_BYTES=25
+PUBLIC CONST KEY_DEFERRED=2
 PUBLIC CONST APP_MENU=1, WINDOWS_MENU=2, GEM_MENU=3, WINDOWS_LEFT=560, WINDOWS_POPUP_LEFT=432
 PUBLIC TYPE Item=[
   LONGCARD window
@@ -384,7 +385,7 @@ RETURN(1)
 
 ; Recognize global shortcuts before console/AES translation. Translate ordinary
 ; menu keys once, only while this presenter-owned menu has keyboard ownership.
-PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
+BYTE FUNC MenuKey(INPUT.Event POINTER sample CARD buttons)
   CARD key
   INT row
   BYTE attempts
@@ -461,6 +462,28 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
   FI
 
 RETURN(1)
+
+; Ordinary application keys never acquire UPDATE. Only menu input and global
+; desktop shortcuts enter the screen manager's protected operation.
+PUBLIC BYTE FUNC Key(INPUT.Event POINTER sample CARD buttons)
+  BYTE handled
+
+  IF DESKSTATE.barLayer=0 THEN
+    RETURN(0)
+  FI
+  IF Active()=0 AND (sample.kind<>INPUT.EVENT_KEY
+      OR (sample.qualifiers & INPUT.CONTROL)=0 OR buttons<>0
+      OR ((sample.code & 63)<>44 AND (sample.code & 63)<>28)
+      OR AESMOUSE.NativeGesture()<>0) THEN
+    RETURN(0)
+  FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(KEY_DEFERRED)
+  FI
+  handled=MenuKey(sample,buttons)
+  AESLOCKS.SystemEnd()
+
+RETURN(handled)
 
 ; Internal presenter entry; public callers install through AES, never this hook.
 PUBLIC PROC Application(INT heading)
@@ -638,7 +661,7 @@ PROC DamageRow(INT row)
 RETURN
 
 ; Paint and scene changes obey the same gates as existing native gestures.
-PUBLIC PROC Advance()
+PROC AdvanceMenu()
   BYTE changed,chromeChanged,completed
   LAYERTYPES.Rect nextBounds
 
@@ -665,7 +688,8 @@ PUBLIC PROC Advance()
       AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
-      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0 THEN
+      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0
+      AND DESKMENUCACHE.Replacing()=0 THEN
     RETURN
   FI
   IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
@@ -808,7 +832,7 @@ PUBLIC PROC Advance()
 
 RETURN
 
-PUBLIC BYTE FUNC Runnable()
+BYTE FUNC Pending()
 
   IF DESKSTATE.barLayer=0 THEN
     RETURN(0)
@@ -819,15 +843,28 @@ PUBLIC BYTE FUNC Runnable()
       AND paintMenu=menu AND paintSelection=selected
       AND focusSeen=service.focus AND revision=service.scene.rebuilds
       AND DESKAPPMENU.Changed()=0 AND DESKAPPMENU.Pending()=0
-      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0 THEN
-    RETURN(0)
-  FI
-
-  IF AESLOCKS.NativeReady()=0 OR AESLOCKS.MouseBlocked()<>0
-      OR AESLOCKS.PaintBlocked()<>0 THEN
+      AND DESKAPPMENU.VisualChanged()=0 AND DESKMENUCACHE.Pending()=0
+      AND DESKMENUCACHE.Replacing()=0 THEN
     RETURN(0)
   FI
 
 RETURN(1)
+
+; Replacement retirement uses its retained ownership. Fresh menu work obtains
+; UPDATE only after the pending-state check, including focus/bar changes.
+PUBLIC PROC Advance()
+
+  IF Pending()=0 OR AESLOCKS.SystemBegin()=0 THEN
+    RETURN
+  FI
+  AdvanceMenu()
+  AESLOCKS.SystemEnd()
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+
+RETURN(Pending()<>0 AND AESLOCKS.SystemBlocked()=0 AND AESLOCKS.NativeReady()<>0
+    AND AESLOCKS.MouseBlocked()=0 AND AESLOCKS.PaintBlocked()=0)
 
 ENDMODULE

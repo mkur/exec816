@@ -171,9 +171,9 @@ RETURN(AESGATE.SystemOwned()=0 OR DESKMENU.InputBlocked()=0)
 
 ; Return handled for graphical routes, including events captured before focus
 ; moved. Console routes continue through the existing CON translation path.
-PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
+BYTE FUNC RouteKey(INPUT.Event POINTER captured)
   AESTYPES.InputRecord keySample
-  BYTE slot
+  BYTE slot,handled
 
   IF AESGATE.SystemOwned()=0 THEN
     RETURN(SnapshotKey(captured))
@@ -183,7 +183,11 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
     RETURN(0)
   FI
 
-  IF DESKMENU.Key(captured,buttons)<>0 THEN
+  handled=DESKMENU.Key(captured,buttons)
+  IF handled=DESKMENU.KEY_DEFERRED THEN
+    RETURN(handled)
+  FI
+  IF handled<>0 THEN
     RETURN(1)
   FI
 
@@ -211,9 +215,22 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
 
 RETURN(0)
 
+; Retain a native menu key when UPDATE is busy. GEM inbox delivery above
+; does not acquire UPDATE and does not wait for a screen-manager scope.
+PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
+  BYTE handled
+
+  handled=RouteKey(captured)
+  IF handled=DESKMENU.KEY_DEFERRED THEN
+    DeferKey(captured)
+    RETURN(1)
+  FI
+
+RETURN(handled)
+
 PUBLIC PROC ReplayKeys()
   INPUT.Event captured
-  BYTE handled,slot
+  BYTE handled
 
   IF AESGATE.SystemOwned()=0 THEN
     RETURN
@@ -232,9 +249,12 @@ PUBLIC PROC ReplayKeys()
   WHILE keyCount<>0 AND keyLost=0 AND DESKMENU.InputBlocked()=0 DO
     A816MEMORY.Move(BYTE POINTER(@captured),
         BYTE POINTER(@deferredKeys(keyHead)),INPUT.EVENT_BYTES)
+    handled=RouteKey(@captured)
+    IF handled=DESKMENU.KEY_DEFERRED THEN
+      EXIT
+    FI
     keyHead=(keyHead+1) MOD CONSOLETYPES.RAW_SLOTS
     keyCount==-1
-    handled=Key(@captured)
   OD
 
 RETURN
@@ -285,8 +305,22 @@ BYTE FUNC MouseReady()
 
 RETURN(AESLOCKS.MouseBlocked()=0 OR DESKDRAG.Continuing()<>0)
 
+; Existing captures may finish under their retained gesture authority. Fresh
+; native interpretation needs UPDATE; routing into a GEM inbox does not.
+BYTE FUNC MouseEnter()
+
+  IF DESKDRAG.Continuing()<>0 THEN
+    RETURN(1)
+  FI
+  IF AESLOCKS.SystemBegin()<>0 THEN
+    RETURN(2)
+  FI
+
+RETURN(0)
+
 ; Classify fresh absolute capture once, before any deferred native replay.
 PROC Fresh(INPUT.Event POINTER sample)
+  BYTE scope
 
   ; Observe the latest cursor separately from retained gesture events.
   IF sample.kind<>INPUT.EVENT_LOSS THEN
@@ -310,12 +344,18 @@ PROC Fresh(INPUT.Event POINTER sample)
   FI
 
   IF AESMOUSE.Route(sample)=0 THEN
-    IF AESGATE.SystemOwned()=0 OR MouseReady()=0
-        OR DESKMENU.InputBlocked()<>0 THEN
+    scope=0
+    IF AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0 THEN
+      scope=MouseEnter()
+    FI
+    IF scope=0 THEN
       AESMOUSE.Retained()
       AESINPUT.Push(sample)
     ELSE
       Consume(sample)
+      IF scope=2 THEN
+        AESLOCKS.SystemEnd()
+      FI
     FI
   FI
 
@@ -325,6 +365,7 @@ RETURN
 PUBLIC PROC Service(LONGCARD bits)
   INPUT.Event sample
   CARD count,status
+  BYTE scope
 
   IF acquired=0 THEN
     RETURN
@@ -339,10 +380,18 @@ PUBLIC PROC Service(LONGCARD bits)
 
   count=0
   WHILE count<16 DO
-    IF AESGATE.SystemOwned()<>0 AND MouseReady()<>0
-        AND DESKMENU.InputBlocked()=0
-        AND AESINPUT.Pop(@sample)<>0 THEN
-      Consume(@sample)
+    scope=0
+    IF AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0
+        AND AESINPUT.Pending()<>0 THEN
+      scope=MouseEnter()
+    FI
+    IF scope<>0 THEN
+      IF AESINPUT.Pop(@sample)<>0 THEN
+        Consume(@sample)
+      FI
+      IF scope=2 THEN
+        AESLOCKS.SystemEnd()
+      FI
     ELSE
       IF pending=0 THEN
         EXIT
@@ -461,7 +510,8 @@ PUBLIC BYTE FUNC Runnable()
   FI
 
   IF pending<>0 OR keyLost<>0
-      OR (keyCount<>0 AND DESKMENU.InputBlocked()=0) OR DESKMENU.Runnable()<>0
+      OR (keyCount<>0 AND DESKMENU.InputBlocked()=0
+        AND AESLOCKS.SystemBlocked()=0) OR DESKMENU.Runnable()<>0
       OR DESKDRAG.Runnable()<>0 THEN
     RETURN(1)
   FI

@@ -72,7 +72,6 @@ PUBLIC PROC Run()
   BYTE again,writing,stopping,accepted,inputPending
   BYTE handoff,deferOutput,paintSteps,paintProgress
   BYTE schedule,policyReady,workChecked,workPending
-  BYTE resourceReady
 
   LET self=EXEC.FindTask(NULL)
   LET batch=CONSOLEBATCH.Get()
@@ -86,7 +85,6 @@ PUBLIC PROC Run()
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
     AESGATE.Reclaim()
-    resourceReady=AESLOCKS.SystemReady()
     DESKINPUT.ReplayKeys()
     IF consoleStopping()<>0 AND CONSOLEBITMAP.Pending()=0
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
@@ -114,6 +112,7 @@ PUBLIC PROC Run()
       ; handoff. CPU-only service work must leave access available to clients.
       CONSOLEDISPLAY.Poll((bits & displayMask)<>0)
       DESKHOST.MenuContinuation()
+      AESLOCKS.SystemRelease()
       IF stopping<>0 AND CONSOLEBITMAP.Pending()=0 THEN
         accepted=consoleStop()
         IF consoleStopping()<>0 THEN

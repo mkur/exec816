@@ -92,7 +92,7 @@ PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
       AND ((sample.kind=INPUT.EVENT_KEY
       AND (sample.code & 63)=ESC_SCAN) OR (sample.kind=INPUT.EVENT_CANCEL
       AND sample.code=INPUT.CANCEL_BREAK)) THEN
-    IF AESLOCKS.MouseBlocked()<>0 AND Continuing()=0 THEN
+  IF Continuing()=0 AND AESLOCKS.SystemBlocked()<>0 THEN
       escapePending=1
     ELSE
       Cancel()
@@ -473,7 +473,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
 
 RETURN(0)
 
-PUBLIC PROC Advance()
+PROC AdvanceGesture()
   BYTE drawn
 
   IF DISPLAY.Blocked()<>0 THEN
@@ -576,6 +576,26 @@ PUBLIC PROC Advance()
 
 RETURN
 
+; Tracking an application-owned outline uses that application's established
+; capture. Native scene actions obtain UPDATE only when a gesture needs work.
+PUBLIC PROC Advance()
+
+  IF appVisual<>0 THEN
+    Track()
+    RETURN
+  FI
+  IF phase=0 AND escapePending=0
+      AND lossEpoch=DESKSTATE.LossEpoch() THEN
+    RETURN
+  FI
+  IF DISPLAY.Blocked()<>0 OR AESLOCKS.SystemBegin()=0 THEN
+    RETURN
+  FI
+  AdvanceGesture()
+  AESLOCKS.SystemEnd()
+
+RETURN
+
 ; Erase only the native outline; retain the gesture for ownership release.
 PUBLIC PROC Loan()
   BYTE drawn
@@ -617,7 +637,7 @@ PUBLIC PROC Suspend()
 
 RETURN
 
-PUBLIC PROC Present()
+PROC PresentOutline()
   BYTE drawn
 
   IF DISPLAY.Blocked()<>0 THEN
@@ -653,6 +673,26 @@ PUBLIC PROC Present()
 
 RETURN
 
+; A cursor-only refresh has no native outline work and needs no UPDATE.
+PUBLIC PROC Present()
+
+  IF appVisual<>0 THEN
+    PresentOutline()
+    RETURN
+  FI
+  IF dirty=0 AND lossEpoch=DESKSTATE.LossEpoch()
+      AND (Outlined()=0 OR CONSOLEBITMAP.Changed()=0) THEN
+    RETURN
+  FI
+  IF DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR AESLOCKS.SystemBegin()=0 THEN
+    RETURN
+  FI
+  PresentOutline()
+  AESLOCKS.SystemEnd()
+
+RETURN
+
 PUBLIC BYTE FUNC Runnable()
 
   IF DISPLAY.Blocked()<>0 THEN
@@ -664,7 +704,7 @@ PUBLIC BYTE FUNC Runnable()
         AND CONSOLEBITMAP.Pending()=0)
   FI
 
-  IF AESLOCKS.MouseBlocked()<>0 AND Continuing()=0 THEN
+  IF Continuing()=0 AND AESLOCKS.SystemBlocked()<>0 THEN
     RETURN(0)
   FI
 

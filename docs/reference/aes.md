@@ -353,11 +353,17 @@ checks. A completed empty update preserves a valid saved image; it never clears
 older unsatisfied damage. This uses existing local/presenter ownership and adds
 114 payload bytes to the request/context, with no new bank-zero reservation.
 
-The presenter uses native Try, retaining ownership through an actual physical
-continuation. It releases at a settled operation boundary and reacquires through
-the same public primitive. A failed Try leaves independent input and fence
+Ordinary keyboard delivery and no-work scheduling probes acquire no UPDATE.
+The presenter uses native Try for pending menu/gesture, painting, cache-transfer
+and console-control operations, retaining ownership through an actual physical
+continuation. Nested operation scopes share that one native hold. It releases at
+a settled operation boundary and reacquires through the same public primitive.
+Readiness checks are hints; each protected entry still acquires the resource.
+A failed Try leaves independent input and fence
 completion running; a guarded release hint prevents a lost wake. Journal completion
 also wakes new cache/paint work when the presenter never encountered contention.
+Pending work discovered after its entry attempt arms the same release hint before
+sleeping. Readiness rechecks and final notification share the short Task guard.
 Normal Task preemption continues throughout ownership; short final publication
 and release guards do not extend over a drawing scope.
 

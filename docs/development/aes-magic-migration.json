@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "complete",
+  "status": "in_progress",
   "tier": "development",
   "qualification": false,
   "plan": "docs/plans/gem4xe/aes-semaphore-migration-plan.md",
@@ -1710,6 +1710,274 @@
         "skips": 5,
         "status": "pass"
       }
+    },
+    "AP1": {
+      "status": "pass",
+      "captures": [
+        {
+          "capture": "build/aes-migration/ap1-scopes-final",
+          "results_sha256": "c206bca1a759928aeeb4f4a5099a579037aab340dd4957df78d719c50aca97d8",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false
+          },
+          "image_sha256": "65b1c0685835c31aad93414c5a53ee48b1fd830f04d2b30cb92cfa13b96371de",
+          "xex_sha256": "c0d7bde89e29405044a834b5ffa080bff54011e5707e91820b288d200ba4e5a6",
+          "checks": {
+            "AESChecks": 68,
+            "AESFailures": 0,
+            "keyboard_delivery": {
+              "presenter_held": 0,
+              "presenter_depth": 0
+            },
+            "keyboardReady": 2,
+            "progress": 41
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact"
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 636,
+              "remaining_above_floor": 644
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 142,
+              "remaining_above_floor": 914
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 360,
+              "remaining_above_floor": 696
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 58,
+              "remaining_above_floor": 998
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 708,
+              "remaining_above_floor": 1596
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 49,
+              "remaining_above_floor": 207
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 283,
+              "remaining_above_floor": 997
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/ap1-pointer",
+          "results_sha256": "14fd61872368a159bf7f2aa4c5476dd07916ab310ea7b960c242b46ea3af9bf6",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false
+          },
+          "image_sha256": "c291cd39a7a0f98f1a8e440a5601a52711470e25c885ded27d9729b72b9e7171",
+          "xex_sha256": "d81214ef6d301abc010e1f3230709c49ccdfa00747c82e4bd108ffc0df00cef0",
+          "checks": {
+            "AESChecks": 168,
+            "AESFailures": 0,
+            "native_checks": 5,
+            "boundary_checks": 25
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact"
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 557,
+              "remaining_above_floor": 723
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 136,
+              "remaining_above_floor": 920
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 496,
+              "remaining_above_floor": 560
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 733,
+              "remaining_above_floor": 1571
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 129,
+              "remaining_above_floor": 127
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 283,
+              "remaining_above_floor": 997
+            }
+          }
+        },
+        {
+          "capture": "build/aes-migration/ap1-cache",
+          "results_sha256": "d6dcaa348ca6b44c5d1a1d9486661f902f51f8a06022667e6db23488c9fb3b2b",
+          "compiler": {
+            "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+            "changes": [],
+            "override": false
+          },
+          "image_sha256": "81a66176f173f1d3414876fe1e9a92e5b29eb2c60a175728bebf86bc8dc00b49",
+          "xex_sha256": "296da8bfdf7718f5a1a287a5a7ca2f844deba6fff7300aa188606410a5e1cc64",
+          "checks": {
+            "AESChecks": 224,
+            "AESFailures": 0,
+            "native_checks": 5
+          },
+          "runtime": {
+            "status": 0,
+            "guards": "intact"
+          },
+          "stack_usage": {
+            "0": {
+              "base": 9744,
+              "bytes": 1536,
+              "peak": 758,
+              "remaining_above_floor": 522
+            },
+            "1": {
+              "base": 12880,
+              "bytes": 1312,
+              "peak": 156,
+              "remaining_above_floor": 900
+            },
+            "2": {
+              "base": 14224,
+              "bytes": 1312,
+              "peak": 310,
+              "remaining_above_floor": 746
+            },
+            "3": {
+              "base": 15568,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "4": {
+              "base": 16912,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "5": {
+              "base": 18256,
+              "bytes": 1312,
+              "peak": 18,
+              "remaining_above_floor": 1038
+            },
+            "6": {
+              "base": 19600,
+              "bytes": 2560,
+              "peak": 734,
+              "remaining_above_floor": 1570
+            },
+            "7": {
+              "base": 22192,
+              "bytes": 2560,
+              "peak": 18,
+              "remaining_above_floor": 2286
+            },
+            "8": {
+              "base": 24784,
+              "bytes": 512,
+              "peak": 24,
+              "remaining_above_floor": 232
+            },
+            "kernel": {
+              "base": 11312,
+              "bytes": 1536,
+              "peak": 287,
+              "remaining_above_floor": 993
+            }
+          }
+        }
+      ],
+      "host_checks": {
+        "tests": 718,
+        "skipped": 5
+      },
+      "scope": "Ordinary key publication owns no presenter UPDATE; recipient TRY, pointer/capture/boundaries, cache/title release wake/pixels and cleanup.",
+      "private_state": "One upper-memory CARD of presenter scope nesting; Service remains 2328 bytes; no public ABI change.",
+      "excluded_pilots": [
+        "build/aes-migration/ap1-scopes",
+        "build/aes-migration/ap1-cache-state",
+        "build/aes-migration/ap1-cache-wake"
+      ]
     }
   }
 }
