@@ -4,8 +4,8 @@
 [Current INPUT](../reference/input.md) · [Device I/O](../reference/device-io.md) ·
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
-Prepared 2026-11-15 from the independent input.device design. **Planning only:
-IM0–IM8 are pending.** The selected direction reuses the resident console/system
+Prepared 2026-11-15 from the independent input.device design. **Implementation
+started: IM0 is recorded; IM1–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -74,10 +74,10 @@ console streams progress. No existing application Task has been identified as
 an available replacement for that context. Do not count an unidentified reuse
 as a saved slot.
 
-IM0 must record the user's placement selection and the measured/provisional
-resource ledger before live conversion. This plan does not authorize an extra
-Task or enlarge the map. ABI and isolated device work can proceed independently
-of that selection. Report any missing general platform capability before
+The user's request to implement this plan selects the separate frontend
+proposal. The [IM0 contract](input-device-contract.md) records ownership and the
+provisional resource ledger. No enlargement of the map is authorized. Report
+any missing general platform capability before
 implementation; do not put specialized completion or deferred-work services
 in AES or input.device to conceal an unresolved owner.
 
@@ -94,6 +94,8 @@ in AES or input.device to conceal an unresolved owner.
 | [AESSYSTEM](../../lib/aes/aessystem.act), [DESKHOST](../../lib/desktop/deskhost.act) | Relocate remaining manager/display responsibilities under the SCRENMGR plan; retire obsolete input-pump/console callback bindings when their users have moved. |
 
 ## IM0 — freeze ownership, interface and cutover ledger
+
+Status: recorded in the [implementation contract](input-device-contract.md).
 
 Record the placement selection above, startup/stop ownership and peak
 simultaneous Tasks for text and GUI modes. Name who retires every retained

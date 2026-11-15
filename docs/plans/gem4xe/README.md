@@ -31,8 +31,8 @@ draft. The [execution-placement comparison](screnmgr-execution-map.md) records
 the Task-reuse selection, alternatives and remaining shutdown/capacity work.
 The [input.device migration plan](../input-device-migration-plan.md) sequences
 the public service, standard Atari console and AES cutovers as IM0–IM8. It
-costs the proposed frontend context before live conversion; implementation and
-the placement selection remain pending.
+costs the frontend context before live conversion. Implementation has started;
+the user's implementation request selects the separate frontend proposal.
 
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common

@@ -7,7 +7,8 @@
   and migration boundaries are a design draft, not an installed device. The
   [IM0–IM8 migration plan](input-device-migration-plan.md) orders ABI/lifetime,
   capture, Atari-console and AES cutovers with explicit frontend placement
-  costs and focused development checks. Implementation is pending.
+  costs and focused development checks. Implementation has started; the
+  [IM0 contract](input-device-contract.md) records the selected frontend placement.
 
 - [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
   MagiC manager role, caller-context drawing, independent input/device progress
