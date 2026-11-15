@@ -23,6 +23,10 @@
   platform services and adapt GEM4XE graphics implementations and ideas.
   Preserve normal Task preemption and IRQ/NMI protocols. See the
   [GEM architecture guidance](docs/contributing/README.md#gem-architecture-guidance).
+- Replace the combined presenter with MagiC's SCRENMGR role: interaction/event
+  handling in the manager and ordinary AES/VDI operations in their callers.
+  Follow the [migration plan](docs/plans/gem4xe/screnmgr-migration-plan.md);
+  resolve independent input/device progress and resource placement explicitly.
 - Every architectural departure from MagiC needs a source-based explanation,
   a concrete platform reason, costs and alternatives, and an explicit user
   decision before implementation. Do not decide these departures independently

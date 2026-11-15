@@ -13,6 +13,13 @@ provide the initial review inventory. Completed plans below retain implementatio
 history and development evidence; they do not endorse all existing GUI choices
 as the port's target architecture.
 
+The user selected replacing the combined presenter with MagiC's SCRENMGR role.
+The [SCRENMGR migration plan](screnmgr-migration-plan.md) starts with caller
+operations, independent input/device progress and UPDATE scene ownership,
+then replaces the combined loop. SM0 records the direction and responsibility
+map; executable migration is pending. Execution placement and Task costs must
+be resolved explicitly rather than hidden behind a rename.
+
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common
 UPDATE handler scopes with MCTRL built on UPDATE, protected owner cleanup and

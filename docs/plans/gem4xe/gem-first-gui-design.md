@@ -23,6 +23,14 @@ Architectural departures require a concrete reason and a user decision before
 implementation. Report missing platform services rather than building GUI-specific
 substitutes. Current runtime contracts remain unchanged by this direction note.
 
+The user has selected replacing the combined presenter with MagiC's SCRENMGR
+role. The [migration plan](screnmgr-migration-plan.md) narrows the manager to
+interaction work, moves ordinary frame painting into the calling AES operation,
+and requires independent input/device progress when the manager blocks on UPDATE.
+The original system-Task diagram and responsibilities below describe the earlier
+design; the combined loop is not the selected target. Execution placement and
+resource costs remain explicit migration work.
+
 Make GEM the graphical application interface. AES owns every graphical window,
 including the desktop's and terminal's windows. Application bodies use ordinary
 AES/VDI calls, object trees, resources and event loops. Keep platform startup,

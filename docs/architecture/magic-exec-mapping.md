@@ -19,6 +19,12 @@ whole GUI, not just UPDATE ownership. Architectural departures require a concret
 reason and an explicit user decision before implementation. Report missing
 platform capabilities instead of building GUI-specific replacements.
 
+The user subsequently selected replacing the combined presenter with MagiC's
+SCRENMGR role. The [migration plan](../plans/gem4xe/screnmgr-migration-plan.md)
+assigns caller drawing, manager interaction and independent input/device progress;
+execution placement remains to be resolved. Existing presenter roles below are
+inventory, not the selected target or a reason to retain the combined loop.
+
 The existing implementations, diagrams and service mappings below are inventory.
 They do not endorse preserving every current Exec GUI boundary. Honor prior
 explicit user decisions, while reviewing differences against the pinned MagiC
@@ -75,7 +81,7 @@ a kernel entry or a request to a GUI worker.
 | Memory and list storage | `AllocMem`, `FreeMem`, `AvailMem`, `EXECLISTS` and upper RAM | Reuse allocation and list operations. AES still owns its object lifetimes and synchronization. Task removal is not a heap-allocation group free. |
 | File access, directory scans and resource loading | Native DOS, filesystem/SIO services and existing caller-side resource/scan bindings | Keep file waits in application/loading contexts. Reuse RSC byte-order, pointer and bitmap conversion rather than importing Atari DOS calls. |
 | Executable loading and launch | Native C program loader, resident provider imports, Process start/collect and image retention | APP ABI 36 already supplies normal C entry and shared services. This is rebuilt source compatibility; Atari executables and trap layouts are a different contract. |
-| Screen-manager execution | Existing `AESSYSTEM` loop and presenter Task | Reuse its input/menu/gesture/window-continuation role. UI focus remains AES policy, independently of which Task receives CPU time. |
+| Screen-manager execution | Existing Task/event services and reusable menu/gesture helpers | Replace the combined AESSYSTEM/presenter loop with the selected SCRENMGR role; ordinary operations draw in their callers. Resolve independent input/device progress and execution placement explicitly. |
 | UPDATE, MCTRL and scene access | Public native `SignalSemaphore`, `AESLOCKS`, `AESGATE` and short publication guards | One native resource arbitrates UPDATE/MCTRL/handler scopes. Scene access and retained physical readiness remain separate; hints never grant ownership. |
 | Window visibility, overlap and damage | `LAYERS` and `REGIONS` ordinary libraries, used with one serialized shared scene | Reuse geometry and damage operations below AES window policy. AES and the scene refer to one authoritative window record set. |
 | Workstation and object drawing | Current private C workstation/context, prepared object data and ordinary renderer calls | Keep tree/layout and workstation state separate from shared device scratch. MagiC can guide the call structure without replacing these foundations. |
@@ -146,7 +152,7 @@ different architecture in the port.
 | Area | MagiC baseline | Current Exec difference | Review required |
 | --- | --- | --- | --- |
 | Scene admission | `_wind_set` enters UPDATE and dispatches its handler. | `AESGATE` adds another admission stage; the presenter claims the scene across much of its turn. | Account for every reader/mutator and retained effect. A separate broad gate needs a demonstrated reason; normal preemption alone does not establish that reason. |
-| Input and screen manager | Scheduler-side deferred key delivery is separate from `SCRENMGR` UI work. | One presenter combines input delivery, UI, console work, cache maintenance and device retirement. | Map these execution roles onto existing Exec services. Do not preserve the combined loop or add Tasks/queues by default. |
+| Input and screen manager | Scheduler-side deferred key delivery is separate from `SCRENMGR` UI work. | One presenter combines input delivery, UI, console work, cache maintenance and device retirement. | The user selected replacement with SCRENMGR. Resolve the independent delivery/device execution map and costs; do not preserve the combined loop or add Tasks/queues by default. |
 | Simple frame setters | A changed slider updates and calls `wind_draw` before releasing UPDATE. | Caller mutations invalidate regions for later presenter painting. | Restore the source-shaped operation where possible; retaining deferred completion needs a specific reason and a user decision. |
 | Paint and cache protocols | Ordinary GEM drawing/UPDATE paths define the application contract. | Additional journals and optional completion/preservation hooks support cached images. | Identify which responsibilities can live under standard GEM calls and which extensions, if any, need to remain. |
 | Modal forms | The inspected modal loop retains MCTRL routing across event waits. | Current forms use an ordinary window and UPDATE for painting; desktop-wide modal ownership is unsupported. | Treat this as a semantic gap to port or an explicitly agreed limitation, rather than assuming current behavior is the target. |

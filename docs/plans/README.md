@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
+  MagiC manager role, caller-context drawing, independent input/device progress
+  and shared UPDATE ownership. SM0 records the direction and responsibility
+  map; executable slices and execution placement remain pending.
+
 - [MagiC-led AES migration](gem4xe/aes-semaphore-migration-plan.md): reassessed
   AM0–AM5 flow, with MCTRL built on UPDATE, shared handler scopes, protected
   cleanup, synchronous cursor completion and native FIFO cutover. Implementation

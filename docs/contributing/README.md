@@ -31,6 +31,16 @@ algorithms and artwork; adapt them to MagiC's structure and Exec's platform
 contracts. Inspect the donor before writing a replacement. Keep donor revisions,
 provenance and license obligations explicit.
 
+The user selected replacing the combined presenter with MagiC's **SCRENMGR**
+role on 2026-11-15. Follow the
+[SCRENMGR migration plan](../plans/gem4xe/screnmgr-migration-plan.md): manager
+interaction runs under UPDATE, ordinary AES/VDI operations execute in their
+callers, and simple setters finish their frame drawing before return. Preserve
+input delivery independently of a blocked manager, existing console backend
+execution and device lifetimes. This is a responsibility/flow replacement;
+renaming the combined loop does not implement it. Concrete execution placement
+and resource costs must be resolved without assuming additional Tasks or services.
+
 Every architectural departure from MagiC must be brought to the user before
 implementation. Prepare a concrete proposal that identifies the pinned MagiC
 path, the required platform constraint, the affected semantics/flow, alternatives
