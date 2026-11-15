@@ -23,6 +23,9 @@ SM1c extends that path to slider sizes. Remaining frame fields and the rest
 of the migration are pending. Execution placement
 and Task costs must be resolved explicitly rather than hidden behind a rename.
 
+The [execution-placement comparison](screnmgr-execution-map.md) prepares the
+SM2 input Task decision and accounts for capacity and shutdown dependencies.
+
 The reassessed [AES migration plan](aes-semaphore-migration-plan.md) follows
 MagiC's structure and execution flow: synchronous cursor completion, common
 UPDATE handler scopes with MCTRL built on UPDATE, protected owner cleanup and

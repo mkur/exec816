@@ -90,6 +90,9 @@ not fixed by this note. Bring actual departures or newly required platform
 services to the user with source, costs and alternatives. Do not add a private
 GUI deferred-work service or change the scheduler to conceal the dependency.
 
+The [execution-placement comparison](screnmgr-execution-map.md) prepares the
+SM2 choice; its selection is pending.
+
 ## Migration slices
 
 Commit each executable slice separately. This plan assigns dependencies rather
