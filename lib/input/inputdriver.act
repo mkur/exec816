@@ -12,6 +12,7 @@ USE HEAPCORE
 
 CONST DRAIN_BUDGET=8
 PROC POINTER handler(LONGCARD context INPUT.Event POINTER captured)
+LONGCARD createdRoute
 
 ; Dispatch only in the consuming Task, with no driver guard held.
 PUBLIC PROC Dispatch(LONGCARD entry,context INPUT.Event POINTER captured)
@@ -87,6 +88,41 @@ PROC Finish(EXEC.IORequest POINTER request)
 
 RETURN
 
+; This caller-side path is bounded and shares the native capture publication
+; transaction. Consumption authority remains with the acquiring input Task.
+INT FUNC Route(INPUTDEVICE.Request POINTER packet STATE.Binding POINTER opened)
+  BYTE slot
+  CARD status
+
+  IF packet.source=INPUT.SOURCE_KEYBOARD THEN
+    slot=0
+  ELSEIF packet.source=INPUT.SOURCE_POINTER THEN
+    slot=1
+  ELSE
+    RETURN(INT(INPUT.BAD_ARGUMENT))
+  FI
+  IF opened.state<>INPUTDEVICE.ATTACHED
+      OR (opened.sources & (CARD(1) LSH slot))=0 THEN
+    RETURN(INT(INPUT.BAD_ARGUMENT))
+  FI
+  LET capture=STATE.SourceAt(slot)
+  IF packet.io.io_Command=INPUTDEVICE.CREATE_ROUTE THEN
+    ; Native INPUT outputs are bank-contained. The enclosing I/O request may
+    ; cross a bank; caller dispatch already serializes this upper scratch.
+    status=INPUT.CreateRoute(@capture.lease,packet.routeFlags,@createdRoute)
+    IF status=INPUT.OK THEN
+      packet.route=createdRoute
+    FI
+  ELSEIF packet.io.io_Command=INPUTDEVICE.PUBLISH_ROUTE THEN
+    status=INPUT.PublishRoute(@capture.lease,packet.route)
+  ELSEIF packet.io.io_Command=INPUTDEVICE.RETIRE_ROUTE THEN
+    status=INPUT.RetireRoute(@capture.lease,packet.route)
+  ELSE
+    status=INPUT.Discard(@capture.lease,packet.route)
+  FI
+
+RETURN(INT(status))
+
 PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
   INPUTDEVICE.Capabilities POINTER info
 
@@ -118,6 +154,9 @@ PUBLIC PROC BeginIO(EXEC.IORequest POINTER request)
       EXEC.PutMsg(@service.port,@request.io_Message)
       RETURN
     FI
+  ELSEIF request.io_Command>=INPUTDEVICE.CREATE_ROUTE
+      AND request.io_Command<=INPUTDEVICE.DISCARD THEN
+    request.io_Error=BYTE(Route(packet,opened))
   ELSE
     request.io_Error=BYTE(EXEC.IOERR_NOCMD)
   FI

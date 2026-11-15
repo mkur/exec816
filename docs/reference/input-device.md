@@ -6,10 +6,9 @@ The installed subset admits unit zero/flags zero, QUERY and settled Close.
 IM2 adds the Task/control/handler lifetime implementation. The boot controller
 must explicitly start the selected input owner; opening alone does not start
 a second owner alongside the existing console. ATTACH/DETACH require that
-running service; otherwise they return IOERR_UNITBUSY. The production capture
-adapter is not connected yet and rejects attach with INPUT.UNSUPPORTED.
-Route commands still return IOERR_NOCMD. QUERY reports zero source capabilities
-until capture is connected. The [migration plan](../plans/input-device-migration-plan.md) tracks
+running service; otherwise they return IOERR_UNITBUSY. IM3a connects keyboard
+capture and synchronous route operations. QUERY reports KEYBOARD_SET; pointer
+capture is not connected yet. The [migration plan](../plans/input-device-migration-plan.md) tracks
 remaining work; its target semantics are not an installed-service claim.
 
 Use the generated [InputDeviceRequest](../../c/include/devices/input.h), a
@@ -37,4 +36,19 @@ acknowledges after callback/source retirement. Close requires a detached binding
 The service Task uses signals and an owned request port, sleeps while idle and
 calls bounded handlers without a driver guard. It never calls AES or draws.
 Stop refuses live opens. This slice starts the Task only in isolated service
-fixtures; production console startup and physical ownership remain unchanged.
+fixtures; production console startup remains unchanged.
+
+ATTACH copies the 76-byte consumer descriptor and acquires the requested source
+in the input Task. The service supplies configuration version/source/wake mask;
+the consumer supplies generic keyboard flags and raw-key filters. A source-set
+failure unwinds its acquired prefix. DETACH releases the source in its acquiring
+Task; a later attach can choose new filters and gets a fresh capture generation.
+
+CREATE_ROUTE/PUBLISH_ROUTE/RETIRE_ROUTE/DISCARD name the INPUT source ID in
+Request.source. CREATE_ROUTE uses routeFlags and returns the tag in route;
+the others consume route. They complete synchronously with ordinary INPUT
+status values in io_Error. Publication under an existing Task publication guard
+does not wait for the input Task. Route zero stops addressed capture, old records
+retain captured tags, and retirement can return BUSY. No event queue is added
+between native INPUT and the bounded handler. Source acquisition, loss and
+durable cancellation retain the [INPUT contract](input.md).

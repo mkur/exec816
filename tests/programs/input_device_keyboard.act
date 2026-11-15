@@ -1,0 +1,128 @@
+MODULE INPUTDEVICEKEYBOARD
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTDRIVER
+USE A816MEMORY AS MEM
+USE HEAPCORE
+
+CARD checks,received
+BYTE stage,cleanGuard
+INPUTDEVICE.Consumer consumer
+INPUT.Event ARRAY events(6)
+EXEC.Task POINTER controller
+LONGCARD wakeMask,oldTag,oldAcquisition
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Handler(LONGCARD context INPUT.Event POINTER event)
+
+  LET self=EXEC.FindTask(NULL)
+  IF self<>INPUTDRIVER.Task() OR self.tc_TDNestCnt<>$ff THEN
+    cleanGuard=0
+  FI
+  IF received<6 THEN
+    MEM.Move(BYTE POINTER(@events(received)),BYTE POINTER(event),INPUT.EVENT_BYTES)
+    received==+1
+  FI
+  EXEC.Signal(controller,wakeMask)
+
+RETURN
+
+PROC Await(CARD count)
+
+  WHILE received<count DO
+    EXEC.Wait(wakeMask)
+  OD
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  cleanGuard=1
+  controller=EXEC.FindTask(NULL)
+  LET signals=controller.tc_SigAlloc
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  wakeMask=LONGCARD(1) LSH bit
+  Require(INPUTDRIVER.Start()<>0)
+  LET port=EXEC.CreateMsgPort()
+  LET io=EXEC.CreateIORequest(port,INPUTDEVICE.REQUEST_BYTES)
+  Require(port<>NULL AND io<>NULL)
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,0)=0)
+  LET packet=INPUTDEVICE.Request POINTER(io)
+  packet.io.io_Data=BYTE POINTER(@consumer)
+  packet.io.io_Length=INPUTDEVICE.CONSUMER_BYTES
+  consumer.version=INPUTDEVICE.VERSION
+  consumer.sources=INPUTDEVICE.KEYBOARD_SET
+  consumer.entry=LONGCARD(ADDRESS(@Handler))
+  consumer.keyboard.flags=INPUT.CAPTURE_BREAK
+  consumer.keyboard.filterCount=1
+  consumer.keyboard.filter0Value=$92
+  consumer.keyboard.filter0Mask=$bf
+  io.io_Command=INPUTDEVICE.ATTACH
+  Require(EXEC.DoIO(io)=0)
+  packet.source=INPUT.SOURCE_KEYBOARD
+  io.io_Command=INPUTDEVICE.CREATE_ROUTE
+  Require(EXEC.DoIO(io)=0 AND packet.route<>0)
+  oldTag=packet.route
+  io.io_Command=INPUTDEVICE.PUBLISH_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  stage=1
+  Await(3)
+  Require(cleanGuard<>0 AND events(0).route=oldTag AND events(2).route=oldTag)
+  Require(events(0).kind=INPUT.EVENT_KEY AND events(0).code=$3f)
+  Require(events(1).kind=INPUT.EVENT_CANCEL
+      AND events(1).code=INPUT.CANCEL_KEY_FILTER)
+  Require(events(2).kind=INPUT.EVENT_CANCEL AND events(2).code=INPUT.CANCEL_BREAK)
+  oldAcquisition=events(0).acquisition
+  packet.route=0
+  Require(EXEC.DoIO(io)=0)
+  packet.route=oldTag
+  io.io_Command=INPUTDEVICE.RETIRE_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  packet.routeFlags=INPUT.ROUTE_UNFILTERED
+  io.io_Command=INPUTDEVICE.CREATE_ROUTE
+  Require(EXEC.DoIO(io)=0 AND packet.route<>oldTag)
+  oldTag=packet.route
+  io.io_Command=INPUTDEVICE.PUBLISH_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  stage=2
+  Await(5)
+  Require(events(3).kind=INPUT.EVENT_KEY AND events(3).code=$92
+      AND events(3).route=oldTag)
+  Require(events(4).kind=INPUT.EVENT_CANCEL AND events(4).code=INPUT.CANCEL_BREAK)
+  io.io_Command=INPUTDEVICE.DETACH
+  Require(EXEC.DoIO(io)=0)
+  consumer.keyboard.filterCount=0
+  consumer.keyboard.filter0Value=0
+  consumer.keyboard.filter0Mask=0
+  io.io_Command=INPUTDEVICE.ATTACH
+  Require(EXEC.DoIO(io)=0)
+  packet.routeFlags=0
+  io.io_Command=INPUTDEVICE.CREATE_ROUTE
+  Require(EXEC.DoIO(io)=0 AND packet.route<>oldTag)
+  io.io_Command=INPUTDEVICE.PUBLISH_ROUTE
+  Require(EXEC.DoIO(io)=0)
+  stage=3
+  Await(6)
+  Require(events(5).kind=INPUT.EVENT_KEY AND events(5).acquisition<>oldAcquisition)
+  io.io_Command=INPUTDEVICE.DETACH
+  Require(EXEC.DoIO(io)=0)
+  EXEC.CloseDevice(io)
+  EXEC.DeleteIORequest(io)
+  EXEC.DeleteMsgPort(port)
+  Require(INPUTDRIVER.Stop()<>0)
+  EXEC.FreeSignal(bit)
+  Require(EXEC.AvailMem(0)=before AND controller.tc_SigAlloc=signals)
+
+RETURN
+ENDMODULE

@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 import shutil
 
-from native_program import ROOT, build, compiler, command, execute, verify_machine, require
-from os_boundary import emulator
+from native_program import ROOT, build, compiler, command, execute, verify_machine, require, read_build, sha256
+from os_boundary import emulator, run_to
+import adapter_state as adapter
 from test_cooperative import data
 from test_heap_api import clean_ownership
 from stack_budget import stack_usage
@@ -35,12 +36,64 @@ def c_layout(output, optimize):
     return check_layout(obj, expected)
 
 
+def keyboard_stimulus(bridge, program, report):
+    at = lambda name: next(d['address'] for d in program['image']['data']
+        if d['name'].startswith('M_INPUTDEVICEKEYBOARD_'+name.upper()+'_'))
+
+    def checkpoint(condition):
+        bridge.bp_clear_all()
+        bridge.bp_set(program['labels']['native_nmi'], condition=condition)
+        bridge.bp_set(program['labels']['done'], condition=adapter.STOPPED)
+        try:
+            run_to(bridge, program['labels']['native_nmi'], frame_limit=1800,
+                   timeout=15, condition=condition)
+        except Exception:
+            report['checkpoint'] = condition
+            report['diagnostic'] = {name: bridge.peek16(at(name))
+                                    for name in ('checks', 'received', 'stage')}
+            report['diagnostic']['status'] = bridge.peek16(adapter.STATE)
+            report['diagnostic']['clean_guard'] = bridge.memdump(at('cleanGuard'), 1).hex()
+            report['diagnostic']['old_tag'] = bridge.memdump(at('oldTag'), 4).hex()
+            report['diagnostic']['events'] = bridge.memdump(at('events'), 144).hex()
+            raise
+
+    def key(name, state):
+        result = bridge._cmd_ok(f'KEY {name} {state}')
+        require(result['raw_scan'], 'Keyboard fixture requires physical raw scanning')
+
+    key('ALL', 'up')
+    for index, (name, modifier, stage) in enumerate((
+            ('A', None, 1), ('C', 'CTRL', 1), ('BREAK', None, 1),
+            ('C', 'CTRL', 2), ('BREAK', None, 2), ('A', None, 3))):
+        checkpoint(f'db(${at("stage"):x})={stage}')
+        if modifier:
+            key(modifier, 'down')
+        key(name, 'down')
+        if index == 5:
+            break
+        checkpoint(f'dw(${at("received"):x})>={index+1}')
+        key(name, 'up')
+        if modifier:
+            key(modifier, 'up')
+        if index < 5:
+            checkpoint(f'@frame>={bridge.eval_expr("@frame")+4}')
+    bridge.bp_clear_all()
+    report['physical_keys'] = 6
+
+
+def keyboard_hardware(bridge):
+    return {name: bridge.memdump(address, size).hex() for name, address, size in (
+        ('mask', 16, 1), ('skctl', 0x232, 1), ('key_vector', 0x208, 2),
+        ('break_vector', 0x236, 2))}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--compiler-dir', type=Path, default=ROOT/'build/actionc')
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -52,19 +105,35 @@ def main():
     elif capture_override.exists():
         capture_override.unlink()
     layout = c_layout(output, args.mode == 'opt')
-    program = build(compiler(args.compiler_dir, release=True),
+    program = read_build(args.from_build) if args.from_build else build(compiler(args.compiler_dir, release=True),
                     ROOT/'tests/programs'/f'input_device_{args.suite}.act', output/'program',
                     tasks=True, console=False, sio_enabled=False,
                     optimize=args.mode == 'opt')
     report = dict(status='running', tier='development', qualification=False,
                   suite=args.suite, mode=args.mode, build=program['build'], c_layout=layout)
+    pin, bridge_dir, rom = PIN, ROOT/'build/altirra-irq-bridge', ROOT/'build/firmware/altirraos-816.rom'
+    if args.suite == 'keyboard':
+        from test_mouse_observe import PIN as INPUT_PIN, BRIDGE, ROM
+        pin, bridge_dir, rom = INPUT_PIN, BRIDGE, ROM
+    expected_bridge = pin.get('mouse_input', {}).get('tooling', {}).get('sha256', pin['emulator']['sha256'])
+    require(sha256(bridge_dir/'AltirraBridgeServer') == expected_bridge,
+            'Unpinned input.device emulator')
+    report['emulator_sha256'] = expected_bridge
     try:
-        with emulator(ROOT/'build/altirra-irq-bridge',
-                      ROOT/'build/firmware/altirraos-816.rom', output, pin=PIN) as bridge:
-            report['machine'] = verify_machine(bridge, ROOT/'build/firmware/altirraos-816.rom', PIN)
-            report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=2400)
+        with emulator(bridge_dir, rom, output, pin=pin) as bridge:
+            report['machine'] = verify_machine(bridge, rom, pin)
+            def stimulus(b):
+                report['keyboard_before'] = keyboard_hardware(b)
+                keyboard_stimulus(b, program, report)
+            report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=3600,
+                                           before_run=stimulus if args.suite == 'keyboard' else None)
+            if args.suite == 'keyboard':
+                bridge._cmd_ok('KEY ALL up')
+                report['keyboard_after'] = keyboard_hardware(bridge)
+                require(report['keyboard_after'] == report['keyboard_before'],
+                        'Keyboard capture hardware was not restored')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            require(report['checks'] == {'abi': 17, 'service': 33}[args.suite],
+            require(report['checks'] == {'abi': 17, 'service': 33, 'keyboard': 25}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

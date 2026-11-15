@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM2 are recorded; IM3–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM3a are recorded; IM3b–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -174,6 +174,12 @@ The linked device image has no AES/DESK/display/console-renderer dependency.
 **Commit:** `Implement input.device dispatch and consumer retirement`.
 
 ## IM3 — connect physical capture and capture-time routes
+
+IM3a status: keyboard capture and route operations pass 25 optimized emitted
+assertions with six physical key actions, native handler context, filter/raw
+route transitions, detach/reacquire and exact keyboard hardware restoration.
+See the [development record](../development/input-device-im3a.json). IM3b pointer
+capture remains pending.
 
 Deliver keyboard support first as IM3a; add relative ST/port-2 pointer capture
 as IM3b, each with its own check and commit. Acquire/Take/Release execute in the

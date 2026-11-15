@@ -3,6 +3,7 @@ USE EXEC
 USE INPUT
 USE INPUTDEVICE
 USE INPUTDRIVER
+USE INPUTDEVICESOURCE AS SOURCE
 USE HEAPCORE
 
 CARD checks
@@ -54,7 +55,7 @@ PROC Main()
   packet.io.io_Data=BYTE POINTER(@info)
   packet.io.io_Length=INPUTDEVICE.CAPABILITIES_BYTES
   Require(EXEC.DoIO(io)=0)
-  Require(info.version=INPUTDEVICE.VERSION AND info.sources=0
+  Require(info.version=INPUTDEVICE.VERSION AND info.sources=SOURCE.CAPABILITIES
       AND info.consumerBytes=76 AND info.eventBytes=24 AND info.routeSlots=16)
   Require(packet.io.io_Actual=12 AND EXEC.GetMsg(port)=NULL)
   EXEC.SendIO(io)

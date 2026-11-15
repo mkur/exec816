@@ -1,20 +1,24 @@
-; Capture adapter is connected in IM3. The generic service can run without it.
+; The input Task owns hardware acquisition, consumption and safe release.
 MODULE INPUTDEVICESOURCE
 USE INPUT
 USE INPUTDEVICESTATE AS STATE
 
-PUBLIC CONST CAPABILITIES=0
+PUBLIC CONST CAPABILITIES=1
 
 PUBLIC CARD FUNC Open(STATE.Source POINTER source)
 
-RETURN(INPUT.UNSUPPORTED)
+  IF source.config.source<>INPUT.SOURCE_KEYBOARD THEN
+    RETURN(INPUT.UNSUPPORTED)
+  FI
+
+RETURN(INPUT.Acquire(@source.lease,@source.config))
 
 PUBLIC CARD FUNC Close(STATE.Source POINTER source)
 
-RETURN(INPUT.OK)
+RETURN(INPUT.Release(@source.lease))
 
 PUBLIC CARD FUNC Take(STATE.Source POINTER source)
 
-RETURN(INPUT.EMPTY)
+RETURN(INPUT.Take(@source.lease,@source.event))
 
 ENDMODULE
