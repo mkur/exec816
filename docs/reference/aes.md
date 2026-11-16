@@ -428,9 +428,13 @@ text or bounded slider values, cache/menu changes, derived geometry, damage and
 view publication under UPDATE ownership. Changed title/info and vertical/horizontal
 slider setters paint their visible frame component synchronously in the calling Task
 before returning or releasing their handler UPDATE. UPDATE pins the window and
-frame-visible geometry throughout physical drawing. This uses a caller-owned
-console-format packet and the shared GEM4XE frame raster under delegated display
-access. Successful clips retire only manager frame damage; failed or unpainted
+frame-visible geometry throughout physical drawing. Frame, exposure and cache
+helpers borrow one 82-byte upper-memory console-format workspace under that
+UPDATE ownership through physical completion. Cursor work uses a separate
+packet; application VDI parameters remain separate too. Trusted renderer
+callbacks must not reenter AES while borrowing the workspace. This uses the
+shared GEM4XE frame raster under delegated display access.
+Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
 An open public VDI workstation supplies its existing grant. Exposure-producing
@@ -456,7 +460,8 @@ Completed frame components need no deferred setter paint. Equal
 setters retain their existing publication and do not request painting, acquire
 physical access or establish a grant. Hidden/iconified slider changes
 only update metadata/damage. Separate unheld setter calls remain separate resource
-scopes. Exposure painting remains ordinary manager work.
+scopes. Exposure painting finishes within its originating caller or manager
+operation.
 
 Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/system geometry helper.
 Bounds changes inside the owner's UPDATE, ordinary resizes, hidden/iconified

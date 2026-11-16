@@ -416,7 +416,7 @@ def application_entry(routine):
         return False
     if routine['name'].startswith(('M_DESKMENU_', 'M_DESKMENUPAINT_', 'M_DESKMENUCACHE_', 'M_LAYERCACHE_')):
         return False
-    if routine['name'].startswith(('M_AESCORE_', 'M_AESCURSOR_', 'M_SCRENMGR_', 'M_AESWAIT_', 'M_AESHOST_', 'M_AESBOOT_', 'M_AESSTATE_', 'M_AESSNAPSHOT_', 'M_AESMOUSE_',
+    if routine['name'].startswith(('M_AESCORE_', 'M_AESCURSOR_', 'M_SCRENMGR_', 'M_AESWAIT_', 'M_AESHOST_', 'M_AESBOOT_', 'M_AESSTATE_', 'M_AESDRAWSTATE_', 'M_AESSNAPSHOT_', 'M_AESMOUSE_',
                                    'M_AESINPUT_', 'M_AESLOCKS_', 'M_AESGUI_', 'M_AESWINDOW_', 'M_AESWINDOWSTATE_', 'M_AESTYPES_')):
         return False
     if routine['name'].startswith(('M_DESKCORE_', 'M_DESKAPPMENU_', 'M_DESKFINISH_', 'M_DESKCACHEWORK_', 'M_DESKMOVE_', 'M_DESKCACHE_', 'M_DESKSTATE_', 'M_DESKPAINT_', 'M_DESKINPUT_', 'M_DESKDRAG_', 'M_DESKHOST_', 'M_DESKBOOT_', 'M_DESKMENURENDER_')):

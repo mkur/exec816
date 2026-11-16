@@ -19,6 +19,7 @@ USE DESKPAINT
 USE DESKMENU
 USE DESKCACHEWORK
 USE CONSOLEBITMAP
+USE AESDRAWSTATE
 
 ADDRESS mouseApply
 
@@ -121,14 +122,14 @@ CARD FUNC Policy(LONGCARD value)
 
 RETURN(1)
 
-; The request and native packet belong to the current caller until its
+; The request and UPDATE-borrowed packet belong to the current caller until its
 ; exposure finishes. Ordinary client work remains a WM_REDRAW responsibility.
 CARD FUNC Exposure(AESTYPES.Request POINTER request)
-  CONSOLEBITMAP.Packet packet
 
   IF request.displayGrant=NULL THEN
     RETURN(AESTYPES.OK)
   FI
+  LET packet=AESDRAWSTATE.Packet()
   ; Quiescent device failure still permits logical withdrawal and cleanup.
   ; Unsafe hardware parks in the driver before this boundary can return.
   IF CONSOLEBITMAP.Failed()<>0 THEN
@@ -139,7 +140,7 @@ CARD FUNC Exposure(AESTYPES.Request POINTER request)
     RETURN(AESTYPES.DISPLAY_ERROR)
   FI
   DESKMENU.Reconcile()
-  IF DESKPAINT.Complete(@packet)=0 THEN
+  IF DESKPAINT.Complete(packet)=0 THEN
     IF CONSOLEBITMAP.Failed()<>0 AND (request.operation=AESTYPES.OP_CLOSE
         OR request.operation=AESTYPES.OP_DELETE OR request.operation=AESTYPES.OP_EXIT) THEN
       RETURN(AESTYPES.OK)
@@ -149,7 +150,7 @@ CARD FUNC Exposure(AESTYPES.Request POINTER request)
   LET service=AESSTATE.Get()
   IF service.updateHolds=0 AND service.mouseHolds=0 THEN
     BEGIN
-      LET maintained=DESKCACHEWORK.Maintain(@packet)
+      LET maintained=DESKCACHEWORK.Maintain(packet)
     END
   FI
 

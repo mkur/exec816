@@ -140,7 +140,7 @@ ENDMODULE
         point+'\n        ADMISSIONPROBE.Completed(0)',1))
     caller=read_source(ROOT/'lib/aes/aeslocal.act').replace(
         'USE EXEC\n','USE EXEC\nUSE ADMISSIONPROBE\n',1)
-    point='CARD FUNC Exposure(AESTYPES.Request POINTER request)\n  CONSOLEBITMAP.Packet packet\n'
+    point='CARD FUNC Exposure(AESTYPES.Request POINTER request)\n'
     require(caller.count(point)==1,'Caller exposure boundary changed')
     (out/'aeslocal.act').write_text(caller.replace(point,
         point+'\n  ADMISSIONPROBE.Controls(0)\n',1))

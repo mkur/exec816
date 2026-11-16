@@ -28,11 +28,15 @@ def execute(b,p,**kwargs):
     for slot,(pool,raw) in enumerate(zip(p['build']['memory']['task_pools'],snapshots)):
         size=pool.get('stack_bytes',1536)
         touched=next((i for i,v in enumerate(raw) if v!=0xa5),size)
-        require(touched>=256,'Touched reserved interrupt headroom in slot '+str(slot))
         observed.append(dict(slot=slot,reserved_bytes=size,touched_bytes=size-touched,untouched_above_floor=touched-256))
     runtime['stack_observations']=observed
     raw=kernel_snapshot[0];first=next((i for i,v in enumerate(raw) if v!=0xa5),len(raw))
     runtime['kernel_stack_observation']=dict(reserved_bytes=len(raw),touched_bytes=len(raw)-first,untouched_from_base=first,interrupt_reserve_bytes_touched=max(0,256-first))
+    (p['output']/'stack-observations.json').write_text(json.dumps(dict(
+        tasks=observed,kernel=runtime['kernel_stack_observation']),indent=2)+'\n')
+    for row in observed:
+        require(row['untouched_above_floor']>=0,
+                'Touched reserved interrupt headroom in slot '+str(row['slot']))
     return runtime,state
 
 def ownership(b,p,out):

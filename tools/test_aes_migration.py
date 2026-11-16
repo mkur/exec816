@@ -52,6 +52,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE AESLOCKS
+USE AESDRAWSTATE
 USE CONSOLEBITMAP
 USE DESKSTATE
 USE HEAPCORE
@@ -76,6 +77,7 @@ PROC Main()
   owned^={offset}
   LET call=ADDRESS POINTER(@entry)
   call^=${sy['AESRun']:x}
+  Require(AESDRAWSTATE.Packet()<>CONSOLEBITMAP.GetPacket())
   Require(entry()=0)
   BEGIN
     BYTE pending

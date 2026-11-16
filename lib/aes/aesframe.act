@@ -10,6 +10,7 @@ USE LAYERS
 USE REGIONS
 USE DISPLAY
 USE CONSOLEBITMAP
+USE AESDRAWSTATE
 
 ; Bind resident renderer code before application admission.
 PUBLIC PROC Configure(ADDRESS entry)
@@ -18,8 +19,7 @@ PUBLIC PROC Configure(ADDRESS entry)
 
 RETURN
 
-; A caller-owned packet survives physical admission and its synchronous fence.
-; UPDATE stays with the operation throughout physical access.
+; The UPDATE owner borrows the GUI packet through physical admission/fencing.
 PUBLIC PROC Apply(CONSOLEBITMAP.Packet POINTER packet)
 
   CONSOLEBITMAP.Apply(packet)
@@ -30,10 +30,10 @@ RETURN
 ; access. No presenter packet is borrowed.
 PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
-  CONSOLEBITMAP.Packet packet
   LAYERTYPES.Rect rail,clip
   CARD index
 
+  LET packet=AESDRAWSTATE.Packet()
   LET window=AESWINDOWSTATE.Handle(client,request.intin(0))
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
@@ -91,7 +91,7 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
         packet.clipRight=CARD(clip.right)
         packet.clipBottom=CARD(clip.bottom)
         packet.fillX=0
-        Apply(@packet)
+        Apply(packet)
         IF packet.status<>DISPLAY.OK OR packet.fillX<>0 THEN
           request.intout(0)=0
           RETURN(AESTYPES.DISPLAY_ERROR)

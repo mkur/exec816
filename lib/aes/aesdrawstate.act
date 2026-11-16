@@ -1,0 +1,14 @@
+; One GUI packet borrowed by the current UPDATE owner, never by cursor work.
+MODULE AESDRAWSTATE
+USE CONSOLEBITMAP
+
+CONSOLEBITMAP.Packet workspace
+
+; Caller window/frame/cache operations retain UPDATE through physical return.
+; Trusted renderer callbacks do not reenter AES. The manager's cursor packet
+; and application VDI parameter arrays are separate, including during waits.
+PUBLIC CONSOLEBITMAP.Packet POINTER FUNC Packet()
+
+RETURN(@workspace)
+
+ENDMODULE
