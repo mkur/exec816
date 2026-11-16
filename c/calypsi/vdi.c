@@ -26,7 +26,8 @@ static BOOL enter(struct ExecAESContext *c)
 WORD ExecAESGrafHandle(struct ExecAESContext *c, WORD *cw,WORD *ch,WORD *bw,WORD *bh)
 {
     if (!enter(c)) return 0;
-    *cw=*ch=*bw=*bh=8;
+    *cw=GEM_CHAR_WIDTH; *ch=GEM_CHAR_HEIGHT;
+    *bw=GEM_BOX_WIDTH; *bh=GEM_BOX_HEIGHT;
     c->busy=0;
     return EXEC_VDI_PHYSICAL;
 }

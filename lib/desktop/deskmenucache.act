@@ -416,7 +416,7 @@ PROC Exposed()
           AND AESWINDOWSTATE.Preserves(window)=0 THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
-          DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@work)
+          DESKGEOMETRY.Work(window,@work)
           REGIONS.Intersect(@work,@exposure,@area)
           rect=0
           WHILE rect<layer.visible.count DO

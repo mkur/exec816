@@ -121,7 +121,7 @@ BYTE FUNC PaintStrip(CONSOLEBITMAP.Packet POINTER output
         0,0,DESKTYPES.FRAME_ICONIFIED,0,0,0,0,@glyphOffset))
   FI
 
-  DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
+  DESKGEOMETRY.Work(window,@client)
   IF started=PAINT_CACHE THEN
     okay=DESKCACHE.Restored(service)
     IF okay=0 THEN
@@ -216,7 +216,7 @@ BYTE FUNC SelectStrip(DESKTYPES.Window POINTER window
       REGIONS.Copy(damage,@strip)
       whole=(started=PAINT_POPUP_CACHE)
     ELSE
-      DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@client)
+      DESKGEOMETRY.Work(window,@client)
       REGIONS.Copy(@layer.bounds,@part)
       IF saved<>0 THEN
         IF partIndex>=2 THEN

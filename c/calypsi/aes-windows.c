@@ -404,10 +404,15 @@ WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, W
                WORD *ox, WORD *oy, WORD *ow, WORD *oh)
 {
     LONG left = x, top = y, width = w, height = h;
-    WORD leftInset=kind ? DESKTOP_WORK_LEFT:0;
-    WORD right = kind & (UPARROW|DNARROW|VSLIDE) ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_WORK_RIGHT;
-    WORD inset = DESKTOP_WORK_TOP + (kind & INFO ? DESKTOP_FRAME_INFO_HEIGHT:0);
-    WORD bottom = kind & (SIZER|LFARROW|RTARROW|HSLIDE) ? DESKTOP_FRAME_GADGET_HEIGHT:DESKTOP_WORK_BOTTOM;
+    /* MagiC _wbm_calc: shared borders, configured 16x11 box metrics. */
+    WORD leftInset=kind ? 1:0;
+    WORD right=leftInset,inset=leftInset,bottom=leftInset;
+    if (kind & (NAME|CLOSER|FULLER|0x4000)) inset+=GEM_BOX_HEIGHT-1;
+    if (kind & INFO) inset+=GEM_INFO_HEIGHT-1;
+    if ((kind & (UPARROW|DNARROW|VSLIDE)) ||
+        ((kind & SIZER) && !(kind & (LFARROW|RTARROW|HSLIDE))))
+        right+=GEM_BOX_WIDTH-1;
+    if (kind & (LFARROW|RTARROW|HSLIDE)) bottom+=GEM_BOX_HEIGHT-1;
     *ox = *oy = *ow = *oh = 0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }

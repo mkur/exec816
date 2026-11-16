@@ -1,145 +1,95 @@
 ; Fixed desktop geometry shared by drawing, input and work-area publication.
 MODULE DESKGEOMETRY
 USE DESKTYPES
+USE GEMOBJECTS
+USE GEMFRAME
 USE LAYERTYPES
 USE REGIONS
 
 PUBLIC INT FUNC Top(CARD kind)
+  GEMOBJECTS.Rect inset
 
-  IF (kind & DESKTYPES.FRAME_BORDERLESS)<>0 THEN
-    RETURN(0)
-  FI
-RETURN(DESKTYPES.WORK_TOP+IF (kind & DESKTYPES.FRAME_INFO)<>0 THEN
-    DESKTYPES.FRAME_INFO_HEIGHT ELSE 0 FI)
+  GEMFRAME.Margins(kind,@inset)
 
-PUBLIC INT FUNC Right(CARD kind)
-
-  IF (kind & DESKTYPES.FRAME_BORDERLESS)<>0 THEN
-    RETURN(0)
-  FI
-RETURN(IF (kind & DESKTYPES.FRAME_VERTICAL)<>0 THEN
-    DESKTYPES.FRAME_GADGET_WIDTH ELSE DESKTYPES.WORK_RIGHT FI)
+RETURN(inset.y)
 
 PUBLIC INT FUNC Bottom(CARD kind)
+  GEMOBJECTS.Rect inset
 
-  IF (kind & DESKTYPES.FRAME_BORDERLESS)<>0 THEN
-    RETURN(0)
-  FI
-RETURN(IF (kind & (DESKTYPES.FRAME_SIZER
-    OR DESKTYPES.FRAME_HORIZONTAL))<>0 THEN
-    DESKTYPES.FRAME_GADGET_HEIGHT ELSE DESKTYPES.WORK_BOTTOM FI)
+  GEMFRAME.Margins(kind,@inset)
 
-PUBLIC PROC Work(CARD kind
-    LAYERTYPES.Rect POINTER bounds,work)
+RETURN(inset.height)
 
-  IF (kind & DESKTYPES.FRAME_BORDERLESS)<>0 THEN
-    REGIONS.Copy(bounds,work)
-    RETURN
-  FI
-  REGIONS.Assign(work,bounds.left+DESKTYPES.WORK_LEFT,
-      bounds.top+Top(kind),bounds.right-Right(kind),
-      bounds.bottom-Bottom(kind))
+; Rectangles in Layers and copied query views are projections of GEM GRECTs.
+PUBLIC PROC Project(GEMOBJECTS.Rect POINTER input LAYERTYPES.Rect POINTER out)
+
+  REGIONS.Assign(out,input.x,input.y,input.x+input.width,input.y+input.height)
 
 RETURN
 
-; Relative track coordinates are shared by cached thumb geometry and capture.
-PROC BuildTrack(CARD kind
-    LAYERTYPES.Rect POINTER bounds,track)
+PUBLIC PROC Work(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER work)
 
-  REGIONS.Assign(track,bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-      bounds.top+Top(kind),bounds.right-1,
-      bounds.bottom-Bottom(kind))
-  IF (kind & DESKTYPES.FRAME_UPARROW)<>0 THEN
-    track.top==+DESKTYPES.FRAME_GADGET_HEIGHT
+  Project(@window.frame.work,work)
+
+RETURN
+
+; A physical layer includes the shadow; signed canonical geometry stays intact.
+PUBLIC PROC Overall(DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER out)
+
+  Project(@window.frame.overall,out)
+  IF out.right>640 THEN
+    out.right=640
   FI
-  IF (kind & DESKTYPES.FRAME_DNARROW)<>0 THEN
-    track.bottom==-DESKTYPES.FRAME_GADGET_HEIGHT
+  IF out.bottom>240 THEN
+    out.bottom=240
   FI
+
+RETURN
+
+; Stored relative object geometry, translated once at its consumer boundary.
+PUBLIC PROC ObjectRect(DESKTYPES.Window POINTER window INT object
+    LAYERTYPES.Rect POINTER out)
+  INT x,y
+
+  LET frame=@window.frame
+  LET item=@frame.tree(object)
+  x=frame.current.x+item.x
+  y=frame.current.y+item.y
+  IF object=GEMOBJECTS.O_VSLIDE THEN
+    x==+frame.tree(GEMOBJECTS.O_VSCROLL).x
+    y==+frame.tree(GEMOBJECTS.O_VSCROLL).y
+  ELSEIF object=GEMOBJECTS.O_HSLIDE THEN
+    x==+frame.tree(GEMOBJECTS.O_HSCROLL).x
+    y==+frame.tree(GEMOBJECTS.O_HSCROLL).y
+  FI
+  REGIONS.Assign(out,x,y,x+item.width,y+item.height)
 
 RETURN
 
 PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds,track)
 
-  BuildTrack(window.frameKind,bounds,track)
+  ObjectRect(window,GEMOBJECTS.O_VSCROLL,track)
 
 RETURN
 
-; Horizontal bars reserve the corner whenever a vertical bar or sizer uses it.
 PUBLIC PROC HScrollTrack(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER bounds,track)
 
-  REGIONS.Assign(track,bounds.left,
-      bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
-      bounds.right,bounds.bottom-1)
-  IF (window.frameKind & (DESKTYPES.FRAME_VERTICAL
-      OR DESKTYPES.FRAME_SIZER))<>0 THEN
-    track.right==-DESKTYPES.FRAME_GADGET_WIDTH
-  FI
-  IF (window.frameKind & DESKTYPES.FRAME_LFARROW)<>0 THEN
-    track.left==+DESKTYPES.FRAME_GADGET_WIDTH
-  FI
-  IF (window.frameKind & DESKTYPES.FRAME_RTARROW)<>0 THEN
-    track.right==-DESKTYPES.FRAME_GADGET_WIDTH
-  FI
+  ObjectRect(window,GEMOBJECTS.O_HSCROLL,track)
 
 RETURN
 
-; Both axes cache thumb geometry only on mutations, never per paint fragment.
-PROC CacheSlider(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds BYTE horizontal INT position,size)
-  LAYERTYPES.Rect track
-  INT height,thumb
+; Temporary projection for renderer/input consumers awaiting WG4/WG5.
+PUBLIC PROC ProjectSliders(DESKTYPES.Window POINTER window)
 
-  LET components=IF horizontal<>0 THEN CARD(DESKTYPES.FRAME_HORIZONTAL)
-      ELSE CARD(DESKTYPES.FRAME_VERTICAL) FI
-  IF (window.frameKind & components)=0 THEN
-    IF horizontal<>0 THEN
-      window.sliderLeft=0
-      window.sliderWidth=0
-    ELSE
-      window.sliderTop=0
-      window.sliderHeight=0
-    FI
-    RETURN
-  FI
-
-  IF horizontal<>0 THEN
-    HScrollTrack(window,bounds,@track)
-    height=track.right-track.left
-  ELSE
-    ScrollTrack(window,bounds,@track)
-    height=track.bottom-track.top
-  FI
-  thumb=INT((LONGCARD(CARD(height))*LONGCARD(CARD(size)))/1000)
-  IF thumb<DESKTYPES.FRAME_THUMB_MIN THEN
-    thumb=DESKTYPES.FRAME_THUMB_MIN
-  FI
-  IF thumb>height THEN
-    thumb=height
-  FI
-  LET offset=INT((LONGCARD(CARD(height-thumb))*LONGCARD(CARD(position)))/1000)
-  IF horizontal<>0 THEN
-    window.sliderWidth=thumb
-    window.sliderLeft=track.left-bounds.left+offset
-  ELSE
-    window.sliderHeight=thumb
-    window.sliderTop=track.top-bounds.top+offset
-  FI
-
-RETURN
-
-PUBLIC PROC Slider(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds INT position,size)
-
-  CacheSlider(window,bounds,0,position,size)
-
-RETURN
-
-PUBLIC PROC HSlider(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds INT position,size)
-
-  CacheSlider(window,bounds,1,position,size)
+  LET tree=@window.frame
+  window.sliderTop=tree.tree(GEMOBJECTS.O_VSCROLL).y
+      +tree.tree(GEMOBJECTS.O_VSLIDE).y
+  window.sliderHeight=tree.tree(GEMOBJECTS.O_VSLIDE).height
+  window.sliderLeft=tree.tree(GEMOBJECTS.O_HSCROLL).x
+      +tree.tree(GEMOBJECTS.O_HSLIDE).x
+  window.sliderWidth=tree.tree(GEMOBJECTS.O_HSLIDE).width
 
 RETURN
 
@@ -237,7 +187,15 @@ PUBLIC BYTE FUNC Gadget(CARD frameKind BYTE iconified
       OR y>=bounds.bottom-Bottom(frameKind) THEN
     RETURN(0)
   FI
-  BuildTrack(frameKind,bounds,@rail)
+  REGIONS.Assign(@rail,bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
+      bounds.top+Top(frameKind),bounds.right-1,
+      bounds.bottom-Bottom(frameKind))
+  IF (frameKind & DESKTYPES.FRAME_UPARROW)<>0 THEN
+    rail.top==+DESKTYPES.FRAME_GADGET_HEIGHT-1
+  FI
+  IF (frameKind & DESKTYPES.FRAME_DNARROW)<>0 THEN
+    rail.bottom==-DESKTYPES.FRAME_GADGET_HEIGHT-1
+  FI
   IF y<rail.top THEN
     RETURN(2)
   FI

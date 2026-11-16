@@ -148,7 +148,7 @@ PUBLIC BYTE FUNC Publish()
               IF layer.shown<>0 AND window.id<>DESKSTATE.desktopWindow THEN
                 route.kind=1
               FI
-              DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
+              DESKGEOMETRY.Work(window,@route.work)
               FOR index=0 TO AESTYPES.WINDOWS-1 DO
                 IF service.windows(index)<>NULL AND service.windows(index).owner<>0
                     AND service.windows(index)=window THEN

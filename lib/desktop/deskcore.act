@@ -11,6 +11,7 @@ USE HEAPCORE
 USE DESKTYPES
 USE CONSOLEWINDOWS
 USE DESKGEOMETRY
+USE GEMFRAME
 USE DESKCACHE
 USE DESKSTATE
 USE LAYERTYPES
@@ -202,7 +203,7 @@ PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
     RETURN
   FI
 
-  REGIONS.Copy(@layer.bounds,@window.normalBounds)
+  DESKGEOMETRY.Project(@window.frame.current,@window.normalBounds)
   window.iconified=1
   slot=0
   WHILE service.windows(slot)<>window DO
@@ -212,6 +213,10 @@ PUBLIC PROC Iconify(DESKTYPES.Service POINTER service
   IconCheck(LAYERS.Bounds(@service.scene,window.layer,left,
       240-DESKTYPES.TILE_BOTTOM-DESKTYPES.TILE_HEIGHT,
       DESKTYPES.TILE_WIDTH,DESKTYPES.TILE_HEIGHT))
+  GEMFRAME.SetKind(@window.frame,9)
+  GEMFRAME.SetSize(@window.frame,9,left,
+      240-DESKTYPES.TILE_BOTTOM-DESKTYPES.TILE_HEIGHT,
+      DESKTYPES.TILE_WIDTH,DESKTYPES.TILE_HEIGHT)
   IconCheck(DESKSTATE.Raise(window.layer))
   CommitFocus(service,NextFocus(service,window.id))
   AESWINDOWSTATE.Snapshot(AESWINDOWSTATE.FindRecord(window.id))
@@ -229,16 +234,17 @@ PUBLIC PROC ForgetIcon(DESKTYPES.Service POINTER service
 
   LET bounds=@window.normalBounds
   window.iconified=0
-  IconCheck(LAYERS.Bounds(@service.scene,window.layer,bounds.left,bounds.top,
-      bounds.right-bounds.left,bounds.bottom-bounds.top))
+  GEMFRAME.SetKind(@window.frame,window.frameKind)
+  GEMFRAME.SetSize(@window.frame,window.frameKind,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top)
   BEGIN
-    LAYERTYPES.Rect work
-    DESKGEOMETRY.Work(window.frameKind,bounds,@work)
+    LAYERTYPES.Rect physical,work
+    DESKGEOMETRY.Overall(window,@physical)
+    IconCheck(LAYERS.Bounds(@service.scene,window.layer,physical.left,physical.top,
+        physical.right-physical.left,physical.bottom-physical.top))
+    DESKGEOMETRY.Work(window,@work)
     LAYERS.ExternalArea(@service.scene,window.layer,@work)
-    BEGIN
-      LET item=AESWINDOWSTATE.FindRecord(window.id)
-      DESKGEOMETRY.Slider(window,bounds,item.view.vslide,item.view.vsize)
-    END
+    DESKGEOMETRY.ProjectSliders(window)
   END
 
 RETURN

@@ -40,3 +40,18 @@ charges **800 bytes** after allocator rounding; two charge **1,600 bytes**. The
 service is **9,284 bytes**. Guards passed. Reserved bank-zero growth is zero
 for fixed, root, kernel, idle and each public Task. Rendering and query consumers
 still use temporary legacy projections until their planned cutover.
+
+WG2 ports `_wbm_calc`, `_wind_calc` and `_wbm_ssize`. Current, previous, full,
+work and shadow geometry live in the window. Layers and query rectangles are
+projections. Equal-size moves update the root origin and retain all 360 child
+bytes. Admission no longer rounds x/width to even pixels; clipped shadow moves
+can use redraw instead of an incompatible copy projection. Full layout uses
+the kind minimum and shared borders; the public character/box metrics are
+8×8/16×11. The title/both-bar work insets are 1/11/16/11, with info top 21.
+
+The optimized pure-layout fixture passed 4,477 checks, including signed work/
+border round trips for all 4,096 supported kind combinations, stored arrow/
+track positions, both minimum thumbs, an origin-only move and clipped overall
+projection. Guards passed. No reservations changed from WG1. During the cutover,
+legacy render/input consumers receive scalar projections from the tree; WG4/WG5
+remove them. WG2 also completes the menu object-size constant rename from WG0.

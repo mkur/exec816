@@ -1,0 +1,82 @@
+MODULE GEMWINDOWLAYOUT
+USE EXEC
+USE DESKWINDOW
+USE GEMFRAME
+USE GEMOBJECTS
+USE DESKGEOMETRY
+USE LAYERTYPES
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks
+INT ARRAY geometry(8)
+BYTE ARRAY children(360)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  GEMOBJECTS.Rect work,border
+  LAYERTYPES.Rect physical
+  CARD index
+
+  LET window=DESKWINDOW.Create(4095)
+  Require(window<>NULL)
+  GEMFRAME.SetSize(@window.frame,4095,13,17,320,180)
+  LET frame=@window.frame
+  geometry(0)=frame.tree(GEMOBJECTS.O_NAME).width
+  geometry(1)=frame.tree(GEMOBJECTS.O_VSCROLL).height
+  geometry(2)=frame.tree(GEMOBJECTS.O_HSCROLL).width
+  geometry(3)=frame.tree(GEMOBJECTS.O_VSCROLL).y
+  Require(frame.work.x=14 AND frame.work.y=38)
+  Require(frame.work.width=303 AND frame.work.height=148)
+  Require(frame.overall.width=322 AND frame.overall.height=182)
+  Require(frame.tree(GEMOBJECTS.O_NAME).x=15)
+  Require(frame.tree(GEMOBJECTS.O_NAME).width=290)
+  Require(frame.tree(GEMOBJECTS.O_VSCROLL).x=304)
+  Require(frame.tree(GEMOBJECTS.O_VSCROLL).y=30)
+  Require(frame.tree(GEMOBJECTS.O_VSCROLL).height=130)
+  Require(frame.tree(GEMOBJECTS.O_DOWN).y=159)
+  Require(frame.tree(GEMOBJECTS.O_HSCROLL).x=15)
+  Require(frame.tree(GEMOBJECTS.O_HSCROLL).y=169)
+  Require(frame.tree(GEMOBJECTS.O_HSCROLL).width=275)
+  Require(frame.tree(GEMOBJECTS.O_RIGHT).x=289)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).height=11)
+  Require(frame.tree(GEMOBJECTS.O_HSLIDE).width=16)
+  A816MEMORY.Move(@children(0),BYTE POINTER(@frame.tree(1)),360)
+  GEMFRAME.SetSize(frame,4095,27,47,320,180)
+  Require(frame.current.x=27 AND frame.current.y=47)
+  Require(frame.previous.x=13 AND frame.previous.y=17)
+  Require(frame.work.x=28 AND frame.work.y=68)
+  LET bytes=BYTE POINTER(@frame.tree(1))
+  FOR index=0 TO 359 DO
+    Require(children(index)=bytes(SIZE(index)))
+  OD
+  GEMFRAME.SetSize(frame,4095,0,0,640,240)
+  DESKGEOMETRY.Overall(window,@physical)
+  Require(physical.right=640 AND physical.bottom=240)
+
+  ; All supported kind combinations share one round-trip calculation. Signed
+  ; off-screen coordinates are pure geometry, distinct from open admission.
+  border.x=-17
+  border.y=-23
+  border.width=640
+  border.height=240
+  FOR index=0 TO 4095 DO
+    GEMFRAME.Calc(1,index,@border,@work)
+    GEMFRAME.Calc(0,index,@work,@work)
+    Require(work.x=border.x AND work.y=border.y
+        AND work.width=border.width AND work.height=border.height)
+  OD
+  GEMFRAME.Calc(1,4096,@border,@work)
+  Require(work.x=-17 AND work.width=640)
+  DESKWINDOW.Free(window)
+
+RETURN
+ENDMODULE

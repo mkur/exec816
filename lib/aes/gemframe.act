@@ -71,6 +71,7 @@ PUBLIC PROC SetKind(GEMOBJECTS.Frame POINTER frame CARD kind)
   BYTE index
 
   Minimum(frame,kind)
+  frame.tree(0).width=-1
   FOR index=0 TO GEMOBJECTS.OBJECTS-1 DO
     frame.tree(index).next=-1
     frame.tree(index).head=-1
@@ -134,6 +135,199 @@ PUBLIC PROC SetKind(GEMOBJECTS.Frame POINTER frame CARD kind)
     Add(frame,0,GEMOBJECTS.O_SIZER)
     frame.tree(GEMOBJECTS.O_SIZER).spec=IF (kind & SIZER)<>0
         THEN LONGCARD($06021100) ELSE LONGCARD($00021100) FI
+  FI
+
+RETURN
+
+; _wbm_calc: the four values are inset amounts, not a rectangle.
+PUBLIC PROC Margins(CARD kind GEMOBJECTS.Rect POINTER out)
+
+  out.x=1
+  out.y=1
+  out.width=1
+  out.height=1
+  IF (kind & BORDERLESS)<>0 THEN
+    out.x=0
+    out.y=0
+    out.width=0
+    out.height=0
+    RETURN
+  FI
+  IF (kind & TOP)<>0 THEN
+    out.y==+GEMOBJECTS.BOX_HEIGHT-1
+  FI
+  IF (kind & INFO)<>0 THEN
+    out.y==+GEMOBJECTS.INFO_HEIGHT-1
+  FI
+  IF (kind & VERTICAL)<>0 OR ((kind & SIZER)<>0
+      AND (kind & HORIZONTAL)=0) THEN
+    out.width==+GEMOBJECTS.BOX_WIDTH-1
+  FI
+  IF (kind & HORIZONTAL)<>0 THEN
+    out.height==+GEMOBJECTS.BOX_HEIGHT-1
+  FI
+
+RETURN
+
+; _wind_calc accepts signed pure geometry, independent of screen admission.
+PUBLIC PROC Calc(BYTE work CARD kind GEMOBJECTS.Rect POINTER input,out)
+  GEMOBJECTS.Rect inset
+
+  Margins(kind,@inset)
+  IF work<>0 THEN
+    out.x=input.x+inset.x
+    out.y=input.y+inset.y
+    out.width=input.width-inset.x-inset.width
+    out.height=input.height-inset.y-inset.height
+  ELSE
+    out.x=input.x-inset.x
+    out.y=input.y-inset.y
+    out.width=input.width+inset.x+inset.width
+    out.height=input.height+inset.y+inset.height
+  FI
+
+RETURN
+
+; __sslid: signed DIVS truncation followed by MagiC's signed rounding.
+PUBLIC INT FUNC Scale(INT length,value)
+  LONGINT doubled
+
+  doubled=(LONGINT(length)*2*LONGINT(value))/1000
+  IF doubled<0 THEN
+    RETURN(INT(-((-doubled+2)/2)))
+  FI
+
+RETURN(INT((doubled+1)/2))
+
+; _wbm_sslid changes only the chosen stored track/thumb pair.
+PUBLIC PROC Slide(GEMOBJECTS.Frame POINTER frame BYTE vertical)
+  INT length,minimum,size,position,thumb,offset
+
+  IF vertical<>0 THEN
+    length=frame.tree(GEMOBJECTS.O_VSCROLL).height
+    minimum=GEMOBJECTS.BOX_HEIGHT
+    size=frame.vsize
+    position=frame.vslide
+  ELSE
+    length=frame.tree(GEMOBJECTS.O_HSCROLL).width
+    minimum=GEMOBJECTS.BOX_WIDTH
+    size=frame.hsize
+    position=frame.hslide
+  FI
+  IF length<minimum THEN
+    minimum=IF length<0 THEN INT(0) ELSE length FI
+  FI
+  thumb=minimum
+  IF size<>-1 THEN
+    BEGIN
+      LET scaled=Scale(length,size)
+      IF scaled>thumb THEN
+        thumb=scaled
+      FI
+    END
+  FI
+  offset=Scale(position,length-thumb)
+  IF vertical<>0 THEN
+    frame.tree(GEMOBJECTS.O_VSLIDE).height=thumb
+    frame.tree(GEMOBJECTS.O_VSLIDE).y=offset
+  ELSE
+    frame.tree(GEMOBJECTS.O_HSLIDE).width=thumb
+    frame.tree(GEMOBJECTS.O_HSLIDE).x=offset
+  FI
+
+RETURN
+
+; _wbm_ssize: only a dimension/kind change visits the relative gadgets.
+PUBLIC PROC SetSize(GEMOBJECTS.Frame POINTER frame CARD kind
+    INT x,y,width,height)
+  INT length,origin,right,bottom
+
+  frame.previous.x=frame.current.x
+  frame.previous.y=frame.current.y
+  frame.previous.width=frame.current.width
+  frame.previous.height=frame.current.height
+  frame.current.x=x
+  frame.current.y=y
+  frame.current.width=width
+  frame.current.height=height
+  frame.overall.x=x
+  frame.overall.y=y
+  frame.overall.width=width
+  frame.overall.height=height
+  IF (kind & BORDERLESS)=0 THEN
+    frame.overall.width==+GEMOBJECTS.SHADOW
+    frame.overall.height==+GEMOBJECTS.SHADOW
+  FI
+  Calc(1,kind,@frame.current,@frame.work)
+  frame.tree(0).x=x
+  frame.tree(0).y=y
+  IF frame.tree(0).width=width AND frame.tree(0).height=height THEN
+    RETURN
+  FI
+  frame.tree(0).width=width
+  frame.tree(0).height=height
+  right=width-GEMOBJECTS.BOX_WIDTH
+  frame.tree(GEMOBJECTS.O_BDROP).x=right
+  frame.tree(GEMOBJECTS.O_FULLER).x=right
+  frame.tree(GEMOBJECTS.O_ICONIFIER).x=right
+  frame.tree(GEMOBJECTS.O_SIZER).x=right
+  frame.tree(GEMOBJECTS.O_UP).x=right
+  frame.tree(GEMOBJECTS.O_DOWN).x=right
+  frame.tree(GEMOBJECTS.O_VSCROLL).x=right
+  bottom=height-GEMOBJECTS.BOX_HEIGHT
+  frame.tree(GEMOBJECTS.O_SIZER).y=bottom
+  frame.tree(GEMOBJECTS.O_LEFT).y=bottom
+  frame.tree(GEMOBJECTS.O_RIGHT).y=bottom
+  frame.tree(GEMOBJECTS.O_HSCROLL).y=bottom
+  frame.tree(GEMOBJECTS.O_NAME).width=width
+  frame.tree(GEMOBJECTS.O_INFO).width=width
+  IF (kind & CLOSER)<>0 THEN
+    frame.tree(GEMOBJECTS.O_NAME).width==-(GEMOBJECTS.BOX_WIDTH-1)
+  FI
+  IF (kind & FULLER)<>0 THEN
+    frame.tree(GEMOBJECTS.O_BDROP).x==-(GEMOBJECTS.BOX_WIDTH-1)
+    frame.tree(GEMOBJECTS.O_ICONIFIER).x==-(GEMOBJECTS.BOX_WIDTH-1)
+    frame.tree(GEMOBJECTS.O_NAME).width==-(GEMOBJECTS.BOX_WIDTH-1)
+  FI
+  IF (kind & ICONIFIER)<>0 THEN
+    frame.tree(GEMOBJECTS.O_BDROP).x==-(GEMOBJECTS.BOX_WIDTH-1)
+    frame.tree(GEMOBJECTS.O_NAME).width==-(GEMOBJECTS.BOX_WIDTH-1)
+  FI
+  IF (kind & VERTICAL)<>0 OR ((kind & SIZER)<>0
+      AND (kind & HORIZONTAL)=0) THEN
+    origin=frame.work.y-y-1
+    length=frame.work.height+2
+    IF (kind & UP)<>0 THEN
+      frame.tree(GEMOBJECTS.O_UP).y=origin
+      origin==+GEMOBJECTS.BOX_HEIGHT-1
+      length==-(GEMOBJECTS.BOX_HEIGHT-1)
+    FI
+    IF (kind & DOWN)<>0 THEN
+      length==-(GEMOBJECTS.BOX_HEIGHT-1)
+    FI
+    IF (kind & HORIZONTAL)=0 AND (kind & SIZER)<>0 THEN
+      length==-(GEMOBJECTS.BOX_HEIGHT-1)
+    FI
+    frame.tree(GEMOBJECTS.O_VSCROLL).y=origin
+    frame.tree(GEMOBJECTS.O_VSCROLL).height=length
+    frame.tree(GEMOBJECTS.O_DOWN).y=origin+length-1
+    Slide(frame,1)
+  FI
+  IF (kind & HORIZONTAL)<>0 THEN
+    origin=0
+    length=frame.work.width+2
+    IF (kind & LEFT)<>0 THEN
+      frame.tree(GEMOBJECTS.O_LEFT).x=0
+      origin==+GEMOBJECTS.BOX_WIDTH-1
+      length==-(GEMOBJECTS.BOX_WIDTH-1)
+    FI
+    IF (kind & RIGHT)<>0 THEN
+      length==-(GEMOBJECTS.BOX_WIDTH-1)
+    FI
+    frame.tree(GEMOBJECTS.O_HSCROLL).x=origin
+    frame.tree(GEMOBJECTS.O_HSCROLL).width=length
+    frame.tree(GEMOBJECTS.O_RIGHT).x=origin+length-1
+    Slide(frame,0)
   FI
 
 RETURN

@@ -1,6 +1,7 @@
 ; Synchronous caller-owned copied moves under UPDATE.
 MODULE DESKMOVE
 USE AESTYPES
+USE GEMFRAME
 USE AESWINDOWSTATE
 USE AESFRAME
 USE DISPLAY
@@ -19,6 +20,8 @@ PUBLIC BYTE FUNC CopyEligible(DESKTYPES.Window POINTER window
 
   eligible=(DISPLAY.Blocked()=0
       AND CONSOLEBITMAP.Enabled()<>0 AND layer.dirty=0 AND layer.shown<>0
+      AND window.frame.overall.width=layer.bounds.right-layer.bounds.left
+      AND window.frame.overall.height=layer.bounds.bottom-layer.bounds.top
       AND ((layer.bounds.left OR left OR
           (layer.bounds.right-layer.bounds.left)) & 1)=0)
 
@@ -65,6 +68,9 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
       IF LAYERS.Finish(@service.scene,token,completed)<>LAYERTYPES.OK THEN
         HEAPCORE.Abort($faed)
       FI
+      GEMFRAME.SetSize(@window.frame,window.frameKind,
+          layer.bounds.left,layer.bounds.top,window.frame.current.width,
+          window.frame.current.height)
       AESWINDOWSTATE.Geometry(window,completed)
       AESWINDOWSTATE.Sync()
       RETURN(IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI)
@@ -74,6 +80,8 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
   FI
   status=LAYERS.Move(@service.scene,window.layer,left,top)
   IF status=LAYERTYPES.OK THEN
+    GEMFRAME.SetSize(@window.frame,window.frameKind,left,top,
+        window.frame.current.width,window.frame.current.height)
     AESWINDOWSTATE.Geometry(window,0)
     AESWINDOWSTATE.Sync()
   FI

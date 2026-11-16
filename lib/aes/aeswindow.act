@@ -29,34 +29,12 @@ USE HEAPCORE
 BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
 
-  IF x<0 OR y<0 OR width<32 OR height<32 OR width>640 OR height>240
-      OR x>640-width OR y>240-height
-      OR height<=DESKGEOMETRY.Top(kind)+DESKGEOMETRY.Bottom(kind) THEN
+  ; Screen admission remains bounded; pure GEMFRAME.Calc has no such policy.
+  IF x<0 OR y<0 OR width<1 OR height<1 OR width>640 OR height>240
+      OR x>640-width OR y>240-height THEN
     RETURN(0)
   FI
 
-  IF (kind & DESKTYPES.FRAME_FULLER)<>0
-      AND width<2*DESKTYPES.FRAME_GADGET_WIDTH THEN
-    RETURN(0)
-  FI
-
-  IF ((kind & AESTYPES.SIZER)<>0 AND (width<DESKTYPES.FRAME_MIN_WIDTH
-      OR height<DESKTYPES.FRAME_MIN_SIZE_HEIGHT))
-      OR ((kind & DESKTYPES.FRAME_VERTICAL)<>0
-      AND height<DESKTYPES.FRAME_MIN_SCROLL_HEIGHT
-          +DESKGEOMETRY.Top(kind)-DESKTYPES.WORK_TOP) THEN
-    RETURN(0)
-  FI
-
-  IF (kind & DESKTYPES.FRAME_HORIZONTAL)<>0
-      AND width<DESKTYPES.FRAME_MIN_SCROLL_WIDTH THEN
-    RETURN(0)
-  FI
-
-  ; Packed pixels share bytes. Normalize once at geometry admission; work
-  ; rectangles and fixed-size comparisons use the accepted dimensions.
-  x=x & $fffe
-  width=(width+1) & $fffe
   REGIONS.Assign(rect,x,y,x+width,y+height)
 
 RETURN(1)
@@ -71,7 +49,7 @@ BYTE FUNC FitBounds(DESKTYPES.Window POINTER window
     LAYERTYPES.Rect POINTER current,bounds INT x,y,width,height)
 
 RETURN(ValidBounds(window.frameKind,x,y,width,height,bounds)<>0
-    AND ((window.frameKind & AESTYPES.SIZER)<>0 OR SameSize(current,bounds)<>0))
+    AND width>=window.frame.minWidth AND height>=window.frame.minHeight)
 
 ; The caller owns the scene and supplies the registered binding's window view.
 PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
@@ -136,13 +114,9 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         view.handle=item.gui.window
         view.kind=kind
         view.vslide=0
-        view.vsize=1000
+        view.vsize=-1
         view.hslide=0
-        view.hsize=1000
-        DESKGEOMETRY.HSlider(window,@bounds,0,1000)
-        A816MEMORY.Move(BYTE POINTER(@view.full),BYTE POINTER(@bounds),8)
-        A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@bounds),8)
-        DESKGEOMETRY.Slider(window,@bounds,0,1000)
+        view.hsize=-1
         window.frame.full.x=x
         window.frame.full.y=y
         window.frame.full.width=width
@@ -161,23 +135,30 @@ RETURN(AESTYPES.RESOURCE)
 ; together under scene ownership; no route creation or draining occurs here.
 PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     DESKTYPES.Window POINTER item LAYERTYPES.Rect POINTER bounds LONGCARD route)
+  LAYERTYPES.Rect physical
 
   LET desktop=DESKSTATE.Get()
   LET window=item
   window.keyRoute=route
   AESGUI.Open(service,client,item)
-  IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
-      bounds.right-bounds.left,bounds.bottom-bounds.top)<>LAYERTYPES.OK
+  REGIONS.Copy(bounds,@physical)
+  IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS THEN
+    physical.right=IF bounds.right<638 THEN bounds.right+2 ELSE INT(640) FI
+    physical.bottom=IF bounds.bottom<238 THEN bounds.bottom+2 ELSE INT(240) FI
+  FI
+  IF LAYERS.Bounds(@desktop.scene,window.layer,physical.left,physical.top,
+      physical.right-physical.left,physical.bottom-physical.top)<>LAYERTYPES.OK
       OR DESKSTATE.PrepareOpen(window.layer)<>LAYERTYPES.OK
       OR LAYERS.Show(@desktop.scene,window.layer,1)<>LAYERTYPES.OK THEN
     HEAPCORE.Abort($fcb5)
   FI
+  GEMFRAME.SetSize(@window.frame,window.frameKind,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top)
   DESKCORE.CommitFocus(desktop,window.id)
   IF client.closeRequested<>0 THEN
     AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
   FI
   AESWINDOWSTATE.Geometry(item,0)
-  A816MEMORY.Move(BYTE POINTER(@item.view.previous),BYTE POINTER(bounds),8)
   AESWINDOWSTATE.Sync()
 
 RETURN
@@ -360,30 +341,33 @@ RETURN(AESTYPES.OK)
 CARD FUNC SetBounds(AESSTATE.Service POINTER service
     DESKTYPES.Service POINTER desktop DESKTYPES.Window POINTER item
     LAYERTYPES.Layer POINTER layer AESTYPES.Request POINTER request)
-  LAYERTYPES.Rect bounds
-  LAYERTYPES.Rect POINTER current
+  LAYERTYPES.Rect bounds,current,physical
 
   LET window=item
-  current=@layer.bounds
+  DESKGEOMETRY.Project(@window.frame.current,@current)
   IF window.iconified<>0 THEN
-    current=@window.normalBounds
+    REGIONS.Copy(@window.normalBounds,@current)
   FI
-  IF FitBounds(window,current,@bounds,request.intin(2),request.intin(3),
+  IF FitBounds(window,@current,@bounds,request.intin(2),request.intin(3),
       request.intin(4),request.intin(5))=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  LET same=SameSize(current,@bounds)
+  LET same=SameSize(@current,@bounds)
   IF window.iconified<>0 THEN
     IF same=0 THEN
       DESKCACHE.Changed(desktop,window)
     FI
-    REGIONS.Copy(@bounds,current)
+    REGIONS.Copy(@bounds,@window.normalBounds)
     AESWINDOWSTATE.Snapshot(item)
     RETURN(AESTYPES.OK)
   FI
 
-  IF same<>0 AND service.updateHolds+service.mouseHolds=0 THEN
+  IF same<>0 AND service.updateHolds+service.mouseHolds=0
+      AND window.frame.overall.width=layer.bounds.right-layer.bounds.left
+      AND window.frame.overall.height=layer.bounds.bottom-layer.bounds.top
+      AND (window.frameKind=DESKTYPES.FRAME_BORDERLESS
+          OR (bounds.right<=638 AND bounds.bottom<=238)) THEN
     BEGIN
       LET status=DESKMOVE.Application(desktop,window,
           bounds.left,bounds.top,request)
@@ -392,10 +376,17 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
     END
   FI
 
-  IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,
-      bounds.right-bounds.left,bounds.bottom-bounds.top)<>LAYERTYPES.OK THEN
+  REGIONS.Copy(@bounds,@physical)
+  IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS THEN
+    physical.right=IF bounds.right<638 THEN bounds.right+2 ELSE INT(640) FI
+    physical.bottom=IF bounds.bottom<238 THEN bounds.bottom+2 ELSE INT(240) FI
+  FI
+  IF LAYERS.Bounds(@desktop.scene,window.layer,physical.left,physical.top,
+      physical.right-physical.left,physical.bottom-physical.top)<>LAYERTYPES.OK THEN
     RETURN(AESTYPES.MALFORMED)
   FI
+  GEMFRAME.SetSize(@window.frame,window.frameKind,bounds.left,bounds.top,
+      bounds.right-bounds.left,bounds.bottom-bounds.top)
   AESWINDOWSTATE.Geometry(item,0)
   AESWINDOWSTATE.Sync()
 

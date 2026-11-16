@@ -255,9 +255,9 @@ PUBLIC BYTE FUNC Select(AESSTATE.Service POINTER service
     RETURN(0)
   FI
   LET heading=GEMOBJECTS.Object POINTER(ADDRESS(menu.tree)
-      +SIZE(CARD(title))*SIZE(AESTYPES.MENUOBJECT_SIZE))
+      +SIZE(CARD(title))*SIZE(GEMOBJECTS.OBJECT_SIZE))
   LET entry=GEMOBJECTS.Object POINTER(ADDRESS(menu.tree)
-      +SIZE(CARD(item))*SIZE(AESTYPES.MENUOBJECT_SIZE))
+      +SIZE(CARD(item))*SIZE(GEMOBJECTS.OBJECT_SIZE))
   IF (heading.state & 8)<>0 OR (entry.state & 8)<>0
       OR (heading.flags & 128)<>0 OR (entry.flags & 128)<>0 THEN
     RETURN(0)

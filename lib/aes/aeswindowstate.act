@@ -11,6 +11,7 @@ USE LAYERTYPES
 USE LAYERS
 USE REGIONS
 USE DESKGEOMETRY
+USE GEMFRAME
 USE DESKCACHE
 USE DESKCACHEWORK
 USE AESDRAWSTATE
@@ -60,7 +61,7 @@ RETURN(AESSTATE.Find(AESSTATE.Get(),item.owner))
 ; The owning client is in this call or awaiting RPC; region construction needs
 ; no long Forbid section.
 PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
-  LAYERTYPES.Rect nextWork
+  LAYERTYPES.Rect nextWork,nextBounds
   LAYERTYPES.Rect POINTER bounds,work
   BYTE status,refresh
 
@@ -71,7 +72,8 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.layer)
   LET view=client.view
-  bounds=@layer.bounds
+  DESKGEOMETRY.Project(@client.frame.current,@nextBounds)
+  bounds=@nextBounds
   IF client.iconified<>0 THEN
     bounds=@client.normalBounds
   FI
@@ -84,7 +86,7 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   work=LAYERTYPES.Rect POINTER(@view.work)
   IF refresh<>0 THEN
     work=@nextWork
-    DESKGEOMETRY.Work(client.frameKind,bounds,work)
+    DESKGEOMETRY.Work(client,work)
     IF client.iconified=0 THEN
       IF moved<>0 THEN
         IF layer.bounds.right-layer.bounds.left<>
@@ -113,9 +115,10 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
 
   EXEC.Forbid()
   IF refresh<>0 THEN
-    IF moved<>0 AND client.geometryEpoch<>0 THEN
-      A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@view.bounds),8)
-    FI
+    DESKGEOMETRY.Project(@client.frame.previous,
+        LAYERTYPES.Rect POINTER(@view.previous))
+    DESKGEOMETRY.Project(@client.frame.full,
+        LAYERTYPES.Rect POINTER(@view.full))
     A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
   FI
@@ -148,10 +151,14 @@ PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
   AESSNAPSHOT.Invalidate()
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,client.layer)
-  DESKGEOMETRY.Slider(client,@layer.bounds,
-      client.view.vslide,client.view.vsize)
-  DESKGEOMETRY.HSlider(client,@layer.bounds,
-      client.view.hslide,client.view.hsize)
+  ; Temporary setter bridge until WG3 makes the frame values authoritative.
+  client.frame.vslide=client.view.vslide
+  client.frame.vsize=client.view.vsize
+  client.frame.hslide=client.view.hslide
+  client.frame.hsize=client.view.hsize
+  GEMFRAME.Slide(@client.frame,1)
+  GEMFRAME.Slide(@client.frame,0)
+  DESKGEOMETRY.ProjectSliders(client)
   Publish(client,copied)
 
 RETURN

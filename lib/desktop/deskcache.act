@@ -92,9 +92,9 @@ PUBLIC PROC ClientBounds(DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
 
   IF window.iconified<>0 THEN
-    DESKGEOMETRY.Work(window.frameKind,@window.normalBounds,area)
+    DESKGEOMETRY.Work(window,area)
   ELSE
-    DESKGEOMETRY.Work(window.frameKind,@layer.bounds,area)
+    DESKGEOMETRY.Work(window,area)
   FI
 
 RETURN
