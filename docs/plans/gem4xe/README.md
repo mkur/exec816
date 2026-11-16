@@ -1,5 +1,11 @@
 # MagiC GUI port over Exec
 
+The current application acceptance target is MagiC's MGVIEW. Other existing
+apps may break during structural refactors. The proposed
+[window geometry design](magic-window-geometry-design.md) follows MagiC's
+frame objects, full layout, selected-axis slider updates and shared geometry
+for drawing/hit-testing, with focused MGVIEW acceptance.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

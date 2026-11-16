@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [MagiC window geometry for MGVIEW](gem4xe/magic-window-geometry-design.md):
+  proposed authoritative frame objects, full-layout/selected-axis separation,
+  drawing and SCRENMGR hit-test consumers. MGVIEW is the sole application
+  acceptance target; other apps may break during the refactor.
+
 - [Independent input.device design](input-device-design.md): rationale for a
   generic input Task independent of AES/SCRENMGR and display ownership. The
   [IM0–IM8 migration](input-device-migration-plan.md) is implemented at development

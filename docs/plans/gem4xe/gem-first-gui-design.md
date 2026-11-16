@@ -14,6 +14,12 @@ executable slices, beginning with native I/O coexistence and resource accounting
 
 ## Decision and scope
 
+Current application acceptance is narrowed to MagiC's MGVIEW; other existing
+apps may break during the port. The proposed
+[geometry refactor](magic-window-geometry-design.md) makes MagiC's frame model
+the basis for layout, selected-axis updates and their drawing/input consumers.
+Its proposals are separate from the implemented contracts below.
+
 Direction updated 2026-11-15: follow the
 [governing MagiC port guidance](../../contributing/README.md#gem-architecture-guidance).
 Port MagiC's GUI structure and flow over Exec platform services, with GEM4XE as

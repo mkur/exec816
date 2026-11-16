@@ -24,6 +24,13 @@ workstations, input/events, ownership, operation boundaries and cleanup.
 MagiC is the architectural baseline. Existing Exec GUI structure is implementation
 inventory to assess against that baseline.
 
+The current application acceptance target is MagiC's MGVIEW. The user permits
+breaking other existing applications during this port; do not retain obsolete
+paths to preserve them. Keep standard GEM calls and follow MagiC's structure.
+The proposed [window geometry design](../plans/gem4xe/magic-window-geometry-design.md)
+records the next geometry and consumer boundaries. Exec synchronization,
+preemption and platform-safety requirements remain in force.
+
 Exec supplies Tasks, signals, ports, native semaphores, timers, memory, DOS,
 loading and device I/O. Preserve its normal Task preemption, platform ABI and
 IRQ/NMI contracts. Start graphics work from existing GEM4XE implementations,
