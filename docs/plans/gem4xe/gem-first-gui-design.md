@@ -161,7 +161,7 @@ manager must not Obtain a caller's semaphore to complete that caller's retained
 effect. Cache/physical continuations require owners and retirement before the
 final SCRENMGR wait loop; no new GUI-specific platform service is assumed.
 
-### SM3a read boundary requiring a decision
+### SM3a selected read boundary
 
 MagiC AESWIN `wind_find` (2812–2838) walks `whdlx` and current window rectangles
 without UPDATE, focus, menu or MCTRL routing. MagiC's supervisor execution
@@ -170,8 +170,8 @@ normal Task preemption. A Forbid around the reader alone cannot repair a writer
 already paused between related geometry/stacking stores. Adding UPDATE to the
 query would change the source flow.
 
-Two concrete nonblocking implementations remain possible before scene-gate
-removal. **No selection is made here.**
+The user selected the committed raw hit snapshot on 2026-11-16. Implement that
+contract first; the alternative below records the rejected live-write refactor.
 
 | Choice | Read and publication contract | Cost/dependency |
 | --- | --- | --- |
@@ -182,8 +182,9 @@ Preserve native/chrome occlusion and distinguish query results from work-area
 input eligibility. Check iconified hits against MagiC rather than inheriting
 Exec's current exclusion silently. Readiness and scene construction still need
 the rest of SM3's ownership inventory; either choice alone cannot remove AESGATE.
-The choice changes concurrent-read visibility and requires the user decision
-specified by the governing guidance before query implementation.
+The selected contract permits the previous complete publication during an
+overlapping mutation. Completed operations must publish before return. It adds
+no buffer, Task or bank-zero reservation and does not acquire UPDATE in queries.
 
 Contention sleeps through ordinary Exec signals/ports. Publish waiters before
 release can wake them, recheck after waking, and treat signals as hints. Use
