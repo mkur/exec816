@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "lease_bytes": 20,
   "fields": {
     "owner": 0,
@@ -45,5 +45,13 @@
     "GRANT_QUEUED": 2,
     "GRANT_OWNED": 3,
     "GRANT_REVOKED": 4
+  },
+  "grant_admission": {
+    "caller": "ordinary_task",
+    "target": "live_task",
+    "requires_lifetime_owner": false,
+    "requires_active_display": true,
+    "hardware_access": false,
+    "publication": "task_guard"
   }
 }

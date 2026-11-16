@@ -25,16 +25,18 @@ BOOL ExecAESDisplayClose(struct ExecAESContext *c)
 static BOOL display_ensure(struct ExecAESContext *c)
 {
     struct DisplayGrant *grant;
-    WORD diagnostic;
+    UWORD status;
     if (c->request.displayGrant) return TRUE;
     grant=AllocMem(sizeof(*grant),MEMF_PUBLIC|MEMF_CLEAR);
     if (!grant) { c->diagnostic=AES_RESOURCE;return FALSE; }
     grant->task=c->request.owner;
     grant->mask=1UL<<c->replies->mp_SigBit;
     c->request.displayGrant=(UBYTE *)grant;
-    if (ExecAESSubmit(c,AES_OP_DISPLAY)) return TRUE;
-    diagnostic=c->diagnostic;
-    if (ExecAESDisplayClose(c)) c->diagnostic=diagnostic;
+    status=DisplayDelegate(grant);
+    if (status==DISPLAY_OK) return TRUE;
+    c->diagnostic=status==DISPLAY_NO_MEMORY ? AES_RESOURCE : AES_DISPLAY_ERROR;
+    FreeMem(grant,sizeof(*grant));
+    c->request.displayGrant=NULL;
     return FALSE;
 }
 

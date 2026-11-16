@@ -69,11 +69,9 @@ static void open_virtual(struct ExecAESContext *c,VDIPB *pb)
     w->grant.task=c->request.owner;
     w->grant.mask=1UL<<w->signal;
     c->request.displayGrant=(UBYTE *)&w->grant;
-    c->busy=0;
-    i=ExecAESSubmit(c,AES_OP_DISPLAY);
-    c->busy=1;
-    if (!i) {
-        if (w->grant.state!=DISPLAY_GRANT_FREE) DisplayGrantClose(&w->grant);
+    i=DisplayDelegate(&w->grant);
+    if (i!=DISPLAY_OK) {
+        c->diagnostic=i==DISPLAY_NO_MEMORY ? AES_RESOURCE : AES_DISPLAY_ERROR;
         c->request.displayGrant=NULL;
         FreeSignal(w->signal); FreeMem(w,sizeof(*w)); return;
     }

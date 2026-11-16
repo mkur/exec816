@@ -16,7 +16,7 @@ def run(out, mode='opt', replay=False):
                   slice='WA3', mode=mode,
                   reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8, idle=0))
     try:
-        p = read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc'),
+        p = read_build(out/'program') if replay else build(compiler(ROOT/'build/actionc',release=True),
             ROOT/'tests/programs/native_display_access.act', out/'program',
             optimize=mode == 'opt', tasks=True, task_capacity=8, console=False)
         report['build'] = p['build']

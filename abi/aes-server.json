@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 24,
+  "version": 25,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -69,7 +69,6 @@
     "WC_BORDER": 0,
     "WC_WORK": 1,
     "OP_GRAF_HANDLE": 77,
-    "OP_DISPLAY": 200,
     "DISPLAY_ERROR": 9,
     "INPUT_SLOTS": 16,
     "INPUT_KEY": 1,
@@ -802,7 +801,6 @@
   "rpc_operations": [
     "OP_INIT",
     "OP_EXIT",
-    "OP_DISPLAY",
     "OP_MOUSE_PROFILE"
   ],
   "public_constants": [

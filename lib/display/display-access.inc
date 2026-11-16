@@ -124,25 +124,30 @@ PUBLIC CARD FUNC OwnerWake(LONGCARD mask)
 
 RETURN(OK)
 
-; Delegation admits and retains one borrowing Task, without opening hardware.
+; Any ordinary Task may admit a live target Task, normally itself. Admission
+; and closing-state publication share this guard; no owner turn or hardware
+; access is required. The caller retains its address-stable grant storage.
 PUBLIC CARD FUNC Delegate(Grant POINTER grant)
   BYTE slot
 
-  IF current=NULL OR Valid(current)=0 OR sharedState<>ACTIVE
+  EXEC.Forbid()
+  IF current=NULL OR sharedState<>ACTIVE
       OR accessWake=0 THEN
+    EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
   IF accessFailed<>0 THEN
+    EXEC.Permit()
     RETURN(DEVICE_FAULT)
   FI
 
   IF grant.state<>GRANT_FREE OR grant.task=NULL OR grant.mask=0
       OR (grant.mask & grant.task.tc_SigAlloc)<>grant.mask THEN
+    EXEC.Permit()
     RETURN(BAD_ARGUMENT)
   FI
 
-  EXEC.Forbid()
   IF grantCount=GRANTS THEN
     EXEC.Permit()
     RETURN(NO_MEMORY)
@@ -173,23 +178,19 @@ RETURN(NO_MEMORY)
 ; identity; drawing units do not repeat a current-Task lookup.
 PUBLIC CARD FUNC OwnerEnter()
 
+  EXEC.Forbid()
   IF current=NULL THEN
+    EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
   IF sharedState=FAULTED THEN
+    EXEC.Permit()
     RETURN(DEVICE_FAULT)
   FI
 
-  ; Only this owner can publish a new grant. With none admitted there is no
-  ; competing queue editor; IRQ/NMI never touch these Task-side fields.
-  IF grantCount=0 THEN
-    physical=1
-    ownerDepth==+1
-    RETURN(OK)
-  FI
-
-  EXEC.Forbid()
+  ; A different Task can publish the first grant at any time. Entry shares
+  ; its guard even when the previous observed grant count was zero.
   IF physical=2 OR (physical=0 AND accessCount<>0) THEN
     IF ownerQueued=0 THEN
       Queue(0)
@@ -211,19 +212,6 @@ RETURN(OK)
 ; Nested native units share a reservation; async DMA pins the owner after
 ; its last ordinary call returns. Only the owner may retire that pin.
 PUBLIC CARD FUNC OwnerDrop()
-
-  IF grantCount=0 THEN
-    IF physical<>1 OR ownerDepth=0 THEN
-      RETURN(INVALID_OWNER)
-    FI
-
-    ownerDepth==-1
-    IF ownerDepth=0 AND dmaHeld=0 THEN
-      physical=0
-    FI
-
-    RETURN(OK)
-  FI
 
   EXEC.Forbid()
   IF physical<>1 OR ownerDepth=0 THEN

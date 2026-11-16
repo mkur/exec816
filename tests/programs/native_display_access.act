@@ -31,6 +31,8 @@ PROC Worker(BYTE index)
   Require(EXEC.AllocSignal(16)=16)
   grant(index).task=EXEC.FindTask(NULL)
   grant(index).mask=$10000
+  ; The lifetime owner is waiting for this publication, not serving a request.
+  Require(DISPLAY.Delegate(@grant(index))=DISPLAY.OK)
   stage(index)=1
   EXEC.Signal(root,$10000)
   FOR cycle=1 TO 2 DO
@@ -38,6 +40,9 @@ PROC Worker(BYTE index)
       bits=EXEC.Wait($10000)
     OD
 
+    IF cycle=2 THEN
+      Require(DISPLAY.Delegate(@grant(index))=DISPLAY.OK)
+    FI
     result(index)=DISPLAY.Enter(@grant(index))
     IF result(index)=DISPLAY.OK THEN
       stage(index)=2
@@ -97,8 +102,6 @@ PROC Main()
   Require(firstTask<>NULL AND secondTask<>NULL)
   Await(0,1)
   Await(1,1)
-  Require(DISPLAY.Delegate(@grant(0))=DISPLAY.OK)
-  Require(DISPLAY.Delegate(@grant(1))=DISPLAY.OK)
   Require(DISPLAY.Delegated()=2)
   Require(DISPLAY.OwnerEnter()=DISPLAY.OK)
   round=1
@@ -159,8 +162,6 @@ PROC Main()
   OD
 
   Require((EXEC.SetSignal(0,$10000) & $10000)<>0)
-  Require(DISPLAY.Delegate(@grant(0))=DISPLAY.OK)
-  Require(DISPLAY.Delegate(@grant(1))=DISPLAY.OK)
   Require(DISPLAY.OwnerEnter()=DISPLAY.OK)
   round=2
   EXEC.Signal(firstTask,$10000)
@@ -177,6 +178,9 @@ PROC Main()
   Require(result(0)=DISPLAY.DEVICE_FAULT AND result(1)=DISPLAY.DEVICE_FAULT)
   Require(DISPLAY.Delegated()=0)
   Require(DISPLAY.BeginRelease(@lease)=DISPLAY.OK)
+  capacity(0).task=root
+  Require(DISPLAY.Delegate(@capacity(0))=DISPLAY.INVALID_OWNER)
+  Require(DISPLAY.Delegated()=0)
   Require(DISPLAY.Release(@lease)=DISPLAY.OK)
   Require(DISPLAY.State()=DISPLAY.FREE)
   Require(DISPLAY.OwnerEnter()=DISPLAY.INVALID_OWNER)

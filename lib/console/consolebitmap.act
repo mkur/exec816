@@ -133,7 +133,16 @@ RETURN(1)
 PUBLIC PROC Close()
   BYTE ignored
 
-  ignored=Run(OP_CLOSE)
+  LET packet=GetPacket()
+  DO
+    ignored=Run(OP_CLOSE)
+    IF packet.status<>DISPLAY.BUSY THEN
+      EXIT
+    FI
+    ; Idle grants retain the session. Their close publishes the existing
+    ; owner wake; keep device storage and its signal until admission closes.
+    EXEC.Wait(completionMask)
+  OD
   drawingPending=0
   completionMask=0
 

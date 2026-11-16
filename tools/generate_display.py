@@ -48,6 +48,7 @@ struct DisplayGrant {
     UWORD state, slot;
     ULONG reserved;
 };
+/* Ordinary Task admission of a live target; no owner turn or hardware access. */
 UWORD DisplayDelegate(struct DisplayGrant *grant);
 UWORD DisplayRevoke(struct DisplayGrant *grant);
 UWORD DisplayGrantClose(struct DisplayGrant *grant);

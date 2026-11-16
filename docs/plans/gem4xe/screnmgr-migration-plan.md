@@ -316,6 +316,7 @@ Continue in executable commits:
    AES_OP_DISPLAY and its request-server path, and update current generated
    bindings/contracts and affected fixtures. Check admission while the lifetime
    owner sleeps, shutdown exclusion, capacity, physical FIFO and normal cleanup.
+   Status: implemented; see the [SM4b record](../../history/screnmgr-migration.md#sm4b-direct-borrower-side-display-admission).
 3. **SM4c — caller registration and ordinary AES service.** Move initialization,
    final registration retirement and profile calls out of manager RPC. Preserve
    endpoint/client publication and queued input holds; retire obsolete transport

@@ -106,8 +106,11 @@ display owners; input handlers perform no display operations.
 ## Delegated renderer access
 
 The lifetime owner installs its allocated wake mask with `OwnerWake(mask)`.
-`Delegate(grant)` admits a zeroed, address-stable 32-byte upper-memory grant:
-the borrower supplies its Task and an allocated nonzero signal mask. Admission
+Any ordinary Task can call `Delegate(grant)` directly for a zeroed, address-stable
+32-byte upper-memory grant and a live target Task, normally itself. The target
+supplies an allocated nonzero signal mask. Admission requires an active display
+and publishes under the same short Task guard as closing-state admission. It
+requires no execution by the lifetime owner and performs no hardware access. It
 retains that Task and records the current display generation. At most eight
 grants exist; exhaustion returns NO_MEMORY. This uses ordinary Exec signals and
 Task leases, with no kernel selector or additional Task.
@@ -122,9 +125,14 @@ state around Wait. A signal is a hint, and a coalesced or early signal cannot
 lose admission. IRQ/NMI code does not inspect the access queue. Short Forbid
 sections protect Task-side state; drawing and synchronous fences retain normal
 Task preemption and interrupt delivery.
-When no grants exist, owner entry/exit need no queue guard: only the lifetime
-owner can publish a new grant. Correct grant pointers are an admission/caller
+Owner entry/exit use the same short guard even with zero grants: another Task
+can publish the first grant during owner execution. Correct grant pointers are an admission/caller
 obligation rather than a repeated bridge validation on each drawing unit.
+
+The owner closes new admission atomically with the last-grant check before
+fencing/restoring hardware. Existing grants return BUSY from BeginRelease; their
+retirement signals the owner. A quiescent fault closes admission before counting
+retained grants. An unsafe fault retains the existing reset-required state.
 
 Only the retained lifetime owner calls `OwnerEnter()`/`OwnerEnd()`/`OwnerDrop()`;
 owner drawing entry likewise does not repeat a current-Task identity lookup.

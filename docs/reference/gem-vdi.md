@@ -470,3 +470,11 @@ qualification. Calypsi does not add automatic stack checks to these C calls.
 [I6](../development/gem-input-i6.json) records bounded keyboard latency during
 physical SIO, interrupted application/renderer contexts and failure closure.
 The current optional artifact is the interactive application described in the guide.
+
+
+Virtual-workstation display admission follows MagiC's direct caller path. The
+application registers its existing grant with the general display driver; it
+requires no SCRENMGR request, including while the application owns UPDATE and
+the manager waits for that resource. Grant entry still serializes physical
+scratch, overlays and fences. The [display contract](display.md#delegated-renderer-access)
+describes admission, generation and shutdown lifetimes.

@@ -37,7 +37,7 @@ APTR EXEC_CALL AllocMem(ULONG n,ULONG f) { (void)n;(void)f;++unexpected;return N
 void EXEC_CALL FreeMem(APTR p,ULONG n) { (void)p;(void)n;++unexpected; }
 BYTE EXEC_CALL AllocSignal(BYTE n) { (void)n;++unexpected;return -1; }
 void EXEC_CALL FreeSignal(BYTE n) { (void)n;++unexpected; }
-WORD ExecAESSubmit(struct ExecAESContext *c,UWORD op) { (void)c;(void)op;++unexpected;return 0; }
+UWORD DisplayDelegate(struct DisplayGrant *g) { (void)g;++unexpected;return DISPLAY_BAD_ARGUMENT; }
 BOOL ExecAESMouseCopy(struct ExecAESContext *c,const WORD *p)
 { (void)c;(void)p;++unexpected;return FALSE; }
 WORD ExecAESMouseControl(struct ExecAESContext *c,WORD m,WORD r,WORD z)

@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 24
+#define AES_VERSION 25
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -70,7 +70,6 @@
 #define AES_WC_BORDER 0
 #define AES_WC_WORK 1
 #define AES_OP_GRAF_HANDLE 77
-#define AES_OP_DISPLAY 200
 #define AES_DISPLAY_ERROR 9
 #define AES_INPUT_SLOTS 16
 #define AES_INPUT_KEY 1
@@ -502,5 +501,5 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_INVALIDATIONS 228
 #define AES_REQUEST_OFFSET_MOUSEWAIT 340
 #define AES_REQUEST_OFFSET_MOUSEFORM 344
-#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_DISPLAY || (op)==AES_OP_MOUSE_PROFILE)
+#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_MOUSE_PROFILE)
 #endif

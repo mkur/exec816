@@ -7,8 +7,8 @@
 - [SCRENMGR migration](screnmgr-migration.md): synchronous vertical slider position
   and size painting in the caller, cursor policy without scene admission,
   coherent registration publication, caller-owned completion and the SM3d
-  cutover to one UPDATE resource, plus SM4a cache-operation completion and
-  focused development checks.
+  cutover to one UPDATE resource, SM4a cache-operation completion and SM4b
+  direct display admission, with focused development checks.
 
 - [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
   UPDATE/MCTRL handler flow, native ownership and presenter operation scopes.

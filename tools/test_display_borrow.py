@@ -41,52 +41,6 @@ extern void DisplayCopyStep(void);''')
     return target
 
 
-def producer(out, sy):
-    source = '''MODULE DISPLAYBORROWPROBE
-USE EXEC
-USE DISPLAY
-
-PUBLIC BYTE FUNC Pending()
-
-  LET command=CARD POINTER($DisplayCommand)
-
-RETURN(command^<>0)
-
-PUBLIC PROC Pump()
-
-  LET command=CARD POINTER($DisplayCommand)
-  IF command^=0 THEN
-    RETURN
-  FI
-
-  LET grantAddress=LONGCARD POINTER($DisplayAdmission)
-  LET status=CARD POINTER($DisplayStatus)
-  status^=DISPLAY.Delegate(DISPLAY.Grant POINTER(ADDRESS(grantAddress^)))
-  LET task=LONGCARD POINTER($DisplayController)
-  LET wake=LONGCARD POINTER($DisplayWake)
-  EXEC.Forbid()
-  command^=0
-  EXEC.Signal(EXEC.Task POINTER(ADDRESS(task^)),wake^)
-  EXEC.Permit()
-
-RETURN
-ENDMODULE
-'''
-    for name in ('DisplayCommand','DisplayAdmission','DisplayStatus','DisplayController','DisplayWake'):
-        source = source.replace('$'+name, '$%x'%sy[name])
-    (out/'displayborrowprobe.act').write_text(source)
-    host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE', 'USE AESCORE\nUSE DISPLAYBORROWPROBE')
-    # The notification-only fast path must see this fixture's private work.
-    needle='RETURN(service<>NULL AND service.live=1'
-    require(host.count(needle)==1,'Settled observation hook changed')
-    host=host.replace(needle,
-        'RETURN(DISPLAYBORROWPROBE.Pending()=0 AND service<>NULL AND '
-        'service.live=1')
-    needle = '  changed=service.directory.changed<>0'
-    require(host.count(needle) == 1, 'Admission hook changed')
-    (out/'aeshost.act').write_text(host.replace(needle, '  DISPLAYBORROWPROBE.Pump()\n'+needle))
-
-
 def physical(b, p, foreign, report, fault=0):
     if not fault: b.profile_start()
     sy = foreign['symbols']

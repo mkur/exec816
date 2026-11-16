@@ -338,9 +338,6 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             bitmap_builder.extract=original_extract
             bitmap_builder.emit=original_emit
         sy = foreign['symbols']
-        if borrowed:
-            from test_display_borrow import producer
-            producer(out, sy)
         if suite == 'menus':
             from test_aes_menus import producer
             producer(out, sy)

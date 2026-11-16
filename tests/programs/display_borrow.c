@@ -7,9 +7,9 @@
 
 extern UWORD GemBitmapFill(UWORD,UWORD,UWORD,UWORD,UWORD);
 extern volatile UWORD ConsoleFaultMode;
-ULONG AESService, DisplayAdmission, DisplayController, DisplayWake;
+ULONG AESService, DisplayController, DisplayWake;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
-volatile UWORD DisplayCommand, DisplayStatus, DisplayPhase, DisplayGo;
+volatile UWORD DisplayPhase, DisplayGo;
 volatile UWORD DisplayActive, DisplayBorrows, DisplayNative, DisplayOverlap, DisplayCopies;
 volatile UWORD DisplayIterations[2];
 volatile UWORD DisplayFaultVariant;
@@ -125,12 +125,7 @@ void AESClientTwo(void) { worker(1); }
 
 static void admit(UWORD who)
 {
-    struct ExecAESContext *c = ExecAESContext();
-    DisplayAdmission = (ULONG)&grants[who];
-    DisplayCommand = 1;
-    Signal(c->directory->owner,c->directory->mask);
-    while (DisplayCommand) Wait(DisplayWake);
-    CHECK(DisplayStatus == DISPLAY_OK);
+    CHECK(DisplayDelegate(&grants[who]) == DISPLAY_OK);
 }
 
 UWORD AESRun(void)

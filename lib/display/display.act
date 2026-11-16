@@ -90,27 +90,34 @@ RETURN(OK)
 
 PUBLIC CARD FUNC Activate(Lease POINTER lease)
 
+  EXEC.Forbid()
   IF Valid(lease)=0 OR sharedState<>ACQUIRING THEN
+    EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
   lease.state=ACTIVE
   sharedState=ACTIVE
+  EXEC.Permit()
 
 RETURN(OK)
 
 PUBLIC CARD FUNC BeginRelease(Lease POINTER lease)
 
+  EXEC.Forbid()
   IF Valid(lease)=0 OR (sharedState<>ACQUIRING AND sharedState<>ACTIVE) THEN
+    EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
   IF grantCount<>0 OR physical=2 THEN
+    EXEC.Permit()
     RETURN(BUSY)
   FI
 
   lease.state=RELEASING
   sharedState=RELEASING
+  EXEC.Permit()
 
 RETURN(OK)
 
@@ -141,12 +148,15 @@ RETURN(OK)
 ; Never release storage or Task ownership when hardware is not quiescent.
 PUBLIC CARD FUNC Fault(Lease POINTER lease)
 
+  EXEC.Forbid()
   IF Valid(lease)=0 THEN
+    EXEC.Permit()
     RETURN(INVALID_OWNER)
   FI
 
   lease.state=FAULTED
   sharedState=FAULTED
+  EXEC.Permit()
 
 RETURN(DEVICE_FAULT)
 

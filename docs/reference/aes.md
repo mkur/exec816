@@ -665,8 +665,10 @@ UPDATE for feedback; the outline is suspended around drawing. Other clients'
 UPDATE requests wait on the same native resource until MCTRL releases it. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 24 has a 418-byte request. Init, final exit detach, cold display
-delegation and session mouse preferences use the RPC endpoint. Window/menu
+profile: version 25 has a 418-byte request. Init, final exit detach and session
+mouse preferences use the RPC endpoint. Cold frame and virtual-workstation
+grant admission call the general display driver directly in the application;
+they require no manager RPC or transport sequence advance. Window/menu
 mutations, UPDATE, outline admission, owner-side exit and cursor policy use caller
 entries; `wind_find` uses the nonblocking caller snapshot query.
 Other window queries and rectangle conversion remain local. The input inbox is

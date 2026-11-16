@@ -43,7 +43,8 @@ static UWORD idle(void)
 
 static UWORD retire(struct VbxeDisplay *d, UWORD result)
 {
-    if (DisplayBeginRelease(&d->lease)!=DISPLAY_OK)
+    if (d->lease.state!=DISPLAY_RELEASING &&
+        DisplayBeginRelease(&d->lease)!=DISPLAY_OK)
         DisplayResetRequired();
     if (VbxeNotifyClose(&d->lease)!=DISPLAY_OK)
         DisplayResetRequired();
@@ -81,11 +82,13 @@ static UWORD recover(struct VbxeDisplay *d)
         DisplayAccessFault(1);
         DisplayResetRequired(); /* Does not return, acknowledge or free storage. */
     }
+    d->lastError=DISPLAY_DEVICE_FAULT;
+    if (d->operationPending) VbxeNotifyReset();
+    d->operationPending=0;
+    /* Close admission before testing retained grants: their Tasks can now
+     * register directly while the lifetime owner is running or asleep. */
+    DisplayAccessFault(0);
     if (DisplayDelegated()) {
-        d->lastError=DISPLAY_DEVICE_FAULT;
-        if (d->operationPending) VbxeNotifyReset();
-        d->operationPending=0;
-        DisplayAccessFault(0);
         return DISPLAY_DEVICE_FAULT;
     }
     return retire(d,DISPLAY_DEVICE_FAULT);
@@ -149,7 +152,10 @@ UWORD VbxeOwnerFence(struct VbxeDisplay *d)
 UWORD VbxeOwnerClose(struct VbxeDisplay *d)
 {
     UWORD status;
-    if (DisplayDelegated()) return DISPLAY_BUSY;
+    /* Admission closes atomically with the last-grant check, before fencing
+     * or restoring hardware. BUSY leaves the display and wake signal live. */
+    status=DisplayBeginRelease(&d->lease);
+    if (status!=DISPLAY_OK) return status;
     status=VbxeOwnerFence(d);
     if (status!=DISPLAY_OK)
         return status;

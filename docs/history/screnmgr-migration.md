@@ -526,3 +526,44 @@ and normal cleanup pass. Host checks pass: 718 tests, five existing skips.
 [Settings, source/image hashes and results](../development/screnmgr-sm4a.json)
 record the executed scope. No QED, demo refresh, application catalog, raw system
 matrix, release qualification or performance claim is included.
+
+
+## SM4b: direct borrower-side display admission
+
+Following the user's selected MagiC structure, cold AES frame and VDI workstation
+setup now calls the general DISPLAY.Delegate operation in the application.
+Admission requires no SCRENMGR execution or RPC: it retains the live target Task
+and publishes the existing grant/active generation under a short Task guard.
+No hardware access occurs during admission. Physical Enter/Leave, FIFO order,
+fences, capacity and grant retirement remain driver responsibilities. The
+AES_OP_DISPLAY operation and its server branch are removed; the private AES
+profile is version 25 with the same 418-byte request layout.
+
+Admission and closing-state publication now share a guard. The owner also guards
+entry/drop with zero grants, because another Task can publish the first grant
+while it runs. This removes the former zero-grant owner fast path; the path with
+admitted grants already used those guards. No timing gain or zero-grant overhead
+measurement is claimed. VBXE close establishes RELEASING before fencing, and
+quiescent fault recovery closes admission before counting retained grants. A
+console close that encounters idle grants retains device storage and waits for
+the existing owner wake until those grants retire. IRQ/NMI do not inspect the
+Task-side admission/physical queue; drawing remains normally preemptible.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused reserved capacity. Grants remain
+32 bytes with eight existing slots. No Task, signal, persistent heap reservation,
+VRAM or kernel selector is added. Current C bindings/providers must be rebuilt
+together; no obsolete display-admission server is retained.
+
+Development checks pass on the pinned compiler and dedicated AltirraOS PAL/VBXE
+setup: 83 optimized native arbitration checks; a 19-check C/native window fixture
+that blocks the actual frontend on the caller's UPDATE, completes cold frame and
+virtual-workstation admission without advancing its transport sequence, verifies
+an exact 8x8 fill, then checks normal cleanup; and the selected quiescent hardware
+failure case with 25 C checks. Host checks pass: 718 tests, five existing skips.
+[Inputs, settings, hashes and results](../development/screnmgr-sm4b.json) record the
+scope. The new fixture exposed a Calypsi cross-element array-assignment emission
+problem; its coordinates now derive independently from work x/y, and the failing
+emission is retained in that record. No Exec routine uses a compiler workaround.
+No QED, demo refresh, application catalog, raw system matrix, release or latency
+qualification is included.
