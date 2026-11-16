@@ -122,7 +122,7 @@ PUBLIC BYTE FUNC Publish()
               route.sliderLeft=window.sliderLeft
               route.sliderWidth=window.sliderWidth
               route.iconified=window.iconified
-              IF layer.shown<>0 THEN
+              IF layer.shown<>0 AND window.id<>DESKSTATE.desktopWindow THEN
                 route.kind=1
               FI
               DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
@@ -132,10 +132,12 @@ PUBLIC BYTE FUNC Publish()
                   BEGIN
                     LET item=service.windows(index)
                     LET client=AESSTATE.Find(service,item.owner)
+                    ; A raw hit names a live window even while its input
+                    ; endpoint closes. Recipient admission is separate.
+                    route.handle=item.gui.window
                     IF client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
                       route.client=client.id
                       route.endpoint=client.endpoint
-                      route.handle=item.gui.window
                       route.epoch=item.view.epoch
                     FI
                   END
@@ -206,6 +208,33 @@ PUBLIC BYTE FUNC Publish()
   dirty=0
 
 RETURN(1)
+
+; Raw wind_find reads the last complete stack, including inactive windows and
+; icons. Menu/MCTRL recipient policy is deliberately absent. A native window,
+; desktop or chrome occludes lower handles; no endpoint pointer is borrowed.
+PUBLIC INT FUNC Find(INT x,y)
+  BYTE rank
+  INT handle
+
+  handle=0
+  EXEC.Forbid()
+  rank=0
+  WHILE rank<published.count DO
+    BEGIN
+      LET route=@published.routes(rank)
+      IF route.kind<>0 AND x>=route.bounds.left AND x<route.bounds.right
+          AND y>=route.bounds.top AND y<route.bounds.bottom THEN
+        IF route.kind<>OCCLUDER THEN
+          handle=route.handle
+        FI
+        EXIT
+      FI
+    END
+    rank==+1
+  OD
+  EXEC.Permit()
+
+RETURN(handle)
 
 ; The returned copy holds its endpoint until Drop. Selection and copy are one
 ; guarded read; a caller publishing twice cannot overwrite a reader's values.

@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "slice": "SM3a",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "967284d93691ab93e7f997504692c252bcfabde2",
+  "scope": "Selected nonblocking committed raw hit snapshot; preserve live-scene gate elsewhere.",
+  "decision": "User selected committed raw hit snapshots on 2026-11-16.",
+  "magic_basis": {
+    "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "source": "KERNEL/AES/SRC/AESWIN.S",
+    "lines": [
+      2812,
+      2838
+    ]
+  },
+  "source_inputs": {
+    "lib/aes/aessnapshot.act": "bcfb0bd9005f8d848ac72fd5dfb2716a8427577a9fcd1e25e683c6a1896836a1",
+    "lib/aes/aeswindow.act": "8ce45f7260bb292b4450ae50aecf84d6aa4c740e963cb2d8b20a5bfda24bbc62",
+    "lib/aes/aeslocal.act": "3de1b50326d72580acff67288889fc8b1b5e6f39809b6d249aed3fe451a6e2e9",
+    "c/calypsi/aes-windows.c": "b3debe2f799c6cc68f4abf379eefff063a47954bb2133fa2dc92d44733cf40fd",
+    "tests/programs/aes_find.act": "24251857769d39f993336173f6ddc647c5f26f08282cc81b392a06e186a3ef87",
+    "tools/test_aes_find.py": "7ece2d76991c2acbf915f08689ab580560eebfb6700764f5b459b39bc898c6ce"
+  },
+  "capture": "build/screnmgr/sm3a-find",
+  "results_sha256": "e461bc392a00c22f86e4f22cfdea24cb9c0530c214730ec28eb70abb824c0b1b",
+  "image_sha256": "d590138d35156a288b53ce6331f94e21e72d503783858b4b3c2db423ddad0d82",
+  "xex_sha256": "77a611d5f9a622dd20e3eee30f57bdfef42fa89b5ddbecda2aad82dc43a08cf9",
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "override": false
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "mode": "opt",
+  "checks": 110,
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "switches": 5,
+    "native_nmi_count": 11,
+    "native_irq_count": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 198,
+        "untouched_above_floor": 1082
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 110,
+        "untouched_above_floor": 946
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 258,
+      "untouched_from_base": 1278,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "coverage": [
+    "Inactive and overlapping AES windows, exact rectangle edges, native and desktop occlusion.",
+    "Menu/MCTRL and input-endpoint admission do not filter raw identities.",
+    "Iconified AES windows return their handles.",
+    "Unpublished geometry retains the prior stack; publication installs the new stack.",
+    "Queries return while a peer Task sleeps owning UPDATE and the scene gate; no scene waiter publication.",
+    "Endpoint hold withdrawal, service retirement, heap/bank ownership and Task/nesting restoration."
+  ],
+  "host": {
+    "tests": 718,
+    "skips": 5,
+    "log_sha256": "4df5b09cb94950720be6c140573610f01a19bbbc24ab2fc660eea66fb762e328"
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "includes_guards_alignment_and_unused_capacity": true
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 40336,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 26848,
+    "runtime_including_os": 46816
+  },
+  "commands": [
+    "python3 tools/test_aes_find.py --output build/screnmgr/sm3a-find",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "limits": [
+    "Development only; no hosted/release or performance qualification.",
+    "Native caller entry fixture; unchanged C/PB binding and record ABI.",
+    "Registration, mutation/completion ownership and final SCRENMGR loop remain pending.",
+    "No QED, demo refresh, full app catalog or raw matrix."
+  ]
+}

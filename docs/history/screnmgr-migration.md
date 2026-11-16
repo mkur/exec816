@@ -256,3 +256,44 @@ condition was removed. The full scene frame/menu oracle still runs after release
 Host checks pass 718 tests with five historical skips. Guards, ownership and
 stack floors pass. This is development coverage only: no QED/catalog/demo build,
 raw matrix, release or latency qualification.
+
+
+## SM3a: nonblocking committed window hits
+
+The user selected this read contract on 2026-11-16. `wind_find` now reads copied
+AESSNAPSHOT bounds/order/handles under one short Forbid, without UPDATE, scene
+admission, waiter publication, drawing or RPC. Overlapping mutations may leave
+the prior complete stack visible; operation completion must publish before
+return. All other live scene families retain AESGATE pending SM3b–d.
+
+MagiC AESWIN `wind_find` (2812–2838) scans the current window stack without
+UPDATE or input-recipient filtering. Exec's normal Task preemption requires
+the selected coherent publication boundary. The existing rows supply it without
+another buffer. Native/chrome/desktop occlusion is retained; icons now return
+their AES handle, following MagiC. Background/outside hits retain Exec's existing
+zero result. Focus, menu, MCTRL and closing input admission do not filter raw
+window identity. Endpoint close still withdraws input recipients and holds.
+
+The optimized [development record](../development/screnmgr-sm3a-find.json) passes
+110 emitted assertions. It covers overlapping and inactive windows, exact rectangle
+edges, desktop/native occlusion, menu/MCTRL independence, icon hits, old geometry
+before publication and new geometry after it, endpoint close and complete heap
+cleanup. A real peer Task obtains the native UPDATE semaphore and claims the
+scene gate; the query returns while that peer remains asleep owning both. No
+scene waiter or policy-waiting flag is added. Task/nesting restoration, stack
+headroom, domain/stack guards and bank ownership checks pass. The run includes
+native NMI entries and Task switches. The fixture uses a raw
+native caller entry; public C/PB layout and binding code are unchanged.
+
+An initial fixture cleanup left a removed peer as the service's wake target;
+restoring the live root owner fixes that test lifetime error. The final source
+also distinguishes copied raw handles from input admission: closing an endpoint
+cannot erase the handle of a window still in the published stack.
+
+No persistent data, public record, Task, signal, heap payload or VRAM allocation
+is added. Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and
+0 per public Task**, including guards, alignment and unused capacity. Host
+checks pass 718 tests with five historical skips. Only this focused optimized
+fixture and host checks ran for SM3a; no QED, demo refresh, raw matrix or release
+qualification. SM3b next assigns registration/retirement and copied-publication
+lifetimes before the remaining gate cutover.

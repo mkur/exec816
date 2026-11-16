@@ -627,13 +627,16 @@ When painting releases the scene with an AES control already pending, one new
 console-output quantum may be deferred to admit that control. An eligible output
 quantum must run before another such deferral, preserving writer progress.
 
-`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) queries the committed shared
-layer stack in the caller under scene ownership. Repaint readiness, queued
-mutations and another client's UPDATE do not bar this read. Ordinary and PB
-queries preserve the selected view, rectangle iterator and transport sequence.
-It returns the topmost normal AES window's global handle,
-including foreign owners and borders. Background and the desktop window return zero. The query
-does not focus or raise anything.
+`wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) reads the latest complete
+published hit stack under a short Task guard. It acquires neither UPDATE nor
+scene ownership and does not wait for a drawing owner. An overlapping mutation
+may still yield the previous publication; completed operations publish before
+return. Ordinary and PB queries preserve the selected view, rectangle iterator
+and transport sequence. The result is the topmost AES window's global handle,
+including inactive/foreign windows, borders and iconified windows. Native windows
+and chrome occlude lower handles; desktop, background and outside-screen hits
+retain the existing zero result. Focus, menu, MCTRL and input-endpoint admission
+do not filter raw hits. The query does not focus or raise anything.
 
 `ExecAESDragOutline(window,dx,dy,width,height)` starts one pointer-followed
 outline for the caller's captured, open source window under `BEG_MCTRL`.
@@ -649,7 +652,7 @@ The generated [wire ABI](../../abi/aes-server.json) is private to this source
 profile: version 24 has a 418-byte request. Init, final exit detach, cold display
 delegation and session mouse preferences use the RPC endpoint. Window/menu
 mutations, UPDATE, outline admission, owner-side exit and cursor policy use caller
-entries; `wind_find` uses the caller scene query.
+entries; `wind_find` uses the nonblocking caller snapshot query.
 Other window queries and rectangle conversion remain local. The input inbox is
 754 bytes, including 20 bytes of frozen M1 pointer scratch; each registration
 uses 1,306 bytes before heap rounding. Public GEM arrays remain private to each caller. Rebuild

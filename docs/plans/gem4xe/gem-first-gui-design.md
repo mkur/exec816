@@ -170,17 +170,18 @@ normal Task preemption. A Forbid around the reader alone cannot repair a writer
 already paused between related geometry/stacking stores. Adding UPDATE to the
 query would change the source flow.
 
-The user selected the committed raw hit snapshot on 2026-11-16. Implement that
-contract first; the alternative below records the rejected live-write refactor.
+The user selected the committed raw hit snapshot on 2026-11-16. SM3a implements
+that boundary; the alternative below records the rejected live-write refactor.
 
 | Choice | Read and publication contract | Cost/dependency |
 | --- | --- | --- |
 | Committed raw hit snapshot (recommended) | Query the last complete published scene. A query overlapping mutation may return the previous stack; after operation completion it sees the new publication. Use a separate raw-hit read over AESSNAPSHOT rows, with no pointer-routing focus/menu/MCTRL filtering. | Reuse existing bounds/order/window/handle rows: zero additional buffer, Task or bank-zero reservation. All scene operation return/retirement boundaries must publish before releasing their authority. |
 | Live geometry with guarded commits | Query current scene bounds/order while holding a short Task guard. Every corresponding writer must commit the hit-test fields and window-handle association atomically before a query can run. | Refactor and audit all lifecycle, move, stacking, iconification and native-layer publication boundaries. Heavy visibility calculations and drawing must remain outside Forbid. No second scene lock. |
 
-Preserve native/chrome occlusion and distinguish query results from work-area
-input eligibility. Check iconified hits against MagiC rather than inheriting
-Exec's current exclusion silently. Readiness and scene construction still need
+SM3a preserves native/chrome occlusion and separates raw window identity from
+work-area input eligibility, including endpoint close. Iconified windows return
+their handle, following MagiC's unfiltered stack walk. The previous Exec tile
+exclusion is removed; the existing zero result outside AES windows remains. Readiness and scene construction still need
 the rest of SM3's ownership inventory; either choice alone cannot remove AESGATE.
 The selected contract permits the previous complete publication during an
 overlapping mutation. Completed operations must publish before return. It adds

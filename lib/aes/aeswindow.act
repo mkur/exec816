@@ -338,24 +338,10 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
 
 RETURN(1)
 
-; A topmost native window, desktop, tile or chrome hit yields no GEM handle.
-INT FUNC FindAt(INT x,y)
-
-  LET desktop=DESKSTATE.Get()
-  LET layer=LAYERS.Hit(@desktop.scene,x,y)
-  LET hit=AESWINDOWSTATE.FindWindow(layer)
-  LET found=AESWINDOWSTATE.FindRecord(hit)
-  IF found<>NULL AND hit<>DESKSTATE.desktopWindow
-      AND found.iconified=0 THEN
-    RETURN(found.gui.window)
-  FI
-
-RETURN(0)
-
-; Queries share the committed stack; drawing and logical waiters do not bar it.
+; A short copied-publication guard keeps queries independent of scene/UPDATE.
 PUBLIC CARD FUNC Query(AESTYPES.Request POINTER request)
 
-  request.intout(0)=FindAt(request.intin(0),request.intin(1))
+  request.intout(0)=AESSNAPSHOT.Find(request.intin(0),request.intin(1))
 
 RETURN(AESTYPES.OK)
 

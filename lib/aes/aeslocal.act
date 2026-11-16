@@ -39,7 +39,6 @@ CARD FUNC Policy(LONGCARD value)
       AND request.operation<>AESTYPES.OP_DELETE
       AND request.operation<>AESTYPES.OP_OPEN
       AND request.operation<>AESTYPES.OP_CLOSE
-      AND request.operation<>AESTYPES.OP_FIND
       AND request.operation<>AESTYPES.OP_SET THEN
     IF request.operation<>AESTYPES.OP_MENU
         AND request.operation<>AESTYPES.OP_DRAG_OUTLINE THEN
@@ -50,11 +49,6 @@ CARD FUNC Policy(LONGCARD value)
   waiting=0
   DO
     AESGATE.EnterTask(request.owner,mask)
-    IF request.operation=AESTYPES.OP_FIND THEN
-      request.status=AESWINDOW.Query(request)
-      AESGATE.Release(0)
-      RETURN(1)
-    FI
     IF request.operation=AESTYPES.OP_DRAG_OUTLINE THEN
       request.status=DESKDRAG.Outline(service,
           AESSTATE.Find(service,request.client),request)
@@ -229,6 +223,10 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   CARD status,result,handled
 
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation=AESTYPES.OP_FIND THEN
+    request.status=AESWINDOW.Query(request)
+    RETURN(1)
+  FI
   IF request.operation=AESTYPES.OP_GRAF_MOUSE THEN
     BEGIN
       LET service=AESSTATE.Get()

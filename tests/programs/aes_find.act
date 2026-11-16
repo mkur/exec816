@@ -1,0 +1,200 @@
+; Raw committed hits remain callable while another Task owns UPDATE and scene.
+MODULE AESFINDTEST
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE AESSTATE
+USE AESTYPES
+USE AESLOCAL
+USE AESLOCKS
+USE AESGATE
+USE AESSNAPSHOT
+USE DESKSTATE
+USE DESKTYPES
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+
+CARD checks
+AESSTATE.Service POINTER service
+DESKTYPES.Service POINTER desktop
+AESTYPES.Request request,binding
+AESTYPES.Endpoint endpoint
+LONGCARD ARRAY layerIds(4)
+EXEC.Task managerTask
+PROC POINTER noFinal()
+BYTE entered,finished,managerSignal
+LONGCARD managerMask
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb20+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Hit(INT x,y,expected)
+
+  LET task=EXEC.FindTask(NULL)
+  LET nesting=task.tc_TDNestCnt
+  request.operation=AESTYPES.OP_FIND
+  request.intin(0)=x
+  request.intin(1)=y
+  Require(AESLOCAL.Call(LONGCARD(ADDRESS(@request)))=1)
+  Require(request.status=AESTYPES.OK AND request.intout(0)=expected)
+  Require(task.tc_TDNestCnt=nesting AND EXEC.FindTask(NULL)=task)
+
+RETURN
+
+PROC Manager()
+
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit>=0)
+  managerSignal=BYTE(bit)
+  managerMask=LONGCARD(1) LSH managerSignal
+  EXEC.ObtainSemaphore(@service.updateResource)
+  Require(AESGATE.TryOwner()<>0)
+  entered=1
+  EXEC.Wait(managerMask)
+  AESGATE.Offer()
+  EXEC.ReleaseSemaphore(@service.updateResource)
+  EXEC.FreeSignal(INT(managerSignal))
+  finished=1
+
+RETURN
+
+PROC Main()
+  BYTE index
+  LAYERTYPES.Rect bounds
+
+  LET available=EXEC.AvailMem(0)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(DESKTYPES.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL AND desktop<>NULL)
+  AESSTATE.Bind(service)
+  DESKSTATE.Bind(desktop)
+  service.live=1
+  service.count=1
+  service.owner=EXEC.FindTask(NULL)
+  service.clients(0).id=11
+  service.clients(0).binding=@binding
+  service.clients(0).endpoint=@endpoint
+  endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  endpoint.id=11
+  AESLOCKS.Init(service)
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(index)=@desktop.windows(index)
+  OD
+  Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
+  FOR index=0 TO 3 DO
+    REGIONS.Assign(@bounds,0,0,640,240)
+    Require(LAYERS.Create(@desktop.scene,@bounds,@layerIds(index))=LAYERTYPES.OK)
+    Require(LAYERS.Show(@desktop.scene,layerIds(index),1)=LAYERTYPES.OK)
+    IF index<3 THEN
+      BEGIN
+        LET window=service.windows(index)
+        window.id=LONGCARD(index)+100
+        window.owner=11
+        window.gui.window=INT(index)+1
+        window.layer=layerIds(index)
+        window.frameKind=DESKTYPES.FRAME_BORDERLESS
+        window.view=AESTYPES.WindowView POINTER(EXEC.AllocMem(
+            AESTYPES.WINDOWVIEW_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+        Require(window.view<>NULL)
+        window.view.epoch=window.id
+        window.view.handle=window.gui.window
+      END
+    FI
+  OD
+  DESKSTATE.desktopWindow=100
+  desktop.focus=102
+  Require(LAYERS.Bounds(@desktop.scene,layerIds(1),20,20,180,120)=LAYERTYPES.OK)
+  Require(LAYERS.Bounds(@desktop.scene,layerIds(2),60,40,180,140)=LAYERTYPES.OK)
+  Require(LAYERS.Bounds(@desktop.scene,layerIds(3),80,60,20,20)=LAYERTYPES.OK)
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(-1,0,0)
+  Hit(640,240,0)
+  Hit(500,100,0)
+  Hit(30,30,2)
+  Hit(70,50,3)
+  Hit(90,70,0)
+  Hit(240,180,0)
+  Hit(60,40,3)
+  Hit(239,179,3)
+  Hit(240,179,0)
+  Hit(239,180,0)
+  Require(LAYERS.Show(@desktop.scene,layerIds(3),0)=LAYERTYPES.OK)
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(90,70,3)
+  service.mouseOwner=11
+  service.mouseHolds=1
+  binding.view=service.windows(1).view
+  DESKSTATE.menuActive=1
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(70,50,3)
+  Hit(30,30,2)
+  service.windows(2).iconified=1
+  Require(LAYERS.Bounds(@desktop.scene,layerIds(2),300,200,144,32)=LAYERTYPES.OK)
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(310,210,3)
+  Hit(70,50,2)
+  ; A mutation that has not published must leave the previous complete stack.
+  Require(LAYERS.Bounds(@desktop.scene,layerIds(1),360,40,160,100)=LAYERTYPES.OK)
+  Hit(30,30,2)
+  Hit(370,50,0)
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(30,30,0)
+  Hit(370,50,2)
+  managerTask.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@managerTask.tc_MemEntry)
+  managerTask.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  managerTask.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  managerTask.tc_SPReg=managerTask.tc_SPUpper-SIZE(2)
+  service.owner=@managerTask
+  Require(EXEC.AddTask(@managerTask,@Manager,noFinal)<>NULL)
+  WHILE entered=0 OR managerTask.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  Require(service.sceneOwner=@managerTask AND service.policyGate=AESGATE.CLOSED)
+  Require(EXEC.AttemptSemaphore(@service.updateResource)=0)
+  Hit(370,50,2)
+  Hit(310,210,3)
+  Require(service.sceneOwner=@managerTask AND service.policyGate=AESGATE.CLOSED
+      AND service.sceneWaiters=NULL AND service.policyWaiting=0)
+  EXEC.Signal(@managerTask,managerMask)
+  WHILE finished=0 OR managerTask.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  service.owner=EXEC.FindTask(NULL)
+  Require(EXEC.AttemptSemaphore(@service.updateResource)<>0)
+  EXEC.ReleaseSemaphore(@service.updateResource)
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()<>0 AND endpoint.holds=0)
+  ; Input admission does not erase a still-published window's raw identity.
+  Hit(370,50,2)
+  service.live=0
+  Require(AESSNAPSHOT.Publish()<>0)
+  Hit(310,210,0)
+  FOR index=0 TO 3 DO
+    Require(LAYERS.Delete(@desktop.scene,layerIds(index))=LAYERTYPES.OK)
+    IF index<3 THEN
+      EXEC.FreeMem(BYTE POINTER(service.windows(index).view),
+          AESTYPES.WINDOWVIEW_SIZE)
+    FI
+  OD
+  DESKSTATE.desktopWindow=0
+  DESKSTATE.menuActive=0
+  AESSTATE.Bind(NULL)
+  DESKSTATE.Bind(NULL)
+  EXEC.FreeMem(BYTE POINTER(desktop),SIZEOF(DESKTYPES.Service))
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+  Require(EXEC.AvailMem(0)=available)
+
+RETURN
+ENDMODULE

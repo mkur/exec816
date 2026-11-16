@@ -900,7 +900,8 @@ The other possible milestones have no delivery order:
   slider sizes; SM1d/e complete horizontal sliders and title/info painting.
   Independent input delivery now runs through input.device, completing the
   selected SM2 placement. See the [execution record](history/screnmgr-migration.md).
-  SM3 scene ownership and the final SCRENMGR loop remain pending. Bring architectural
+  SM3a supplies nonblocking committed window hits. Remaining SM3 ownership and
+  the final SCRENMGR loop are pending. Bring architectural
   departures to the user with concrete reasons and alternatives before
   implementation. [Report missing platform services](architecture/magic-exec-mapping.md#reported-platform-service-gaps)
   rather than building specialized substitutes. The

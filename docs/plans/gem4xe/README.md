@@ -18,11 +18,12 @@ The [SCRENMGR migration plan](screnmgr-migration-plan.md) starts with caller
 operations, independent input/device progress and UPDATE scene ownership,
 then replaces the combined loop. SM0 records the direction and responsibility
 map; SM1a delivers scene-independent cursor policy with caller completion, and
-SM1b paints vertical slider positions synchronously in the calling Task, and
-SM1c extends that path to slider sizes. Remaining frame fields and the rest
-of the migration are pending. The selected input service reuses the resident
-console/system Task; the remaining execution placement and Task costs must be
-resolved explicitly rather than hidden behind a rename.
+SM1b–e complete caller-side vertical/horizontal sliders and title/info painting.
+Input.device now supplies independent capture/delivery in its own Task, with
+separate console backend and selected text/GEM frontend contexts. SM3a installs
+the user-selected nonblocking raw hit snapshot for `wind_find`. Remaining
+registration, mutation/completion ownership and the final SCRENMGR loop are
+pending; the scene gate remains around those live operations.
 
 The [independent input.device design](../input-device-design.md) covers GEM,
 the standard Atari text console and a future VBXE text-mode console without

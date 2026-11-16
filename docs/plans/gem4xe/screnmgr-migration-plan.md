@@ -10,7 +10,8 @@ this plan uses that spelling. SM0 records the decision and current responsibilit
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
 vertical slider positions in the caller; SM1c adds vertical slider sizes and
 SM1d adds horizontal position/size. SM1e completes caller-side title/info painting.
-Other scene ownership and manager migration remain pending. Independent
+SM3a implements the selected nonblocking raw hit query. The remaining scene
+ownership and manager migration remain pending. Independent
 input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
@@ -205,6 +206,7 @@ service. Commit executable prerequisites separately.
    records the user's 2026-11-16 selection of committed raw hit snapshots, plus
    the live-commit alternative and costs. Implement that selected query boundary
    as the first executable SM3 prerequisite, retaining the scene gate elsewhere.
+   Status: implemented; see the [SM3a record](../../history/screnmgr-migration.md#sm3a-nonblocking-committed-window-hits).
 2. **SM3b: registration and retirement.** Give client-table publication, event
    settlement, input-window association and endpoint close a complete owner and
    lifetime boundary. Preserve input callback/queued-manager holds. Use short
