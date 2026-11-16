@@ -149,7 +149,6 @@ RETURN
 PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
 
   AESSNAPSHOT.Invalidate()
-  DESKGEOMETRY.ProjectSliders(client)
   Publish(client,copied)
 
 RETURN

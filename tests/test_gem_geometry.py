@@ -20,5 +20,5 @@ class GemGeometryTests(unittest.TestCase):
         self.assertNotIn('} OBJECT;', objects)
 
     def test_library_entries(self):
-        for module in ('GEMOBJECTS','GEMFRAME'):
+        for module in ('GEMOBJECTS','GEMFRAME','GEMHIT','DESKWINDOW','DESKGEOMETRY'):
             self.assertFalse(application_entry({'name':'M_'+module+'_CREATE_1234'}))

@@ -10,9 +10,8 @@ USE AESINBOX
 USE AESKEYS
 USE AESINPUT
 USE DESKTYPES
-USE DESKGEOMETRY
 
-CONST NATIVE=1, TITLE=2
+CONST NATIVE=1, FRAME=2
 LONGCARD owner,openEpoch,ownerWindow
 AESTYPES.InputRecord latest
 BYTE manager,needRelease,nativePending
@@ -132,13 +131,13 @@ RETURN
 
 PUBLIC BYTE FUNC NativeGesture()
 
-RETURN(manager=TITLE OR nativePending=TITLE)
+RETURN(manager=FRAME OR nativePending=FRAME)
 
 PUBLIC PROC Retained()
 
   EXEC.Forbid()
   IF manager<>0 THEN
-    IF manager=TITLE OR nativePending=0 THEN
+    IF manager=FRAME OR nativePending=0 THEN
       IF nativePending<>manager THEN
         AESSTATE.mouseDirty=1
         nativePending=manager
@@ -363,14 +362,11 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
 
   clickCount=0
   manager=NATIVE
-  IF capturedRoute.endpoint<>NULL AND capturedRoute.frameKind<>
-      DESKTYPES.FRAME_BORDERLESS AND
-      (DESKGEOMETRY.TitleHit(@capturedRoute.bounds,sample.x,sample.y)<>0
-      OR DESKGEOMETRY.Gadget(capturedRoute.frameKind,
-        capturedRoute.iconified,capturedRoute.sliderTop,
-        capturedRoute.sliderHeight,capturedRoute.sliderLeft,
-        capturedRoute.sliderWidth,@capturedRoute.bounds,sample.x,sample.y)<>0) THEN
-    manager=TITLE
+  ; Retain only identity/epoch and the point. SCRENMGR interprets the live
+  ; frame tree after obtaining UPDATE, like MagiC's wind_was_clicked.
+  IF capturedRoute.endpoint<>NULL AND capturedRoute.client<>0
+      AND capturedRoute.epoch<>0 THEN
+    manager=FRAME
   FI
 
 RETURN(0)

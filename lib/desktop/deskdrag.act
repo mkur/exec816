@@ -14,6 +14,8 @@ USE DESKSTATE
 USE DESKCORE
 USE DESKFINISH
 USE DESKGEOMETRY
+USE GEMOBJECTS
+USE GEMHIT
 USE DESKMENU
 USE LAYERTYPES
 USE LAYERS
@@ -26,7 +28,9 @@ LONGCARD appOwner,appEpoch
 BYTE appVisual
 LAYERTYPES.Rect origin,target
 INT pressX,pressY,sliderMin,sliderTravel,sliderValue
-BYTE gadget
+INT gadget
+BYTE restoreIcon
+INT arrowCode
 BYTE phase,blocked,dirty,escapePending
 CONST DRAGGING=1
 CONST MOVE_PENDING=2
@@ -106,11 +110,40 @@ PUBLIC BYTE FUNC Escape(INPUT.Event POINTER sample)
 
 RETURN(0)
 
-BYTE FUNC CloseHit(DESKTYPES.Window POINTER window
-    LAYERTYPES.Layer POINTER layer INT x,y)
+INT FUNC FindObject(DESKTYPES.Window POINTER window INT x,y)
 
-RETURN(window.frameKind<>DESKTYPES.FRAME_BORDERLESS
-    AND DESKGEOMETRY.CloseHit(@layer.bounds,x,y)<>0)
+RETURN(GEMHIT.Find(@window.frame.tree(0),0,8,x,y))
+
+BYTE FUNC CloseHit(DESKTYPES.Window POINTER window INT x,y)
+
+RETURN(FindObject(window,x,y)=GEMOBJECTS.O_CLOSER)
+
+; Track background clicks use the selected thumb from the same live tree.
+INT FUNC Arrow(DESKTYPES.Window POINTER window INT object,x,y)
+  LAYERTYPES.Rect thumb
+
+  CASE object OF
+  WHEN GEMOBJECTS.O_UP THEN
+    RETURN(AESTYPES.WA_UPLINE)
+  WHEN GEMOBJECTS.O_DOWN THEN
+    RETURN(AESTYPES.WA_DNLINE)
+  WHEN GEMOBJECTS.O_LEFT THEN
+    RETURN(AESTYPES.WA_LFLINE)
+  WHEN GEMOBJECTS.O_RIGHT THEN
+    RETURN(AESTYPES.WA_RTLINE)
+  WHEN GEMOBJECTS.O_VSCROLL THEN
+    DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_VSLIDE,@thumb)
+    RETURN(IF y<thumb.top THEN INT(AESTYPES.WA_UPPAGE)
+        ELSE INT(AESTYPES.WA_DNPAGE) FI)
+  WHEN GEMOBJECTS.O_HSCROLL THEN
+    DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_HSLIDE,@thumb)
+    RETURN(IF x<thumb.left THEN INT(AESTYPES.WA_LFPAGE)
+        ELSE INT(AESTYPES.WA_RTPAGE) FI)
+  ELSE
+    RETURN(-1)
+  ESAC
+
+RETURN(-1)
 
 PROC Position(INT x,y)
   INT left,top,width,height,limit
@@ -127,7 +160,6 @@ PROC Position(INT x,y)
     top=DESKMENU.BAR_HEIGHT
   FI
 
-  left=left & $fffe
 
   limit=640-width
   IF left>limit THEN
@@ -274,23 +306,20 @@ BYTE FUNC ApplicationReady()
 RETURN(ready)
 
 ; Resizing keeps its upper-left anchor. Applications may request larger minima.
-PROC SizePosition(INT x,y CARD kind)
-  INT width,height,minimum
+PROC SizePosition(INT x,y DESKTYPES.Window POINTER window)
+  INT width,height
 
   width=origin.right-origin.left+x-pressX
   height=origin.bottom-origin.top+y-pressY
-  minimum=IF (kind & DESKTYPES.FRAME_VERTICAL)<>0 THEN
-      DESKTYPES.FRAME_MIN_SCROLL_HEIGHT ELSE DESKTYPES.FRAME_MIN_SIZE_HEIGHT FI
-  IF width<DESKTYPES.FRAME_MIN_WIDTH THEN
-    width=DESKTYPES.FRAME_MIN_WIDTH
+  IF width<window.frame.minWidth THEN
+    width=window.frame.minWidth
   FI
-  IF height<minimum THEN
-    height=minimum
+  IF height<window.frame.minHeight THEN
+    height=window.frame.minHeight
   FI
   IF width>640-origin.left THEN
     width=640-origin.left
   FI
-  width=(width+1) & $fffe
   IF height>240-origin.top THEN
     height=240-origin.top
   FI
@@ -305,7 +334,7 @@ RETURN
 PROC SlidePosition(INT x,y)
   INT top,height
 
-  top=IF gadget=14 THEN x-pressX ELSE y-pressY FI
+  top=IF gadget=GEMOBJECTS.O_HSLIDE THEN x-pressX ELSE y-pressY FI
   IF top<sliderMin THEN
     top=sliderMin
   FI
@@ -317,7 +346,7 @@ PROC SlidePosition(INT x,y)
     sliderValue=INT((LONGCARD(CARD(top-sliderMin))*1000
         +LONGCARD(CARD(sliderTravel) RSH 1))/LONGCARD(CARD(sliderTravel)))
   FI
-  IF gadget=14 THEN
+  IF gadget=GEMOBJECTS.O_HSLIDE THEN
     IF top<>target.left THEN
       height=target.right-target.left
       target.left=top
@@ -336,7 +365,8 @@ RETURN
 ; A title/close press captures subsequent edges and motion even outside the
 ; original window. A release remains pending until geometry can safely commit.
 PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
-  BYTE slot,hit
+  BYTE slot
+  INT hit
   LONGCARD layerId
   LAYERTYPES.Rect rail
 
@@ -371,7 +401,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       FI
       LET layer=DESKCORE.Layer(service,window)
       IF phase=SIZING THEN
-        SizePosition(sample.x,sample.y,window.frameKind)
+        SizePosition(sample.x,sample.y,window)
         IF (sample.buttons & INPUT.LEFT)=0 THEN
           phase=SIZE_PENDING
         FI
@@ -381,7 +411,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           phase=SLIDE_PENDING
         FI
       ELSEIF (sample.buttons & INPUT.LEFT)=0 THEN
-        IF DESKGEOMETRY.GadgetHit(window,@layer.bounds,sample.x,sample.y)=gadget THEN
+        IF FindObject(window,sample.x,sample.y)=gadget
+            AND (arrowCode=-1 OR Arrow(window,gadget,sample.x,sample.y)=arrowCode) THEN
           phase=ARROW_PENDING
         ELSE
           phase=0
@@ -399,7 +430,7 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
         IF window<>NULL THEN
           BEGIN
             LET layer=DESKCORE.Layer(service,window)
-            IF layer<>NULL AND CloseHit(window,layer,sample.x,sample.y)<>0 THEN
+            IF layer<>NULL AND CloseHit(window,sample.x,sample.y)<>0 THEN
               phase=CLOSE_PENDING
               RETURN(1)
             FI
@@ -429,9 +460,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
       IF window<>NULL AND window.id<>0 AND window.layer=layerId THEN
         BEGIN
           LET layer=DESKCORE.Layer(service,window)
-          hit=DESKGEOMETRY.GadgetHit(window,@layer.bounds,sample.x,sample.y)
-          IF hit=0 AND (window.frameKind=DESKTYPES.FRAME_BORDERLESS
-              OR DESKGEOMETRY.TitleHit(@layer.bounds,sample.x,sample.y)=0) THEN
+          hit=FindObject(window,sample.x,sample.y)
+          IF hit<=0 OR hit=GEMOBJECTS.O_INFO THEN
             RETURN(0)
           FI
 
@@ -443,55 +473,58 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
           FI
 
           windowId=window.id
-
-
-          IF hit<>0 THEN
-            gadget=hit
-            REGIONS.Copy(@layer.bounds,@origin)
-            REGIONS.Copy(@origin,@target)
-            pressX=sample.x
-            pressY=sample.y
-            IF hit=1 THEN
-              phase=SIZING
-              dirty=1
-            ELSEIF hit=6 OR hit=14 THEN
-              IF hit=14 THEN
-                DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@rail)
-                sliderMin=rail.left
-                sliderTravel=rail.right-rail.left-window.sliderWidth
-                REGIONS.Assign(@target,origin.left+window.sliderLeft,rail.top,
-                    origin.left+window.sliderLeft+window.sliderWidth,rail.bottom)
-                pressX=sample.x-target.left
-              ELSE
-                DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@rail)
-                sliderMin=rail.top
-                sliderTravel=rail.bottom-rail.top-window.sliderHeight
-                REGIONS.Assign(@target,rail.left,origin.top+window.sliderTop,
-                    rail.right,origin.top+window.sliderTop+window.sliderHeight)
-                pressY=sample.y-target.top
-              FI
-              phase=SLIDING
-              dirty=1
-              SlidePosition(sample.x,sample.y)
+          gadget=hit
+          restoreIcon=window.iconified
+          DESKGEOMETRY.Project(@window.frame.current,@origin)
+          arrowCode=Arrow(window,hit,sample.x,sample.y)
+          IF restoreIcon<>0 THEN
+            phase=ARROWING
+            RETURN(1)
+          FI
+          REGIONS.Copy(@origin,@target)
+          pressX=sample.x
+          pressY=sample.y
+          CASE hit OF
+          WHEN GEMOBJECTS.O_SIZER THEN
+            IF (window.frameKind & AESTYPES.SIZER)=0 THEN
+              RETURN(1)
+            FI
+            phase=SIZING
+            dirty=1
+            RETURN(1)
+          WHEN GEMOBJECTS.O_VSLIDE,GEMOBJECTS.O_HSLIDE THEN
+            IF hit=GEMOBJECTS.O_HSLIDE THEN
+              DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_HSCROLL,@rail)
+              DESKGEOMETRY.ObjectRect(window,hit,@target)
+              sliderMin=rail.left
+              sliderTravel=rail.right-rail.left-(target.right-target.left)
+              pressX=sample.x-target.left
             ELSE
+              DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_VSCROLL,@rail)
+              DESKGEOMETRY.ObjectRect(window,hit,@target)
+              sliderMin=rail.top
+              sliderTravel=rail.bottom-rail.top-(target.bottom-target.top)
+              pressY=sample.y-target.top
+            FI
+            phase=SLIDING
+            dirty=1
+            SlidePosition(sample.x,sample.y)
+            RETURN(1)
+          WHEN GEMOBJECTS.O_CLOSER THEN
+            phase=CLOSING
+            RETURN(1)
+          WHEN GEMOBJECTS.O_NAME THEN
+            IF (window.frameKind & AESTYPES.MOVER)=0 THEN
+              RETURN(1)
+            FI
+          ELSE
+            IF arrowCode<>-1 OR hit=GEMOBJECTS.O_FULLER
+                OR hit=GEMOBJECTS.O_ICONIFIER THEN
               phase=ARROWING
             FI
             RETURN(1)
-          FI
+          ESAC
 
-          IF CloseHit(window,layer,sample.x,sample.y)<>0 THEN
-            phase=CLOSING
-            RETURN(1)
-          FI
-
-          IF sample.x<layer.bounds.left+DESKTYPES.FRAME_GADGET_WIDTH THEN
-            phase=0
-            windowId=0
-            RETURN(1)
-          FI
-
-          REGIONS.Copy(@layer.bounds,@origin)
-          REGIONS.Copy(@origin,@target)
           pressX=sample.x
           pressY=sample.y
           phase=DRAGGING
@@ -507,6 +540,7 @@ RETURN(0)
 
 PROC AdvanceGesture()
   BYTE drawn
+  LAYERTYPES.Rect current
 
   IF appVisual<>0 THEN
     Track()
@@ -542,8 +576,9 @@ PROC AdvanceGesture()
     RETURN
   FI
 
+  DESKGEOMETRY.Project(@window.frame.current,@current)
   IF (phase=DRAGGING OR phase=MOVE_PENDING OR phase>=SIZING)
-      AND REGIONS.Equal(@layer.bounds,@origin)=0 THEN
+      AND REGIONS.Equal(@current,@origin)=0 THEN
     Cancel()
     RETURN
   FI
@@ -551,7 +586,7 @@ PROC AdvanceGesture()
   IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
-  IF phase=ARROW_PENDING AND (gadget=8 OR gadget=9)
+  IF phase=ARROW_PENDING AND (gadget=GEMOBJECTS.O_ICONIFIER OR restoreIcon<>0)
       AND (AESLOCKS.NativeReady()=0 OR AESLOCKS.PaintBlocked()<>0) THEN
     RETURN
   FI
@@ -566,21 +601,19 @@ PROC AdvanceGesture()
           target.right-target.left,target.bottom-target.top)
     ELSEIF phase=SLIDE_PENDING THEN
       AESWINDOWSTATE.Control(window,
-          IF gadget=14 THEN BYTE(AESTYPES.GUI_HSLID)
+          IF gadget=GEMOBJECTS.O_HSLIDE THEN BYTE(AESTYPES.GUI_HSLID)
           ELSE BYTE(AESTYPES.GUI_VSLID) FI,sliderValue,0,0,0)
-    ELSEIF gadget=8 THEN
+    ELSEIF gadget=GEMOBJECTS.O_ICONIFIER THEN
       DESKCORE.Iconify(service,window)
-    ELSEIF gadget=9 THEN
+    ELSEIF restoreIcon<>0 THEN
       IF DESKCORE.Top(service,window)<>LAYERTYPES.OK THEN
         HEAPCORE.Abort($faec)
       FI
-    ELSEIF gadget=7 THEN
+    ELSEIF gadget=GEMOBJECTS.O_FULLER THEN
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_FULLED,0,0,0,0)
     ELSE
       AESWINDOWSTATE.Control(window,AESTYPES.GUI_ARROWED,
-          IF gadget>=12 THEN INT(gadget)-8
-          ELSEIF gadget>=4 THEN INT(gadget)-4
-          ELSE INT(gadget) FI,0,0,0)
+          arrowCode,0,0,0)
     FI
     phase=0
     windowId=0

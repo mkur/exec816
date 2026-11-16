@@ -5384,6 +5384,105 @@
       "bank_zero_and_task_pools_equal_to_WG2": true,
       "aes_abi": 27,
       "application_abi": 47
+    },
+    "WG5": {
+      "status": "pass",
+      "capture": "build/window-geometry/wg5-frame/results.json",
+      "hit_capture": "build/window-geometry/wg5-hit/results.json",
+      "hit_checks": 25,
+      "binding_checks": 33,
+      "verified_pixels": 293020,
+      "input": {
+        "queued_slots": [
+          2
+        ],
+        "identity": 1,
+        "key_before": 0,
+        "key_after": 1,
+        "manager": 137620,
+        "semaphore_owner": 4129500,
+        "blocked_during_key": true,
+        "withdrawn_before_release": true
+      },
+      "routing_constructions": {
+        "2": 0,
+        "3": 0,
+        "4": 2,
+        "5": 0,
+        "6": 0,
+        "7": 3
+      },
+      "runtime": {
+        "status": 0,
+        "guards": "intact",
+        "native_nmi_count": 304,
+        "native_irq_count": 13796,
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 1053,
+            "untouched_above_floor": 227
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 321,
+            "untouched_above_floor": 735
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 133,
+            "untouched_above_floor": 923
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 704,
+            "untouched_above_floor": 1600
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 24,
+            "untouched_above_floor": 232
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 283,
+          "untouched_from_base": 1253,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "window_bytes": 790,
+      "publication_before_bytes": 662,
+      "publication_after_bytes": 532
     }
   }
 }

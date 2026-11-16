@@ -147,7 +147,7 @@ ENDMODULE
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--case', choices=('abi','storage','layout','slider','policy'), default='abi')
+    parser.add_argument('--case', choices=('abi','storage','layout','slider','policy','hit'), default='abi')
     parser.add_argument('--provider-cache', type=Path)
     args = parser.parse_args()
     if args.case!='abi':

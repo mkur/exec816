@@ -18,9 +18,6 @@ PUBLIC TYPE WindowRoute=[
   LONGCARD window,client,keyRoute,epoch
   AESTYPES.Endpoint POINTER endpoint
   INT handle
-  CARD frameKind
-  INT sliderTop,sliderHeight
-  INT sliderLeft,sliderWidth
   BYTE kind,iconified
   LAYERTYPES.Rect bounds,work
 ]
@@ -41,28 +38,6 @@ PUBLIC PROC Invalidate()
 
   EXEC.Forbid()
   dirty=STATE_DIRTY
-  EXEC.Permit()
-
-RETURN
-
-; Temporary copied-thumb projection, removed when WG5 moves frame hits into
-; SCRENMGR. No route construction, lifetime change or visibility publication.
-PUBLIC PROC Sliders(DESKTYPES.Window POINTER window)
-  BYTE index
-
-  IF published.count=0 THEN
-    RETURN
-  FI
-  EXEC.Forbid()
-  FOR index=0 TO published.count-1 DO
-    IF published.routes(index).window=window.id THEN
-      published.routes(index).sliderTop=window.sliderTop
-      published.routes(index).sliderHeight=window.sliderHeight
-      published.routes(index).sliderLeft=window.sliderLeft
-      published.routes(index).sliderWidth=window.sliderWidth
-      EXIT
-    FI
-  OD
   EXEC.Permit()
 
 RETURN
@@ -161,11 +136,6 @@ PUBLIC BYTE FUNC Publish()
             IF window<>NULL AND window.id<>0 AND window.layer=layer.id THEN
               route.window=window.id
               route.keyRoute=window.keyRoute
-              route.frameKind=window.frameKind
-              route.sliderTop=window.sliderTop
-              route.sliderHeight=window.sliderHeight
-              route.sliderLeft=window.sliderLeft
-              route.sliderWidth=window.sliderWidth
               route.iconified=window.iconified
               IF layer.shown<>0 AND window.id<>DESKSTATE.desktopWindow THEN
                 route.kind=1

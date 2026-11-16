@@ -586,9 +586,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       DESKCACHE.Changed(desktop,window)
       target^=value
       GEMFRAME.Slide(@window.frame,BYTE(horizontal=0))
-      DESKGEOMETRY.ProjectSliders(window)
       AESWINDOWSTATE.Sliders(window)
-      AESSNAPSHOT.Sliders(window)
       ; MagiC draws O_HSCROLL/O_VSCROLL, excluding arrows and the corner.
       ; Include the object's outside frame edge, unlike its hit/drag range.
       ; An icon has no linked track: retain its value for normal restoration.

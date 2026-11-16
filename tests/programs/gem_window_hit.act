@@ -1,0 +1,64 @@
+MODULE GEMWINDOWHIT
+USE EXEC
+USE DESKWINDOW
+USE GEMFRAME
+USE GEMHIT
+USE GEMOBJECTS
+USE HEAPCORE
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  LET window=DESKWINDOW.Create(4095)
+  Require(window<>NULL)
+  LET frame=@window.frame
+  LET tree=@frame.tree(0)
+  GEMFRAME.SetSize(frame,4095,13,17,320,180)
+  frame.vsize=500
+  frame.vslide=500
+  frame.hsize=500
+  frame.hslide=500
+  GEMFRAME.Slide(frame,1)
+  GEMFRAME.Slide(frame,0)
+  Require(GEMHIT.Find(tree,0,8,21,22)=GEMOBJECTS.O_CLOSER)
+  Require(GEMHIT.Find(tree,0,8,325,22)=GEMOBJECTS.O_FULLER)
+  Require(GEMHIT.Find(tree,0,8,100,22)=GEMOBJECTS.O_NAME)
+  Require(GEMHIT.Find(tree,0,8,20,32)=GEMOBJECTS.O_INFO)
+  Require(GEMHIT.Find(tree,0,8,325,42)=GEMOBJECTS.O_UP)
+  Require(GEMHIT.Find(tree,0,8,325,181)=GEMOBJECTS.O_DOWN)
+  Require(GEMHIT.Find(tree,0,8,325,65)=GEMOBJECTS.O_VSCROLL)
+  Require(GEMHIT.Find(tree,0,8,325,155)=GEMOBJECTS.O_VSCROLL)
+  Require(GEMHIT.Find(tree,0,8,325,100)=GEMOBJECTS.O_VSLIDE)
+  Require(GEMHIT.Find(tree,0,8,20,191)=GEMOBJECTS.O_LEFT)
+  Require(GEMHIT.Find(tree,0,8,310,191)=GEMOBJECTS.O_RIGHT)
+  Require(GEMHIT.Find(tree,0,8,80,191)=GEMOBJECTS.O_HSCROLL)
+  Require(GEMHIT.Find(tree,0,8,260,191)=GEMOBJECTS.O_HSCROLL)
+  Require(GEMHIT.Find(tree,0,8,150,191)=GEMOBJECTS.O_HSLIDE)
+  Require(GEMHIT.Find(tree,0,8,325,191)=GEMOBJECTS.O_SIZER)
+  Require(GEMHIT.Find(tree,0,8,100,100)=GEMOBJECTS.O_FRAME)
+  Require(GEMHIT.Find(tree,0,8,12,17)=-1)
+  Require(GEMHIT.Find(tree,0,8,334,50)=-1)
+  Require(GEMHIT.Find(tree,0,0,21,22)=GEMOBJECTS.O_FRAME)
+  Require(GEMHIT.Find(tree,GEMOBJECTS.O_VSCROLL,8,325,100)=GEMOBJECTS.O_VSLIDE)
+  ; The later sibling wins the shared closer/name border, as it does in draw.
+  Require(GEMHIT.Find(tree,0,8,28,22)=GEMOBJECTS.O_NAME)
+  GEMFRAME.SetSize(frame,4095,27,47,320,180)
+  Require(GEMHIT.Find(tree,0,8,35,52)=GEMOBJECTS.O_CLOSER)
+  GEMFRAME.SetKind(frame,9)
+  GEMFRAME.SetSize(frame,9,27,47,320,180)
+  Require(GEMHIT.Find(tree,0,8,35,52)=GEMOBJECTS.O_NAME)
+  Require(GEMHIT.Find(tree,0,8,325,100)=GEMOBJECTS.O_FRAME)
+  DESKWINDOW.Free(window)
+
+RETURN
+ENDMODULE

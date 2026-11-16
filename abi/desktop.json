@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "constants": {
     "WINDOWS": 6,
     "TITLE_BYTES": 65,
@@ -135,22 +135,6 @@
       [
         "frameKind",
         "CARD"
-      ],
-      [
-        "sliderTop",
-        "INT"
-      ],
-      [
-        "sliderHeight",
-        "INT"
-      ],
-      [
-        "sliderLeft",
-        "INT"
-      ],
-      [
-        "sliderWidth",
-        "INT"
       ],
       [
         "normalBounds",

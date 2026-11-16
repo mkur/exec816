@@ -104,3 +104,27 @@ the ordinary `__simple_call LONG(ULONG)` boundary. All guards pass; the minimum
 observed ordinary floor margin is 231 bytes. Generated bank-zero budgets and
 Task pools match WG2 exactly: zero fixed, root, kernel, idle and per-public-Task
 reserved-byte changes. These are development checks, not hosted qualification.
+
+WG5 queues generic frame points with the existing retained identity/epoch/
+endpoint protocol. Input delivery follows no frame objects and takes no UPDATE.
+SCRENMGR resolves the current window under UPDATE, then uses the ported GEM4XE
+`ob_find` flow, matching MagiC `_wbm_obfind`. Gadget IDs, thumb and track objects
+drive arrow/page/drag interpretation; shared-border hits follow painter order.
+The separate capture-side title/gadget calculation and copied thumbs are gone.
+Native drag/resize uses canonical bounds and kind minima, without even-pixel
+normalization.
+
+The optimized hit fixture passes 25 checks. The focused frame/input fixture
+retains all 33 binding checks and 293,020 exact pixels. A retained frame click
+puts SCRENMGR in UPDATE's FIFO; while it sleeps, a physical A key advances the
+application inbox tail from 0 to 1. Closing the queued target converts it to an
+ordered loss/cancellation and releases its endpoint reference before the caller
+releases UPDATE or frees/reuses window storage. Guards pass; the minimum floor
+margin is 227 bytes. Passive observation counts **zero routing constructions**
+for either pair of slider setters.
+
+The window record drops from 798 to 790 bytes (an eight-byte reduction in its
+rounded allocation). Each compiled routing publication drops from 662 to 532
+upper bytes, saving 260 bytes across the prepared/published pair. The service
+pointer table and all bank-zero/Task reservations stay unchanged. No additional
+Task, signal, VRAM area or platform service is introduced.

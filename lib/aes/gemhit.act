@@ -1,0 +1,91 @@
+; GEM4XE ob_get_par/ob_offset/get_prev/ob_find, used like MagiC _wbm_obfind.
+; The caller owns the live tree. No capture-side geometry or exclusion gate.
+MODULE GEMHIT
+USE GEMOBJECTS
+
+INT FUNC Parent(GEMOBJECTS.Object POINTER tree INT object)
+  INT parent
+
+  IF object=0 THEN
+    RETURN(-1)
+  FI
+  parent=tree(object).next
+  WHILE parent<>-1 AND tree(parent).tail<>object DO
+    object=parent
+    parent=tree(object).next
+  OD
+
+RETURN(parent)
+
+PROC Offset(GEMOBJECTS.Object POINTER tree INT object INT POINTER x,y)
+
+  x^=0
+  y^=0
+  WHILE object<>-1 DO
+    x^==+tree(object).x
+    y^==+tree(object).y
+    object=Parent(tree,object)
+  OD
+
+RETURN
+
+INT FUNC Previous(GEMOBJECTS.Object POINTER tree INT parent,object)
+  INT previous,next
+
+  previous=tree(parent).head
+  IF previous=object THEN
+    RETURN(-1)
+  FI
+  DO
+    next=tree(previous).next
+    IF next=object THEN
+      RETURN(previous)
+    FI
+    IF next=parent THEN
+      RETURN(-1)
+    FI
+    previous=next
+  OD
+
+RETURN(-1)
+
+; Search last child first, preserving painter order at shared border pixels.
+PUBLIC INT FUNC Find(GEMOBJECTS.Object POINTER tree INT current,depth,x,y)
+  INT found,originX,originY,left,top,child
+  BYTE siblings
+
+  found=-1
+  originX=0
+  originY=0
+  siblings=0
+  IF current<>0 THEN
+    Offset(tree,Parent(tree,current),@originX,@originY)
+  FI
+  DO
+    left=tree(current).x+originX
+    top=tree(current).y+originY
+    IF x>=left AND x<left+tree(current).width
+        AND y>=top AND y<top+tree(current).height
+        AND (tree(current).flags & 128)=0 THEN
+      found=current
+      child=tree(current).tail
+      IF child=-1 OR depth=0 THEN
+        RETURN(found)
+      FI
+      current=child
+      depth==-1
+      originX=left
+      originY=top
+      siblings=1
+    ELSEIF siblings<>0 AND found<>-1 THEN
+      current=Previous(tree,found,current)
+      IF current=-1 THEN
+        RETURN(found)
+      FI
+    ELSE
+      RETURN(found)
+    FI
+  OD
+
+RETURN(found)
+ENDMODULE

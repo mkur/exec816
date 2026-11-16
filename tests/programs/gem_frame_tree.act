@@ -28,6 +28,7 @@ ParameterBlock pb
 CARD checks,phase,go,initialClients
 INT first,second
 LONGCARD identity,clientId
+LONGCARD ARRAY observed(10)
 
 PROC Require(BYTE okay)
 
@@ -209,8 +210,27 @@ PROC Main()
   SetText(first,AESTYPES.WF_NAME,c"Tree title")
   SetText(first,AESTYPES.WF_INFO,c"Info shares the tree")
   Rendezvous(5)
+  IF INPUT_CHECKS<>0 THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      LET client=AESSTATE.Find(service,clientId)
+      observed(0)=LONGCARD(ADDRESS(@service.pointerCount))
+      observed(1)=LONGCARD(ADDRESS(@service.pointerTargets(0)))
+      observed(2)=LONGCARD(ADDRESS(@service.pointerEvents(0)))
+      observed(3)=LONGCARD(ADDRESS(@service.updateResource))
+      observed(4)=LONGCARD(ADDRESS(@service.owner))
+      observed(5)=LONGCARD(ADDRESS(@client.endpoint.input.keyTail))
+      observed(6)=LONGCARD(ADDRESS(client.endpoint))
+      observed(7)=SIZEOF(AESSTATE.PointerTarget)
+      observed(9)=LONGCARD(ADDRESS(@service.pointerHead))
+      Rendezvous(6)
+    END
+  FI
   Close(second,1)
   Close(first,0)
+  IF INPUT_CHECKS<>0 THEN
+    Rendezvous(7)
+  FI
   BEGIN
     LET service=AESSTATE.Get()
     LET window=AESWINDOWSTATE.Handle(AESSTATE.Find(service,clientId),first)
