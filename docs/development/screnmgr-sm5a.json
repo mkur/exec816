@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "slice": "SM5a",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "9f38eb00",
+  "capture": "build/screnmgr/sm5-interaction",
+  "results_sha256": "af0662d8bfbcec0bdf61ec5a8a829025b777dfb94f3a9300c40a2649ba4fe055",
+  "image_sha256": "43a4ef5af6867ecf809e12fb9467ea0a4e0254f9b4a1a82b0cf169ae08a8c21c",
+  "xex_sha256": "3d77b285bef87a7f062bbd0e1060152f7f67706686ee2c15127b772e9b0374df",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "optimized": true,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "checks": {
+    "AESChecks": 68,
+    "AESFailures": 0,
+    "progress": 26,
+    "phase": 3,
+    "callbackReady": 2,
+    "keyboardReady": 2,
+    "keyboard_delivery": {
+      "presenter_held": 0,
+      "presenter_depth": 0
+    }
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 1086,
+        "untouched_above_floor": 194
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 378,
+        "untouched_above_floor": 678
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 156,
+        "untouched_above_floor": 900
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 406,
+        "untouched_above_floor": 650
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 58,
+        "untouched_above_floor": 998
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 702,
+        "untouched_above_floor": 1602
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 50,
+        "untouched_above_floor": 206
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "source_inputs": {
+    "tests/programs/aes_migration.c": "4074427aba027c922fd825d1a19021834857594367c6ac6c5be476039e76ac05",
+    "tools/test_aes_migration.py": "64e816113988f5867fbabb25de67bac45860d294be9cfd141215692b0fa87f76",
+    "lib/aes/screnmgr.act": "966625c556fc21cbdb464d84c9dee57333ebbe4a130a3ba54d5aceb9a590af7f",
+    "lib/aes/aeslocks.act": "8515509ac308bb860947acb0eb847a18f0332e865e7129f0c21383ab89a04d0e"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "scope": [
+    "Small window/gadget case with physical arrow/button and keyboard delivery, caller frame painting, recursive UPDATE/MCTRL and native FIFO contention.",
+    "A compute counter progresses under normal Task preemption while the application owns UPDATE; cooperative detach balances nested ownership and client retirement.",
+    "68 C assertions and two native checks, clean ownership and intact guards. Production Counter/MGVIEW scroll observation remains SM5b.",
+    "No new production Task, ABI, platform service, bank-zero pool, QED build, demo refresh or release qualification."
+  ]
+}

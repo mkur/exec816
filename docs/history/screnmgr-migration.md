@@ -806,3 +806,22 @@ and physical scratch reservations are unchanged. These are development checks;
 no QED, application catalog, demo refresh, release qualification or performance
 claim is included. SM4e is complete. SM5's combined scroll observation remains a
 separate next step.
+
+
+## SM5a: combined window, input and ownership check
+
+The existing small window/gadget fixture passes against SCRENMGR: physical
+arrow interaction and key delivery, caller-side frame painting, recursive
+UPDATE/MCTRL, native FIFO contention and cooperative departure with nested
+holds. Its computing peer progresses under normal Task preemption while UPDATE
+is owned. Ordinary key publication observes zero manager UPDATE depth, and its
+recipient can immediately obtain UPDATE. All clients and ownership retire.
+
+Optimized emitted checks pass 68 C assertions and two native checks with intact
+guards and normal restoration. [Evidence](../development/screnmgr-sm5a.json)
+records the pinned compiler/machine, image hashes and stack observations.
+Reserved bank-zero growth is **0 fixed, root, kernel, idle and per public Task**,
+including guards, alignment and unused capacity; the fixture reuses the existing
+Task pools. There is no production change or new platform service. The loaded
+production Counter beside MGVIEW and its scroll observation remain SM5b. No
+QED, catalog, demo refresh or release qualification is included.
