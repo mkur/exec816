@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "slice": "SM1e",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "adee589266843d3259ed10ce82331ed9342a3c32",
+  "scope": "Caller-synchronous title/info component painting, including icon title and unlinked icon info.",
+  "source_inputs": {
+    "c/calypsi/aes-windows.c": "b3debe2f799c6cc68f4abf379eefff063a47954bb2133fa2dc92d44733cf40fd",
+    "lib/aes/aesframe.act": "f84bea66b86f47b62f623e562ca2739a74eef9d8b449a3e4e39e747e2da94986",
+    "lib/aes/aeslocal.act": "9a145e4aba60c01be4bd4273ca1eb31012be4fa3dc426ef7ff9e7e8138886165",
+    "lib/aes/aeswindow.act": "a70a2dd8b01c6885b261cee75c2eea0dafb977110590c503532c3db2e0a03cea",
+    "tests/programs/aes_frame.c": "0caf4a7cb0707e7ae276aa54e5eb39c2cf8ea3b416b9affc1df2613b784065d7",
+    "tools/test_aes_frame.py": "be6e568b9229f359ea178c8bbb2a6b0aaea8ccda13f8c779437289e8aac0580b",
+    "tools/test_aes_server.py": "63e3cfc637ccfc61e250c63a6ee6373e5b8c8ec54ebd67116ae21ae9cff165bb"
+  },
+  "capture": "build/screnmgr/sm1e-final",
+  "results_sha256": "0b52f8a81efad2141b81e6f2d3fe4305f85ac72f6f2195f385126733cd2f92e2",
+  "image_sha256": "b269a69acd1554f19cab75190d7e1fef75a77e8564eba21b40454e989fe38f5a",
+  "xex_sha256": "7fe58fbe0050cf28717c2586a5a94b2bfa86fea756dbb7424fae2dd4ff30145d",
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "build_profile": "release",
+    "override": false
+  },
+  "c_tools": {
+    "cc65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+      "version": "Calypsi ISO C compiler for 65816 version 5.18",
+      "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+    },
+    "as65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+      "version": "Calypsi assembler for 65816 version 5.18",
+      "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+    },
+    "ln65816": {
+      "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+      "version": "Calypsi linker for 65816 version 5.18",
+      "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact"
+  },
+  "application_checks": 220,
+  "native_checks": 5,
+  "frame_pixels": 36,
+  "synchronous_checkpoints": 26,
+  "iconified_calls": [
+    {
+      "phase": 35,
+      "field": 2,
+      "status": 0,
+      "caller_draw_calls": 1,
+      "synchronous_frame_pixels": "exact"
+    },
+    {
+      "phase": 36,
+      "field": 3,
+      "status": 0,
+      "caller_draw_calls": 0,
+      "synchronous_frame_pixels": "exact"
+    }
+  ],
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 1089,
+      "remaining_above_floor": 191
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1312,
+      "peak": 304,
+      "remaining_above_floor": 752
+    },
+    "2": {
+      "base": 14224,
+      "bytes": 1312,
+      "peak": 128,
+      "remaining_above_floor": 928
+    },
+    "3": {
+      "base": 15568,
+      "bytes": 1312,
+      "peak": 831,
+      "remaining_above_floor": 225
+    },
+    "4": {
+      "base": 16912,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "5": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 18,
+      "remaining_above_floor": 1038
+    },
+    "6": {
+      "base": 19600,
+      "bytes": 2560,
+      "peak": 771,
+      "remaining_above_floor": 1533
+    },
+    "7": {
+      "base": 22192,
+      "bytes": 2560,
+      "peak": 18,
+      "remaining_above_floor": 2286
+    },
+    "8": {
+      "base": 24784,
+      "bytes": 512,
+      "peak": 21,
+      "remaining_above_floor": 235
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 287,
+      "remaining_above_floor": 993
+    }
+  },
+  "host": {
+    "tests": 718,
+    "skips": 5,
+    "log_sha256": "03e2e9a570eb058c2a757284f301ef512c5ccfcb9d12031b216615a5b0104bfc"
+  },
+  "bank_zero_reserved_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "includes_guards_alignment_and_unused_capacity": true
+  },
+  "bank_zero_budget": {
+    "fixed_runtime": 10528,
+    "idle": 800,
+    "loading_excluding_os": 20368,
+    "loading_including_os": 40336,
+    "public": [
+      1824,
+      1600,
+      1600,
+      1600,
+      1600,
+      1600,
+      2848,
+      2848
+    ],
+    "runtime_excluding_os": 26848,
+    "runtime_including_os": 46816
+  },
+  "commands": [
+    "python3 tools/test_aes_server.py --suite frame --mode opt --output build/screnmgr/sm1e-final",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "limits": [
+    "Focused optimized development check; no hosted/release qualification.",
+    "Synchronous pixel oracle covers the changed visible component; unrelated manager exposure is checked after UPDATE release.",
+    "Iconification uses the existing native policy through a fixture-only hook; no new public iconification selector.",
+    "No QED, demo refresh, app catalog or raw matrix."
+  ]
+}

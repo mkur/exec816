@@ -33,7 +33,8 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
   LET window=AESWINDOWSTATE.Handle(client,request.intin(0))
   LET desktop=DESKSTATE.Get()
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
-  IF layer.shown=0 OR window.iconified<>0 THEN
+  IF layer.shown=0 OR (window.iconified<>0
+      AND request.intin(1)<>AESTYPES.WF_NAME) THEN
     RETURN(AESTYPES.OK)
   FI
 
@@ -46,20 +47,35 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
   packet.foreground=CARD(window.id=desktop.focus)
   packet.background=1
   packet.fillY=window.frameKind
+  IF window.iconified<>0 THEN
+    packet.fillY=DESKTYPES.FRAME_ICONIFIED
+    packet.foreground=0
+    packet.background=0
+  FI
   packet.fillWidth=CARD(window.sliderTop)
   packet.fillHeight=CARD(window.sliderHeight)
   packet.frameHorizontalLeft=CARD(window.sliderLeft)
   packet.frameHorizontalWidth=CARD(window.sliderWidth)
-  IF request.intin(1)=AESTYPES.WF_HSLIDE
-      OR request.intin(1)=AESTYPES.WF_HSLSIZE THEN
+  CASE request.intin(1) OF
+  WHEN AESTYPES.WF_NAME THEN
+    REGIONS.Assign(@rail,layer.bounds.left,layer.bounds.top,
+        layer.bounds.right,layer.bounds.top+DESKTYPES.TITLE_HEIGHT)
+
+  WHEN AESTYPES.WF_INFO THEN
+    REGIONS.Assign(@rail,layer.bounds.left,
+        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
+        layer.bounds.top+DESKTYPES.TITLE_HEIGHT+DESKTYPES.FRAME_INFO_HEIGHT)
+
+  WHEN AESTYPES.WF_HSLIDE,AESTYPES.WF_HSLSIZE THEN
     REGIONS.Assign(@rail,layer.bounds.left,
         layer.bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
         layer.bounds.right,layer.bounds.bottom)
+
   ELSE
     REGIONS.Assign(@rail,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
         layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
         layer.bounds.bottom)
-  FI
+  ESAC
 
   index=0
   WHILE index<layer.visible.count DO

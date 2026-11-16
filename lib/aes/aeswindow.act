@@ -493,7 +493,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     BYTE POINTER changed)
   BYTE status
   BYTE POINTER title,current
-  CARD length,index
+  CARD length,index,component
   LONGCARD titleAddress
   LAYERTYPES.Rect bounds
 
@@ -508,6 +508,11 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
   LET layer=LAYERS.Find(@desktop.scene,window.layer)
   CASE request.intin(1) OF
   WHEN AESTYPES.WF_NAME,AESTYPES.WF_INFO THEN
+    component=IF request.intin(1)=AESTYPES.WF_NAME THEN CARD(AESTYPES.NAME)
+        ELSE CARD(AESTYPES.INFO) FI
+    IF (window.frameKind & component)=0 THEN
+      RETURN(AESTYPES.UNSUPPORTED)
+    FI
     titleAddress=(LONGCARD(CARD(request.intin(2))) LSH 16)
         OR LONGCARD(CARD(request.intin(3)))
     IF titleAddress=0 OR titleAddress>$ffffff THEN
@@ -536,6 +541,12 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       request.intout(0)=1
       RETURN(AESTYPES.OK)
     FI
+    ; Text has the same pre-mutation admission as the slider operation.
+    IF request.displayGrant=NULL AND layer.shown<>0
+        AND (window.iconified=0 OR request.intin(1)=AESTYPES.WF_NAME)
+        AND layer.visible.count<>0 AND AESGATE.SystemOwned()=0 THEN
+      RETURN(AESTYPES.DISPLAY_ERROR)
+    FI
     REGIONS.Copy(@layer.bounds,@bounds)
     IF request.intin(1)=AESTYPES.WF_NAME THEN
       A816MEMORY.Move(@window.title(0),title,length+1)
@@ -547,7 +558,12 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       bounds.top==+DESKTYPES.TITLE_HEIGHT
       bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
     FI
-    status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    ; The iconified frame has no linked info object. Store the value for
+    ; restoration without scheduling a physical frame repaint.
+    status=LAYERTYPES.OK
+    IF window.iconified=0 OR request.intin(1)=AESTYPES.WF_NAME THEN
+      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
+    FI
   WHEN AESTYPES.WF_VSLIDE,AESTYPES.WF_VSLSIZE,AESTYPES.WF_HSLIDE,AESTYPES.WF_HSLSIZE THEN
     BEGIN
       INT POINTER position,size,target

@@ -410,8 +410,8 @@ while the owning caller waits; the presenter cannot release that caller's semaph
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
 text or bounded slider values, cache/menu changes, derived geometry, damage and
-view publication under scene ownership. Changed `WF_VSLIDE`, `WF_VSLSIZE`, `WF_HSLIDE` and `WF_HSLSIZE`
-setters paint their visible frame rail synchronously in the calling Task
+view publication under scene ownership. Changed title/info and vertical/horizontal
+slider setters paint their visible frame component synchronously in the calling Task
 before returning or releasing their handler UPDATE. The scene gate is dropped around physical drawing;
 UPDATE pins the window and frame-visible geometry. This uses a caller-owned
 console-format packet and the shared GEM4XE frame raster under delegated display
@@ -419,7 +419,7 @@ access. Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
 An open public VDI workstation supplies its existing grant. Otherwise the first
-visible, changed slider setter establishes a standalone 32-byte
+visible, changed frame setter establishes a standalone 32-byte
 upper-heap grant through the existing display-delegation request, using the
 context's reply signal. The native handler checks actual visibility under UPDATE
 before mutation. If access is missing, it returns to the library for cold
@@ -481,7 +481,11 @@ withdraws the visible window and open epoch before draining captured input; its
 reply waits for the old input route to retire.
 
 `WF_NAME` and `WF_INFO` copy at most 64 characters plus terminator from the high-word,
-low-word packed address; `wind_set_str` performs that packing. `WF_CXYWH` moves
+low-word packed address; `wind_set_str` performs that packing. Each requires its
+matching NAME/INFO window component. Hidden windows store text without drawing;
+iconified windows paint their title and retain info text for restoration without
+painting an unlinked info component. Equal strings retain the existing publication
+and need no display access. `WF_CXYWH` moves
 or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
 top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 16;
 SIZER or horizontal gadgets increase the bottom inset to 11. INFO adds a 10-pixel information line
@@ -564,8 +568,8 @@ Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
 cancels. Hold repeat and live resizing remain unsupported.
 
 For application windows the presenter paints exposure and deferred frame fields
-and transfers work-area damage into durable `WM_REDRAW` delivery. Slider
-position and size setters paint their own frame clips synchronously. The
+and transfers work-area damage into durable `WM_REDRAW` delivery. Title, info
+and slider setters paint their own frame clips synchronously. The
 presenter's explicit Layers handoff retires manager damage after the complete
 frame transaction without claiming that application pixels have been drawn. Completed, fully visible clients may use
 the shared VRAM snapshots. These contain the outer window, with current title

@@ -222,3 +222,37 @@ checkpoints and 12 synchronous slider checkpoints. Host checks pass 718 tests
 with five historical skips. Guards and stack floors pass; bank-zero reservations
 match SM1c. Only the focused frame fixture and host checks ran. No QED, demo,
 raw matrix or release/performance qualification is included.
+
+
+## SM1e: synchronous title and info
+
+Changed `WF_NAME` and `WF_INFO` now paint their visible component in the calling
+Task before returning or releasing handler UPDATE. This follows AESWIN
+`ws_name` / `ws_info` / `ws_naminf` (2417–2461): require the matching component,
+change text/frame state, draw the open linked object, then release UPDATE.
+An icon's title remains drawable; its unlinked info text is stored for restoration
+without scheduling physical painting. Hidden and equal strings need no drawing
+admission. Bounded copied text remains the installed Exec binding convention.
+
+This reuses the slider operation's packet, delegated grant, clipped renderer and
+manager-damage completion. Cold visible text establishes access before mutation;
+normal/PB calls and warm workstations use the existing boundary. No new renderer,
+Task, signal, public ABI record, VRAM reservation or persistent heap payload is
+added. Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per
+public Task**, including guards, alignment and unused capacity.
+
+The optimized [development record](../development/screnmgr-sm1-text.json) passes
+220 application and five native assertions, 36 complete frame/menu pixel
+checkpoints and synchronous changed-component checks. The two icon checkpoints
+use real native iconification through a test-only hook: the title calls the
+caller renderer and info makes zero caller draw calls. Component-less fields,
+hidden/equal text, copied caller scratch, bad strings, occlusion, held/unheld
+UPDATE, cold/warm access, readiness retry and complete cleanup are covered.
+
+The synchronous oracle checks the called window's changed component while the
+caller stays parked with any outer UPDATE held. An earlier observer incorrectly
+required a peer's pending exposure to be complete at the same instant; that
+condition was removed. The full scene frame/menu oracle still runs after release.
+Host checks pass 718 tests with five historical skips. Guards, ownership and
+stack floors pass. This is development coverage only: no QED/catalog/demo build,
+raw matrix, release or latency qualification.

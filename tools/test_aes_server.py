@@ -523,7 +523,7 @@ ENDMODULE
     if suite=='frame':
         report['frame_local']=frame_local
         environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
-            format(foreign['symbols'][n],'x') for n in ('FrameCallBegin','FrameCallEnd','FrameRelease')))
+            format(foreign['symbols'][n],'x') for n in ('FrameCallBegin','FrameCallEnd','FrameRelease','ExecAESFrameApply')))
     if suite=='geometry':
         report['geometry_local']=geometry_local
         environment=dict(EXEC816_LATENCY_TRACE='1',EXEC816_LATENCY_PCS=','.join(
@@ -651,7 +651,7 @@ ENDMODULE
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
             if suite=='frame':
-                require(report['AESChecks']==202 and len(report['frame_attributes'])==34,
+                require(report['AESChecks']==220 and len(report['frame_attributes'])==36,
                         'Incomplete frame setter checkpoints')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller frame setter exceeded its interrupt floor')

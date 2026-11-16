@@ -9,7 +9,7 @@ with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
 vertical slider positions in the caller; SM1c adds vertical slider sizes and
-SM1d adds horizontal position/size. SM1e resumes title/info completion next.
+SM1d adds horizontal position/size. SM1e completes caller-side title/info painting.
 Other scene ownership and manager migration remain pending. Independent
 input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
@@ -135,8 +135,8 @@ for the next sub-slice. See the
 
 #### SM1e — synchronous title and info setters
 
-Resume the existing uncommitted frame changes; do not layer a second path over
-them. The pinned AESWIN `ws_name` / `ws_info` / `ws_naminf` (2417–2461) checks the
+Implemented: see the [SM1e execution record](../../history/screnmgr-migration.md#sm1e-synchronous-title-and-info).
+The slice resumes the existing frame changes through their common path. The pinned AESWIN `ws_name` / `ws_info` / `ws_naminf` (2417–2461) checks the
 matching NAME/INFO bit, updates stored text/frame state, draws an open linked
 frame object and returns through `ws_endsw` / `update_0`. This confirms failure
 for a missing component. An iconified title remains drawable; unlinked info
