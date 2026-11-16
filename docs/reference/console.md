@@ -10,7 +10,7 @@ The standard text frontend runs a small rendering loop without AES/desktop
 dependencies. An optional GEM binding supplies GUI policy and runs the existing
 graphical manager loop; its SCRENMGR replacement remains in progress.
 The [input.device migration](../plans/input-device-migration-plan.md) has switched
-standalone console capture. GUI startup retains its frontend capture until IM6.
+both standalone and GUI capture to the shared service.
 Closing the console detaches its consumer; input.device remains resident until
 its own shutdown. Stop admission and input enqueue use the same short Task
 guard, so no copied input arrives after a successful console stop decision.
@@ -114,8 +114,9 @@ Cooked editing, EOF and foreground cancellation belong to the
 
 ## Presentation and input
 
-The system Task owns display and input capture. It routes captured events through
-a bounded copied ingress queue to the backend Task. Eight byte/raw packets may be
+The selected frontend owns the display; input.device owns capture. Its console
+consumer routes captured events through a bounded copied ingress queue to the
+backend Task. GEM routes resolve copied AES snapshots before console fallback. Eight byte/raw packets may be
 queued; loss and cancellation have separate coalesced slots. A captured route
 remains retained through delivery or drop. Clearing, reopening or closing input
 invalidates copied bytes already withdrawn from capture. Scope handoff retires

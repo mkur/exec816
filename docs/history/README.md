@@ -1,5 +1,9 @@
 # Historical records
 
+- [input.device migration](input-device-migration.md): independent capture,
+  Atari text and AES consumers, retained manager targets, resource costs and
+  focused development acceptance.
+
 - [SCRENMGR migration](screnmgr-migration.md): synchronous vertical slider position
   and size painting in the caller, cursor policy without scene admission,
   coherent registration publication and focused development checks.

@@ -19,22 +19,26 @@ independent of AES, SCRENMGR and display ownership, with consumers for standard
 Atari text, future VBXE text-mode and GEM operation. It proposes bounded consumer
 handlers so AES event publication does not require another receiving Task.
 
-This does not add a separate input Task or select a new native deferred-work
-service. It also does not put live scene mutation or physical cursor drawing
-inside the input dispatcher. Console stream/model work remains in the existing
-CONSOLEBACKEND Task. Remaining Worker duties, including the SCRENMGR execution
-context and standalone display work, still need explicit relocation/costing;
-the complete Task count and stack bounds are not established by this selection.
-The [IM0–IM8 migration plan](../input-device-migration-plan.md) proposes and
-costs a frontend context and sequences standalone Atari text and AES consumer
-conversion. The user's request to implement that plan selects the separate
-frontend context; the [IM0 contract](../input-device-contract.md) records the
-additional occupied slot and unchanged bank-zero reservations.
+The [IM0–IM8 migration](../input-device-migration-plan.md) implements the selected
+separate frontend. Input uses an ordinary public Task; the active text/GEM
+frontend performs display and manager work, and CONSOLEBACKEND retains stream
+and model work. Compared with the former two-service arrangement, three service
+Tasks occupy one additional ordinary pool. The existing eight-pool map, guards
+and bank-zero reservations are unchanged. A root with two GEM Counters occupies
+six public pools. Input and frontend stack observations are recorded in the
+[migration record](../../history/input-device-migration.md).
+
+No live scene mutation, drawing or UPDATE wait runs in input.device. Application
+inboxes remain independent while the frontend waits. The current AESSYSTEM loop
+stays in the frontend until SM3/SM4 satisfy the remaining caller-drawing,
+scene-reader and physical-retirement requirements. The final SCRENMGR blocking
+loop is not installed by this migration.
 
 The alternatives below retain the earlier comparison. They are not the selected
 implementation map. Task-side delivery is an explicit Exec adaptation of
 MagiC's scheduler-side input role, preserving its independence from SCRENMGR.
-This documentation changes no Task, platform service or reserved bank-zero byte.
+The earlier alternatives below are retained as design history, not parallel
+implementations.
 
 ## Earlier alternative: add a dedicated input Task
 

@@ -98,6 +98,11 @@ DEVICE_FAULT. If idle cannot be established, keep FAULTED ownership and storage
 and enter the platform's interrupt-disabled reset-required park (`$FF93`). This
 does not acknowledge normal completion or return hardware/storage to the OS.
 
+Input capture belongs to the independent [input.device](input-device.md) Task.
+Waiting for UPDATE or a delegated display grant does not transfer capture to the
+frontend or borrower. Physical completion and cursor work remain with their
+display owners; input handlers perform no display operations.
+
 ## Delegated renderer access
 
 The lifetime owner installs its allocated wake mask with `OwnerWake(mask)`.

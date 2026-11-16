@@ -4,16 +4,18 @@
 [Current INPUT](../reference/input.md) · [Device I/O](../reference/device-io.md) ·
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
-Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM7 are recorded; IM8 acceptance is being recorded.** The selected direction reuses the resident console/system
-Task for generic input and supports the standard Atari text console, future
-VBXE text-mode console and GEM. The design's bounded consumer handler is the
-proposed delivery interface. This plan specifies implementation slices and
-identifies the remaining execution-placement decision before live cutover.
+Prepared 2026-11-15; implemented 2026-11-16. **IM0–IM8 are complete at
+development tier.** The former console/system input role is now input.device;
+a separate selected frontend owns standard Atari text, standalone bitmap or GEM
+presentation. The bounded native handler and public device controls are
+implemented. Future VBXE text-mode rendering remains separate. See the
+[migration record](../history/input-device-migration.md) for actual checks,
+resources and remaining SCRENMGR work.
 
-Commit each passing slice separately. Do not resume the unrelated, unfinished
-frame-setter work as part of this plan. The original planning commit delivered no executable change or system
-qualification. Implementation evidence is linked under each completed slice.
+Each passing slice was committed separately. The unrelated unfinished
+frame-setter work was left untouched. The original planning commit delivered no
+executable change or system qualification; implementation evidence is linked
+under each completed slice.
 
 ## Boundaries and ordering
 
@@ -42,7 +44,7 @@ chains, event observers and input injection remain outside this migration.
 Preserve the existing bitmap console's supported startup selection and safe
 retirement; it is not the proposed VBXE text-mode implementation.
 
-## Execution-placement proposal before cutover
+## Execution placement selected before cutover
 
 The current source map has two service Tasks, not an unoccupied third context:
 [CONSOLEDRIVER.Worker](../../lib/console/consoledriver.act) owns input, display
@@ -367,6 +369,16 @@ cross-consumer seams, not deferred basic cancellation correctness.
 
 ## IM8 — record minimal acceptance and publish current contracts
 
+Status: complete. The [migration record](../history/input-device-migration.md)
+and [acceptance data](../development/input-device-im8.json) record the final
+Atari text and GEM Counter checks, idle turns, notification-to-inbox delay,
+charged CPU/off-Task/interrupt time, stack observations, compiler/ROM/emulator
+pins, resources and remaining limits. Host checks pass (718 tests, five expected
+skips). This is development evidence; no QED, catalog, demo or release matrix.
+Reserved bank-zero deltas remain fixed/root/kernel/idle/per-Task **0 bytes**.
+The complete migration adds a 1,024-byte upper arena and one occupied ordinary
+Task pool; private GUI targets add 192 heap bytes. SM3/SM4 remain separate.
+
 Run one coherent standard Atari text case and one GEM Counter/widget case after
 the integrated cutover. Reuse unchanged APPs when ABI/imports permit. Record idle
 wakes, capture-to-handler/inbox delay, off-Task time and handler/control cost;
@@ -387,9 +399,10 @@ matrix. No future VBXE text renderer is required for acceptance.
 
 ## Resource and completion rules
 
-This planning slice changes **0 fixed, 0 root, 0 kernel, 0 idle and 0
+The original planning slice changed **0 fixed, 0 root, 0 kernel, 0 idle and 0
 per-public-Task reserved bank-zero bytes**, counting guards, alignment and
-unused reserved capacity. No target ABI, upper-memory or VRAM allocation changes.
+unused reserved capacity. It added no target ABI, upper-memory or VRAM allocation. Implemented additions
+and measurements are recorded in the linked migration evidence.
 
 Every implementation commit must report that same reservation breakdown,
 occupied pools and per-Task stack/DP costs separately. Reusing a reserved pool

@@ -1,0 +1,933 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-11-16",
+  "slice": "IM8",
+  "gui": {
+    "checks": 19,
+    "cases": [
+      "pointer-busy GUI startup rollback and retry",
+      "two ordinary GEM Counters",
+      "key/button inbox and console write while A owns UPDATE",
+      "retained manager interaction resumes after UPDATE",
+      "key inbox delivery while A sleeps for a display grant"
+    ],
+    "timing": {
+      "callbacks_and_control": {
+        "control": {
+          "elapsed_ms": {
+            "count": 96,
+            "median_ms": 0.29124064851088066,
+            "p95_ms": 13.051908782188365,
+            "max_ms": 25.254271693974587
+          },
+          "charged_cpu_ms": {
+            "count": 96,
+            "median_ms": 0.24401624519474077,
+            "p95_ms": 6.887784949935083,
+            "max_ms": 7.660925964822754
+          },
+          "off_cpu_ms": {
+            "count": 96,
+            "median_ms": 0.0,
+            "p95_ms": 5.5527440197694045,
+            "max_ms": 16.769244649193165
+          },
+          "interrupt_ms": {
+            "count": 96,
+            "median_ms": 0.04736537168424777,
+            "p95_ms": 0.30216569703924134,
+            "max_ms": 1.3482919567678209
+          }
+        },
+        "key": {
+          "elapsed_ms": {
+            "count": 2,
+            "median_ms": 1.527180815896721,
+            "p95_ms": 1.527180815896721,
+            "max_ms": 1.527180815896721
+          },
+          "charged_cpu_ms": {
+            "count": 2,
+            "median_ms": 1.2609620527249892,
+            "p95_ms": 1.2609620527249892,
+            "max_ms": 1.2609620527249892
+          },
+          "off_cpu_ms": {
+            "count": 2,
+            "median_ms": 0.0,
+            "p95_ms": 0.0,
+            "max_ms": 0.0
+          },
+          "interrupt_ms": {
+            "count": 2,
+            "median_ms": 0.2669940891963252,
+            "p95_ms": 0.2669940891963252,
+            "max_ms": 0.2669940891963252
+          }
+        },
+        "pointer": {
+          "elapsed_ms": {
+            "count": 114,
+            "median_ms": 6.706147207628081,
+            "p95_ms": 30.051777681606023,
+            "max_ms": 66.54299041838001
+          },
+          "charged_cpu_ms": {
+            "count": 114,
+            "median_ms": 5.4310883180923035,
+            "p95_ms": 6.797071805057663,
+            "max_ms": 9.229410512575084
+          },
+          "off_cpu_ms": {
+            "count": 114,
+            "median_ms": 0.0,
+            "p95_ms": 22.277442664640482,
+            "max_ms": 58.582647639696134
+          },
+          "interrupt_ms": {
+            "count": 114,
+            "median_ms": 1.2802747191557686,
+            "p95_ms": 1.7032503076634633,
+            "max_ms": 1.9115310715428564
+          }
+        }
+      },
+      "delivery": [
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.3054967795776307,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 0.9880472920681328,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 1.055007266919376,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.143049061221152,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.395916710249387,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 37.69458921112692,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 44.79502494435274,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 61.63433087249552,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 68.73476660572133,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.043125043171563,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 0.3269761298262283,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 7.589173065455842,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 59.127208445696866,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 66.24286876267834,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 73.34513708468957,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 102.5437742025067,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 109.63687958059091,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 138.31625971448267,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 145.46434275612896,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.0335871233853835,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 10.177704724836794,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 38.51967706966234,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 45.6834076001686,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.486243601798193,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 23.770650103823204,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 41.42341400013251,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 48.609699469536025,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 55.83785254426759,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 7.222443855823192,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 28.38158445626386,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 35.62143790554837,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.566499713129371,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.5693895646755824,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.391669333318297,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 1.677805517219991,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.932906105199054,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.459159349233625,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.568825691203151,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.5784820244185407,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.822327697887871,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.355417907775674,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.911701643268267,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.726947090342398,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.557689190122628,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.789411583934681,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.125216562655505,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.4998625558410947,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.8309972525265055,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 19.285952925023153,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 16.269229847514517,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 29.067536535476805,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.3555109468986255,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.5437037183226456,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "key",
+          "notification_to_handler_ms": 4.203535768608882,
+          "notification_to_inbox_ms": 5.462312811628199
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 1.523727090878078,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.60134850340932,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 3.8336347706938043,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.016536999262735,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 23.284661654771288,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.391023698192362,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 13.265264407319641,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.614840585920925,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 21.30948336502772,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.801382617754403,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.357591640011897,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.920107587058539,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 33.92981748825381,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.1233543705128,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.08468815682449,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.114844110130129,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.230367687794535,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.8342578508808405,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.359865459789477,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.2574674468795943,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 9.44452824230771,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 7.861735405192428,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 0.8945147798285543,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.346066066235397,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 9.20897009919944,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.438318585692556,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 18.05403035612839,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 10.612239719529335,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.129838915445763,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.443463931128494,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.665912016002729,
+          "notification_to_inbox_ms": 10.510390073571392
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.398424537518026,
+          "notification_to_inbox_ms": 9.977036252835227
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 1.3487148618721445,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.44916892098582,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.163882776343816,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 12.426925522182078,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 23.32230020905609,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.423234970305013,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 13.263502302718294,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.076764324853146,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 22.05865975733705,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.804231588473862,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 28.597125091100807,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.111513027591738,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 7.317879441032226,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.036265522379433,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 6.041551836183478,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 7.877594346604566,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.998363357246268,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.693853356245392,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 11.336182773947355,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 2.258242772904188,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 9.470607390407666,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 8.209222432578354,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 1.3169264948638173,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.547710039344271,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 18.05480568215298,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 10.586794929085862,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 5.108129786757149,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.408292323285578,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "pointer",
+          "notification_to_handler_ms": 4.804906826957099,
+          "notification_to_inbox_ms": null
+        },
+        {
+          "kind": "key",
+          "notification_to_handler_ms": 3.237831962885848,
+          "notification_to_inbox_ms": 4.500626604396239
+        }
+      ],
+      "idle": {
+        "start": 4319833209,
+        "end": 4320544569,
+        "duration_ms": 401.1170333488868,
+        "device_drain_turns": 0
+      },
+      "scope": "Native publication/notification to copied-handler/inbox return in the controlled Counter case. Pointer samples can coalesce: their delay starts at the latest preceding notification, not the oldest physical movement. Charged CPU, interrupts and off-Task time are separate; nested spans must not be added. This does not measure key-to-paint latency or establish a scroll improvement."
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 7,
+      "switches": 5051,
+      "live_tasks": 0,
+      "native_nmi_count": 897,
+      "native_irq_count": 60486,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 564,
+          "untouched_above_floor": 716
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 410,
+          "untouched_above_floor": 646
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 161,
+          "untouched_above_floor": 895
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 622,
+          "untouched_above_floor": 434
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 621,
+          "untouched_above_floor": 435
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 800,
+          "untouched_above_floor": 1504
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "xex_sha256": "a750acac33b90875018db3565f17fbf4d7a5e1b274b09006090df992d0a6ac63"
+  },
+  "atari_text": {
+    "checks": 16,
+    "no_gui_routines": true,
+    "no_vbxe_device": true,
+    "input": {
+      "cooked_line": "a\n",
+      "raw_byte": "b",
+      "cancellation": "Ctrl-C"
+    },
+    "restored_screen_differences": [],
+    "keyboard_before": {
+      "mask": "c0",
+      "skctl": "03",
+      "key_vector": "c6fe",
+      "break_vector": "07ff",
+      "timer_vector": "57c0"
+    },
+    "keyboard_after": {
+      "mask": "c0",
+      "skctl": "03",
+      "key_vector": "c6fe",
+      "break_vector": "07ff",
+      "timer_vector": "57c0"
+    },
+    "stack_usage": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 524,
+        "remaining_above_floor": 756
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1536,
+        "peak": 244,
+        "remaining_above_floor": 1036
+      },
+      "2": {
+        "base": 14448,
+        "bytes": 1536,
+        "peak": 360,
+        "remaining_above_floor": 920
+      },
+      "3": {
+        "base": 16016,
+        "bytes": 1536,
+        "peak": 175,
+        "remaining_above_floor": 1105
+      },
+      "4": {
+        "base": 17584,
+        "bytes": 1536,
+        "peak": 44,
+        "remaining_above_floor": 1236
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 258,
+        "remaining_above_floor": 1022
+      }
+    },
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": false,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "off",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "host": {
+    "status": "pass",
+    "cases": 718,
+    "skipped": 5
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+    "override": false
+  },
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta_from_pre_migration": 1024,
+    "additional_occupied_service_tasks": 1,
+    "additional_pool_reserved_bytes": 1600,
+    "native_client_object_bytes": 133,
+    "gui_target_heap_bytes": 192,
+    "gui_target_slots": 16,
+    "vram_delta": 0
+  },
+  "limits": [
+    "Development checks only; no hosted-system/release qualification.",
+    "SCRENMGR SM3/SM4 remain outstanding.",
+    "No QED, application catalog, demo refresh or release matrix.",
+    "Pre-existing frame-setter edits were present and left untouched.",
+    "GEM image predates only the independently tested standalone Show fix, unavailable in GUI mode."
+  ]
+}

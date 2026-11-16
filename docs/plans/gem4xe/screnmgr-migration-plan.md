@@ -9,7 +9,8 @@ with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
 vertical slider positions in the caller, and SM1c adds vertical slider sizes.
-Other frame fields, independent input and the remaining migration are pending. The
+Other frame fields and the remaining manager migration are pending. Independent
+input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
 replacement slice lands.
@@ -66,37 +67,28 @@ Current source seams: [system loop](../../../lib/aes/aessystem.act),
 
 ## Execution-context decision before the blocking loop
 
-Today the console resident's Worker calls AESSYSTEM.Run. That same Task acquired
-the keyboard and pointer input leases and drains their events. AESDEFER runs
-on its stack while scene admission is unavailable. CONSOLEBACKEND is a separate
-Task, but does not own those capture leases.
+The selected frontend still calls AESSYSTEM.Run, but it no longer owns physical
+input. The [input.device migration](../input-device-migration-plan.md) moves
+Acquire/Take/Release into the generic device Task. Bounded AES handlers resolve
+held snapshots and publish application inboxes without UPDATE, scene access or
+physical drawing. Copied manager interactions wait for the frontend's ownership;
+their window identities/epochs and endpoint holds survive that wait.
+CONSOLEBACKEND remains a separate stream/model Task.
 
-With an unconditional blocking UPDATE Obtain in that Task, the independent
-input pump would stop with it. INPUT permits Take only in the acquiring Task;
-an arbitrary second consumer is not an available shortcut. Likewise, moving
-capture decoding or AES callbacks into IRQ/NMI is outside the current platform
-contract. See [INPUT ownership](../../reference/input.md#calls-and-ownership).
-
-Before installing the final SCRENMGR wait loop, prepare a concrete execution
-map using existing public Task/input/display services. Account for who acquires,
-consumes and releases each lease, who delivers application events, and who
-retires physical completion while SCRENMGR is blocked. Compare reuse of existing
-contexts with any additional ordinary Task, including simultaneous application
-capacity, stack/DP occupancy and shutdown ordering. A combined nonblocking loop
-that continues all presenter work is not accepted as SCRENMGR merely by renaming it.
-
-The user selected a Task-based input service reusing the existing resident
-console/system Task. The [independent input.device draft](../input-device-design.md)
-separates the generic device from AES routing, SCRENMGR and display ownership,
-and covers standard Atari text, future VBXE text-mode and GEM consumers. Its
-bounded consumer handler is proposed; public ABI details and the complete
-SCRENMGR/display execution map remain to be specified before implementation.
+The implementation uses three service contexts: input, backend and the selected
+text/GEM frontend. It occupies one more ordinary Task pool than the previous
+combined two-service arrangement, within the existing eight-pool map. The GUI
+frontend keeps its large stack. This delivers SM2's input-service portion; it
+does not install the final blocking SCRENMGR loop or complete SM3/SM4's scene
+reader, caller drawing and physical-retirement dependencies. The chosen Task
+placement is an explicit Exec adaptation of MagiC's scheduler-side input role.
 
 The [execution-placement comparison](screnmgr-execution-map.md) records this
 selection and retains the earlier alternatives. Bring actual departures or
 newly required platform services to the user with source, costs and alternatives.
 Do not add a private GUI deferred-work service or change the scheduler to
-conceal the dependency. No additional input Task is selected.
+conceal a dependency. Current measured resources are recorded in the
+[input migration record](../../history/input-device-migration.md).
 
 ## Migration slices
 
@@ -156,7 +148,7 @@ depend on it. Use the smallest cursor or slider/Counter pixel and lifetime case.
 Follow the [input.device migration plan](../input-device-migration-plan.md):
 IM1–IM3 establish the public service/capture, IM4 converts standard Atari text,
 and IM5–IM6 extract AES delivery and switch GUI source ownership. Resolve the
-remaining frontend placement before live cutover. Preserve captured route
+selected frontend placement described above. Preserve captured route
 identities, endpoint holds and durable wake rules. Application input delivery
 does not acquire UPDATE. Screen-manager interaction receives its own event
 readiness. Console model/stream processing stays in CONSOLEBACKEND.

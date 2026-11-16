@@ -1,7 +1,8 @@
 # Native input ownership and events
 
-[Shared input.device](input-device.md) is a separate device interface being
-implemented over this capture library; its current subset does not own capture.
+[Shared input.device](input-device.md) owns capture for the selected text,
+standalone bitmap and GEM frontends. This low-level library remains available
+for independent, exclusively owned source users.
 
 [Reference index](README.md) · [Signals and producers](signals.md) ·
 [Console](console.md) · [Keyboard evidence](../history/gem-input.md) ·

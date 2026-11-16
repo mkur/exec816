@@ -1,14 +1,14 @@
 # Implementation plans
 
-- [Independent input.device design](input-device-design.md): proposed public
-  input service reusing the resident console/system Task, independent of
-  AES/SCRENMGR and display ownership. Covers the standard Atari text console,
-  future VBXE text-mode console and GEM consumers; the bounded handler interface
-  and migration boundaries are a design draft, not an installed device. The
-  [IM0–IM8 migration plan](input-device-migration-plan.md) orders ABI/lifetime,
-  capture, Atari-console and AES cutovers with explicit frontend placement
-  costs and focused development checks. Implementation has started; the
-  [IM0 contract](input-device-contract.md) records the selected frontend placement.
+- [Independent input.device design](input-device-design.md): rationale for a
+  generic input Task independent of AES/SCRENMGR and display ownership. The
+  [IM0–IM8 migration](input-device-migration-plan.md) is implemented at development
+  tier for standard Atari text, standalone bitmap and GEM startup. See the
+  [current interface](../reference/input-device.md),
+  [selected placement](input-device-contract.md) and
+  [acceptance record](../history/input-device-migration.md). Future VBXE text-mode
+  rendering remains separate; the selected frontend occupies one additional
+  ordinary pool within the existing map.
 
 - [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
   MagiC manager role, caller-context drawing, independent input/device progress

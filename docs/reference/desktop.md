@@ -3,7 +3,10 @@
 [Reference](README.md) · [AES](aes.md) · [Layers](layers.md)
 
 AES owns application registration, windows, focus and stacking. The graphical
-system Task presents frame/menu damage and delivers ordinary AES notices.
+frontend presents frame/menu damage and delivers ordinary AES notices.
+The independent input.device Task publishes application input inboxes through
+held routing snapshots and queues copied manager interaction; it acquires no
+UPDATE, scene or physical drawing ownership.
 Applications, including the desktop and terminal, paint their own work areas.
 
 One scene-owned array contains six authoritative window records. Each holds
