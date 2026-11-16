@@ -615,3 +615,35 @@ shutdown retries for a transient BUSY result after its C assertions completed;
 production shutdown policy is unchanged. Host checks pass: 718 tests, five
 existing skips. [Inputs, hashes and results](../development/screnmgr-sm4c.json)
 record the exact scope. No QED, catalog or demo rebuild was run.
+
+
+## SM4d1: caller packets in the shared renderer
+
+The existing frame/copy caller bridge now also renders desktop paper, native
+menu rows, clipped text, solid fills, menu trees and offscreen cache transfers.
+The established application context supplies its existing display grant;
+caller packets stay on its stack through admission and terminal fencing. Shared
+raster scratch binds inside the grant, including menu-tree clip/context state.
+No second renderer, request queue or platform service is introduced. The
+GEM4XE raster remains shared with manager drawing.
+
+Private console packet version 16 adds one operation selector for a borrowed
+menu packet; its 82-byte layout is unchanged. Renderer code association moves
+from AESFRAME to CONSOLEBITMAP without adding persistent bytes. All existing
+owner producers and affected fixture calls explicitly select owner packets.
+This first slice supplies rendering; operation-owned exposure and maintenance
+are the remaining SM4d work.
+
+Development checks pass: 29 optimized C checks with the actual frontend blocked
+on caller UPDATE, exact 8x8 pixels and a screen/save-under/screen copy through the
+existing VRAM region; generated C packet layout checks; host suite 718 tests,
+five existing skips. [Inputs and results](../development/screnmgr-sm4d1.json)
+record the scope. The native image was rebuilt after a pointer-valued selection
+expression was replaced by ordinary branches, as required by Action!'s supported
+syntax; cached C inputs were verified unchanged. No new raw bridge probe was
+needed because packet layout and the C/native bridge are unchanged.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and spare capacity. Task pools, signals,
+heap reservations, VRAM and physical scratch are unchanged. No QED, catalog,
+demo refresh, release matrix or timing claim is included.

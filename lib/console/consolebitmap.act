@@ -8,12 +8,14 @@ USE HEAPCORE
 USE LAYERTYPES
 USE REGIONS
 USE CALYPSIMETA
+USE CALYPSICALL
 INCLUDE "console-storage-action.inc"
 INCLUDE "console-bitmap-types.inc"
 BYTE drawingPending,drawingChanged
 BYTE physicalCompleted
 CARD encoding
 LONGCARD completionMask
+ADDRESS callerEntry
 
 PUBLIC EXTERNAL PROC Call(ADDRESS entry)
 
@@ -108,6 +110,52 @@ PUBLIC BYTE FUNC Run(CARD operation)
 
 RETURN(result)
 
+; Another trusted renderer used this same owner and command arena.
+PUBLIC BYTE FUNC Drawn(CARD status)
+
+  drawingChanged=1
+  IF status<>DISPLAY.OK THEN
+    BEGIN
+      LET state=GetBinding()
+      state.failed=1
+      CONSOLEBACKEND.Wake()
+    END
+    RETURN(0)
+  FI
+
+RETURN(1)
+
+; Caller packets remain local through physical admission and the fence.
+PUBLIC PROC ConfigureCaller(ADDRESS entry)
+
+  callerEntry=entry
+
+RETURN
+
+PUBLIC PROC Apply(Packet POINTER packet)
+
+  LET ignored=CALYPSICALL.Invoke(callerEntry,LONGCARD(ADDRESS(packet)))
+
+RETURN
+
+Packet POINTER FUNC Select(Packet POINTER output)
+
+  IF output=NULL THEN
+    RETURN(GetPacket())
+  FI
+
+RETURN(output)
+
+BYTE FUNC Submit(Packet POINTER output CARD operation)
+
+  IF output=NULL THEN
+    RETURN(Run(operation))
+  FI
+  output.operation=operation
+  Apply(output)
+
+RETURN(Drawn(output.status))
+
 PUBLIC BYTE FUNC Open()
   BYTE ignored
 
@@ -153,16 +201,16 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(completionMask)
 
-PUBLIC BYTE FUNC RawFill(CARD left,top,width,height,pen)
+PUBLIC BYTE FUNC RawFill(Packet POINTER output CARD left,top,width,height,pen)
 
-  LET packet=GetPacket()
+  LET packet=Select(output)
   packet.x=left
   packet.y=top
   packet.width=width
   packet.height=height
   packet.background=pen
 
-RETURN(Run(OP_FILL))
+RETURN(Submit(output,OP_FILL))
 
 
 ; The sole worker selects the instance encoding for each presentation turn.
@@ -174,22 +222,22 @@ RETURN
 
 
 
-PUBLIC BYTE FUNC Background(LAYERTYPES.Rect POINTER clip)
+PUBLIC BYTE FUNC Background(Packet POINTER output LAYERTYPES.Rect POINTER clip)
 
-  LET packet=GetPacket()
+  LET packet=Select(output)
   packet.clipLeft=CARD(clip.left)
   packet.clipTop=CARD(clip.top)
   packet.clipRight=CARD(clip.right)
   packet.clipBottom=CARD(clip.bottom)
 
-RETURN(Run(OP_DESKTOP))
+RETURN(Submit(output,OP_DESKTOP))
 
-PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
+PUBLIC BYTE FUNC Frame(Packet POINTER output LAYERTYPES.Rect POINTER bounds,clip
     BYTE POINTER title BYTE focused,closer
     CARD kind INT sliderTop,sliderHeight,sliderLeft,sliderWidth
     CARD POINTER progress)
 
-  LET packet=GetPacket()
+  LET packet=Select(output)
   packet.x=CARD(bounds.left)
   packet.y=CARD(bounds.top)
   packet.width=CARD(bounds.right-bounds.left)
@@ -207,7 +255,7 @@ PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
   packet.fillHeight=CARD(sliderHeight)
   packet.frameHorizontalLeft=CARD(sliderLeft)
   packet.frameHorizontalWidth=CARD(sliderWidth)
-  IF Run(OP_FRAME)=0 THEN
+  IF Submit(output,OP_FRAME)=0 THEN
     RETURN(0)
   FI
 
@@ -215,10 +263,10 @@ PUBLIC BYTE FUNC Frame(LAYERTYPES.Rect POINTER bounds,clip
 
 RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
 
-PUBLIC BYTE FUNC MenuRow(LAYERTYPES.Rect POINTER bounds,clip
+PUBLIC BYTE FUNC MenuRow(Packet POINTER output LAYERTYPES.Rect POINTER bounds,clip
     BYTE POINTER title CARD rowTop BYTE enabled,selected CARD POINTER progress)
 
-  LET packet=GetPacket()
+  LET packet=Select(output)
   packet.x=CARD(bounds.left)
   packet.y=CARD(bounds.top)
   packet.width=CARD(bounds.right-bounds.left)
@@ -232,7 +280,7 @@ PUBLIC BYTE FUNC MenuRow(LAYERTYPES.Rect POINTER bounds,clip
   packet.clipBottom=CARD(clip.bottom)
   packet.fillY=rowTop
   packet.fillX=progress^
-  IF Run(OP_MENU_ROW)=0 THEN
+  IF Submit(output,OP_MENU_ROW)=0 THEN
     RETURN(0)
   FI
 
@@ -242,10 +290,10 @@ RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
 
 ; Scene clients select their own encoding; a prior console turn owns no flag
 ; in this explicit foreground value.
-PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,background
+PUBLIC BYTE FUNC ClippedText(Packet POINTER output CARD x,y BYTE POINTER text CARD count,foreground,background
     LAYERTYPES.Rect POINTER clip)
 
-  LET packet=GetPacket()
+  LET packet=Select(output)
   packet.x=x
   packet.y=y
   packet.text=LONGCARD(ADDRESS(text))
@@ -257,12 +305,12 @@ PUBLIC BYTE FUNC ClippedText(CARD x,y BYTE POINTER text CARD count,foreground,ba
   packet.clipRight=CARD(clip.right)
   packet.clipBottom=CARD(clip.bottom)
 
-RETURN(Run(OP_TEXT_CLIP))
+RETURN(Submit(output,OP_TEXT_CLIP))
 
 
 PUBLIC BYTE FUNC Fill(CARD left,top,width,height,pen)
 
-RETURN(RawFill(left,top,width,height,pen))
+RETURN(RawFill(NULL,left,top,width,height,pen))
 
 PUBLIC BYTE FUNC Text(CARD x,y BYTE POINTER text CARD count)
   LAYERTYPES.Rect bounds
@@ -329,7 +377,11 @@ RETURN(1)
 
 ; The presenter prepares the shared typed descriptor before this call. Its
 ; own Layers token remains separate from the console-scroll model transaction.
-PUBLIC BYTE FUNC CopyStart()
+PUBLIC BYTE FUNC CopyStart(Packet POINTER output)
+
+  IF output<>NULL THEN
+    RETURN(Submit(output,OP_COPY_START))
+  FI
 
   IF drawingPending<>0 THEN
     RETURN(0)
@@ -412,21 +464,6 @@ RETURN
 PUBLIC BYTE FUNC Completed()
 
 RETURN(physicalCompleted)
-
-; Another trusted renderer used this same owner and command arena.
-PUBLIC BYTE FUNC Drawn(CARD status)
-
-  drawingChanged=1
-  IF status<>DISPLAY.OK THEN
-    BEGIN
-      LET state=GetBinding()
-      state.failed=1
-      CONSOLEBACKEND.Wake()
-    END
-    RETURN(0)
-  FI
-
-RETURN(1)
 
 PUBLIC BYTE FUNC Changed()
 

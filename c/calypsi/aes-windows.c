@@ -41,18 +41,33 @@ static BOOL display_ensure(struct ExecAESContext *c)
 }
 
 extern UWORD DesktopFrameBorrow(struct DisplayGrant *,struct ConsoleBitmapPacket *);
+extern UWORD DesktopBackgroundBorrow(struct DisplayGrant *,struct ConsoleBitmapPacket *);
+extern UWORD DesktopMenuRowBorrow(struct DisplayGrant *,struct ConsoleBitmapPacket *);
+struct MenuRenderPacket;
+extern UWORD MenuPaintBorrow(struct DisplayGrant *,struct MenuRenderPacket *);
 
-/* Ordinary C continuation of the admitted native setter. The stack packet and
- * UPDATE stay owned by this caller; no scene access occurs inside the grant. */
+/* The established caller context pins its grant and this stack packet through
+ * synchronous physical completion. Renderer scratch is bound after Enter. */
 LONG EXEC_CALL ExecAESFrameApply(ULONG value)
 {
-    struct ConsoleBitmapPacket *packet=(struct ConsoleBitmapPacket *)value;
-    struct ExecAESContext *c=ExecAESContext();
-    if (packet->operation==CON_BITMAP_COPY_START)
-        /* Accepted move rectangles have even X and width: no edge staging. */
-        packet->status=GemDrawingCopyBorrow((struct DisplayGrant *)c->request.displayGrant,
-                                           &packet->copy,NULL);
-    else packet->status=DesktopFrameBorrow((struct DisplayGrant *)c->request.displayGrant,packet);
+    struct ConsoleBitmapPacket *p=(struct ConsoleBitmapPacket *)value;
+    struct DisplayGrant *grant=(struct DisplayGrant *)ExecAESContext()->request.displayGrant;
+    switch (p->operation) {
+    case CON_BITMAP_COPY_START:
+        p->status=GemDrawingTransferBorrow(grant,&p->copy);break;
+    case CON_BITMAP_DESKTOP:
+        p->status=DesktopBackgroundBorrow(grant,p);break;
+    case CON_BITMAP_MENU_ROW:
+        p->status=DesktopMenuRowBorrow(grant,p);break;
+    case CON_BITMAP_FILL:
+        p->status=GemDrawingSolidBorrow(grant,p->x,p->y,p->x+p->width,p->y+p->height,p->background);break;
+    case CON_BITMAP_TEXT_CLIP:
+        p->status=GemDrawingTextClipBorrow(grant,p->x,p->y,(const UBYTE *)p->text,p->width,
+            p->foreground,p->background,p->clipLeft,p->clipTop,p->clipRight,p->clipBottom);break;
+    case CON_BITMAP_GEM_MENU:
+        p->status=MenuPaintBorrow(grant,(struct MenuRenderPacket *)p->text);break;
+    default: p->status=DesktopFrameBorrow(grant,p);
+    }
     return 0;
 }
 

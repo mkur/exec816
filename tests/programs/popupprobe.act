@@ -33,7 +33,7 @@ PROC PaintPopup(BYTE pen)
   LET service=DESKSTATE.Get()
   LET scene=@service.scene
   LET popup=LAYERS.Find(scene,DESKSTATE.popupLayer)
-  Require(CONSOLEBITMAP.RawFill(CARD(popup.bounds.left),CARD(popup.bounds.top),
+  Require(CONSOLEBITMAP.RawFill(NULL,CARD(popup.bounds.left),CARD(popup.bounds.top),
       CARD(popup.bounds.right-popup.bounds.left),
       CARD(popup.bounds.bottom-popup.bounds.top),pen)<>0)
   Require(LAYERS.BeginPaint(scene,popup.id,@token)=LAYERTYPES.OK)
@@ -54,7 +54,7 @@ PROC Background()
 
   LET service=DESKSTATE.Get()
   LET scene=@service.scene
-  Require(CONSOLEBITMAP.RawFill(32,24,208,64,2)<>0)
+  Require(CONSOLEBITMAP.RawFill(NULL,32,24,208,64,2)<>0)
   FOR slot=0 TO LAYERTYPES.SLOT_COUNT-1 DO
     scene.items(slot).dirty=0
     scene.items(slot).damage.count=0

@@ -3,6 +3,8 @@
 #include <exec816/aes.h>
 #include <exec816/runtime.h>
 #include <exec/display.h>
+#include <hardware/console-bitmap.h>
+LONG EXEC_CALL ExecAESFrameApply(ULONG value);
 #include <clib/alib_protos.h>
 
 ULONG AESService;
@@ -74,6 +76,31 @@ UWORD AESRun(void)
     CHECK(vsf_color(handle,4)==4);
     v_bar(handle,rect);
     CHECK(ExecAESDiagnostic()==AES_OK);
+    {
+        struct ConsoleBitmapPacket p={0};
+        p.operation=CON_BITMAP_DESKTOP;
+        p.clipLeft=x+32;p.clipTop=y+8;p.clipRight=x+40;p.clipBottom=y+16;
+        ExecAESFrameApply((ULONG)&p);
+        CHECK(p.status==DISPLAY_OK);
+        /* No popup is open: exercise the existing save-under VRAM region. */
+        p.operation=CON_BITMAP_COPY_START;
+        p.copy.source.offset=0;p.copy.source.pitch=320;
+        p.copy.source.width=640;p.copy.source.height=240;
+        p.copy.sourceX=x+8;p.copy.sourceY=y+8;
+        p.copy.destination.offset=81920UL;p.copy.destination.pitch=4;
+        p.copy.destination.width=8;p.copy.destination.height=8;
+        p.copy.destinationX=0;p.copy.destinationY=0;
+        p.copy.width=8;p.copy.height=8;
+        ExecAESFrameApply((ULONG)&p);
+        CHECK(p.status==DISPLAY_OK);
+        p.copy.source=p.copy.destination;
+        p.copy.sourceX=0;p.copy.sourceY=0;
+        p.copy.destination.offset=0;p.copy.destination.pitch=320;
+        p.copy.destination.width=640;p.copy.destination.height=240;
+        p.copy.destinationX=x+32;p.copy.destinationY=y+8;
+        ExecAESFrameApply((ULONG)&p);
+        CHECK(p.status==DISPLAY_OK);
+    }
     AdmissionPainted=1;
     while (!AdmissionGo) ExecYield();
     v_clsvwk(handle);

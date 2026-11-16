@@ -293,7 +293,7 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   active=ACTIVE_CAPTURE
   ; BUSY admits no copy. Retire this optional read instead of treating an
   ; unrelated borrower's later release as our completion.
-  IF CONSOLEBITMAP.CopyStart()=0 THEN
+  IF CONSOLEBITMAP.CopyStart(NULL)=0 THEN
     status=LAYERS.Finish(@service.scene,token,0)
     LAYERCACHE.Captured(slot,0)
     capturing=NULL
@@ -366,7 +366,7 @@ PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
           readToken=token
           active=ACTIVE_PATCH
           ; No admitted copy means no retained read or image pin.
-          IF CONSOLEBITMAP.CopyStart()=0 THEN
+          IF CONSOLEBITMAP.CopyStart(NULL)=0 THEN
             status=LAYERS.Finish(@service.scene,token,0)
             LAYERCACHE.Captured(slot,0)
             repair.state=0
@@ -425,7 +425,7 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   service.cache.recent=index
   activeSlot=index
   active=ACTIVE_RESTORE
-  IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+  IF CONSOLEBITMAP.CopyStart(NULL)=0 AND DISPLAY.Blocked()=0 THEN
     LAYERCACHE.Released(slot,0)
     active=0
     RETURN(DESKTYPES.CACHE_FAILED)

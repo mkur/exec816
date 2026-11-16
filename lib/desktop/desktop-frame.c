@@ -279,3 +279,15 @@ UWORD DesktopBackground(struct ConsoleBitmapPacket *p)
                                 1,background,p);
     return status;
 }
+
+UWORD DesktopMenuRowBorrow(struct DisplayGrant *grant,struct ConsoleBitmapPacket *p)
+{
+    return GemDrawingFrameBorrow(grant,p->clipLeft,p->clipTop,p->clipRight,
+                                 p->clipBottom,menu_row,p);
+}
+
+UWORD DesktopBackgroundBorrow(struct DisplayGrant *grant,struct ConsoleBitmapPacket *p)
+{
+    return GemDrawingFrameBorrow(grant,p->clipLeft,p->clipTop,p->clipRight,
+                                 p->clipBottom,background,p);
+}

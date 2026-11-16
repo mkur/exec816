@@ -9,14 +9,14 @@ import build_bitmap_console as builder
 from gem_render_oracle import DESKTOP_PALETTE
 from generate_aes_server import layout as aes_layout
 from library_paths import read_source
-from native_program import ROOT, read_build, require, verify_machine
+from native_program import ROOT, read_build, require, verify_machine, sha256
 from os_boundary import emulator, run_to
 from stack_budget import stack_usage
 from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 
 
-def build(out):
+def build(out,reuse_c=False):
     source=out/'admission.act'
     source.write_text('''MODULE ADMISSIONTEST
 USE EXEC
@@ -116,6 +116,15 @@ ENDMODULE
         return launcher
 
     builder.prepare=prepare
+    original_drawing=builder.drawing
+    if reuse_c:
+        cached=json.loads((out/'c-image.json').read_text())
+        require(cached['provenance']['header_inputs'],'Missing cached C headers')
+        for name,digest in {**cached['provenance']['source_inputs'],
+                            **cached['provenance']['header_inputs']}.items():
+            require(sha256(ROOT/name)==digest,'Changed C input: '+name)
+        require(cached['provenance']['compiler_flags'][-1]=='-O2','Wrong cached C mode')
+        builder.drawing=lambda *args,**kwargs:cached
     try:
         return builder.build_bitmap(source,out,desktop=True,aes=True,
             release_compiler=True,client_sources=[ROOT/'c/calypsi/aes.c',
@@ -125,11 +134,12 @@ ENDMODULE
             client_roots=['AESRun','AESService','AESChecks','AESFailures','AESFirstFailure'])
     finally:
         builder.prepare=original
+        builder.drawing=original_drawing
 
 
-def run(out,reuse=False):
+def run(out,reuse=False,reuse_c=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
-    p=read_build(out/'program') if reuse else build(out)
+    p=read_build(out/'program') if reuse else build(out,reuse_c)
     sy=json.loads((out/'c-image.json').read_text())['symbols']
     report=dict(status='running',tier='development',qualification=False,build=p['build'])
     try:
@@ -160,17 +170,17 @@ def run(out,reuse=False):
                 report['sample_pixels']=[list(pixels[y*frame.stride+(xx+16)*4:y*frame.stride+(xx+16)*4+4]) for xx in range(x,x+8)]
                 color=bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE[12:15])[::-1]
                 for yy in range(y,y+8):
-                    for xx in range(x,x+8):
+                    for xx in [*range(x,x+8),*range(x+24,x+32)]:
                         at=yy*frame.stride+(xx+16)*4
                         require(pixels[at:at+3]==color,f'Caller pixels at {xx},{yy}')
-                report['caller_pixels']='exact 8x8 fill while manager blocked'
+                report['caller_pixels']='exact 8x8 fill and offscreen round-trip while manager blocked'
                 b.poke16(sy['AdmissionGo'],1)
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=120,frame_limit=6000)
             ownership(b,p,p['output'])
             report.update(checks=b.peek16(sy['AESChecks']),failures=b.peek16(sy['AESFailures']),
                 first_failure=b.peek16(sy['AESFirstFailure']),stack_usage=stack_usage(b,p['build']['memory']))
-            require(report['checks']==26 and report['failures']==0,'Incomplete direct admission checks')
+            require(report['checks']==29 and report['failures']==0,'Incomplete direct admission checks')
         report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error));raise
@@ -183,5 +193,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--reuse',action='store_true')
+    parser.add_argument('--reuse-c',action='store_true')
     args=parser.parse_args()
-    run(args.output,args.reuse)
+    run(args.output,args.reuse,args.reuse_c)

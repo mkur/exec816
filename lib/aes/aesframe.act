@@ -10,14 +10,11 @@ USE LAYERS
 USE REGIONS
 USE DISPLAY
 USE CONSOLEBITMAP
-USE CALYPSICALL
-
-ADDRESS frameApply
 
 ; Bind resident renderer code before application admission.
 PUBLIC PROC Configure(ADDRESS entry)
 
-  frameApply=entry
+  CONSOLEBITMAP.ConfigureCaller(entry)
 
 RETURN
 
@@ -25,7 +22,7 @@ RETURN
 ; UPDATE stays with the operation throughout physical access.
 PUBLIC PROC Apply(CONSOLEBITMAP.Packet POINTER packet)
 
-  LET ignored=CALYPSICALL.Invoke(frameApply,LONGCARD(ADDRESS(packet)))
+  CONSOLEBITMAP.Apply(packet)
 
 RETURN
 

@@ -328,6 +328,9 @@ Continue in executable commits:
    and cache restoration under the originating AES/manager operation. Application
    work receives WM_REDRAW. Move cache maintenance to its operation boundary;
    preserve current pixels, pins, cached moves and failure retention.
+   SM4d1 supplies caller packets in the shared renderer; see its
+   [record](../../history/screnmgr-migration.md#sm4d1-caller-packets-in-the-shared-renderer).
+   Operation-owned painting and maintenance remain in progress.
 5. **SM4e — manager interaction and lifecycle cutover.** Account for menu
    save/restore, native console controls, cursor/device completion and shutdown;
    remove GEM's no-op console-render callbacks while preserving the standalone

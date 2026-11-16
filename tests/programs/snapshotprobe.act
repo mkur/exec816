@@ -180,7 +180,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   IF command=2 THEN
     Require(LAYERS.Invalidate(@service.scene,layer.id,@client)=LAYERTYPES.OK)
     Require(LAYERS.BeginPaint(@service.scene,layer.id,@token)=LAYERTYPES.OK)
-    Require(CONSOLEBITMAP.RawFill(CARD(client.left),CARD(client.top),width,height,0)<>0)
+    Require(CONSOLEBITMAP.RawFill(NULL,CARD(client.left),CARD(client.top),width,height,0)<>0)
     Require(DESKCACHE.Restore(service,window,@client,@client)=DESKTYPES.CACHE_PENDING)
     phase=2
   ELSE

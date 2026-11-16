@@ -1465,6 +1465,39 @@ UWORD GemDrawingRasterBorrow(struct DisplayGrant *grant,const struct GemRasterCo
     return DISPLAY_OK;
 }
 
+/* Trusted even-pixel VRAM transfer: screen or offscreen cache surfaces use
+ * the same typed driver copy, grant and terminal fence. */
+UWORD GemDrawingTransferBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy)
+{
+    UWORD status=DisplayEnter(grant),completed;
+    if (status!=DISPLAY_OK) return status;
+    if (!fault) {
+        if (!copy->source.offset)
+            pointer_erase(copy->sourceX,copy->sourceY,copy->sourceX+copy->width,
+                          copy->sourceY+copy->height);
+        if (!copy->destination.offset)
+            pointer_erase(copy->destinationX,copy->destinationY,copy->destinationX+copy->width,
+                          copy->destinationY+copy->height);
+        if (!fault) {
+            status=VbxeOwnerCopyRect(&display,copy);
+            latch(status);
+        }
+    }
+    completed=borrow_leave(grant);
+    return status==DISPLAY_OK ? completed:status;
+}
+
+UWORD GemDrawingTextClipBorrow(struct DisplayGrant *grant,UWORD x,UWORD y,
+    const UBYTE *text,UWORD count,UWORD fg,UWORD bg,
+    UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    UWORD status=DisplayEnter(grant),completed;
+    if (status!=DISPLAY_OK) return status;
+    status=draw_TextClip(x,y,text,count,fg,bg,left,top,right,bottom);
+    completed=borrow_leave(grant);
+    return status==DISPLAY_OK ? completed:status;
+}
+
 UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
     UBYTE *edges)
 {

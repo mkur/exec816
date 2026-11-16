@@ -102,7 +102,7 @@ BYTE FUNC PopupTransfer(LAYERTYPES.Rect POINTER bounds BYTE restore)
   packet.copy.width=slot.width
   packet.copy.height=slot.height
 
-RETURN(CONSOLEBITMAP.CopyStart())
+RETURN(CONSOLEBITMAP.CopyStart(NULL))
 
 ; Revision/attempt hint only; it does not certify source pixels or ownership.
 PUBLIC BYTE FUNC CapturePending()
@@ -254,7 +254,7 @@ BYTE FUNC Transfer(BYTE restore)
     packet.copy.height=CARD(bounds.bottom-bounds.top)
   FI
 
-RETURN(CONSOLEBITMAP.CopyStart())
+RETURN(CONSOLEBITMAP.CopyStart(NULL))
 
 PUBLIC BYTE FUNC Reusable(LAYERTYPES.Rect POINTER bounds)
 

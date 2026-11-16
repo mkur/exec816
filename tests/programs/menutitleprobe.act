@@ -40,7 +40,7 @@ PUBLIC CARD FUNC Run(CARD command)
   Require(status=LAYERTYPES.OK)
   status=LAYERS.BeginPaint(@service.scene,layer.id,@token)
   Require(status=LAYERTYPES.OK)
-  Require(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+  Require(CONSOLEBITMAP.RawFill(NULL,CARD(area.left),CARD(area.top),
       CARD(area.right-area.left),CARD(area.bottom-area.top),1)<>0)
   MENUTITLEMARKS.fail=(command=10)
   phase=0

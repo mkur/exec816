@@ -79,7 +79,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
 
     REGIONS.Intersect(@area,@strip,@area)
     IF REGIONS.Empty(@area)=0 THEN
-      result=CONSOLEBITMAP.Frame(@layer.bounds,@area,@window.title(0),
+      result=CONSOLEBITMAP.Frame(NULL,@layer.bounds,@area,@window.title(0),
           window.id=service.focus,1,
           window.frameKind,window.sliderTop,window.sliderHeight,
           window.sliderLeft,window.sliderWidth,@glyphOffset)
@@ -112,11 +112,11 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     IF layer.id<>0 AND (layer.id=DESKSTATE.barLayer OR layer.id=DESKSTATE.popupLayer) THEN
       RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
     FI
-    RETURN(CONSOLEBITMAP.Background(@strip))
+    RETURN(CONSOLEBITMAP.Background(NULL,@strip))
   FI
 
   IF window.iconified<>0 THEN
-    RETURN(CONSOLEBITMAP.Frame(@layer.bounds,@strip,@window.title(0),
+    RETURN(CONSOLEBITMAP.Frame(NULL,@layer.bounds,@strip,@window.title(0),
         0,0,DESKTYPES.FRAME_ICONIFIED,0,0,0,0,@glyphOffset))
   FI
 

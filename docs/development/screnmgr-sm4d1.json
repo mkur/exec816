@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "slice": "SM4d1",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "fbb90c28c96344e4752ad60b5611b1604cf1dc32",
+  "source_inputs": {
+    "abi/console-bitmap.json": "3aa3effdfd02a1c0928e07f6dc7780c7fea8b544f45de302a2e73116f9bd1fc0",
+    "c/calypsi/aes-windows.c": "be8733b97f6313b77b1157186f1f45ad3e11ebf168e438c48cfaeec77f3cf87a",
+    "c/include/hardware/console-bitmap.h": "e92b891b9da69ad18adb066a6abd55c9814698d95c5c74cac95a54f82b298348",
+    "lib/aes/aesframe.act": "0cefab96c6369e2a4f943d9c5fd3dbbf4438066d08ff89ad45a4f69d8fc4b667",
+    "lib/console/console-bitmap-types.inc": "5c253d9c1cc2b73f2a3638bafab589db0c7de616c83aae4e014d2c6dba9624f5",
+    "lib/console/consolebitmap.act": "739da42485da5d12f54766e401cfebb78d6c483df1372b9902d2187cab1f8948",
+    "lib/desktop/deskcache.act": "6d8046f38b6eaad64ca79236c2d9cf1b27c0fb9b57339d22c6f9b7ea50577dbe",
+    "lib/desktop/deskmenucache.act": "768e88e9c8205ce489588f7cc469384a56e4824f8280c93f2dba5309ab1aede4",
+    "lib/desktop/deskmenupaint.act": "010b7066cafaee8e301d00c06b32840f5a98b662b7b11b705b95efa308b1d7b6",
+    "lib/desktop/deskpaint.act": "25119ce905259c3fa0bec76ee45aa78b015aa39f0575083269c8a6dbbf9c0c2e",
+    "lib/desktop/desktop-frame.c": "514ea1a2506de900594440ec956d708c0b6472202fcb38d37325e3b45f763eea",
+    "ports/gem4xe/adapter/gem-drawing.h": "56afe01acca3a2918fe7e52c5b95a843b7d6bc483c5231f2c7434ecb776b1c56",
+    "ports/gem4xe/adapter/gem-vbxe.c": "45c5422ce94d6940a7433d051d1d7b72a965b77fec7c677de8fda464e9d6509b",
+    "ports/gem4xe/aes/menu-render.c": "55afe8fdf98ecc45ae39456b30dedf3624c13a209a59dd6da590de825464b743",
+    "tests/programs/display_admission.c": "c9f26232e1c0e0351d2e36e7159ea0cfa1ac45a63c3921fffe29733768f1bc8c",
+    "tests/programs/menutitleprobe.act": "5ae642f84026a28da71f897a8caf5c9a82841e29c745dccab4b2db0f9eda525d",
+    "tests/programs/popupprobe.act": "984b08735988d85fd928b715b989896cae5bf00e4628890a19ca2e4cbe4bc979",
+    "tests/programs/scrollprobe.act": "b708164d84cdb83e86efe1f7e94153d31b316add94964a5c279cd6b22a4cbbab",
+    "tests/programs/snapshotprobe.act": "bf8a7e70bd525cf4d372eec1ff93b84fb0ae9add8c57746b46eec960495965cb",
+    "tests/test_vdi_copy.py": "8110e0f22b6fdcddedffe8624b1cd00fbc5c8441f057a8fff564feeaf3c611b1",
+    "tools/test_display_admission.py": "7ce367a12e1be587b7bf3b3724243a3809ad76bfffe0e9a44d67282bac647724",
+    "tools/test_popup_transition.py": "65677635027344b09bfde9d3daba6246f5c820a1f497f0df45d26852c2a58cca"
+  },
+  "capture": "build/screnmgr/sm4d1-render",
+  "results_sha256": "f80d68880b64fad2289ea12625efe4bad845ddac5565ba9eed3faa8e583db69f",
+  "image_sha256": "924b83643eca187d419bd1e1fdc02e3adb2f554727d7798ead8df79322add9ad",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "checks": 29,
+  "pixels": "exact 8x8 fill and offscreen round-trip while manager blocked",
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 1013,
+        "untouched_above_floor": 267
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 304,
+        "untouched_above_floor": 752
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 138,
+        "untouched_above_floor": 918
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 334,
+        "untouched_above_floor": 722
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 788,
+        "untouched_above_floor": 1516
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 285,
+      "untouched_from_base": 1251,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "host": {
+    "tests": 718,
+    "skipped": 5,
+    "status": "pass",
+    "log_sha256": "97f92f6c142ebf143a7a1d7334dc6feb197fa9c3b8ed63fccce715608089d199"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "abi": {
+    "console_packet_version": 16,
+    "console_packet_bytes": 82,
+    "layout_changed": false
+  },
+  "scope": [
+    "Optimized emitted caller-render boundary; real blocked frontend, cold grants, exact fill and offscreen copy round-trip, cleanup and guards.",
+    "Existing native/C bridge and record layout unchanged. C layout probe runs in the selected emitted image.",
+    "No QED, catalog, demo refresh, release matrix or performance qualification."
+  ]
+}

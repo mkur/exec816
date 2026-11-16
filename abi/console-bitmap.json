@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "packet_bytes": 82,
   "fields": {
     "operation": 0,
@@ -45,7 +45,8 @@
     "DESKTOP": 16,
     "BACKING_TEXT": 17,
     "BACKING_FILL": 18,
-    "MOUSE": 19
+    "MOUSE": 19,
+    "GEM_MENU": 20
   },
   "foreground_flags": {
     "ATASCII": 256

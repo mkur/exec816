@@ -18,7 +18,7 @@ BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
     RETURN(1)
   FI
 
-RETURN(CONSOLEBITMAP.RawFill(CARD(area.left),CARD(area.top),
+RETURN(CONSOLEBITMAP.RawFill(NULL,CARD(area.left),CARD(area.top),
     CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
 
 BYTE FUNC Text(CARD x,y BYTE POINTER value CARD foreground,background
@@ -30,7 +30,7 @@ BYTE FUNC Text(CARD x,y BYTE POINTER value CARD foreground,background
     length==+1
   OD
 
-RETURN(CONSOLEBITMAP.ClippedText(x,y,value,length,foreground,background,clip))
+RETURN(CONSOLEBITMAP.ClippedText(NULL,x,y,value,length,foreground,background,clip))
 
 PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
     BYTE POINTER phase)
@@ -67,12 +67,12 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     okay=1
     IF REGIONS.Empty(@area)=0 THEN
       IF row<DESKMENU.count THEN
-        okay=CONSOLEBITMAP.MenuRow(@layer.bounds,@area,
+        okay=CONSOLEBITMAP.MenuRow(NULL,@layer.bounds,@area,
             @DESKMENU.items(row).label(0),CARD(bounds.top),
             DESKMENU.items(row).enabled,INT(row)=DESKMENU.paintSelection,
             @menuGlyph)
       ELSE
-        okay=CONSOLEBITMAP.MenuRow(@layer.bounds,@area,BYTE POINTER(c""),
+        okay=CONSOLEBITMAP.MenuRow(NULL,@layer.bounds,@area,BYTE POINTER(c""),
             CARD(bounds.top),1,0,@menuGlyph)
       FI
     FI

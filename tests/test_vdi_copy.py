@@ -20,6 +20,12 @@ class CopyPixels(unittest.TestCase):
                        source.index('/* The native setter owns UPDATE,')]+
                 source[source.index('static UWORD raster_span(' if raster else 'UWORD GemDrawingCopyBorrow('):
                        source.index('NATIVE_UNIT(FrameBatch,')])
+        # This fixture covers raster/packed screen copies. Cache/text borrowing
+        # uses the emitted caller-render fixture, not these screen-only mocks.
+        if 'UWORD GemDrawingTransferBorrow(' in source:
+            a=source.index('UWORD GemDrawingTransferBorrow(')
+            b=source.index('UWORD GemDrawingCopyBorrow(',a)
+            source=source[:a]+source[b:]
         prelude=r'''
 #include <assert.h>
 #include <stdint.h>

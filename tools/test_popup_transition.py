@@ -58,8 +58,8 @@ def instrument(original):
         s=s.replace('DISPLAY.Blocked()<>0','(DISPLAY.Blocked()<>0 OR POPUPFAULT.blocked<>0)')
         # Start rejection occurs before touching the device. Other failures are
         # observed after real DMA, so repair must assume changed destination pixels.
-        s=s.replace('RETURN(CONSOLEBITMAP.CopyStart())',
-            '  IF POPUPFAULT.failStart<>0 THEN\n    POPUPFAULT.failStart=0\n    RETURN(0)\n  FI\n\nRETURN(CONSOLEBITMAP.CopyStart())')
+        s=s.replace('RETURN(CONSOLEBITMAP.CopyStart(NULL))',
+            '  IF POPUPFAULT.failStart<>0 THEN\n    POPUPFAULT.failStart=0\n    RETURN(0)\n  FI\n\nRETURN(CONSOLEBITMAP.CopyStart(NULL))')
         path.write_text(s)
         return directory
     return prepare

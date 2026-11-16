@@ -17,7 +17,7 @@ PUBLIC PROC BeforePresent()
   IF failFragment<>0 AND CONSOLEBITMAP.Pending()=0 THEN
     failFragment=0
     ; Quiesced drawing error from another primitive between text fragments.
-    okay=CONSOLEBITMAP.RawFill(640,0,8,8,0)
+    okay=CONSOLEBITMAP.RawFill(NULL,640,0,8,8,0)
   FI
 
 RETURN
