@@ -825,3 +825,68 @@ including guards, alignment and unused capacity; the fixture reuses the existing
 Task pools. There is no production change or new platform service. The loaded
 production Counter beside MGVIEW and its scroll observation remain SM5b. No
 QED, catalog, demo refresh or release qualification is included.
+
+
+## SM5b: loaded acceptance and caller workspace headroom
+
+SM5 is complete at the development tier. The new
+[`test_screnmgr.py`](../../tools/test_screnmgr.py) combines the small interaction
+check with one existing loaded MGVIEW/Counter down/up observation. Matching
+ABI-46 APPs are reused after checking their source and binary hashes; the
+shared provider/native fixture uses current optimized code. This builds no
+application catalog or demo. MGVIEW and Counter sources and APPs are unchanged.
+
+The first loaded run passed scroll pixels but failed the ordinary Counter
+Task's interrupt-floor check: 1,107 bytes touched in its 1,312-byte stack left
+51 bytes inside the reserved 256-byte floor. A private startup phase probe
+isolated the increase to `wind_open`, before application repaint. Exposure's
+automatic 82-byte drawing packet was live across the nested shared renderer.
+The diagnostic probe's instrumented watermark differs from the production
+APP's; both records are retained in the [evidence](../development/screnmgr-sm5b.json).
+
+Frame, exposure and terminal cache helpers now borrow one upper-memory packet
+through their existing UPDATE ownership and physical completion. This keeps
+the MagiC operation boundary and caller execution. Cursor work uses its separate
+owner packet; VDI parameter arrays remain separate. Trusted rendering callbacks
+do not reenter AES while borrowing the packet. No additional lock, Task or
+platform service is introduced. The repeated loaded check touches 1,019 bytes
+in Counter, leaving 37 above the interrupt floor. These are measured watermarks,
+not universal stack bounds. Copied window moves retain their existing local
+packet and Layers token.
+
+Final optimized interaction checks pass 68 C assertions and three native
+checks, including GUI/cursor packet separation. The cache regression passes
+224 C and four native assertions across 32 checkpoints and 18 completion
+boundaries, with exact pixels and zero UPDATE entries for empty notification
+wakes. The loaded fixture passes exact down/up viewport pixels, one viewport
+raster copy and one exposed-row redraw per action, Counter progress and all
+four Process retirements, including two no-argument viewer cycles. All guards
+and interrupt floors pass. The pointer remains at the physical clipped corner.
+Host checks pass 718 tests with five existing skips.
+
+| Observation (ms) | Down | Up |
+| --- | ---: | ---: |
+| Offered key to complete viewport, sampled upper bound | 143.82 | 176.92 |
+| `set_shift` elapsed | 179.60 | 180.50 |
+| Viewer charged CPU in `set_shift` | 125.23 | 125.91 |
+| Other-Task time in `set_shift` | 26.98 | 27.08 |
+| Interrupt time in `set_shift` | 27.40 | 27.50 |
+| Checked viewport owner-copy call, including preparation/fence | 11.95 | 11.98 |
+
+Each sample has three successful native UPDATE Attempts and no Obtain wait.
+The interaction fixture separately covers contention and FIFO handoff. The
+owner-copy return establishes checked completion; it is not a raw hardware
+BUSY-edge timestamp. The two owner-copy calls across each whole sample include
+a separate slider-frame copy; only the call inside `vro_cpyfm` is the viewport
+copy above. Viewport visibility is frame-polled: mismatch-to-match brackets are
+120.23–143.82 ms down and 144.34–176.92 ms up. The supervisor fixture's yielding
+loop contributes scheduling cost. Two actions establish neither a latency
+distribution nor a performance improvement. Existing observer names referring
+to the presenter now trace SCRENMGR's current boundaries.
+
+Reserved bank-zero growth is **0 fixed, root, kernel, idle and per public Task**,
+including guards, alignment and unused capacity. Task pools match SM4e. The
+packet adds 82 live upper-memory bytes within the existing fixture image-data
+reservation; public/native wire ABIs, signals, VRAM and physical scratch
+reservations are unchanged. No QED, catalog, demo refresh, raw matrix or release
+qualification is included.

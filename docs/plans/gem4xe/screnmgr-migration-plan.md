@@ -13,8 +13,8 @@ SM1d adds horizontal position/size. SM1e completes caller-side title/info painti
 SM3a implements the selected nonblocking raw hit query. SM3b/c implement
 registration lifetimes and operation ownership; SM3d removes the scene gate.
 SM4 is complete: the selected frontend runs the blocking SCRENMGR interaction
-loop. Independent input delivery runs through input.device. SM5 remains the
-combined acceptance step. The
+loop. Independent input delivery runs through input.device. SM5 completes the
+combined development acceptance. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
 replacement slice lands.
@@ -346,10 +346,17 @@ Continue in executable commits:
 
 Use minimal optimized emitted checks for each changed boundary and the small
 ABI probes when a layout/bridge changes. Commit passing slices separately. The
-SM5 combined check remains a separate acceptance step; no broad application or
-release matrix is implied.
+SM5 combined check below completes development acceptance; no broad application
+or release matrix is implied.
 
 ### SM5 — minimal combined development check
+
+Status: implemented. The [SM5a interaction record](../../history/screnmgr-migration.md#sm5a-combined-window-input-and-ownership-check)
+and [SM5b loaded record](../../history/screnmgr-migration.md#sm5b-loaded-acceptance-and-caller-workspace-headroom)
+complete this plan's development checks. The loaded case exposed an automatic
+drawing packet consuming Counter's interrupt headroom. Frame/exposure/cache
+helpers now borrow an 82-byte upper-memory workspace under their existing
+UPDATE; the repeated checks pass without enlarging any Task pool or public ABI.
 
 Use Counter and a tiny widget/window case for interaction, caller painting,
 UPDATE contention, independent input and close/retirement. Add one existing
@@ -377,3 +384,10 @@ outer guards. Those occupy 1,600 or 2,848 reserved bytes per pool; selected stac
 headroom, startup needs and measured peaks must determine the actual placement.
 No pool enlargement, additional Task, new service or stack saving is claimed
 by this documentation slice.
+
+SM5's implemented packet placement adds **82 live upper-memory bytes** within
+the existing fixture image-data reservation. It adds **0 fixed, root, kernel,
+idle and per-public-Task reserved bank-zero bytes**, including guards,
+alignment and spare capacity. The loaded Counter touches 1,019 of its 1,312
+stack bytes, leaving 37 above the 256-byte interrupt floor; this is an observed
+watermark, not a bound for every application path.

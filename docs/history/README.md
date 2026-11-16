@@ -11,7 +11,9 @@
   direct display admission, followed by SM4c caller registration and final detach,
   and SM4d shared caller rendering, synchronous exposure and operation-owned
   cache/manager completion, then SM4e's blocking SCRENMGR loop and independent
-  console lifecycle, with focused development checks.
+  console lifecycle. SM5 completes focused interaction and loaded MGVIEW/Counter
+  checks, records elapsed/CPU/ownership/copy observations and moves a drawing
+  packet off the ordinary application stack.
 
 - [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
   UPDATE/MCTRL handler flow, native ownership and presenter operation scopes.

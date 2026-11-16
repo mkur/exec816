@@ -26,7 +26,10 @@ completion. SM3d removes the scene gate. SM4a–c complete background cache
 operations, direct display admission and caller registration/retirement. Shared
 exposure, restores and operation-bound cache maintenance are delivered by
 SM4d. SM4e installs the blocking SCRENMGR interaction loop and removes the
-combined renderer/control budget. SM5 remains the combined acceptance step.
+combined renderer/control budget. SM5 completes the focused interaction and
+loaded MGVIEW/Counter acceptance, including caller packet stack headroom. The
+plan is complete at the development tier; no performance or release
+qualification is claimed.
 
 The [independent input.device design](../input-device-design.md) covers GEM,
 the standard Atari text console and a future VBXE text-mode console without

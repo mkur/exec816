@@ -31,8 +31,8 @@ and requires independent input/device progress when the manager blocks on UPDATE
 The [input migration](../../history/input-device-migration.md) now provides
 independent capture and copied delivery. The selected GUI frontend becomes
 SCRENMGR; input, console backend and frontend occupy three service Tasks within
-the existing map. The combined AESSYSTEM loop remains only during the staged
-scene/caller-operation migration. Its turn-wide scene ownership is not the target.
+the existing map. SM4e removes the combined AESSYSTEM loop; SM5 completes the
+focused interaction and loaded-scroll development acceptance.
 
 Make GEM the graphical application interface. AES owns every graphical window,
 including the desktop's and terminal's windows. Application bodies use ordinary
@@ -109,7 +109,7 @@ flowchart TD
 | Application Task | AES parameters, event/timer resources, model, workstation and ordinary synchronous AES/VDI execution. A frame setter completes its visible painting before releasing its handler UPDATE. |
 | Shared AES core | Window identities, geometry, stacking, focus, menu policy, redraw obligations and UPDATE/MCTRL. Live scene mutations and their retained effects have explicit UPDATE authority. |
 | input.device Task | Source acquisition/consumption/release and bounded native delivery. Consumers publish inbox readiness from copied routing without UPDATE, live scene traversal or drawing. |
-| SCRENMGR / selected frontend | Wait for manager events, obtain UPDATE for menu/frame interaction and release at MagiC's operation boundary. The current frontend retains display lifetime until the remaining migration assigns every continuation. |
+| SCRENMGR / selected frontend | Wait for manager events, obtain UPDATE for menu/frame interaction and release at MagiC's operation boundary. The frontend retains display lifetime; callers finish their own retained effects. |
 | Console backend | Stream requests, input translation and retained models. It performs no GUI drawing and does not depend on UPDATE. Standard text/standalone bitmap selects its own frontend instead of GEM. |
 | Layers | Geometry, visibility and damage under the AES operation's authority; no separate window policy. |
 | Renderer/display | Delegated physical access, shared scratch, overlays, VRAM mapping and completion/fault lifetime. Ordinary Task preemption continues while a grant is held. |
@@ -206,6 +206,15 @@ blocking UPDATE for actual interaction, complete shared helpers, release, wait.
 The existing frontend Task is named SCRENMGR. Its driver lifecycle callbacks
 remain; the obsolete console-render budget and callbacks are removed. The
 standalone console keeps its own physical renderer.
+
+Frame, exposure and terminal cache helpers borrow one 82-byte upper-memory
+packet through existing UPDATE ownership and physical completion. It replaces
+automatic packets on the ordinary application stack. Cursor work and
+application VDI parameters remain separate, and trusted renderer callbacks do
+not reenter AES while borrowing it. This is storage within the existing
+operation, with no additional gate, Task or platform service. SM5 records the
+measured Counter stack headroom and its limits in the
+[execution record](../../history/screnmgr-migration.md#sm5b-loaded-acceptance-and-caller-workspace-headroom).
 
 Input.device classifies global shortcuts and keys for a published active menu
 into copied manager events, rather than delivering them to the focused AES inbox.

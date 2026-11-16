@@ -18,6 +18,7 @@ from sio_transaction_trace import BASE_HZ,read_events
 from test_dos_stack import execute,ownership
 from test_mouse_observe import PIN,BRIDGE,ROM
 from desktop_mouse import schedule
+from stack_budget import stack_usage
 
 APP=('set_shift','_my_draw','_my_keyed','redraw_window','update_window',
      'arrowed','window_calc_slider','_my_arrange')
@@ -25,7 +26,7 @@ RESIDENT=('vro_cpyfm','v_gtext','vr_recfl','ExecAESBeginUpdate','wind_update',
     'ExecAESUpdate','ExecAESServiceCall','ExecGemRasterCopy','ExecAESPainted',
     'GemDrawingRasterBorrow','GemDrawingBorrow','GemDrawingSolidBorrow',
     'GemDrawingMouseBorrow','VbxeOwnerSubmit','VbxeOwnerFence','VbxeOwnerCopy',
-    'VbxeOwnerWrite','VbxeOwnerRead','GemVdiPaint','DisplayEnter','DisplayLeave')
+    'VbxeOwnerWrite','VbxeOwnerRead','VbxeOwnerCopyRect','GemVdiPaint','DisplayEnter','DisplayLeave')
 
 
 def definition(cache,p,foreign,app):
@@ -55,6 +56,12 @@ def definition(cache,p,foreign,app):
     points.update({p['labels'][n]:n for n in ('input_capture','blitter_irq_complete','blitter_irq_posted') if n in p['labels']})
     returns=listing_returns(foreign,cache/'drawing')
     exits=listing_returns(foreign,cache/'drawing',exits=True)
+    for name in ('attempt','obtain','release'):
+        label='semaphores_'+name
+        require(label in p['labels'] and label+'_end' in p['labels'],
+                'Missing native semaphore observation: '+label)
+        entries[p['labels'][label]]=label
+        exits.append(p['labels'][label+'_end']-1)
     copy_returns=[]
     for path in (cache/'drawing').glob('*gem-vbxe.lst'):
         for section in path.read_text().split('.section ')[1:]:
@@ -141,7 +148,7 @@ def analyze(out,d,base,samples):
             for t,e in events if start<=t<=end and int(e[4],16) in points]
         input_tick=next((t for t,e in events if start<=t<=end and points.get(int(e[4],16))=='input_capture'),None)
         phases={}
-        for name in ('_my_keyed','set_shift','ExecAESBeginUpdate','vro_cpyfm','_my_draw','GemDrawingMouseBorrow','wind_update'):
+        for name in ('_my_keyed','set_shift','ExecAESBeginUpdate','vro_cpyfm','_my_draw','GemDrawingMouseBorrow','wind_update','VbxeOwnerCopyRect'):
             rows=[s for s in selected if s['kind']==name]
             phases[name]=dict(calls=len(rows),**{k:sum(s[k] for s in rows) for k in ('elapsed_ms','charged_cpu_ms','off_cpu_ms','interrupt_ms')})
         scope_charges={str(other):Timeline(profile['segments'],other).measure(shift['start'],shift['end']) for other in d['timeline']['task_dps']}
@@ -149,6 +156,11 @@ def analyze(out,d,base,samples):
             values=[(poll['tick']-sample['start'])%(1<<32)*1000/BASE_HZ for poll in sample['polls'] if not poll[field]]
             return max(values) if values else None
         result.append(dict(sample,start=start,end=end,viewer_dp=dp,call_counts=dict(counts),phases=phases,
+            update_ownership=dict(
+                attempts=sum(s['kind']=='semaphores_attempt' for s in selected),
+                failed_attempts=sum(s['kind']=='semaphores_attempt' and s['return_a']==0 for s in selected),
+                obtains=[s for s in selected if s['kind']=='semaphores_obtain'],
+                scope='Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling.'),
             set_shift_start_ms=(shift['start']-start)*1000/BASE_HZ,set_shift_end_ms=(shift['end']-start)*1000/BASE_HZ,
             capture_ms=(input_tick-start)*1000/BASE_HZ if input_tick is not None else None,
             cpu_to_complete=timeline.measure(start,pixels_end),spans=selected,boundaries=boundaries,
@@ -232,12 +244,21 @@ def run(cache,out,presenter=False,expect_copy_units=None):
                         context=next(c for c in contexts if c and number(c+layout()['Request']['fields']['global']+4)==number(sy['ap_id']))
                         depth=context+dict(expected_layout())['C context updateDepth']
                         frames(80);reach(f'dw(${depth:x})=0')
-                        position=schedule(b,p,[320,120],(632,0))
+                        report['stack_phases']=[dict(phase='viewer-ready',usage=stack_usage(b,p['build']['memory']))]
                         cursor=lambda name:next(row['address'] for row in p['image']['data']
                             if '_DESKINPUT_'+name.upper()+'_' in row['name'])
-                        reach(f'(dw(${cursor("cursorX"):x})={position[0]})&(dw(${cursor("cursorY"):x})={position[1]})')
-                        frames(40)
-                        report['pointer_start']=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        current=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        report['pointer_positioning']=[]
+                        for _ in range(3):
+                            # Park at the clipped corner, outside both windows.
+                            # Do not rendezvous on an intermediate coordinate:
+                            # queued physical packets can travel past it.
+                            position=schedule(b,p,current,(639,0))
+                            frames(40)
+                            current=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                            report['pointer_positioning'].append(dict(target=position,settled=current))
+                            if current==position:break
+                        report['pointer_start']=current
                         require(report['pointer_start']==position,'Pointer did not settle at the requested position')
                         work=[number(window+268+i*2) for i in range(4)];report['work']=work
                         font=font_bytes(cache/'selected/src/vdi/font8x8.c')
@@ -270,6 +291,7 @@ def run(cache,out,presenter=False,expect_copy_units=None):
                                 pixel_sha256=hashlib.sha256(got).hexdigest())
                             require(sample['service_binding_delta']==0,'Scroll changed its service binding')
                             report['samples'].append(sample)
+                            report['stack_phases'].append(dict(phase=label,usage=stack_usage(b,p['build']['memory'])))
                             (out/'samples.json').write_text(json.dumps(report['samples'],indent=2)+'\n')
                             print('MGVIEW',label,'complete pixels:',round(sample['offered_to_complete_ms'],2),'ms',flush=True)
                             frames(5)

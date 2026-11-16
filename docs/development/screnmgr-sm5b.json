@@ -1,0 +1,694 @@
+{
+  "schema_version": 1,
+  "slice": "SM5b",
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "a3423a87",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "optimized": true,
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "source_inputs": {
+    "lib/aes/aesdrawstate.act": "2b97f162c466d55f3d55b9e776b440320f6516cbac3ed16b9cf259fd6bef1a5e",
+    "lib/aes/aesframe.act": "d2270515eebc9e9b8c91b760825e55a3f9c86a5321aa29b70b32e8a132c63384",
+    "lib/aes/aeslocal.act": "dc507c2ae39f9c12fa9de6e419858e1b28aff84b92539222023cee1b3f290e6f",
+    "lib/aes/aeswindowstate.act": "20f918e26b16246254f3a0ac7f64ea47decfa7e5ae24e36d0b13216c76beba50",
+    "lib/aes/screnmgr.act": "966625c556fc21cbdb464d84c9dee57333ebbe4a130a3ba54d5aceb9a590af7f",
+    "tools/generate_tasks.py": "9d882b93f1282230f519276ae5ac668723e88a97692b6afffee0250cef45541b",
+    "tools/test_screnmgr.py": "62b98ce111392fbdfe05f1c79c76c0337bdcd7a303d6e7fb9622b0b11870cb74",
+    "tools/measure_mgview.py": "36560835f892d2e885a8be5e3f51f8360d65afd262969b4efe82450122fe9209",
+    "tools/test_dos_stack.py": "b7382c6c6f6fee5bd6ff8f564164d09244a89cd265ef3478b901f127422f1667",
+    "tools/test_aes_migration.py": "fa4cc763aa99af2c2d43e99dae0d76542ba65c7d4af8d8a33b3de5fd2b70df48",
+    "tools/test_display_admission.py": "f90ffefcb1345d432b20e7d997b62f656c886b5d930b2c362cb45c474087c7c4",
+    "tools/build_gem_desktop.py": "3470ae51957e73ba5b7ebdb9ccf50696510c131358374098342f7227ee929995",
+    "tests/programs/aes_migration.c": "4074427aba027c922fd825d1a19021834857594367c6ac6c5be476039e76ac05",
+    "tests/programs/c_mgview.act": "282474f807bdbbf9f53dd8dd4a28da9702f4656f5fb9012cc46e5d3ed9e08929"
+  },
+  "captures": [
+    {
+      "path": "build/screnmgr/sm5/results.json",
+      "sha256": "d776c166cb523b96fd4d8dbc8355c51022ade6b4bdffa4515c3dbb5d58d8cb49"
+    },
+    {
+      "path": "build/screnmgr/sm5/interaction/results.json",
+      "sha256": "be734561e20387aa1445c2495dac3aa0448ff25413836bb2990e78633534573b"
+    },
+    {
+      "path": "build/screnmgr/sm5/cache/results.json",
+      "sha256": "fb4ea4283f68321a9d6b0e2f82aeed03ab66bb1745f5697faeed9426c3c625cd"
+    },
+    {
+      "path": "build/screnmgr/sm5/scroll/results.json",
+      "sha256": "73fff5376820ff52569ad8cf1ce1461650da25ec37bc6d6282348c8cb39663fc"
+    },
+    {
+      "path": "build/screnmgr/sm5/viewer/fixture.json",
+      "sha256": "1acad99a2be63197d6fb0dc11b3ed81c8d906321fdaf9698dfb1ea9dc3aa992a"
+    }
+  ],
+  "apps": {
+    "mgview": {
+      "mode": "reused",
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/am5-provider/apps/mgview",
+      "sha256": "1135537264b057c0e7b4c385a86b311e430f55a8ed5d53ed1e6491730c5744b9",
+      "abi": 46
+    },
+    "counter": {
+      "mode": "reused",
+      "source": "/Users/michalkurcewicz/action/exec816-public/build/aes-migration/am5-provider/apps/counter",
+      "sha256": "d451f2ce1682023decf4786226c034b7930004960136bf2caa892411600ee2f0",
+      "abi": 46
+    }
+  },
+  "caller_workspace": {
+    "symbol": {
+      "kind": "global",
+      "id": 1303,
+      "name": "M_AESDRAWSTATE_WORKSPACE_EDDF7EB7",
+      "address": 141380,
+      "size": 82,
+      "alignment": 2
+    },
+    "upper_live_bytes": 82,
+    "fixture_upper_data_reservation": {
+      "address": 138496,
+      "size": 12288
+    },
+    "ownership": "Existing UPDATE retained through physical return; separate cursor packet and application VDI parameters; trusted callbacks do not reenter AES."
+  },
+  "stack_failure": {
+    "capture": {
+      "path": "build/screnmgr/sm5/scroll-before-workspace.json",
+      "sha256": "899e9389005fc426a595bdc4b9df2efa9b8c4841003499ae7b36814863d7df2b"
+    },
+    "native_sha256": "acfc96397bd69ae08dd6e41a0b9b258f9e166b13c54dd2a387223b07d62952a5",
+    "error": "Touched reserved interrupt headroom in slot 5",
+    "production_counter": {
+      "base": 18256,
+      "bytes": 1312,
+      "peak": 1107,
+      "remaining_above_floor": -51
+    },
+    "attribution": {
+      "capture": {
+        "path": "build/screnmgr/sm5-counter-probe/phases.json",
+        "sha256": "bec9c709ed8edda214790437359c3062d8220f6848bef4df772077e7f5928378"
+      },
+      "probe_source": {
+        "path": "build/sm5_counter_probe.py",
+        "sha256": "5ed41509882a45dfbb8df9b15e67b58a1f2fb270437e2649e2cb4530b12b5555"
+      },
+      "before_wind_open": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 708,
+        "remaining_above_floor": 348
+      },
+      "after_wind_open": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 1100,
+        "remaining_above_floor": -44
+      },
+      "after_first_repaint": {
+        "base": 18256,
+        "bytes": 1312,
+        "peak": 1100,
+        "remaining_above_floor": -44
+      },
+      "note": "Private instrumented Counter APP with --no-inline; its watermark differs from the unchanged production APP."
+    }
+  },
+  "interaction": {
+    "native_sha256": "0ff124baf462a44612cb16df801436e3ac92977c84cad9a706555092e15b1455",
+    "c_checks": 68,
+    "failures": 0,
+    "native_checks": 3,
+    "progress": 26,
+    "keyboard_delivery": {
+      "presenter_held": 0,
+      "presenter_depth": 0
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 1006,
+          "untouched_above_floor": 274
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 358,
+          "untouched_above_floor": 698
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 133,
+          "untouched_above_floor": 923
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 381,
+          "untouched_above_floor": 675
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 62,
+          "untouched_above_floor": 994
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 715,
+          "untouched_above_floor": 1589
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 52,
+          "untouched_above_floor": 204
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "cache": {
+    "native_sha256": "559eaae76776069aa493a53a39cbc5a31affb8bc991742609a10a30bebaff105",
+    "c_checks": 224,
+    "failures": 0,
+    "native_checks": 4,
+    "checkpoints": 32,
+    "completion_checks": 18,
+    "manager_scope_task_assertion": true,
+    "empty_notification_checks": [
+      {
+        "phase": 5,
+        "unchanged_wakes": 12,
+        "empty_notification_update_scopes": 0
+      },
+      {
+        "phase": 13,
+        "unchanged_wakes": 12,
+        "empty_notification_update_scopes": 0
+      },
+      {
+        "phase": 20,
+        "unchanged_wakes": 12,
+        "empty_notification_update_scopes": 0
+      },
+      {
+        "phase": 23,
+        "unchanged_wakes": 12,
+        "empty_notification_update_scopes": 0
+      }
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 1024,
+          "untouched_above_floor": 256
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 304,
+          "untouched_above_floor": 752
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 128,
+          "untouched_above_floor": 928
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 344,
+          "untouched_above_floor": 712
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 750,
+          "untouched_above_floor": 1554
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 21,
+          "untouched_above_floor": 235
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 285,
+        "untouched_from_base": 1251,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "scroll": {
+    "native_sha256": "1fc9c9986af792342a81287f97c417decc877d25d654d7ac46c2ac777211375d",
+    "app_abi": 46,
+    "aes_abi": 26,
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "counter_progress": 2,
+    "completed_processes": 4,
+    "pointer_start": [
+      639,
+      0
+    ],
+    "pointer_end": [
+      639,
+      0
+    ],
+    "samples": [
+      {
+        "action": "down",
+        "offered_to_complete_ms": 143.82269562532863,
+        "complete_bracket_ms": [
+          120.23248503268351,
+          143.82269562532863
+        ],
+        "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+        "phases": {
+          "set_shift": {
+            "calls": 1,
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 125.22861545097896,
+            "off_cpu_ms": 26.97838532011802,
+            "interrupt_ms": 27.39579265808545
+          },
+          "ExecAESBeginUpdate": {
+            "calls": 1,
+            "elapsed_ms": 5.562400352984794,
+            "charged_cpu_ms": 2.438329863162005,
+            "off_cpu_ms": 2.490558643545975,
+            "interrupt_ms": 0.6335118462768139
+          },
+          "vro_cpyfm": {
+            "calls": 1,
+            "elapsed_ms": 14.751493912281022,
+            "charged_cpu_ms": 11.488781032424134,
+            "off_cpu_ms": 0.7345156820261102,
+            "interrupt_ms": 2.528197197830779
+          },
+          "_my_draw": {
+            "calls": 1,
+            "elapsed_ms": 23.0237292054036,
+            "charged_cpu_ms": 18.311015691189056,
+            "off_cpu_ms": 0.734797618762326,
+            "interrupt_ms": 3.97791589545222
+          }
+        },
+        "update_ownership": {
+          "attempts": 3,
+          "failed_attempts": 0,
+          "obtains": [],
+          "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+        },
+        "viewport_owner_copy": {
+          "kind": "VbxeOwnerCopyRect",
+          "start": 89911699.875,
+          "argument": 13,
+          "stack": 24041,
+          "end": 89932898.125,
+          "return_a": 0,
+          "elapsed_ms": 11.953130836971491,
+          "charged_cpu_ms": 9.173798491356525,
+          "off_cpu_ms": 0.7345156820261102,
+          "interrupt_ms": 2.044816663588857
+        },
+        "viewport_copy_completions": 1,
+        "copy_completion_irqs": 0,
+        "whole_sample_owner_copy_calls": 2,
+        "viewport_raster_calls": 1,
+        "exposed_text_calls": 1,
+        "manager_owned_core": {
+          "elapsed_ms": 115.6016036561556,
+          "charged_cpu_ms": 6.416034306062063,
+          "off_cpu_ms": 107.7154807232805,
+          "interrupt_ms": 1.4700886268130295
+        },
+        "task_charges": {
+          "3328": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 6.745054477225856,
+            "off_cpu_ms": 171.53912083667547,
+            "interrupt_ms": 1.318618115281112
+          },
+          "3584": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 1.447110782811445,
+            "off_cpu_ms": 177.84844208807985,
+            "interrupt_ms": 0.30724055829112507
+          },
+          "3840": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 179.6027934291824,
+            "interrupt_ms": 0.0
+          },
+          "4096": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 179.6027934291824,
+            "interrupt_ms": 0.0
+          },
+          "4352": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 179.6027934291824,
+            "interrupt_ms": 0.0
+          },
+          "4608": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 179.6027934291824,
+            "interrupt_ms": 0.0
+          },
+          "4864": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 14.057788572822144,
+            "off_cpu_ms": 162.44243204267394,
+            "interrupt_ms": 3.1025728136863373
+          },
+          "5120": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 125.22861545097896,
+            "off_cpu_ms": 26.97838532011802,
+            "interrupt_ms": 27.39579265808545
+          },
+          "5376": {
+            "elapsed_ms": 179.6027934291824,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 179.6027934291824,
+            "interrupt_ms": 0.0
+          }
+        }
+      },
+      {
+        "action": "up",
+        "offered_to_complete_ms": 176.92150458358648,
+        "complete_bracket_ms": [
+          144.34371471385535,
+          176.92150458358648
+        ],
+        "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+        "phases": {
+          "set_shift": {
+            "calls": 1,
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 125.91280542559055,
+            "off_cpu_ms": 27.082419975781637,
+            "interrupt_ms": 27.501307481614198
+          },
+          "ExecAESBeginUpdate": {
+            "calls": 1,
+            "elapsed_ms": 5.561484058592092,
+            "charged_cpu_ms": 2.4377659896895736,
+            "off_cpu_ms": 2.4898538017054355,
+            "interrupt_ms": 0.6338642671970837
+          },
+          "vro_cpyfm": {
+            "calls": 1,
+            "elapsed_ms": 14.775810955779633,
+            "charged_cpu_ms": 11.513943886131392,
+            "off_cpu_ms": 0.7349385871304338,
+            "interrupt_ms": 2.5269284825178078
+          },
+          "_my_draw": {
+            "calls": 1,
+            "elapsed_ms": 23.224397677405168,
+            "charged_cpu_ms": 18.47179011501609,
+            "off_cpu_ms": 0.7350090713144878,
+            "interrupt_ms": 4.017598491074588
+          }
+        },
+        "update_ownership": {
+          "attempts": 3,
+          "failed_attempts": 0,
+          "obtains": [],
+          "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+        },
+        "viewport_owner_copy": {
+          "kind": "VbxeOwnerCopyRect",
+          "start": 90480776.125,
+          "argument": 13,
+          "stack": 24041,
+          "end": 90502018.75,
+          "return_a": 0,
+          "elapsed_ms": 11.978152722310641,
+          "charged_cpu_ms": 9.199243281799998,
+          "off_cpu_ms": 0.7349385871304338,
+          "interrupt_ms": 2.04397085338021
+        },
+        "viewport_copy_completions": 1,
+        "copy_completion_irqs": 0,
+        "whole_sample_owner_copy_calls": 2,
+        "viewport_raster_calls": 1,
+        "exposed_text_calls": 1,
+        "manager_owned_core": {
+          "elapsed_ms": 117.7758292816675,
+          "charged_cpu_ms": 6.422166430074755,
+          "off_cpu_ms": 109.92685151378882,
+          "interrupt_ms": 1.42681133780391
+        },
+        "task_charges": {
+          "3328": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 6.7610543870061,
+            "off_cpu_ms": 172.2878038396964,
+            "interrupt_ms": 1.4476746562838765
+          },
+          "3584": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 1.4480975613882,
+            "off_cpu_ms": 178.74126524749113,
+            "interrupt_ms": 0.30717007410707114
+          },
+          "3840": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 180.4965328829864,
+            "interrupt_ms": 0.0
+          },
+          "4096": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 180.4965328829864,
+            "interrupt_ms": 0.0
+          },
+          "4352": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 180.4965328829864,
+            "interrupt_ms": 0.0
+          },
+          "4608": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 180.4965328829864,
+            "interrupt_ms": 0.0
+          },
+          "4864": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 14.065330380515917,
+            "off_cpu_ms": 163.37810958599,
+            "interrupt_ms": 3.053092916480471
+          },
+          "5120": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 125.91280542559055,
+            "off_cpu_ms": 27.082419975781637,
+            "interrupt_ms": 27.501307481614198
+          },
+          "5376": {
+            "elapsed_ms": 180.4965328829864,
+            "charged_cpu_ms": 0.0,
+            "off_cpu_ms": 180.4965328829864,
+            "interrupt_ms": 0.0
+          }
+        }
+      }
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 476,
+          "untouched_above_floor": 804
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 378,
+          "untouched_above_floor": 678
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 142,
+          "untouched_above_floor": 914
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 381,
+          "untouched_above_floor": 675
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 177,
+          "untouched_above_floor": 879
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 1019,
+          "untouched_above_floor": 37
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 702,
+          "untouched_above_floor": 1602
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 1140,
+          "untouched_above_floor": 1164
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 131,
+          "untouched_above_floor": 125
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 289,
+        "untouched_from_base": 1247,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "comparison": {
+      "path": "build/screnmgr/sm4e2-manager/program/build.json",
+      "sha256": "525838511d34b92b3f25ae0e8d949d2b799497cc2f1857cf8da025cae2c88608"
+    },
+    "bank_zero_budget_and_task_pools_equal_in": [
+      "interaction",
+      "cache",
+      "viewer"
+    ]
+  },
+  "host_checks": {
+    "tests": 718,
+    "skipped": 5,
+    "log": "build/sm5-host-final.log"
+  },
+  "limits": [
+    "Development checks only; no release, hosted qualification or performance gain claimed.",
+    "Two scroll actions, frame-polled viewport brackets; not a latency distribution.",
+    "Supervisor yielding rendezvous contributes scheduling cost; Counter progresses across the observation/settlement, not established within each set_shift.",
+    "Viewport owner-copy spans include preparation/fence and checked return, not a raw hardware BUSY-edge timestamp. Whole-sample owner copies include the slider frame.",
+    "Stack peaks are boot-fill watermarks for these paths, not universal bounds. All final interrupt floors and guards pass.",
+    "No new Task, signal, platform service, public/wire ABI, VRAM or physical scratch reservation. No QED, catalog, demo refresh or raw/release matrix."
+  ]
+}
