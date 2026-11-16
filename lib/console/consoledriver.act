@@ -1,6 +1,7 @@
 ; One resident console worker; public calls use the unchanged Exec IOStdReq.
 MODULE CONSOLEDRIVER
 USE EXEC
+USE INPUTDRIVER
 USE CONSOLESYSTEM
 USE CONSOLEUI
 USE TASKSTACKS
@@ -557,6 +558,7 @@ PUBLIC PROC Worker()
   CONSOLESYSTEM.BindConsole(ADDRESS(@SystemInput),ADDRESS(@SystemRunnable),
       ADDRESS(@SystemStopping),ADDRESS(@SystemStop),ADDRESS(@SystemTurn),
       ADDRESS(@SystemControls))
+  CONSOLECAPTURE.BindReceiver(ADDRESS(@CONSOLEINPUT.Deliver),LONGCARD(ADDRESS(service)))
   registered=Initialize(service,defaultInstance)
   IF registered<>0 AND CONSOLESYSTEM.Start()=0 THEN
     CONSOLECAPTURE.Release()

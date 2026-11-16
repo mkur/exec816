@@ -36,7 +36,9 @@ acknowledges after callback/source retirement. Close requires a detached binding
 The service Task uses signals and an owned request port, sleeps while idle and
 calls bounded handlers without a driver guard. It never calls AES or draws.
 Stop refuses live opens. This slice starts the Task only in isolated service
-fixtures; production console startup remains unchanged.
+fixtures or selected standalone console startup. The standard console starts
+the shared input service before its display frontend and backend, then attaches
+its native consumer. GUI source migration remains pending.
 An asynchronous system stop closes new admission while allowing existing
 consumers to detach. The worker retires only after those bindings close.
 

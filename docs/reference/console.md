@@ -2,14 +2,18 @@
 
 [Reference index](README.md) · [Console example](../guides/console-example.md)
 
-One resident frontend owns the selected console display and currently consumes
-its keyboard capture. A separate backend Task accepts console requests and
-updates the retained models. Instances add state rather than Tasks.
+One resident frontend owns the selected console display. Standard text and
+standalone bitmap startup receive keyboard events from input.device through
+copied console ingress; a separate backend Task translates input, accepts
+console requests and updates retained models. Instances add state rather than Tasks.
 The standard text frontend runs a small rendering loop without AES/desktop
 dependencies. An optional GEM binding supplies GUI policy and runs the existing
 graphical manager loop; its SCRENMGR replacement remains in progress.
-The [input.device migration](../plans/input-device-migration-plan.md) has isolated
-these frontend boundaries; console capture has not switched to that service yet.
+The [input.device migration](../plans/input-device-migration-plan.md) has switched
+standalone console capture. GUI startup retains its frontend capture until IM6.
+Closing the console detaches its consumer; input.device remains resident until
+its own shutdown. Stop admission and input enqueue use the same short Task
+guard, so no copied input arrives after a successful console stop decision.
 The normal text backend admits 40×24 cells. The optional bitmap backend admits
 80×30 on the pinned 640×240 VBXE display. An instance adds upper-RAM state,
 not a Task, stack or DP. The backend is selected before startup; live conversion

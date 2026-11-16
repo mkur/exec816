@@ -33,8 +33,7 @@ PROC Reclaim(CONSOLETYPES.Routes POINTER routes)
     OD
 
     IF keep=0 AND ingressHolds(index)=0 THEN
-      IF INPUT.RetireRoute(CONSOLECAPTURE.GetLease(),
-          routes.items(index).tag)=INPUT.OK THEN
+      IF CONSOLECAPTURE.RetireRoute(routes.items(index).tag)=INPUT.OK THEN
         routes.items(index).tag=0
         routes.items(index).scope=NULL
       FI
@@ -51,7 +50,7 @@ LONGCARD FUNC Allocate(LONGCARD unit BYTE POINTER scope BYTE bound)
 
   routes=Registry()
   Reclaim(routes)
-  IF INPUT.CreateRoute(CONSOLECAPTURE.GetLease(),0,@freshTag)<>INPUT.OK THEN
+  IF CONSOLECAPTURE.CreateRoute(0,@freshTag)<>INPUT.OK THEN
     RETURN(0)
   FI
 
@@ -109,10 +108,9 @@ PUBLIC PROC Unregister(CONSOLETYPES.Window POINTER entry)
   CONSOLETYPES.Windows POINTER windows
 
   windows=CONSOLEWINDOWS.Registry()
-  LET lease=CONSOLECAPTURE.GetLease()
   IF windows.focusSlot=BYTE(entry.unit & 3) THEN
     windows.focusSlot=255
-    IF lease.state=INPUT.ACTIVE THEN
+    IF CONSOLECAPTURE.Active()<>0 THEN
       CONSOLECAPTURE.Publish(0)
     FI
   FI

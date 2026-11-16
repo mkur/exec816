@@ -11,6 +11,23 @@ USE CONSOLEWINDOWS
 USE CONSOLEINGRESS
 USE HEAPCORE
 
+; Device callback copies ingress only. The stop check and enqueue share the
+; same Task guard as RequestStop, closing the last-input/shutdown race.
+PUBLIC PROC Deliver(LONGCARD context INPUT.Event POINTER event)
+  CONSOLETYPES.Window POINTER entry
+
+  LET service=CONSOLETYPES.Service POINTER(ADDRESS(context))
+  EXEC.Forbid()
+  IF service.stop=0 THEN
+    entry=CONSOLEFOREGROUND.Resolve(event.route)
+    IF entry<>NULL THEN
+      CONSOLEINGRESS.Capture(entry.unit,event)
+    FI
+  FI
+  EXEC.Permit()
+
+RETURN
+
 ; Route at most RAW_SLOTS events. A full count may leave work; a shorter count
 ; means Take observed EMPTY unless menu input was deferred. Invalid authority is
 ; an invariant failure, never an empty observation that discards its wake.
@@ -19,6 +36,9 @@ PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
   CARD consumed,status
   CONSOLETYPES.Window POINTER entry
 
+  IF CONSOLECAPTURE.Shared()<>0 THEN
+    RETURN(0)
+  FI
   consumed=0
   WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
     IF CONSOLEUI.KeyReady()=0 THEN

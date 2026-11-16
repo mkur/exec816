@@ -119,13 +119,52 @@ def pointer_stimulus(bridge, program, report):
     report['physical_pointer'] = dict(movements=4, button_changes=2)
 
 
+def text_stimulus(bridge, program, report):
+    at = lambda name: next(d['address'] for d in program['image']['data']
+        if d['name'].startswith('M_INPUTDEVICETEXT_'+name.upper()+'_'))
+
+    def reach(condition):
+        bridge.bp_clear_all()
+        bridge.bp_set(program['labels']['native_nmi'], condition=condition)
+        try:
+            run_to(bridge, program['labels']['native_nmi'], frame_limit=1000,
+                   timeout=15, condition=condition)
+        except Exception:
+            report['diagnostic']=dict(checks=bridge.peek16(at('checks')),
+                stage=bridge.memdump(at('stage'),1).hex(),status=bridge.peek16(adapter.STATE))
+            raise
+
+    bridge._cmd_ok('KEY ALL up')
+    reach(f'db(${at("stage"):x})=1')
+    layout=json.loads((ROOT/'abi/console.json').read_text())['records']['Service']
+    offset=next(f[2] for f in layout['fields'] if f[0]=='snapshot')
+    base=program['build']['memory']['console_storage']['BASE']
+    saved=int.from_bytes(bridge.memdump(base+offset,3),'little')
+    report['text_claim_snapshot']=bridge.memdump(saved,960).hex()
+    require(bridge._cmd_ok('KEY A down')['raw_scan'], 'Text console requires physical key scanning')
+    reach(f'@frame>={bridge.eval_expr("@frame")+4}')
+    bridge._cmd_ok('KEY A up')
+    bridge._cmd_ok('KEY RETURN down')
+    reach(f'db(${at("stage"):x})=2')
+    bridge._cmd_ok('KEY RETURN up')
+    reach(f'@frame>={bridge.eval_expr("@frame")+4}')
+    bridge._cmd_ok('KEY B down')
+    reach(f'db(${at("stage"):x})=3')
+    bridge._cmd_ok('KEY B up')
+    reach(f'@frame>={bridge.eval_expr("@frame")+4}')
+    bridge._cmd_ok('KEY CTRL down')
+    bridge._cmd_ok('KEY C down')
+    bridge.bp_clear_all()
+    report['text_input']=dict(cooked_line='a\n',raw_byte='b',cancellation='Ctrl-C')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--compiler-dir', type=Path, default=ROOT/'build/actionc')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client', 'frontend'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client', 'frontend', 'text'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -138,7 +177,7 @@ def main():
         capture_override.unlink()
     layout = c_layout(output, args.mode == 'opt')
     options = {}
-    if args.suite == 'frontend':
+    if args.suite in ('frontend', 'text'):
         profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
         profile['image_data_bytes']=8192
         profile_path=output/'memory-profile.json'
@@ -151,9 +190,13 @@ def main():
     report = dict(status='running', tier='development', qualification=False,
                   suite=args.suite, mode=args.mode, build=program['build'], c_layout=layout)
     pin, bridge_dir, rom = PIN, ROOT/'build/altirra-irq-bridge', ROOT/'build/firmware/altirraos-816.rom'
-    if args.suite in ('keyboard', 'pointer'):
+    if args.suite in ('keyboard', 'pointer', 'text'):
         from test_mouse_observe import PIN as INPUT_PIN, BRIDGE, ROM
         pin, bridge_dir, rom = INPUT_PIN, BRIDGE, ROM
+        if args.suite == 'text':
+            pin=json.loads(json.dumps(pin))
+            pin['devices']=[]
+            pin['machine']['addons']='off'
     expected_bridge = pin.get('mouse_input', {}).get('tooling', {}).get('sha256', pin['emulator']['sha256'])
     require(sha256(bridge_dir/'AltirraBridgeServer') == expected_bridge,
             'Unpinned input.device emulator')
@@ -165,19 +208,31 @@ def main():
                 report['keyboard_before'] = keyboard_hardware(b)
                 if args.suite == 'keyboard':
                     keyboard_stimulus(b, program, report)
-                else:
+                elif args.suite == 'pointer':
                     pointer_stimulus(b, program, report)
+                else:
+                    report['text_screen_address']=b.peek16(0x58)
+                    report['text_screen_before']=b.memdump(report['text_screen_address'],960).hex()
+                    text_stimulus(b, program, report)
             report['runtime'], _ = execute(bridge, program, timeout=120, frame_limit=3600,
-                                           before_run=stimulus if args.suite in ('keyboard', 'pointer') else None)
-            if args.suite in ('keyboard', 'pointer'):
+                                           before_run=stimulus if args.suite in ('keyboard', 'pointer', 'text') else None)
+            if args.suite in ('keyboard', 'pointer', 'text'):
                 bridge._cmd_ok('KEY ALL up')
                 bridge._cmd_ok('MOUSE CLEAR')
                 report['keyboard_after'] = keyboard_hardware(bridge)
                 require(report['keyboard_after'] == report['keyboard_before'],
                         'Keyboard capture hardware was not restored')
+                if args.suite == 'text':
+                    actual=bridge.memdump(report['text_screen_address'],960)
+                    expected=bytes.fromhex(report['text_claim_snapshot'])
+                    report['text_screen_differences']=[i for i,(a,e) in enumerate(zip(actual,expected)) if a!=e]
+                    require(actual==expected,
+                            'Atari text screen was not restored')
+                    require(not any(r['name'].startswith(('M_AES','M_DESK')) for r in program['image']['routines']),
+                            'Standard Atari console still links GUI routines')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 25,
-                                        'pointer': 10, 'client': 13, 'frontend': 7}[args.suite],
+                                        'pointer': 10, 'client': 13, 'frontend': 7, 'text': 15}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

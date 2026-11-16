@@ -8,13 +8,14 @@ from test_console_windows import PIN
 from test_dos_stack import execute,ownership
 from test_cooperative import data
 
-def run(t,out,optimize,enabled):
+def run(t,out,optimize,enabled,from_build=None):
     out.mkdir(parents=True,exist_ok=True)
     config=json.loads((ROOT/'config/kernel.json').read_text());config['console']=True
     cfg=out/'kernel.json';cfg.write_text(json.dumps(config)+'\n')
     profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=8192
     memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile)+'\n')
-    p=build(t,ROOT/'tests/programs/native_console_startup.act',out,optimize=optimize,tasks=True,task_capacity=8,kernel_config=cfg,console=None if enabled else False,memory_profile=memory)
+    from native_program import read_build
+    p=read_build(from_build) if from_build else build(t,ROOT/'tests/programs/native_console_startup.act',out,optimize=optimize,tasks=True,task_capacity=8,kernel_config=cfg,console=None if enabled else False,memory_profile=memory)
     require(bool(p['build'].get('console_enabled'))==enabled,'Wrong resolved option')
     require(sha256(ROOT/'build/shell-paced-bridge/AltirraBridgeServer')==PIN['emulator']['sha256'],'Unpinned console emulator')
     with emulator(ROOT/'build/shell-paced-bridge',ROOT/'build/firmware/altirraos-816.rom',out,pin=PIN) as b:
@@ -22,13 +23,13 @@ def run(t,out,optimize,enabled):
         def before(b):b.poke(next(x['address'] for x in p['image']['data'] if '_ENABLED_' in x['name']),int(enabled))
         rt,_=execute(b,p,before_run=before,timeout=240,frame_limit=12000)
         require(data(b,p['image'],'checkpoint')==[1],'Public client did not finish')
-        require(rt['created']==2*int(enabled),'Unexpected resident worker count')
+        require(rt['created']==3*int(enabled),'Unexpected resident worker count')
         require(rt['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Kernel interrupt reserve touched')
         ownership(b,p,out)
     return dict(status='pass',enabled=enabled,build=p['build'],runtime=rt,machine=machine)
 if __name__=='__main__':
-    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--disabled',action='store_true');a.add_argument('--output',type=Path,required=True);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
-    try:r=run(compiler(ROOT/'build/actionc',release=True),out,args.case=='opt',not args.disabled)
+    a=argparse.ArgumentParser(description=__doc__);a.add_argument('--case',choices=('raw','opt'),required=True);a.add_argument('--disabled',action='store_true');a.add_argument('--output',type=Path,required=True);a.add_argument('--from-build',type=Path);args=a.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);r=dict(status='running')
+    try:r=run(None if args.from_build else compiler(ROOT/'build/actionc',release=True),out,args.case=='opt',not args.disabled,args.from_build)
     except Exception as e:r.update(status='fail',error=str(e));raise
     finally:(out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     print('Public startup passed',args.case,not args.disabled,flush=True)

@@ -1,21 +1,50 @@
-; Console owns translation and scope policy; INPUT owns the one capture lease.
+; Console policy owns its binding; input.device owns physical capture.
 MODULE CONSOLECAPTURE
 USE EXEC
+USE CONSOLEUI
 USE CONSOLEINPUTEPOCH
 USE INPUT
+USE INPUTCLIENT
+USE INPUTDEVICE
 USE CONSOLETYPES
 USE HEAPCORE
+USE A816MEMORY AS MEM
 INCLUDE "console-storage-action.inc"
 PUBLIC CONST WAKE_MASK=$40000000
 INPUT.Lease lease
 INPUT.Config config
+INPUTDEVICE.Consumer receiver
+BYTE POINTER client
+ADDRESS receiverEntry
+LONGCARD receiverContext
 
+PUBLIC PROC BindReceiver(ADDRESS entry LONGCARD context)
+
+  receiverEntry=entry
+  receiverContext=context
+
+RETURN
+
+PUBLIC BYTE FUNC Shared()
+
+RETURN(client<>NULL)
+
+PUBLIC BYTE FUNC Active()
+
+RETURN(client<>NULL OR lease.state=INPUT.ACTIVE)
+
+; GUI consumption remains in the frontend until IM6. No private device lease
+; is exposed by the shared path; its route operations use the public binding.
 PUBLIC INPUT.Lease POINTER FUNC GetLease()
 
 RETURN(@lease)
 
 PUBLIC BYTE FUNC Acquire()
+  CARD status
 
+  IF client<>NULL THEN
+    RETURN(0)
+  FI
   config.version=INPUT.VERSION
   config.source=INPUT.SOURCE_KEYBOARD
   config.wakeMask=WAKE_MASK
@@ -23,33 +52,85 @@ PUBLIC BYTE FUNC Acquire()
   config.filter0Mask=$bf
   config.filterCount=1
   config.flags=INPUT.CAPTURE_BREAK
+  IF CONSOLEUI.Enabled()<>0 THEN
+    RETURN(INPUT.Acquire(@lease,@config)=INPUT.OK)
+  FI
+  client=INPUTCLIENT.Open()
+  IF client=NULL THEN
+    RETURN(0)
+  FI
+  MEM.Clear(BYTE POINTER(@receiver),INPUTDEVICE.CONSUMER_BYTES)
+  receiver.version=INPUTDEVICE.VERSION
+  receiver.sources=INPUTDEVICE.KEYBOARD_SET
+  receiver.entry=LONGCARD(receiverEntry)
+  receiver.context=receiverContext
+  MEM.Move(BYTE POINTER(@receiver.keyboard),BYTE POINTER(@config),INPUT.CONFIG_BYTES)
+  status=INPUTCLIENT.Attach(client,@receiver)
+  IF status<>INPUT.OK THEN
+    INPUTCLIENT.Close(client)
+    client=NULL
+    RETURN(0)
+  FI
 
-RETURN(INPUT.Acquire(@lease,@config)=INPUT.OK)
+RETURN(1)
+
+PUBLIC CARD FUNC CreateRoute(CARD flags LONGCARD POINTER tag)
+
+  IF client<>NULL THEN
+    RETURN(INPUTCLIENT.CreateRoute(client,INPUT.SOURCE_KEYBOARD,flags,tag))
+  FI
+
+RETURN(INPUT.CreateRoute(@lease,flags,tag))
+
+PUBLIC CARD FUNC RetireRoute(LONGCARD tag)
+
+  IF client<>NULL THEN
+    RETURN(INPUTCLIENT.RetireRoute(client,INPUT.SOURCE_KEYBOARD,tag))
+  FI
+
+RETURN(INPUT.RetireRoute(@lease,tag))
+
+PUBLIC CARD FUNC Discard(LONGCARD tag)
+
+  IF client<>NULL THEN
+    RETURN(INPUTCLIENT.Discard(client,INPUT.SOURCE_KEYBOARD,tag))
+  FI
+
+RETURN(INPUT.Discard(@lease,tag))
+
+PUBLIC PROC Publish(LONGCARD tag)
+  CARD status
+
+  IF client<>NULL THEN
+    status=INPUTCLIENT.PublishRoute(client,INPUT.SOURCE_KEYBOARD,tag)
+  ELSE
+    status=INPUT.PublishRoute(@lease,tag)
+  FI
+  IF status<>INPUT.OK THEN
+    HEAPCORE.Abort($ff95)
+  FI
+
+RETURN
 
 PUBLIC PROC Release()
   BYTE slot
 
-  EXEC.Forbid()
-
-  IF INPUT.Release(@lease)<>INPUT.OK THEN
+  IF client<>NULL THEN
+    IF INPUTCLIENT.Detach(client)<>INPUT.OK THEN
+      HEAPCORE.Abort($ff95)
+    FI
+    INPUTCLIENT.Close(client)
+    client=NULL
+  ELSEIF INPUT.Release(@lease)<>INPUT.OK THEN
     HEAPCORE.Abort($ff95)
   FI
-
+  EXEC.Forbid()
   LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))
   FOR slot=0 TO 15 DO
     routes.items(slot).tag=0
     routes.items(slot).scope=NULL
   OD
-
   EXEC.Permit()
-
-RETURN
-
-PUBLIC PROC Publish(LONGCARD tag)
-
-  IF INPUT.PublishRoute(@lease,tag)<>INPUT.OK THEN
-    HEAPCORE.Abort($ff95)
-  FI
 
 RETURN
 
@@ -61,10 +142,9 @@ PUBLIC PROC ClearUnit(LONGCARD unit)
   LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))
   FOR slot=0 TO 15 DO
     IF routes.items(slot).tag<>0 AND routes.items(slot).unit=unit THEN
-      ignored=INPUT.Discard(@lease,routes.items(slot).tag)
+      ignored=Discard(routes.items(slot).tag)
     FI
   OD
 
 RETURN
-
 ENDMODULE

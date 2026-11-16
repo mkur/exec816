@@ -141,6 +141,10 @@ PUBLIC BYTE FUNC Start()
   BYTE okay
   CARD generation
 
+  IF CONSOLEUI.Enabled()=0 AND INPUTDRIVER.Start()=0 THEN
+    RETURN(0)
+  FI
+
   EXEC.Forbid()
   LET service=GetService()
   IF service.state=2 AND service.stop=0 THEN

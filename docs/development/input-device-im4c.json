@@ -1,0 +1,137 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "checks": 15,
+  "text_input": {
+    "cooked_line": "a\n",
+    "raw_byte": "b",
+    "cancellation": "Ctrl-C"
+  },
+  "keyboard_before": {
+    "mask": "c0",
+    "skctl": "03",
+    "key_vector": "c6fe",
+    "break_vector": "07ff",
+    "timer_vector": "57c0"
+  },
+  "keyboard_after": {
+    "mask": "c0",
+    "skctl": "03",
+    "key_vector": "c6fe",
+    "break_vector": "07ff",
+    "timer_vector": "57c0"
+  },
+  "text_screen_differences": [],
+  "stack_usage": {
+    "0": {
+      "base": 9744,
+      "bytes": 1536,
+      "peak": 524,
+      "remaining_above_floor": 756
+    },
+    "1": {
+      "base": 12880,
+      "bytes": 1536,
+      "peak": 244,
+      "remaining_above_floor": 1036
+    },
+    "2": {
+      "base": 14448,
+      "bytes": 1536,
+      "peak": 364,
+      "remaining_above_floor": 916
+    },
+    "3": {
+      "base": 16016,
+      "bytes": 1536,
+      "peak": 175,
+      "remaining_above_floor": 1105
+    },
+    "4": {
+      "base": 17584,
+      "bytes": 1536,
+      "peak": 44,
+      "remaining_above_floor": 1236
+    },
+    "kernel": {
+      "base": 11312,
+      "bytes": 1536,
+      "peak": 258,
+      "remaining_above_floor": 1022
+    }
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": false,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "off",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "slice": "IM4c",
+  "mode": "opt",
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "created": 3,
+    "native_nmi_count": 32,
+    "return_s": 11278,
+    "return_d": 3328,
+    "return_p": 0,
+    "return_e": 0,
+    "switches": 81,
+    "live_tasks": 0
+  },
+  "xex_sha256": "5ba45df486f6c5fc19b33c5f0903c7e899311f0e1a8e65e188c874a476dfc51a",
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+    "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1"
+  },
+  "host": {
+    "status": "pass",
+    "cases": 718,
+    "skipped": 5
+  },
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "additional_occupied_tasks": 1
+  },
+  "scope": "Standard Atari text console, no AES/DESK routines, no VBXE device; GUI migration pending"
+}

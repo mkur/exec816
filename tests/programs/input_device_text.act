@@ -1,0 +1,48 @@
+; Standard Atari console through shared capture, public DOS and existing models.
+MODULE INPUTDEVICETEXT
+USE EXEC
+USE DOS
+USE CONSOLEDRIVER
+USE INPUTDRIVER
+USE HEAPCORE
+
+CARD checks
+BYTE stage
+BYTE ARRAY line(16)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+
+  LET before=EXEC.AvailMem(0)
+  Require(CONSOLEDRIVER.Start()<>0)
+  Require(CONSOLEDRIVER.ScreenWidth()=40 AND CONSOLEDRIVER.ScreenHeight()=24)
+  LET cooked=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+  Require(cooked<>NULL)
+  Require(DOS.Write(cooked,BYTE POINTER(c"counter 1\n"),10)=10)
+  stage=1
+  Require(DOS.Read(cooked,line,16)=2)
+  Require(line(0)=97 AND line(1)=10)
+  LET raw=DOS.Open(BYTE POINTER(c"RAW:"),DOS.MODE_READWRITE)
+  Require(raw<>NULL)
+  stage=2
+  Require(DOS.Read(raw,line,1)=1 AND line(0)=98)
+  Require(DOS.Close(raw)<>0)
+  stage=3
+  Require(DOS.Read(cooked,line,16)=-1)
+  Require(DOS.IoErr()=DOS.ERROR_BREAK)
+  Require(DOS.Close(cooked)<>0)
+  DOS.ReleaseContext()
+  Require(CONSOLEDRIVER.Stop()<>0)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE
