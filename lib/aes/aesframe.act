@@ -3,6 +3,7 @@ MODULE AESFRAME
 USE AESTYPES
 USE AESSTATE
 USE AESWINDOWSTATE
+USE DESKGEOMETRY
 USE DESKTYPES
 USE DESKSTATE
 USE LAYERTYPES
@@ -60,6 +61,8 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
   packet.fillHeight=CARD(window.sliderHeight)
   packet.frameHorizontalLeft=CARD(window.sliderLeft)
   packet.frameHorizontalWidth=CARD(window.sliderWidth)
+  ; Paint the track object including its outside frame edge. Hit/drag track
+  ; geometry omits that edge; retaining it avoids a new packed-pixel cut.
   CASE request.intin(1) OF
   WHEN AESTYPES.WF_NAME THEN
     REGIONS.Assign(@rail,layer.bounds.left,layer.bounds.top,
@@ -71,14 +74,12 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
         layer.bounds.top+DESKTYPES.TITLE_HEIGHT+DESKTYPES.FRAME_INFO_HEIGHT)
 
   WHEN AESTYPES.WF_HSLIDE,AESTYPES.WF_HSLSIZE THEN
-    REGIONS.Assign(@rail,layer.bounds.left,
-        layer.bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
-        layer.bounds.right,layer.bounds.bottom)
+    DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@rail)
+    rail.bottom=layer.bounds.bottom
 
   ELSE
-    REGIONS.Assign(@rail,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-        layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
-        layer.bounds.bottom)
+    DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@rail)
+    rail.right=layer.bounds.right
   ESAC
 
   index=0

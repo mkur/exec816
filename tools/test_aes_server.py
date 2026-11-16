@@ -673,7 +673,7 @@ ENDMODULE
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
             if suite=='frame':
-                require(report['AESChecks']==220 and len(report['frame_attributes'])==36,
+                require(report['AESChecks']==223 and len(report['frame_attributes'])==36,
                         'Incomplete frame setter checkpoints')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller frame setter exceeded its interrupt floor')

@@ -570,16 +570,20 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       FI
       DESKCACHE.Changed(desktop,window)
       target^=request.intin(2)
-      IF horizontal<>0 THEN
-        REGIONS.Assign(@bounds,layer.bounds.left,
-            layer.bounds.bottom-DESKTYPES.FRAME_GADGET_HEIGHT,
-            layer.bounds.right,layer.bounds.bottom)
-      ELSE
-        REGIONS.Assign(@bounds,layer.bounds.right-DESKTYPES.FRAME_GADGET_WIDTH,
-            layer.bounds.top+DESKTYPES.TITLE_HEIGHT,layer.bounds.right,
-            layer.bounds.bottom)
+      ; MagiC draws O_HSCROLL/O_VSCROLL, excluding arrows and the corner.
+      ; Include the object's outside frame edge, unlike its hit/drag range.
+      ; An icon has no linked track: retain its value for normal restoration.
+      status=LAYERTYPES.OK
+      IF window.iconified=0 THEN
+        IF horizontal<>0 THEN
+          DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@bounds)
+          bounds.bottom=layer.bounds.bottom
+        ELSE
+          DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@bounds)
+          bounds.right=layer.bounds.right
+        FI
+        status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
       FI
-      status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
     END
   ELSE
     RETURN(AESTYPES.UNSUPPORTED)

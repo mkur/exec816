@@ -216,6 +216,12 @@ operation, with no additional gate, Task or platform service. SM5 records the
 measured Counter stack headroom and its limits in the
 [execution record](../../history/screnmgr-migration.md#sm5b-loaded-acceptance-and-caller-workspace-headroom).
 
+Slider setters use MagiC's `O_HSCROLL`/`O_VSCROLL` drawing boundary: invalidate
+and paint the selected track/thumb, excluding arrows and the corner. The
+existing GEM4XE frame raster supplies the pixels under the same UPDATE and
+physical grant. The [caller slider record](../../history/gem-slider-drawing.md)
+separates this drawing work from publication and END/cache costs.
+
 Input.device classifies global shortcuts and keys for a published active menu
 into copied manager events, rather than delivering them to the focused AES inbox.
 It performs no live scene access, UPDATE wait or drawing. Application MCTRL

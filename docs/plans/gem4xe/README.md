@@ -31,6 +31,11 @@ loaded MGVIEW/Counter acceptance, including caller packet stack headroom. The
 plan is complete at the development tier; no performance or release
 qualification is claimed.
 
+The [caller slider follow-up](../../history/gem-slider-drawing.md) measures
+mutation, publication and frame work separately, then applies MagiC's selected
+scrollbar-object drawing boundary through the shared GEM4XE raster. END/cache
+work remains a separate slice.
+
 The [independent input.device design](../input-device-design.md) covers GEM,
 the standard Atari text console and a future VBXE text-mode console without
 AES/SCRENMGR dependencies in the device. Its consumer handler interface is a

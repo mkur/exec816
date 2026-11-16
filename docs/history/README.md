@@ -1,7 +1,8 @@
 # Historical records
 
 - [Caller slider drawing costs](gem-slider-drawing.md): passive caller-side
-  breakdown against MagiC/GEM4XE scrollbar object boundaries.
+  breakdown and selected scrollbar-object painting from MagiC/GEM4XE, with
+  measured caller CPU reduction and unchanged END/cache policy.
 
 - [input.device migration](input-device-migration.md): independent capture,
   Atari text and AES consumers, retained manager targets, resource costs and

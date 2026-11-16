@@ -112,6 +112,7 @@ static void send(UWORD code)
 UWORD AESRun(void)
 {
     ULONG available=AvailMem(0),binding;
+    UBYTE *openingGrant;
     struct ExecAESContext *c;
     char limit[66];
     WORD plain,i;
@@ -124,14 +125,15 @@ UWORD AESRun(void)
                           32,32,240,160);
     CHECK(rootWindow>0);CHECK(wind_open(rootWindow,32,32,240,160));
     binding=(ULONG)c->request.service;
+    openingGrant=c->request.displayGrant;CHECK(openingGrant!=NULL);
     CHECK(wind_set(rootWindow,WF_HSLIDE,0,0,0,0));
-    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && c->request.displayGrant==openingGrant);
     CHECK(wind_set(rootWindow,WF_HSLSIZE,1000,0,0,0));
-    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && c->request.displayGrant==openingGrant);
     CHECK(wind_set_str(rootWindow,WF_NAME,""));
-    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && c->request.displayGrant==openingGrant);
     CHECK(wind_set_str(rootWindow,WF_INFO,""));
-    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && c->request.displayGrant==openingGrant);
     plain=wind_create(0,360,32,120,64);CHECK(plain>0);
     peer=CreateTask("frame peer",0,AESClientOne,1024);CHECK(peer!=NULL);
     while (!AESReady) Wait(wake);
@@ -188,6 +190,8 @@ UWORD AESRun(void)
      * public WF_ICONIFY/WF_UNICONIFY bindings are not installed. */
     (*(volatile UBYTE *)FrameIcon)=1;
     attribute(rootWindow,WF_NAME,0,"Icon name",0,1,AES_OK);
+    CHECK(wind_set(rootWindow,WF_VSLIDE,500,0,0,0));
+    CHECK(wind_set(rootWindow,WF_HSLSIZE,500,0,0,0));
     attribute(rootWindow,WF_INFO,0,"Saved icon info",1,1,AES_OK);
     (*(volatile UBYTE *)FrameIcon)=2;
     CHECK(wind_set_str(rootWindow,WF_INFO,"Restored info"));
