@@ -7,21 +7,29 @@ Exec COP services use the separately reserved kernel stack. This is a focused
 source/ABI proof, not a general compiler stack analysis.
 """
 import json
+from functools import lru_cache
 from pathlib import Path
-from native_program import read_build,require,sha256
+from native_program import ROOT,read_build,require,sha256
 from native_frame_maps import validate
 from generate_sio_adapter import ABI
 
 
+@lru_cache(maxsize=1)
+def decoder():
+    path=ROOT/'build/actionc/tools/disassemble65816.py'
+    namespace={'__name__':'ide_worker_decoder'}
+    exec(compile(path.read_text(),str(path),'exec'),namespace)
+    return namespace['disassemble']
+
+
 def direct_calls(body,targets):
-    """Find known JSL targets without interpreting their address operands again."""
-    calls=[];offset=0
-    while offset+4<=len(body):
-        target=int.from_bytes(body[offset+1:offset+4],'little')
-        if body[offset]==0x22 and target in targets:
-            calls.append(target);offset+=4
-        else:offset+=1
-    return calls
+    """Decode complete native instructions; operands never become JSLs."""
+    listing=decoder()(dict(format='actionc-65816-image',version=3,
+        abi='action65816.native.v2',segments=[dict(address=0,executable=True,
+                                                bytes=list(body))]))
+    calls=[int(line.rsplit('$',1)[1],16) for line in listing.splitlines()
+           if ' JSL $' in line]
+    return [target for target in calls if target in targets]
 
 
 def record(output):

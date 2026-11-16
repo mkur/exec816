@@ -14,6 +14,17 @@ class Calls(unittest.TestCase):
         self.assertEqual(direct_calls(body,{0x3f2249,0x20c23f,0x123456}),
                          [0x3f2249,0x123456])
 
-    def test_adjacent_calls_and_truncated_suffix(self):
-        body=bytes.fromhex('2256341222563412225634')
+    def test_adjacent_calls(self):
+        body=bytes.fromhex('2256341222563412')
         self.assertEqual(direct_calls(body,{0x123456}),[0x123456,0x123456])
+
+    def test_stack_operand_is_not_a_call(self):
+        # STA $22,S; LDA $20,S; CLC. This occurred in emitted Relative code
+        # when an unrelated routine happened to land at $1820a3.
+        self.assertEqual(direct_calls(bytes.fromhex('8322a32018'),{0x1820a3}),[])
+
+    def test_width_changes_and_truncation(self):
+        body=bytes.fromhex('a92200e220a922c22022563412')
+        self.assertEqual(direct_calls(body,{0x123456}),[0x123456])
+        with self.assertRaisesRegex(ValueError,'truncated'):
+            direct_calls(bytes.fromhex('225634'),{0x123456})
