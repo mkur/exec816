@@ -1,0 +1,169 @@
+; MagiC AESWIN: _wbm_create, _minimal_size and _wbm_skind.
+; Geometry is relative to O_FRAME. Hidden gadgets keep their standard IDs.
+MODULE GEMFRAME
+USE GEMOBJECTS
+
+CONST NAME=1,CLOSER=2,FULLER=4,INFO=16,SIZER=32
+CONST UP=64,DOWN=128,VSLIDE=256,LEFT=512,RIGHT=1024,HSLIDE=2048
+CONST VERTICAL=448,HORIZONTAL=3584,ICONIFIER=16384,BORDERLESS=4096
+CONST TOP=16391
+
+BYTE ARRAY objectTypes=[25 27 22 27 27 22 27 27 27 20 20 27 27 20 20 27]
+LONGCARD ARRAY objectSpecs=[$00011100 $05021100 0 $1f021100
+    $07021100 0 $06021100 $01021100 $02021100 $00011111
+    $00021100 $04021100 $03021100 $00011111 $00021100 $7f021100]
+
+; objc_add's sibling/parent links, with -1 for an empty list.
+PROC Add(GEMOBJECTS.Frame POINTER frame INT parent,child)
+
+  LET root=@frame.tree(parent)
+  IF root.tail=-1 THEN
+    root.head=child
+  ELSE
+    frame.tree(root.tail).next=child
+  FI
+  root.tail=child
+  frame.tree(child).next=parent
+
+RETURN
+
+; _minimal_size counts controls, including their shared one-pixel borders.
+PROC Minimum(GEMOBJECTS.Frame POINTER frame CARD kind)
+  INT width,height,title
+
+  height=GEMOBJECTS.BOX_HEIGHT
+  IF (kind & TOP)<>0 THEN
+    height==+GEMOBJECTS.BOX_HEIGHT
+  FI
+  IF (kind & INFO)<>0 THEN
+    height==+GEMOBJECTS.INFO_HEIGHT-1
+  FI
+  IF (kind & UP)<>0 THEN
+    height==+GEMOBJECTS.BOX_HEIGHT
+  FI
+  IF (kind & DOWN)<>0 THEN
+    height==+GEMOBJECTS.BOX_HEIGHT
+  FI
+  width=GEMOBJECTS.BOX_WIDTH
+  IF (kind & LEFT)<>0 THEN
+    width==+GEMOBJECTS.BOX_WIDTH
+  FI
+  IF (kind & RIGHT)<>0 THEN
+    width==+GEMOBJECTS.BOX_WIDTH
+  FI
+  title=GEMOBJECTS.BOX_WIDTH+1
+  IF (kind & CLOSER)<>0 THEN
+    title==+GEMOBJECTS.BOX_WIDTH
+  FI
+  IF (kind & ICONIFIER)<>0 THEN
+    title==+GEMOBJECTS.BOX_WIDTH
+  FI
+  IF (kind & 7)<>0 THEN
+    title==+GEMOBJECTS.BOX_WIDTH
+  FI
+  frame.minWidth=IF title>width THEN title ELSE width FI
+  frame.minHeight=height
+
+RETURN
+
+; Relink only at creation/kind changes, following _wbm_skind's control order.
+PUBLIC PROC SetKind(GEMOBJECTS.Frame POINTER frame CARD kind)
+  BYTE index
+
+  Minimum(frame,kind)
+  FOR index=0 TO GEMOBJECTS.OBJECTS-1 DO
+    frame.tree(index).next=-1
+    frame.tree(index).head=-1
+    frame.tree(index).tail=-1
+  OD
+  frame.tree(GEMOBJECTS.O_NAME).x=0
+  frame.tree(GEMOBJECTS.O_INFO).y=0
+  frame.tree(GEMOBJECTS.O_UP).y=0
+  IF (kind & BORDERLESS)<>0 THEN
+    frame.minWidth=1
+    frame.minHeight=1
+    RETURN
+  FI
+  IF (kind & TOP)<>0 THEN
+    IF (kind & CLOSER)<>0 THEN
+      frame.tree(GEMOBJECTS.O_NAME).x=GEMOBJECTS.BOX_WIDTH-1
+      Add(frame,0,GEMOBJECTS.O_CLOSER)
+    FI
+    IF (kind & FULLER)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_FULLER)
+    FI
+    IF (kind & ICONIFIER)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_ICONIFIER)
+    FI
+    ; MagiC's configured explicit backdrop control is disabled in this port.
+    Add(frame,0,GEMOBJECTS.O_NAME)
+    frame.tree(GEMOBJECTS.O_INFO).y=GEMOBJECTS.BOX_HEIGHT-1
+    frame.tree(GEMOBJECTS.O_UP).y=GEMOBJECTS.BOX_HEIGHT-1
+  FI
+  IF (kind & INFO)<>0 THEN
+    Add(frame,0,GEMOBJECTS.O_INFO)
+    frame.tree(GEMOBJECTS.O_UP).y==+GEMOBJECTS.INFO_HEIGHT
+  FI
+  IF (kind & VERTICAL)<>0 OR ((kind & SIZER)<>0
+      AND (kind & HORIZONTAL)=0) THEN
+    IF (kind & UP)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_UP)
+    FI
+    IF (kind & DOWN)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_DOWN)
+    FI
+    Add(frame,0,GEMOBJECTS.O_VSCROLL)
+    IF (kind & VSLIDE)<>0 THEN
+      Add(frame,GEMOBJECTS.O_VSCROLL,GEMOBJECTS.O_VSLIDE)
+    FI
+  FI
+  IF (kind & HORIZONTAL)<>0 THEN
+    IF (kind & LEFT)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_LEFT)
+    FI
+    IF (kind & RIGHT)<>0 THEN
+      Add(frame,0,GEMOBJECTS.O_RIGHT)
+    FI
+    Add(frame,0,GEMOBJECTS.O_HSCROLL)
+    IF (kind & HSLIDE)<>0 THEN
+      Add(frame,GEMOBJECTS.O_HSCROLL,GEMOBJECTS.O_HSLIDE)
+    FI
+  FI
+  IF (kind & SIZER)<>0 OR ((kind & VERTICAL)<>0
+      AND (kind & HORIZONTAL)<>0) THEN
+    Add(frame,0,GEMOBJECTS.O_SIZER)
+    frame.tree(GEMOBJECTS.O_SIZER).spec=IF (kind & SIZER)<>0
+        THEN LONGCARD($06021100) ELSE LONGCARD($00021100) FI
+  FI
+
+RETURN
+
+; The containing Window owns the text bytes and both inline TEDINFOs.
+PUBLIC PROC Create(GEMOBJECTS.Frame POINTER frame CARD kind
+    BYTE POINTER title,info)
+  BYTE index
+
+  FOR index=0 TO GEMOBJECTS.OBJECTS-1 DO
+    frame.tree(index).kind=objectTypes(index)
+    frame.tree(index).spec=objectSpecs(index)
+    frame.tree(index).width=GEMOBJECTS.BOX_WIDTH
+    frame.tree(index).height=GEMOBJECTS.BOX_HEIGHT
+  OD
+  frame.tree(0).state=32
+  frame.tree(GEMOBJECTS.O_INFO).height=GEMOBJECTS.INFO_HEIGHT
+  FOR index=0 TO 1 DO
+    frame.texts(index).font=3
+    frame.texts(index).color=$1100
+    frame.texts(index).thickness=1
+  OD
+  frame.texts(0).justify=2
+  frame.texts(0).text=LONGCARD(ADDRESS(title))
+  frame.texts(1).text=LONGCARD(ADDRESS(info))
+  frame.tree(GEMOBJECTS.O_NAME).spec=LONGCARD(ADDRESS(@frame.texts(0)))
+  frame.tree(GEMOBJECTS.O_INFO).spec=LONGCARD(ADDRESS(@frame.texts(1)))
+  frame.hsize=-1
+  frame.vsize=-1
+  SetKind(frame,kind)
+
+RETURN
+ENDMODULE

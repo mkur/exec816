@@ -10,6 +10,26 @@ from native_program import ROOT, build, compiler, require, verify_machine
 from os_boundary import emulator
 from test_mouse_observe import BRIDGE, ROM, PIN
 from test_dos_stack import execute, ownership
+from test_cooperative import data
+
+
+def storage(out):
+    out.mkdir(parents=True, exist_ok=True)
+    program = build(compiler(ROOT/'build/actionc', release=True),
+                    ROOT/'tests/programs/gem_window_storage.act', out/'program',
+                    tasks=True, task_capacity=8, optimize=True)
+    with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
+        machine = verify_machine(bridge, ROM, PIN)
+        runtime, _ = execute(bridge, program, timeout=120, frame_limit=2000)
+        ownership(bridge, program, program['output'])
+        facts = {n: data(bridge, program['image'], n, True)
+                 for n in ('checks','oneCost','twoCost','heldCount')}
+    result = dict(status='pass', tier='development', qualification=False,
+                  facts=facts, machine=machine, runtime=runtime,
+                  build=program['build'])
+    (out/'results.json').write_text(json.dumps(result, indent=2)+'\n')
+    print('Window storage passed:', facts, flush=True)
+    return result
 
 
 def run(out, optimize):
@@ -108,6 +128,10 @@ ENDMODULE
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--storage', action='store_true')
     args = parser.parse_args()
-    for optimize in (False, True):
-        run(args.output.resolve()/('opt' if optimize else 'raw'), optimize)
+    if args.storage:
+        storage(args.output.resolve())
+    else:
+        for optimize in (False, True):
+            run(args.output.resolve()/('opt' if optimize else 'raw'), optimize)

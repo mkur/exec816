@@ -37,8 +37,8 @@ PUBLIC DESKTYPES.Window POINTER FUNC ByLayer(LONGCARD id)
 
   LET service=DESKSTATE.Get()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-    IF service.windows(index).id<>0 AND service.windows(index).layer=id THEN
-      RETURN(@service.windows(index))
+    IF service.windows(index)<>NULL AND service.windows(index).id<>0 AND service.windows(index).layer=id THEN
+      RETURN(service.windows(index))
     FI
   OD
 

@@ -25,7 +25,7 @@ PUBLIC DESKTYPES.Window POINTER FUNC FindRecord(LONGCARD id)
     RETURN(NULL)
   FI
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner<>0 THEN
+    IF service.windows(index)<>NULL AND service.windows(index).owner<>0 THEN
       IF service.windows(index).id=id THEN
         RETURN(service.windows(index))
       FI
@@ -39,7 +39,7 @@ PUBLIC DESKTYPES.Window POINTER FUNC Handle(AESSTATE.Client POINTER client INT h
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id
         AND service.windows(index).gui.window=handle THEN
       RETURN(service.windows(index))
     FI
@@ -161,7 +161,7 @@ PUBLIC PROC SnapshotAll(AESSTATE.Client POINTER client)
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id THEN
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id THEN
       Snapshot(service.windows(index))
     FI
   OD
@@ -189,7 +189,7 @@ PUBLIC PROC PrepareUpdate(AESSTATE.Client POINTER client)
   FI
   LET desktop=DESKSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
@@ -213,7 +213,7 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   LET desktop=DESKSTATE.Get()
   LET request=client.binding
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       BEGIN
@@ -300,7 +300,7 @@ PUBLIC PROC Updates(AESSTATE.Client POINTER client CARD count)
 
   LET service=AESSTATE.Get()
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id
         AND (service.updateWindow=0
           OR service.windows(index).gui.window=service.updateWindow) THEN
       service.windows(index).view.updates=count
@@ -314,7 +314,7 @@ PUBLIC LONGCARD FUNC FindWindow(LONGCARD layerId)
 
   LET desktop=DESKSTATE.Get()
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
-    IF desktop.windows(slot).id<>0 AND desktop.windows(slot).layer=layerId THEN
+    IF desktop.windows(slot)<>NULL AND desktop.windows(slot).id<>0 AND desktop.windows(slot).layer=layerId THEN
       RETURN(desktop.windows(slot).id)
     FI
   OD
@@ -338,7 +338,7 @@ PUBLIC PROC Sync()
   FI
 
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(slot).owner<>0 THEN
+    IF service.windows(slot)<>NULL AND service.windows(slot).owner<>0 THEN
       Snapshot(service.windows(slot))
     FI
   OD
@@ -351,8 +351,8 @@ PUBLIC PROC Sync()
       LET layer=@desktop.scene.items(desktop.scene.order(slot))
       FOR index=0 TO DESKTYPES.WINDOWS-1 DO
         BEGIN
-          LET window=@desktop.windows(index)
-          IF window.id<>0 AND window.layer=layer.id AND layer.shown<>0
+          LET window=desktop.windows(index)
+          IF window<>NULL AND window.id<>0 AND window.layer=layer.id AND layer.shown<>0
               AND window.iconified=0 THEN
             BEGIN
               LET client=FindRecord(window.id)
@@ -376,7 +376,7 @@ PUBLIC PROC Sync()
     FOR slot=0 TO AESTYPES.WINDOWS-1 DO
       BEGIN
         LET item=service.windows(slot)
-        IF item.owner<>0 AND item.focusNotices<>0
+        IF item<>NULL AND item.owner<>0 AND item.focusNotices<>0
             AND (item.id=service.windowFocus
               OR item.id=desktop.focus) THEN
           AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,

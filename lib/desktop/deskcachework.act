@@ -15,8 +15,8 @@ DESKTYPES.Window POINTER FUNC Find(DESKTYPES.Service POINTER service LONGCARD id
   BYTE index
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-    IF service.windows(index).id=id THEN
-      RETURN(@service.windows(index))
+    IF service.windows(index)<>NULL AND service.windows(index).id=id THEN
+      RETURN(service.windows(index))
     FI
   OD
 
@@ -63,9 +63,9 @@ BYTE FUNC Capture(CONSOLEBITMAP.Packet POINTER output)
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(index)
+      LET window=service.windows(index)
       IF DESKCACHE.TakeCandidate(index)<>0
-          AND window.id<>0
+          AND window<>NULL AND window.id<>0
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN

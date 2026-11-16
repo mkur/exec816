@@ -425,8 +425,8 @@ PUBLIC BYTE FUNC Capture(INPUT.Event POINTER sample BYTE released)
   layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(slot)
-      IF window.id<>0 AND window.layer=layerId THEN
+      LET window=service.windows(slot)
+      IF window<>NULL AND window.id<>0 AND window.layer=layerId THEN
         BEGIN
           LET layer=DESKCORE.Layer(service,window)
           hit=DESKGEOMETRY.GadgetHit(window,@layer.bounds,sample.x,sample.y)

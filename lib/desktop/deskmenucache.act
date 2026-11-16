@@ -411,8 +411,8 @@ PROC Exposed()
   LET service=DESKSTATE.Get()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(index)
-      IF window.id<>0
+      LET window=service.windows(index)
+      IF window<>NULL AND window.id<>0
           AND AESWINDOWSTATE.Preserves(window)=0 THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
@@ -563,8 +563,8 @@ PUBLIC PROC Notify()
   notifyPending=0
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(index)
-      IF window.id<>0 THEN
+      LET window=service.windows(index)
+      IF window<>NULL AND window.id<>0 THEN
         AESWINDOWSTATE.Handoff(window)
       FI
     END

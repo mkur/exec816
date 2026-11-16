@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 21,
   "constants": {
     "WINDOWS": 6,
     "TITLE_BYTES": 65,
@@ -207,6 +207,10 @@
       [
         "geometryIconified",
         "BYTE"
+      ],
+      [
+        "frame",
+        "GEMOBJECTS.Frame"
       ]
     ],
     "Service": [
@@ -244,7 +248,7 @@
       ],
       [
         "windows",
-        "Window",
+        "Window POINTER",
         "WINDOWS"
       ],
       [

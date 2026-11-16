@@ -135,8 +135,8 @@ PUBLIC BYTE FUNC Publish()
         FI
         FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
           BEGIN
-            LET window=@desktop.windows(slot)
-            IF window.id<>0 AND window.layer=layer.id THEN
+            LET window=desktop.windows(slot)
+            IF window<>NULL AND window.id<>0 AND window.layer=layer.id THEN
               route.window=window.id
               route.keyRoute=window.keyRoute
               route.frameKind=window.frameKind
@@ -150,7 +150,7 @@ PUBLIC BYTE FUNC Publish()
               FI
               DESKGEOMETRY.Work(window.frameKind,@layer.bounds,@route.work)
               FOR index=0 TO AESTYPES.WINDOWS-1 DO
-                IF service.windows(index).owner<>0
+                IF service.windows(index)<>NULL AND service.windows(index).owner<>0
                     AND service.windows(index)=window THEN
                   BEGIN
                     LET item=service.windows(index)

@@ -21,7 +21,7 @@ PUBLIC PROC Close(DESKTYPES.Window POINTER item)
   item.gui.count=0
   shown=0
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(slot).owner=client.id THEN
+    IF service.windows(slot)<>NULL AND service.windows(slot).owner=client.id THEN
       IF service.windows(slot).view.epoch<>0 THEN
         shown=1
       FI
@@ -67,7 +67,7 @@ DESKTYPES.GuiPending POINTER FUNC NextPending(AESSTATE.Service POINTER service
     IF client.guiNext=AESTYPES.WINDOWS THEN
       client.guiNext=0
     FI
-    IF service.windows(slot).owner=client.id
+    IF service.windows(slot)<>NULL AND service.windows(slot).owner=client.id
         AND service.windows(slot).gui.count<>0 THEN
       RETURN(@service.windows(slot).gui)
     FI
@@ -110,7 +110,8 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   delivery.epoch=endpoint.guiEpoch
   IF kind<>AESTYPES.GUI_MENU THEN
     FOR index=0 TO AESTYPES.WINDOWS-1 DO
-      IF @service.windows(index).gui=pending THEN
+      IF service.windows(index)<>NULL
+          AND @service.windows(index).gui=pending THEN
         delivery.epoch=service.windows(index).view.epoch
         EXIT
       FI
@@ -161,7 +162,7 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
   FI
   endpoint.guiWaiting=client.gui.count<>0
   FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(index).owner=client.id AND service.windows(index).gui.count<>0 THEN
+    IF service.windows(index)<>NULL AND service.windows(index).owner=client.id AND service.windows(index).gui.count<>0 THEN
       endpoint.guiWaiting=1
     FI
   OD

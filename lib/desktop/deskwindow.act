@@ -1,0 +1,25 @@
+; Address-stable upper storage; publication and withdrawal belong to AES.
+MODULE DESKWINDOW
+USE EXEC
+USE DESKTYPES
+USE GEMFRAME
+
+PUBLIC DESKTYPES.Window POINTER FUNC Create(CARD kind)
+
+  LET window=DESKTYPES.Window POINTER(EXEC.AllocMem(DESKTYPES.WINDOW_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  IF window=NULL THEN
+    RETURN(NULL)
+  FI
+  window.frameKind=kind
+  GEMFRAME.Create(@window.frame,kind,@window.title(0),@window.info(0))
+
+RETURN(window)
+
+; The caller has withdrawn all lookups and returned from its physical borrows.
+PUBLIC PROC Free(DESKTYPES.Window POINTER window)
+
+  EXEC.FreeMem(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)
+
+RETURN
+ENDMODULE

@@ -25,3 +25,18 @@ WG0 validation uses `tools/test_gem_geometry.py`: a tiny C/native layout and
 argument probe in raw and optimized modes, with stack guards checked by the
 existing native harness. This does not build a desktop, application catalog,
 QED, Counter, release image or demo.
+
+WG1 allocates each window at a stable upper address, with an inline frame and
+text specifications. Six native pointer slots replace the inline windows; slot
+scans admit a non-null pointer before access. Close retains storage. Delete
+withdraws both lookup entries after existing synchronous physical work and route
+retirement, then frees the allocation. Queued manager targets remain identity/
+epoch/endpoint records, with no Window pointer or manager-drain wait under UPDATE.
+
+The optimized storage fixture passed 77 checks: hidden/current-empty defaults,
+kind links, owned strings, one/two live allocations, allocation failure after
+consuming 58 free heap extents, and complete reclamation. The 798-byte window
+charges **800 bytes** after allocator rounding; two charge **1,600 bytes**. The
+service is **9,284 bytes**. Guards passed. Reserved bank-zero growth is zero
+for fixed, root, kernel, idle and each public Task. Rendering and query consumers
+still use temporary legacy projections until their planned cutover.

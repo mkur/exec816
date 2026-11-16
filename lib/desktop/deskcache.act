@@ -43,7 +43,7 @@ PUBLIC PROC Consider(DESKTYPES.Service POINTER service
 
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-    IF @service.windows(index)=window THEN
+    IF service.windows(index)=window THEN
       ConsiderSlot(index)
       RETURN
     FI
@@ -56,7 +56,7 @@ PUBLIC PROC ForgetCandidate(DESKTYPES.Service POINTER service
   BYTE index
 
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
-    IF @service.windows(index)=window THEN
+    IF service.windows(index)=window THEN
       candidateBits=candidateBits & (255 XOR (BYTE(1) LSH index))
       RETURN
     FI

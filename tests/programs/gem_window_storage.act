@@ -1,0 +1,75 @@
+MODULE GEMWINDOWSTORAGE
+USE EXEC
+USE DESKTYPES
+USE DESKWINDOW
+USE GEMFRAME
+USE GEMOBJECTS
+USE HEAPCORE
+
+CARD checks,heldCount
+LONGCARD before,oneCost,twoCost
+ADDRESS ARRAY held(128)
+LONGCARD ARRAY sizes(128)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  before=EXEC.AvailMem(0)
+  LET first=DESKWINDOW.Create(4095)
+  Require(first<>NULL)
+  oneCost=before-EXEC.AvailMem(0)
+  LET second=DESKWINDOW.Create(11)
+  Require(second<>NULL)
+  twoCost=before-EXEC.AvailMem(0)
+  Require(first<>second)
+  Require(first.frame.current.width=0 AND first.frame.previous.height=0)
+  Require(first.frame.hsize=-1 AND first.frame.vsize=-1)
+  Require(first.frame.tree(0).head=GEMOBJECTS.O_CLOSER)
+  Require(first.frame.tree(GEMOBJECTS.O_VSCROLL).head=GEMOBJECTS.O_VSLIDE)
+  Require(first.frame.tree(GEMOBJECTS.O_VSLIDE).next=GEMOBJECTS.O_VSCROLL)
+  Require(first.frame.tree(GEMOBJECTS.O_HSCROLL).head=GEMOBJECTS.O_HSLIDE)
+  Require(first.frame.tree(GEMOBJECTS.O_NAME).spec=
+      LONGCARD(ADDRESS(@first.frame.texts(0))))
+  Require(first.frame.texts(0).text=LONGCARD(ADDRESS(@first.title(0))))
+  Require(first.frame.minWidth=49 AND first.frame.minHeight=54)
+  GEMFRAME.SetKind(@first.frame,11)
+  Require(first.frame.tree(0).tail=GEMOBJECTS.O_NAME)
+  Require(first.frame.tree(GEMOBJECTS.O_VSCROLL).head=-1)
+  Require(first.frame.tree(GEMOBJECTS.O_UP).next=-1)
+  Require(first.frame.minWidth=49 AND first.frame.minHeight=22)
+  DESKWINDOW.Free(first)
+  DESKWINDOW.Free(second)
+  Require(EXEC.AvailMem(0)=before)
+
+  ; Consume ordinary upper heap extents through the public allocator. Failure
+  ; exercises the actual allocation path without adding a GUI failure hook.
+  heldCount=0
+  WHILE heldCount<128 DO
+    BEGIN
+      LET largest=EXEC.AvailMem(EXEC.MEMF_LARGEST)
+      IF largest=0 THEN
+        EXIT
+      FI
+      sizes(heldCount)=largest
+      held(heldCount)=ADDRESS(EXEC.AllocMem(largest,EXEC.MEMF_PUBLIC))
+      Require(held(heldCount)<>0)
+      heldCount==+1
+    END
+  OD
+  Require(DESKWINDOW.Create(11)=NULL)
+  FOR index=0 TO heldCount-1 DO
+    EXEC.FreeMem(BYTE POINTER(held(index)),sizes(index))
+  OD
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

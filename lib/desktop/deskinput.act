@@ -224,8 +224,8 @@ BYTE FUNC RouteKey(INPUT.Event POINTER captured)
 
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(slot)
-      IF window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
+      LET window=service.windows(slot)
+      IF window<>NULL AND window.id<>0 AND window.keyRoute<>0 AND window.keyRoute=captured.route THEN
         BEGIN
           LET client=AESWINDOWSTATE.Find(window.id)
           keySample.window=window.gui.window
@@ -317,8 +317,8 @@ PROC Consume(INPUT.Event POINTER sample)
   LET layerId=LAYERS.Hit(@service.scene,sample.x,sample.y)
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
-      LET window=@service.windows(slot)
-      IF window.id<>0 AND window.layer=layerId THEN
+      LET window=service.windows(slot)
+      IF window<>NULL AND window.id<>0 AND window.layer=layerId THEN
         IF sample.kind=INPUT.EVENT_BUTTON AND (sample.buttons & INPUT.LEFT)<>0
             AND released<>0 AND service.focus<>window.id THEN
           AESWINDOWSTATE.Control(window,AESTYPES.GUI_TOPPED,0,0,0,0)

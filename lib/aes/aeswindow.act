@@ -13,6 +13,8 @@ USE AESLOCKS
 USE AESROUTES
 USE AESWINDOWSTATE
 USE DESKTYPES
+USE DESKWINDOW
+USE GEMFRAME
 USE DESKSTATE
 USE DESKCORE
 USE DESKGEOMETRY
@@ -93,12 +95,17 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
   FI
 
   FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
-    IF desktop.windows(slot).id=0 THEN
+    IF desktop.windows(slot)=NULL THEN
       BEGIN
-        LET window=@desktop.windows(slot)
-        LET item=service.windows(slot)
+        LET window=DESKWINDOW.Create(IF kind=0 THEN
+            CARD(DESKTYPES.FRAME_BORDERLESS) ELSE CARD(kind) FI)
+        IF window=NULL THEN
+          RETURN(AESTYPES.RESOURCE)
+        FI
+        LET item=window
         status=LAYERS.Create(@desktop.scene,@bounds,@window.layer)
         IF status<>LAYERTYPES.OK THEN
+          DESKWINDOW.Free(window)
           RETURN(AESTYPES.RESOURCE)
         FI
 
@@ -136,6 +143,12 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         A816MEMORY.Move(BYTE POINTER(@view.full),BYTE POINTER(@bounds),8)
         A816MEMORY.Move(BYTE POINTER(@view.previous),BYTE POINTER(@bounds),8)
         DESKGEOMETRY.Slider(window,@bounds,0,1000)
+        window.frame.full.x=x
+        window.frame.full.y=y
+        window.frame.full.width=width
+        window.frame.full.height=height
+        desktop.windows(slot)=window
+        service.windows(slot)=window
         AESWINDOWSTATE.Snapshot(item)
         RETURN(AESTYPES.OK)
       END
@@ -273,7 +286,7 @@ RETURN(status)
 
 ; Called after hiding and route retirement, with the presenter settled.
 PROC Destroy(DESKTYPES.Window POINTER item)
-  BYTE status
+  BYTE status,slot
 
   LET desktop=DESKSTATE.Get()
   AESMOUSE.CancelWindow(item.view.epoch)
@@ -292,7 +305,15 @@ PROC Destroy(DESKTYPES.Window POINTER item)
   view.handle=0
   view.visibleCount=0
   view.shown=0
-  A816MEMORY.Clear(BYTE POINTER(item),DESKTYPES.WINDOW_SIZE)
+  LET service=AESSTATE.Get()
+  FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
+    IF desktop.windows(slot)=item THEN
+      desktop.windows(slot)=NULL
+      service.windows(slot)=NULL
+      EXIT
+    FI
+  OD
+  DESKWINDOW.Free(item)
 
 RETURN
 
@@ -315,7 +336,7 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
   BYTE slot
 
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
-    IF service.windows(slot).owner=client.id THEN
+    IF service.windows(slot)<>NULL AND service.windows(slot).owner=client.id THEN
       BEGIN
         LET item=service.windows(slot)
         IF Close(item,request)<>AESTYPES.OK THEN

@@ -144,7 +144,7 @@ RETURN
 
 BYTE FUNC Shown(DESKTYPES.Window POINTER window)
 
-  IF window.id=0 OR window.id=DESKSTATE.desktopWindow THEN
+  IF window=NULL OR window.id=DESKSTATE.desktopWindow THEN
     RETURN(0)
   FI
 
@@ -167,7 +167,10 @@ PROC Cycle(BYTE reverse)
   LET service=DESKSTATE.Get()
   current=IF pendingAction=ACT_TOP THEN pendingWindow ELSE service.focus FI
   slot=0
-  WHILE slot<DESKTYPES.WINDOWS AND service.windows(slot).id<>current DO
+  WHILE slot<DESKTYPES.WINDOWS DO
+    IF service.windows(slot)<>NULL AND service.windows(slot).id=current THEN
+      EXIT
+    FI
     slot==+1
   OD
   IF slot=DESKTYPES.WINDOWS THEN
@@ -181,7 +184,7 @@ PROC Cycle(BYTE reverse)
       slot=IF slot=DESKTYPES.WINDOWS-1 THEN 0 ELSE slot+1 FI
     FI
 
-    IF Shown(@service.windows(slot))<>0
+    IF Shown(service.windows(slot))<>0
         AND service.windows(slot).iconified=0 THEN
       pendingWindow=service.windows(slot).id
       pendingAction=ACT_TOP
@@ -542,7 +545,7 @@ PROC Open(BYTE kind)
   IF menu=WINDOWS_MENU THEN
     FOR slot=0 TO DESKTYPES.WINDOWS-1 DO
       BEGIN
-        LET window=@service.windows(slot)
+        LET window=service.windows(slot)
         IF Shown(window)<>0 THEN
           items(count).window=window.id
           items(count).enabled=1
