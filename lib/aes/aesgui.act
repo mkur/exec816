@@ -3,6 +3,7 @@ MODULE AESGUI
 USE EXEC
 USE DESKTYPES
 USE AESTYPES
+USE GEMOBJECTS
 USE AESSTATE
 USE AESSNAPSHOT
 USE AESINBOX
@@ -252,9 +253,9 @@ PUBLIC BYTE FUNC Select(AESSTATE.Service POINTER service
   IF menu=NULL THEN
     RETURN(0)
   FI
-  LET heading=AESTYPES.MenuObject POINTER(ADDRESS(menu.tree)
+  LET heading=GEMOBJECTS.Object POINTER(ADDRESS(menu.tree)
       +SIZE(CARD(title))*SIZE(AESTYPES.MENUOBJECT_SIZE))
-  LET entry=AESTYPES.MenuObject POINTER(ADDRESS(menu.tree)
+  LET entry=GEMOBJECTS.Object POINTER(ADDRESS(menu.tree)
       +SIZE(CARD(item))*SIZE(AESTYPES.MENUOBJECT_SIZE))
   IF (heading.state & 8)<>0 OR (entry.state & 8)<>0
       OR (heading.flags & 128)<>0 OR (entry.flags & 128)<>0 THEN

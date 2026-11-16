@@ -2,6 +2,7 @@
 MODULE AESSTATE
 USE EXEC
 USE AESTYPES
+USE GEMOBJECTS
 USE INPUT
 USE DESKTYPES
 USE LAYERTYPES
@@ -13,7 +14,7 @@ PUBLIC BYTE mouseDirty
 
 ; Owned association storage; only the caller's tree and strings are borrowed.
 PUBLIC TYPE Menu=[
-  AESTYPES.MenuObject POINTER tree
+  GEMOBJECTS.Object POINTER tree
   LONGCARD generation
   BYTE count,titles
   INT selectedTitle,selectedItem,selectedBox

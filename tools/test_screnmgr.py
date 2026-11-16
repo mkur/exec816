@@ -37,7 +37,7 @@ def reuse_app(source, target):
 def build_scroll(out, apps_from=None, reuse_c=False):
     out.mkdir(parents=True,exist_ok=True)
     apps={}
-    for name in ('mgview','counter'):
+    for name in ('mgview',):
         target=out/'apps'/name
         if apps_from:
             apps[name]=reuse_app(apps_from/'apps'/name,target)
@@ -68,7 +68,7 @@ def build_scroll(out, apps_from=None, reuse_c=False):
         shutil.copyfile(out/'apps'/name/'program.app',media/(name.upper()+'.APP'))
     (media/'VIEW.TXT').write_bytes(DOCUMENT)
     make(out/'system.atr',media,filesystem='sdfs',sector_bytes=256,sectors=2880,
-        binary_names={'MGVIEW.APP','COUNTER.APP','VIEW.TXT'})
+        binary_names={'MGVIEW.APP','VIEW.TXT'})
     record=dict(inputs=interaction_inputs(),apps=apps,
         xex_sha256=sha256(program['xex']),provider_sha256=sha256(out/'c-image.json'))
     (out/'fixture.json').write_text(json.dumps(record,indent=2)+'\n')
@@ -109,7 +109,6 @@ def run(out, apps_from=None, interaction_from=None, reuse=False, presenter=True,
         report['apps']=fixture['apps']
         observed=scroll(cache,out/'scroll',presenter=presenter,expect_copy_units=1)
         report['scroll']=dict(capture=str(out/'scroll'),results_sha256=sha256(out/'scroll/results.json'),
-            counter_progress=observed['counter_progress'],
             native_sha256=observed['native_sha256'],samples=observed['audit']['samples'])
         report['status']='pass'
     except Exception as error:

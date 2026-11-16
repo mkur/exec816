@@ -164,31 +164,6 @@
 #define AES_OP_DETACH 204
 #define AES_RESULT_WORDS 5
 #define AES_ARG_WORDS 6
-struct AESMenuObject {
-    WORD next;
-    WORD head;
-    WORD tail;
-    UWORD kind;
-    UWORD flags;
-    UWORD state;
-    ULONG spec;
-    WORD x;
-    WORD y;
-    WORD width;
-    WORD height;
-};
-#define AES_MENUOBJECT_SIZE 24
-#define AES_MENUOBJECT_OFFSET_NEXT 0
-#define AES_MENUOBJECT_OFFSET_HEAD 2
-#define AES_MENUOBJECT_OFFSET_TAIL 4
-#define AES_MENUOBJECT_OFFSET_KIND 6
-#define AES_MENUOBJECT_OFFSET_FLAGS 8
-#define AES_MENUOBJECT_OFFSET_STATE 10
-#define AES_MENUOBJECT_OFFSET_SPEC 12
-#define AES_MENUOBJECT_OFFSET_X 16
-#define AES_MENUOBJECT_OFFSET_Y 18
-#define AES_MENUOBJECT_OFFSET_WIDTH 20
-#define AES_MENUOBJECT_OFFSET_HEIGHT 22
 struct AESDelivery {
     struct Message message;
     WORD words[AES_MESSAGE_WORDS];

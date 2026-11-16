@@ -1,19 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 #ifndef GEM_OBJECTS_H
 #define GEM_OBJECTS_H
+#include <gem/geometry.h>
 #pragma pack(push, 2)
-typedef struct { WORD g_x,g_y,g_w,g_h; } GRECT;
-typedef struct {
-    WORD ob_next,ob_head,ob_tail;
-    UWORD ob_type,ob_flags,ob_state;
-    ULONG ob_spec;
-    WORD ob_x,ob_y,ob_width,ob_height;
-} OBJECT;
-typedef struct {
-    ULONG te_ptext,te_ptmplt,te_pvalid;
-    WORD te_font,te_fontid,te_just,te_color,te_fontsize,te_thickness;
-    WORD te_txtlen,te_tmplen;
-} TEDINFO;
 typedef struct {
     ULONG ib_pmask,ib_pdata,ib_ptext;
     WORD ib_char,ib_xchar,ib_ychar,ib_xicon,ib_yicon,ib_wicon,ib_hicon;

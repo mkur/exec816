@@ -9,7 +9,7 @@ USE HEAPCORE
 
 CARD checks,phase,go,completed,argBytes
 BYTE ARRAY argument(256)
-LONGCARD ARRAY bases(2)
+LONGCARD ARRAY bases(1)
 
 PROC Require(BYTE okay)
 
@@ -39,7 +39,7 @@ PROC Rendezvous(CARD stage)
 RETURN
 
 PROC Main()
-  LONGCARD counter,viewer,baseline
+  LONGCARD viewer,baseline
   BYTE round
 
   LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
@@ -47,11 +47,6 @@ PROC Main()
   Require(input<>NULL AND output<>NULL)
   DOS.SelectInput(input)
   DOS.SelectOutput(output)
-  LET peer=PROGRAMFILE.Load(BYTE POINTER(c"SYS:COUNTER.APP"))
-  Require(peer<>NULL)
-  bases(1)=LONGCARD(peer.text)
-  counter=PROCESS.StartBackgroundLoaded(BYTE POINTER(peer),NULL,0)
-  Require(counter<>0)
   FOR round=0 TO 2 DO
     BEGIN
       LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MGVIEW.APP"))
@@ -71,9 +66,6 @@ PROC Main()
       FI
     END
   OD
-  Require(PROCESS.RequestStop(counter)<>0)
-  Collect(counter)
-  PROGRAM.Unload(peer)
   DOS.SelectInput(NULL)
   DOS.SelectOutput(NULL)
   Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)

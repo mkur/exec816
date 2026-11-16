@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "donor": "MagiC 28cfdd29aa16fef692cc287bad3046b44ddcce3d AESWIN.S/AESINC.S",
+  "constants": {
+    "O_FRAME": 0,
+    "O_CLOSER": 1,
+    "O_NAME": 2,
+    "O_BDROP": 3,
+    "O_FULLER": 4,
+    "O_INFO": 5,
+    "O_SIZER": 6,
+    "O_UP": 7,
+    "O_DOWN": 8,
+    "O_VSCROLL": 9,
+    "O_VSLIDE": 10,
+    "O_LEFT": 11,
+    "O_RIGHT": 12,
+    "O_HSCROLL": 13,
+    "O_HSLIDE": 14,
+    "O_ICONIFIER": 15,
+    "OBJECTS": 16,
+    "TEXTS": 2,
+    "CHAR_WIDTH": 8,
+    "CHAR_HEIGHT": 8,
+    "BOX_WIDTH": 16,
+    "BOX_HEIGHT": 11,
+    "INFO_HEIGHT": 11,
+    "SHADOW": 2
+  },
+  "records": {
+    "Rect": {
+      "c_type": "GRECT",
+      "fields": [
+        [
+          "x",
+          "INT",
+          "g_x"
+        ],
+        [
+          "y",
+          "INT",
+          "g_y"
+        ],
+        [
+          "width",
+          "INT",
+          "g_w"
+        ],
+        [
+          "height",
+          "INT",
+          "g_h"
+        ]
+      ]
+    },
+    "Object": {
+      "c_type": "OBJECT",
+      "fields": [
+        [
+          "next",
+          "INT",
+          "ob_next"
+        ],
+        [
+          "head",
+          "INT",
+          "ob_head"
+        ],
+        [
+          "tail",
+          "INT",
+          "ob_tail"
+        ],
+        [
+          "kind",
+          "CARD",
+          "ob_type"
+        ],
+        [
+          "flags",
+          "CARD",
+          "ob_flags"
+        ],
+        [
+          "state",
+          "CARD",
+          "ob_state"
+        ],
+        [
+          "spec",
+          "LONGCARD",
+          "ob_spec"
+        ],
+        [
+          "x",
+          "INT",
+          "ob_x"
+        ],
+        [
+          "y",
+          "INT",
+          "ob_y"
+        ],
+        [
+          "width",
+          "INT",
+          "ob_width"
+        ],
+        [
+          "height",
+          "INT",
+          "ob_height"
+        ]
+      ]
+    },
+    "Text": {
+      "c_type": "TEDINFO",
+      "fields": [
+        [
+          "text",
+          "LONGCARD",
+          "te_ptext"
+        ],
+        [
+          "template",
+          "LONGCARD",
+          "te_ptmplt"
+        ],
+        [
+          "valid",
+          "LONGCARD",
+          "te_pvalid"
+        ],
+        [
+          "font",
+          "INT",
+          "te_font"
+        ],
+        [
+          "fontId",
+          "INT",
+          "te_fontid"
+        ],
+        [
+          "justify",
+          "INT",
+          "te_just"
+        ],
+        [
+          "color",
+          "INT",
+          "te_color"
+        ],
+        [
+          "fontSize",
+          "INT",
+          "te_fontsize"
+        ],
+        [
+          "thickness",
+          "INT",
+          "te_thickness"
+        ],
+        [
+          "textLength",
+          "INT",
+          "te_txtlen"
+        ],
+        [
+          "templateLength",
+          "INT",
+          "te_tmplen"
+        ]
+      ]
+    },
+    "Frame": {
+      "c_type": "GEMFRAME",
+      "fields": [
+        [
+          "current",
+          "Rect",
+          "current"
+        ],
+        [
+          "previous",
+          "Rect",
+          "previous"
+        ],
+        [
+          "full",
+          "Rect",
+          "full"
+        ],
+        [
+          "work",
+          "Rect",
+          "work"
+        ],
+        [
+          "overall",
+          "Rect",
+          "overall"
+        ],
+        [
+          "hslide",
+          "INT",
+          "hslide"
+        ],
+        [
+          "vslide",
+          "INT",
+          "vslide"
+        ],
+        [
+          "hsize",
+          "INT",
+          "hsize"
+        ],
+        [
+          "vsize",
+          "INT",
+          "vsize"
+        ],
+        [
+          "minWidth",
+          "INT",
+          "minWidth"
+        ],
+        [
+          "minHeight",
+          "INT",
+          "minHeight"
+        ],
+        [
+          "tree",
+          "Object",
+          "tree",
+          "OBJECTS"
+        ],
+        [
+          "texts",
+          "Text",
+          "texts",
+          "TEXTS"
+        ]
+      ]
+    },
+    "DrawRequest": {
+      "c_type": "GEMFRAMEDRAW",
+      "fields": [
+        [
+          "tree",
+          "LONGCARD",
+          "tree"
+        ],
+        [
+          "start",
+          "INT",
+          "start"
+        ],
+        [
+          "depth",
+          "INT",
+          "depth"
+        ],
+        [
+          "clip",
+          "Rect",
+          "clip"
+        ],
+        [
+          "flags",
+          "CARD",
+          "flags"
+        ],
+        [
+          "status",
+          "CARD",
+          "status"
+        ]
+      ]
+    }
+  }
+}

@@ -181,7 +181,7 @@ def analyze(out,d,base,samples):
 def run(cache,out,presenter=False,expect_copy_units=None,slider=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
-    apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview','counter')}
+    apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview',)}
     require('desktop_mouse' in p['build'],'Cached MGVIEW fixture is missing mouse-profile metadata')
     require(p['build']['foreign_image']['c_program_provider']['abi']==ABI['version'],'Cached provider ABI changed')
     require(sha256(p['xex'])==p['build']['xex_sha256'],'Cached native image changed')
@@ -267,9 +267,6 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False):
                         work=[number(window+268+i*2) for i in range(4)];report['work']=work
                         font=font_bytes(cache/'selected/src/vdi/font8x8.c')
                         require(screen(work)==expected(font,work,content,0),'Initial pixels differ')
-                        counter_base=number(at('bases')+4,4)
-                        counter=counter_base+apps['counter']['image']['symbols']['GEMCounter']-(ABI['link_bank']<<16)
-                        before_count=number(counter+14,4)
                         b._cmd_ok('KEY CTRL down');frames(3);b.profile_start();frames(2)
                         for label,key,shift in (('down','EQUALS',1),('up','MINUS',0)):
                             want=expected(font,work,content,shift);row_bytes=work[2]*8*3
@@ -300,15 +297,13 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False):
                             print('MGVIEW',label,'complete pixels:',round(sample['offered_to_complete_ms'],2),'ms',flush=True)
                             frames(5)
                         frames(3);b.profile_stop();b._cmd_ok('KEY CTRL up');frames(60)
-                        report['counter_progress']=number(counter+14,4)-before_count
-                        require(report['counter_progress']>0,'Counter did not progress')
                         report['pointer_end']=[number(cursor(n)) for n in ('cursorX','cursorY')]
                         require(report['pointer_start']==report['pointer_end'],'Pointer moved during scroll capture')
                     else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a window')
                     b.poke16(at('go'),stage+1)
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=300,frame_limit=30000)
-            ownership(b,p,p['output']);require(number(at('completed'))==4,'Incomplete cleanup')
+            ownership(b,p,p['output']);require(number(at('completed'))==3,'Incomplete cleanup')
         report['audit']=analyze(out,d,report['loaded_base'],report['samples'])
         if expect_copy_units is not None:
             require(all(len(s['owned_copy_completions'])==expect_copy_units for s in report['audit']['samples']),

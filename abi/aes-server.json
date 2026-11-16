@@ -165,52 +165,6 @@
     "ARG_WORDS": 6
   },
   "records": {
-    "MenuObject": [
-      [
-        "next",
-        "INT"
-      ],
-      [
-        "head",
-        "INT"
-      ],
-      [
-        "tail",
-        "INT"
-      ],
-      [
-        "kind",
-        "CARD"
-      ],
-      [
-        "flags",
-        "CARD"
-      ],
-      [
-        "state",
-        "CARD"
-      ],
-      [
-        "spec",
-        "LONGCARD"
-      ],
-      [
-        "x",
-        "INT"
-      ],
-      [
-        "y",
-        "INT"
-      ],
-      [
-        "width",
-        "INT"
-      ],
-      [
-        "height",
-        "INT"
-      ]
-    ],
     "Delivery": [
       [
         "message",

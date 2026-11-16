@@ -4,7 +4,8 @@
 [Port guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing](../../contributing/testing.md)
 
-Status: proposed implementation plan, 2026-11-16. No WG slice is implemented.
+Status: implementation authorized, 2026-11-16. Progress and emitted evidence are
+recorded in [the execution record](../../history/magic-window-geometry.md).
 MGVIEW is the sole application acceptance target. Other applications and their
 private bindings may break; they are not regression gates. This plan proposes
 adopting the design's frame tree, selected-object drawing and SCRENMGR frame-hit
