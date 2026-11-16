@@ -110,7 +110,12 @@ static UWORD VbxeOwnerCopyRect(UWORD *d,const struct VbxeCopy *c)
     UBYTE snapshot[76800];UWORD y;(void)d;
     if(!transfer())return 5;
     assert(!(c->sourceX&1) && !(c->destinationX&1) && !(c->width&1));
-    assert(c->height<=16 && c->width*c->height<=8192);
+    assert(c->source.offset==0 && c->destination.offset==0 &&
+        c->source.pitch==320 && c->destination.pitch==320 &&
+        c->source.width==640 && c->destination.width==640 &&
+        c->source.height==240 && c->destination.height==240);
+    assert(c->sourceX+c->width<=640 && c->destinationX+c->width<=640 &&
+        c->sourceY+c->height<=240 && c->destinationY+c->height<=240);
     memcpy(snapshot,vram,76800);
     for(y=0;y<c->height;++y)memcpy(vram+(c->destinationY+y)*320+c->destinationX/2,
         snapshot+(c->sourceY+y)*320+c->sourceX/2,c->width/2);
@@ -133,6 +138,7 @@ static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
 {
     struct DisplayGrant g={0};struct VbxeCopy c={{0,320,640,240},{0,320,640,240},sx,sy,sx+dx,sy+dy,w,h};
     UBYTE edges[644];UWORD x,y,result;
+    struct VbxeCopy saved=c;
     memcpy(vram,original,76800);memcpy(expected,original,76800);
     transfers=enters=leaves=fault=0;failAt=fail;
     edges[642]=0xab;edges[643]=0xcd;
@@ -145,6 +151,7 @@ static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
     result=GemDrawingCopyBorrow(&g,&c,edges);
 #endif
     assert(!g.active && enters==leaves && edges[642]==0xab && edges[643]==0xcd);
+    assert(!memcmp(&c,&saved,sizeof(c)));
     if(!fail || transfers<fail) {assert(!result);if(memcmp(vram,expected,76800)) {
         fprintf(stderr,"mode=%u sx=%u sy=%u w=%u h=%u dx=%d dy=%d\n",rasterMode,sx,sy,w,h,dx,dy);abort();}}
     else assert(result==5);

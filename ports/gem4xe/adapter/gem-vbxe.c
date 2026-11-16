@@ -1514,10 +1514,11 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
 {
     const ULONG scratch=0x36000UL; /* Existing transient CICON scratch. */
     UWORD sx=copy->sourceX,sy=copy->sourceY,dx=copy->destinationX,dy=copy->destinationY;
-    UWORD width=copy->width,height=copy->height,first=0,remaining=height,n,limit,status;
+    UWORD width=copy->width,height=copy->height,status;
     UWORD leftEdge=sx&1,rightEdge=(sx+width)&1,interior=width-leftEdge-rightEdge;
     ULONG source,destination;
     if (fault) return DISPLAY_DEVICE_FAULT;
+    if (!height) return DISPLAY_OK;
 
     /* Stage ALL source edge bytes before interior or edge writes. Horizontal
      * overlap could otherwise destroy a later source edge. Scratch is private
@@ -1538,49 +1539,38 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
         if (status!=DISPLAY_OK) return status;
     }
 
-    /* An even-pixel screen copy is one typed hardware rectangle, with no
-     * staging or masked edges. Retain access through its synchronous fence.
-     * Edge work keeps the ordinary strip limits and bottom-up overlap order. */
-    limit=height;
-    if (leftEdge || rightEdge) {
-        limit=(UWORD)VBXE_LIST_WORK/(width+(leftEdge+rightEdge)*6);
-        if (limit>EXEC_VDI_STRIP_ROWS) limit=EXEC_VDI_STRIP_ROWS;
+    /* GEM4XE dev_copy_form separates the byte-aligned middle from its edge
+     * columns. Use the existing typed whole-screen copy for that middle.
+     * Source edges are already safe even when the rectangles overlap. Keep
+     * this grant through edge restoration; blit_mask still bounds every raw
+     * record/list, without splitting the interior or readmitting each band. */
+    status=DisplayEnter(grant);
+    if (status!=DISPLAY_OK) return status;
+    pointer_erase(sx,sy,sx+width,sy+height);
+    pointer_erase(dx,dy,dx+width,dy+height);
+    status=fence_owner();
+    if (status==DISPLAY_OK && (leftEdge || rightEdge))
+        latch(VbxeOwnerWrite(&display,scratch,edges,height*2));
+    if (!fault && interior) {
+        copy->sourceX=sx+leftEdge; copy->destinationX=dx+leftEdge;
+        copy->width=interior;
+        latch(VbxeOwnerCopyRect(&display,copy));
+        /* The caller retains its descriptor, including after a failed copy. */
+        copy->sourceX=sx; copy->destinationX=dx; copy->width=width;
     }
-    while (remaining) {
-        n=remaining<limit ? remaining:limit;
-        first=dy>sy ? remaining-n:height-remaining;
-        status=DisplayEnter(grant);
-        if (status!=DISPLAY_OK) return status;
-        pointer_erase(sx,sy+first,sx+width,sy+first+n);
-        pointer_erase(dx,dy+first,dx+width,dy+first+n);
-        status=fence_owner();
-        if (status==DISPLAY_OK && (leftEdge || rightEdge))
-            latch(VbxeOwnerWrite(&display,scratch,edges+first*2,n*2));
-        if (!fault && interior) {
-            copy->sourceX=sx+leftEdge; copy->destinationX=dx+leftEdge;
-            copy->sourceY=sy+first; copy->destinationY=dy+first;
-            copy->width=interior; copy->height=n;
-            latch(VbxeOwnerCopyRect(&display,copy));
+    if (!fault) {
+        destination=GemScreenRows[dy]+(dx>>1);
+        if (leftEdge) {
+            blit_and(destination,320,1,height,0xf0);
+            blit_mask(scratch,2,destination,320,1,height,0x0f,0,3);
         }
-        if (!fault) {
-            destination=GemScreenRows[dy+first]+(dx>>1);
-            if (leftEdge) {
-                blit_and(destination,320,1,n,0xf0);
-                blit_mask(scratch,2,destination,320,1,n,0x0f,0,3);
-            }
-            if (rightEdge) {
-                destination=GemScreenRows[dy+first]+((dx+width)>>1);
-                blit_and(destination,320,1,n,0x0f);
-                blit_mask(scratch+1,2,destination,320,1,n,0xf0,0,3);
-            }
+        if (rightEdge) {
+            destination=GemScreenRows[dy]+((dx+width)>>1);
+            blit_and(destination,320,1,height,0x0f);
+            blit_mask(scratch+1,2,destination,320,1,height,0xf0,0,3);
         }
-        status=borrow_leave(grant);
-        if (status!=DISPLAY_OK) return status;
-        remaining-=n;
     }
-    copy->sourceX=sx; copy->sourceY=sy; copy->destinationX=dx; copy->destinationY=dy;
-    copy->width=width; copy->height=height;
-    return DISPLAY_OK;
+    return borrow_leave(grant);
 }
 
 NATIVE_UNIT(FrameBatch,(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD (*draw)(void *),void *context),(left,top,right,bottom,draw,context))

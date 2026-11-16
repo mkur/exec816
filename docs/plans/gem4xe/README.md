@@ -11,6 +11,11 @@ cutovers have focused checks and separate commits. See the
 [execution record](../../history/magic-window-geometry.md) for MGVIEW acceptance
 and the two-sample cost observation.
 
+The completed [odd-edge screen-copy slice](odd-edge-screen-copy-plan.md)
+separates one aligned interior copy from bounded edge preservation. Its
+[matched MGVIEW record](../../history/gem-odd-edge-copy.md) keeps geometry and
+application bytes fixed while measuring copy CPU and physical admissions.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

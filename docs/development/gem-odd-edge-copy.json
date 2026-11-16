@@ -1,0 +1,939 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "baseline": {
+    "commit": "9baa8af5",
+    "capture": {
+      "path": "build/window-geometry/wg6-scroll/results.json",
+      "sha256": "1cc3800f398e60d521940a4751155f062ca646e362ae09a0e6762d90ab37ed06"
+    },
+    "evidence": {
+      "path": "docs/development/magic-window-geometry.json",
+      "sha256": "63567eec86185d9d3ce24488d60a192f5e5f7a219bd0e6bf88a5b94a877f25db"
+    }
+  },
+  "donor": {
+    "revision": "2bf10f6788372dcfa94f6d9416e4b957eb4ce394",
+    "path": "src/vdi/dev_vbxe.c",
+    "sha256": "cc892a674e3635229ab52ecf9209fc6b8f642166b47a9e52d14b7035cbe89ea0",
+    "routine": "dev_copy_form",
+    "lines": [
+      1880,
+      1926
+    ],
+    "manifest": {
+      "path": "ports/gem4xe/raster/inputs.json",
+      "sha256": "6937830afe96435f132381d43fcadc34b077fdc9217273cdf01e8594c0b8886e"
+    }
+  },
+  "change": {
+    "routine": "GemDrawingCopyBorrow",
+    "flow": [
+      "Capture complete source edges with the existing grant and upper buffer",
+      "Reacquire once, copy aligned interior through typed screen encoder, restore bounded edge lists and fence"
+    ],
+    "descriptor": "Preserved on success and failure",
+    "unchanged": [
+      "MagiC UPDATE/caller flow",
+      "normal Task preemption",
+      "raw lists: 64 records / 8192 accesses",
+      "mask records: at most 16 rows",
+      "typed screen bound: 640x240",
+      "other raster paths",
+      "cache policy"
+    ]
+  },
+  "build": {
+    "native": {
+      "path": "build/odd-edge-copy/viewer/program/program.xex",
+      "sha256": "7715c9e4f4cea3d4c3d8ca30b0549a12b22b6a3493548c731f50d3ea546e72ab"
+    },
+    "provider": {
+      "path": "build/odd-edge-copy/viewer/c-image.json",
+      "sha256": "e1b2ee20ee6414a9de6c03cb5d9b7aab9e42ca9237b2d13af70333ffabbad014"
+    },
+    "recompiled_sources": [
+      "ports/gem4xe/adapter/gem-vbxe.c"
+    ],
+    "reused_objects_from": "/Users/michalkurcewicz/action/exec816-public/build/window-geometry/final",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "app_builds": 0,
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "compiler_override": false,
+    "c_flags": [
+      "--code-model=large",
+      "--data-model=huge",
+      "-O2"
+    ],
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "ideplus_stack_bound": 750
+  },
+  "emitted": {
+    "capture": {
+      "path": "build/odd-edge-copy/encoding/results.json",
+      "sha256": "b322dff9ba7d0b1be8bfcbdf31ea88dcd6eb2dcc3574173b87912d48d751fce4"
+    },
+    "cases": [
+      {
+        "name": "viewer-up",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "viewer-down",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "left",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "right",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "down-right",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "up-left",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "full-width-up",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "full-width-down",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "full-height-right",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "full-height-left",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "last-row",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "same",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 0,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "empty-height",
+        "status": 0,
+        "enters": 0,
+        "leaves": 0,
+        "typed_submissions": 0,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "empty-width",
+        "status": 0,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 0,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "busy-before-admission",
+        "status": 1,
+        "enters": 1,
+        "leaves": 0,
+        "typed_submissions": 0,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "submit-fault",
+        "status": 5,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 1,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "non-screen-fallback",
+        "status": 0,
+        "enters": 0,
+        "leaves": 0,
+        "typed_submissions": 3,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "invalid-screen-height",
+        "status": 6,
+        "enters": 0,
+        "leaves": 0,
+        "typed_submissions": 0,
+        "raw_lists": 0,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "viewer-odd-up",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "viewer-odd-down",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-right",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-left",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-down-right",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-up-left",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-down-left",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-up-right",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "left-edge-only",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "right-edge-only",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "one-low-nibble",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "one-high-nibble",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "two-edge-pixels",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "last-pixel",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "full-height-odd",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "odd-same",
+        "status": 0,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "busy-after-edge-capture",
+        "status": 1,
+        "enters": 2,
+        "leaves": 1,
+        "typed_submissions": 0,
+        "raw_lists": 1,
+        "edge_reads": 1,
+        "edge_writes": 0
+      },
+      {
+        "name": "fault-edge-capture-submit",
+        "status": 5,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 0,
+        "raw_lists": 1,
+        "edge_reads": 0,
+        "edge_writes": 0
+      },
+      {
+        "name": "fault-edge-read",
+        "status": 5,
+        "enters": 1,
+        "leaves": 1,
+        "typed_submissions": 0,
+        "raw_lists": 1,
+        "edge_reads": 1,
+        "edge_writes": 0
+      },
+      {
+        "name": "fault-edge-write",
+        "status": 5,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 0,
+        "raw_lists": 1,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "fault-interior-submit",
+        "status": 5,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 1,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "fault-edge-restore-submit",
+        "status": 5,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      },
+      {
+        "name": "fault-final-fence",
+        "status": 5,
+        "enters": 2,
+        "leaves": 2,
+        "typed_submissions": 1,
+        "raw_lists": 2,
+        "edge_reads": 1,
+        "edge_writes": 1
+      }
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "native_irq_count": 0,
+      "native_nmi_count": 151,
+      "switches": 1,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 228,
+          "untouched_above_floor": 1052
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 140,
+        "untouched_from_base": 1396,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "scope": "Actual typed encoder, adapter and mask-list producer; captured hardware boundaries replayed against whole-source nibble snapshots; transient scratch replaced at every release"
+  },
+  "host": {
+    "capture": {
+      "path": "build/odd-edge-copy/host.txt",
+      "sha256": "913d57e7f49315d0e3f547ee953cb71f5db586aeccd0788bb8ca40fe032e6ae3"
+    },
+    "tests": 722,
+    "skipped": 4,
+    "additional_check": "Pinned raster-source reproduction now executes",
+    "display_borrow_hooks": "Matched the current admission/completion/handoff locations"
+  },
+  "observation": {
+    "capture": {
+      "path": "build/odd-edge-copy/scroll/results.json",
+      "sha256": "5dec2ec8f6ae6e84f17b1010da6a376aaec7ba3c21e32efe36cf341fa8505ee7"
+    },
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "live_tasks": 0,
+      "native_irq_count": 35796,
+      "native_nmi_count": 1911,
+      "switches": 1657,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 444,
+          "untouched_above_floor": 836
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 340,
+          "untouched_above_floor": 716
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 142,
+          "untouched_above_floor": 914
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 310,
+          "untouched_above_floor": 746
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 149,
+          "untouched_above_floor": 907
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 698,
+          "untouched_above_floor": 1606
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 1274,
+          "untouched_above_floor": 1030
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 66,
+          "untouched_above_floor": 190
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "samples": [
+      {
+        "action": "down",
+        "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+        "copy_before": {
+          "calls": 1,
+          "elapsed_ms": 97.0447391309864,
+          "charged_cpu_ms": 76.67382316082094,
+          "off_cpu_ms": 3.5175836893959365,
+          "interrupt_ms": 16.853332280769518
+        },
+        "copy_after": {
+          "calls": 1,
+          "elapsed_ms": 53.75004052840583,
+          "charged_cpu_ms": 42.333435300452926,
+          "off_cpu_ms": 2.099653358782823,
+          "interrupt_ms": 9.316951869170076
+        },
+        "scroll_before": {
+          "calls": 1,
+          "elapsed_ms": 214.35699393413114,
+          "charged_cpu_ms": 162.58896866132207,
+          "off_cpu_ms": 16.182252364391957,
+          "interrupt_ms": 35.58577290841708
+        },
+        "scroll_after": {
+          "calls": 1,
+          "elapsed_ms": 171.39117453434625,
+          "charged_cpu_ms": 128.53002414788145,
+          "off_cpu_ms": 14.827687315243333,
+          "interrupt_ms": 28.033463071221448
+        },
+        "physical_copy_calls_before": 15,
+        "physical_copy_calls_after": 1,
+        "entries_before": 16,
+        "entries_after": 2,
+        "leaves_after": 2,
+        "fences_before": 110,
+        "fences_after": 12,
+        "copy_completion_irqs": 0,
+        "copy_owned_intervals": [
+          {
+            "start": 70594838.0,
+            "end": 70624276.375,
+            "elapsed_ms": 16.599518733991278,
+            "charged_cpu_ms": 12.998129349755208,
+            "off_cpu_ms": 0.6832031960348417,
+            "interrupt_ms": 2.9181861882012297
+          },
+          {
+            "start": 70625101.5,
+            "end": 70685683.25,
+            "elapsed_ms": 34.160441738478305,
+            "charged_cpu_ms": 26.871883718012516,
+            "off_cpu_ms": 1.416450162747981,
+            "interrupt_ms": 5.872107857717807
+          }
+        ],
+        "complete_viewport_bracket_before_ms": [
+          202.22983764673046,
+          223.58598154160188
+        ],
+        "complete_viewport_bracket_after_ms": [
+          163.99639684851115,
+          180.84098909045798
+        ],
+        "update_ownership": {
+          "attempts": 3,
+          "failed_attempts": 0,
+          "obtains": [],
+          "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+        }
+      },
+      {
+        "action": "up",
+        "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+        "copy_before": {
+          "calls": 1,
+          "elapsed_ms": 97.69840945390264,
+          "charged_cpu_ms": 77.27554664008943,
+          "off_cpu_ms": 3.6178826833046935,
+          "interrupt_ms": 16.804980130508515
+        },
+        "copy_after": {
+          "calls": 1,
+          "elapsed_ms": 53.860841665738626,
+          "charged_cpu_ms": 42.38065970376907,
+          "off_cpu_ms": 2.1529394019276014,
+          "interrupt_ms": 9.327242560041952
+        },
+        "scroll_before": {
+          "calls": 1,
+          "elapsed_ms": 218.68155104676063,
+          "charged_cpu_ms": 164.1714090775171,
+          "off_cpu_ms": 18.753797335415907,
+          "interrupt_ms": 35.75634463382762
+        },
+        "scroll_after": {
+          "calls": 1,
+          "elapsed_ms": 171.85256400316334,
+          "charged_cpu_ms": 128.88963445492465,
+          "off_cpu_ms": 14.822964874911719,
+          "interrupt_ms": 28.139964673326954
+        },
+        "physical_copy_calls_before": 15,
+        "physical_copy_calls_after": 1,
+        "entries_before": 16,
+        "entries_after": 2,
+        "leaves_after": 2,
+        "fences_before": 110,
+        "fences_after": 12,
+        "copy_completion_irqs": 0,
+        "copy_owned_intervals": [
+          {
+            "start": 71164511.125,
+            "end": 71194068.0,
+            "elapsed_ms": 16.666337740474415,
+            "charged_cpu_ms": 13.059239137329975,
+            "off_cpu_ms": 0.7336698718174629,
+            "interrupt_ms": 2.8734287313269777
+          },
+          {
+            "start": 71194890.375,
+            "end": 71255550.25,
+            "elapsed_ms": 34.20449435351201,
+            "charged_cpu_ms": 26.86067673274794,
+            "off_cpu_ms": 1.4192695301101386,
+            "interrupt_ms": 5.924548090653938
+          }
+        ],
+        "complete_viewport_bracket_before_ms": [
+          221.36150069285952,
+          240.73055447088228
+        ],
+        "complete_viewport_bracket_after_ms": [
+          180.58668215439138,
+          200.90811822735097
+        ],
+        "update_ownership": {
+          "attempts": 3,
+          "failed_attempts": 0,
+          "obtains": [],
+          "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+        }
+      }
+    ],
+    "scope": "One physical down/up action each, unchanged APP/document/viewport, sampled PAL/COP completion; no percentile or hardware latency guarantee"
+  },
+  "memory": {
+    "bank_zero_budget": {
+      "fixed_runtime": 10528,
+      "public": [
+        1824,
+        1600,
+        1600,
+        1600,
+        1600,
+        1600,
+        2848,
+        2848
+      ],
+      "idle": 800,
+      "runtime_excluding_os": 26848,
+      "loading_excluding_os": 20368,
+      "runtime_including_os": 46816,
+      "loading_including_os": 40336
+    },
+    "task_pools": [
+      {
+        "dp": 3328,
+        "dp_reserved_bytes": 256,
+        "stack_base": 9744,
+        "stack_bytes": 1536,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3584,
+        "dp_reserved_bytes": 256,
+        "stack_base": 12880,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 3840,
+        "dp_reserved_bytes": 256,
+        "stack_base": 14224,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4096,
+        "dp_reserved_bytes": 256,
+        "stack_base": 15568,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4352,
+        "dp_reserved_bytes": 256,
+        "stack_base": 16912,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4608,
+        "dp_reserved_bytes": 256,
+        "stack_base": 18256,
+        "stack_bytes": 1312,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 4864,
+        "dp_reserved_bytes": 256,
+        "stack_base": 19600,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 5120,
+        "dp_reserved_bytes": 256,
+        "stack_base": 22192,
+        "stack_bytes": 2560,
+        "interrupt_reserve": 256
+      },
+      {
+        "dp": 5376,
+        "dp_reserved_bytes": 256,
+        "stack_base": 24784,
+        "stack_bytes": 512,
+        "interrupt_reserve": 256
+      }
+    ],
+    "matches_WG6": true,
+    "reserved_bank_zero_delta": {
+      "fixed": 0,
+      "root": 0,
+      "kernel": 0,
+      "idle": 0,
+      "per_public_task": 0
+    },
+    "upper_buffer_delta": 0,
+    "vram_delta": 0,
+    "new_tasks": 0,
+    "new_signals": 0,
+    "new_platform_services": 0
+  }
+}

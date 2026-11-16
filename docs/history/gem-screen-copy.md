@@ -4,6 +4,10 @@
 [Measurements](../development/gem-screen-copy.json) ·
 [Current raster contract](../reference/gem-vdi.md#conventional-raster-copy)
 
+The later [odd-edge copy slice](gem-odd-edge-copy.md) extends the single-interior
+path to same-parity partial-byte edges after the MagiC geometry cutover. The
+aligned-copy measurements below retain their original workload and scope.
+
 On 2026-11-15, even-X/even-width S_ONLY screen copies changed from repeated
 sixteen-row admissions to one typed synchronous operation. The GEM adapter
 erases intersecting source/destination overlays once, retains its existing

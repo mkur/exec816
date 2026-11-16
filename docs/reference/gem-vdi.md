@@ -152,9 +152,15 @@ the 640×240 screen. One physical grant covers source/destination overlay erasur
 the complete synchronous copy, its fence and overlay restoration. Normal Task
 preemption continues while competing drawing waits for that grant.
 Same-parity copies with masked edge bytes retain whole-source edge capture,
-at most 480 bytes, before their bounded copy strips; that auxiliary read is
-not a sixteen-row strip. The typed whole-screen bound does not enlarge raw
-command lists, other raster modes or memory-copy units.
+at most 480 bytes, in an initial physical grant. The existing upper buffer
+preserves those bytes across release. A second grant covers one overlap-safe
+typed copy of the aligned interior plus masked edge restoration, final fence
+and overlay repair. Edge records still use the sixteen-row mask-list producer;
+the interior is independent of those record boundaries. No additional grant is
+acquired for each edge band. The caller's descriptor is restored on failure too.
+The typed whole-screen bound does not enlarge raw command lists, other raster
+modes or memory-copy units. See the
+[odd-edge copy record](../history/gem-odd-edge-copy.md) for focused evidence.
 
 Different-parity screen-to-screen S_ONLY captures each complete band into the
 shared 16 KiB VRAM workspace at `$4C000–$4FFFF`. Source and disjoint output

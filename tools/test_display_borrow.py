@@ -25,17 +25,23 @@ extern void DisplayCopyStep(void);''')
     start = source.index('static UWORD drawing_borrow(')
     body = source[start:].replace('    if (!fault) {', '    DisplayBorrowBegin(grant);\n    if (!fault) {', 1)
     source = source[:start]+body
+    start=source.index('static UWORD borrow_leave(')
+    end=source.index('/* The native setter owns UPDATE,',start)
+    body=source[start:end]
     needle='    DisplayLeave(grant);'
-    require(source.count(needle)==1,'Shared borrower handoff hook changed')
-    source=source.replace(needle,'    DisplayBorrowEnd(grant);\n'+needle)
+    require(body.count(needle)==1,'Shared borrower handoff hook changed')
+    body=body.replace(needle,'    DisplayBorrowEnd(grant);\n'+needle)
+    source=source[:start]+body+source[end:]
     start=source.index('UWORD GemDrawingCopyBorrow(')
     body=source[start:]
-    needle='        if (status!=DISPLAY_OK) return status;\n        pointer_erase('
-    require(body.count(needle)==2,'Copy admission hooks changed')
-    body=body.replace(needle,'        if (status!=DISPLAY_OK) return status;\n        DisplayBorrowBegin(grant);\n        pointer_erase(')
-    needle='            latch(VbxeOwnerCopyRect(&display,copy));'
+    for indent in ('        ','    '):
+        needle=indent+'if (status!=DISPLAY_OK) return status;\n'+indent+'pointer_erase('
+        require(body.count(needle)==1,'Copy admission hook changed')
+        body=body.replace(needle,indent+'if (status!=DISPLAY_OK) return status;\n'+
+            indent+'DisplayBorrowBegin(grant);\n'+indent+'pointer_erase(')
+    needle='        latch(VbxeOwnerCopyRect(&display,copy));'
     require(body.count(needle)==1,'Copy completion hook changed')
-    body=body.replace(needle,needle+'\n            DisplayCopyStep();')
+    body=body.replace(needle,needle+'\n        DisplayCopyStep();')
     source=source[:start]+body
     target = out/'gem-vbxe.c'; target.write_text(source)
     return target

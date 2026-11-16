@@ -187,11 +187,17 @@ The typed even-pixel screen-to-screen copy in `GemDrawingCopyBorrow` retains
 one grant for the complete rectangle, at most 640×240. It uses the driver's
 overlap-safe BCB encoder, synchronous completion and ordinary timeout recovery.
 The maximum is one record and 153,600 source/destination bus accesses. It needs
-no staging; masked-edge copies retain their sixteen-row/work-bounded units.
+no staging. Same-parity masked-edge copies capture their source columns in one
+grant, then use a second grant for the full aligned interior and edge
+restoration. The mask producer retains sixteen-row records and the existing
+count/work bounds; those record boundaries no longer split the interior copy
+or require a new admission. Its existing upper buffer preserves source edges
+across the first handoff, including horizontal/diagonal overlap.
 Other Tasks can preempt the drawing owner while its grant remains held.
 This operation-specific bound does not change raw-list, generic callback,
 text, object, fill or native presenter limits. See the
-[screen-copy record](../history/gem-screen-copy.md) for development evidence.
+[screen-copy record](../history/gem-screen-copy.md) and
+[odd-edge follow-up](../history/gem-odd-edge-copy.md) for development evidence.
 
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.

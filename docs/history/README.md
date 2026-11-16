@@ -1,5 +1,8 @@
 # Historical records
 
+- [Odd-edge screen copies](gem-odd-edge-copy.md): one aligned interior blit,
+  bounded edge restoration, overlap/failure checks and matched MGVIEW costs.
+
 - [MagiC window geometry](magic-window-geometry.md): shared records, canonical
   window allocation, shared drawing/hit objects, MGVIEW acceptance and measured
   scroll costs after the WG0–WG6 cutover.
