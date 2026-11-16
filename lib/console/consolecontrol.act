@@ -91,6 +91,15 @@ PUBLIC BYTE FUNC Submit(BYTE operation CONSOLETYPES.Presentation POINTER view)
     RETURN(0)
   FI
 
+  ; GEM applications paint their own console views. Legacy text erase/caret
+  ; controls have no physical target in this mode; finish in the transaction
+  ; owner instead of waiting for SCRENMGR, which may be blocked on its UPDATE.
+  IF CONSOLEUI.Enabled()<>0 THEN
+    EXEC.Permit()
+    RETURN(operation=CONSOLETYPES.CTL_ERASE
+        OR operation=CONSOLETYPES.CTL_CURSOR)
+  FI
+
   control.view=BYTE POINTER(view)
   control.operation=operation
   control.result=0

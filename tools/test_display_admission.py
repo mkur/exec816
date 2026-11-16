@@ -60,6 +60,35 @@ ENDMODULE
     probe='''MODULE ADMISSIONPROBE
 USE EXEC
 USE AESLOCKS
+USE CONSOLETILING
+USE CONSOLECONTROL
+USE CONSOLEWINDOWS
+USE CONSOLETYPES
+USE HEAPCORE
+PUBLIC BYTE controlChecks
+PUBLIC PROC Controls()
+
+  LET entered=CARD POINTER($AdmissionEntered)
+  LET resumed=CARD POINTER($AdmissionResumed)
+  IF entered^<>0 AND resumed^=0 AND controlChecks=0 THEN
+    BEGIN
+      LET windows=CONSOLEWINDOWS.Registry()
+      LET view=CONSOLETYPES.Presentation POINTER(windows.items(0).view)
+      IF CONSOLETILING.Lock()=0 THEN
+        HEAPCORE.Abort($fc71)
+      FI
+      IF CONSOLECONTROL.Submit(CONSOLETYPES.CTL_CURSOR,view)=0
+          OR CONSOLECONTROL.Submit(CONSOLETYPES.CTL_ERASE,view)=0
+          OR windows.control.state<>CONSOLETYPES.CTL_IDLE THEN
+        HEAPCORE.Abort($fc72)
+      FI
+      controlChecks=2
+      CONSOLETILING.Unlock()
+    END
+  FI
+
+RETURN
+
 PUBLIC PROC Pause(BYTE unused)
 
   LET request=CARD POINTER($AdmissionRequest)
@@ -84,6 +113,12 @@ ENDMODULE
     require(worker.count(point)==1,'Manager loop entry changed')
     (out/'aessystem.act').write_text(worker.replace(point,
         '    ADMISSIONPROBE.Pause(0)\n'+point,1))
+    caller=read_source(ROOT/'lib/aes/aeslocal.act').replace(
+        'USE EXEC\n','USE EXEC\nUSE ADMISSIONPROBE\n',1)
+    point='CARD FUNC Exposure(AESTYPES.Request POINTER request)\n  CONSOLEBITMAP.Packet packet\n'
+    require(caller.count(point)==1,'Caller exposure boundary changed')
+    (out/'aeslocal.act').write_text(caller.replace(point,
+        point+'\n  ADMISSIONPROBE.Controls()\n',1))
     original=builder.prepare
 
     def prepare(path,directory,foreign,*args):
@@ -158,6 +193,11 @@ def run(out,reuse=False,reuse_c=False):
                 require(b.peek16(sy['AESFailures'])==0,'Admission checks failed before paint')
                 require(b.peek16(sy['AdmissionEntered'])==1 and b.peek16(sy['AdmissionResumed'])==0,
                         'Manager did not remain blocked on caller UPDATE')
+                controls=next(d['address'] for d in p['image']['data']
+                    if d['name'].startswith('M_ADMISSIONPROBE_CONTROLCHECKS_'))
+                report['caller_console_control_checks']=b.memdump(controls,1)[0]
+                require(report['caller_console_control_checks']==2,
+                        'Caller text controls did not complete while manager blocked')
                 x,y=b.peek16(sy['AdmissionX']),b.peek16(sy['AdmissionY'])
                 path=out/'admission.bgra';frame=b.rawscreen(str(path));pixels=path.read_bytes()
                 get=lambda at,n=4:int.from_bytes(b.memdump(at,n),'little')

@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "slice": "SM4e1",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "capture": "build/screnmgr/sm4e1-controls",
+  "results_sha256": "a1eeda54e7b4dbe3ba2dfe5b731883ff8ee36cff9d9992dd21a6a7f6225a4d9d",
+  "image_sha256": "8b76e448d3d8eadaa933829b05e542bdbb885a27f9401ca9816722a1d8c3f387",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "checks": 32,
+  "caller_console_control_checks": 2,
+  "pixels": "exact 8x8 fill and offscreen round-trip while manager blocked",
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 182,
+        "untouched_above_floor": 1098
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 286,
+        "untouched_above_floor": 770
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 156,
+        "untouched_above_floor": 900
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 1022,
+        "untouched_above_floor": 34
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 348,
+        "untouched_above_floor": 708
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 864,
+        "untouched_above_floor": 1440
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ]
+  },
+  "source_inputs": {
+    "lib/console/consolecontrol.act": "1b442c2c4c552ca16c11b73ab0d21d6af47e7116d41f1459a9077ca9b07c087b",
+    "tools/test_display_admission.py": "062c06df8aacca0b2c4e3a3f0d7b414670d9c9eafc48eb4179c0014134345620"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "scope": "Optimized caller with the real frontend blocked on UPDATE: legacy erase/caret controls complete without a physical text renderer; normal grant/pixel/cleanup checks retained. Standalone text rendering is unchanged. No QED/demo or qualification matrix."
+}

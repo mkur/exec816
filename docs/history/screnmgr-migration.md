@@ -730,3 +730,22 @@ demo refresh, release matrix or performance qualification is included.
 Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
 Task**, including guards, alignment and unused capacity. Task stack/DP pools,
 signals, record layouts, VRAM and physical scratch reservations are unchanged.
+
+
+## SM4e1: console model controls independent of SCRENMGR
+
+GEM mode has no physical console text view: Terminal is an ordinary GEM client.
+Legacy console erase/caret controls therefore complete in their presentation
+transaction after the existing admission checks, without queuing work to the
+frontend. Model resize/focus/hide and publication retain their existing owners.
+Standalone text mode keeps its physical control queue and renderer.
+
+The optimized blocked-manager fixture passes 32 C assertions and two native
+control checks, with exact fill/copy pixels, clean shutdown and intact guards.
+It exercises both controls from an admitted caller presentation transaction
+while the actual frontend sleeps on that caller's UPDATE. Host checks pass 718
+tests with five skips. [Evidence](../development/screnmgr-sm4e1.json) records the
+inputs and stack observations. Reserved bank-zero growth is **0 fixed, root,
+kernel, idle and per public Task**, including guards/alignment/spare capacity.
+The combined loop remains until the next SM4e slice. No QED/demo build or release
+qualification is included.
