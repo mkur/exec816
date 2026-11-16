@@ -208,8 +208,9 @@ CARD FUNC Register(AESSTATE.Service POINTER service
       +SIZE(AESTYPES.REGISTRATIONSTORAGE_OFFSET_INPUT))
   endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
   request.directory=@service.directory
-  EXEC.Permit()
   service.count==+1
+  AESSNAPSHOT.Invalidate()
+  EXEC.Permit()
   request.client=client.id
   request.intout(0)=client.gemId
   Globals(request,client.gemId)
@@ -269,13 +270,11 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   endpoint.gui=NULL
   endpoint.input=NULL
   endpoint.owner=NULL
-  EXEC.Permit()
   client.binding=NULL
   client.replies=NULL
   request.client=0
   request.global(2)=0
   request.intout(0)=1
-  EXEC.Forbid()
   AESSTATE.Reply(request,AESTYPES.OK)
   IF EXEC.ReleaseTask(@client.lease)=0 THEN
     HEAPCORE.Abort($fca2)
@@ -283,6 +282,7 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
   A816MEMORY.Clear(BYTE POINTER(client),SIZEOF(AESSTATE.Client))
   service.count==-1
+  AESSNAPSHOT.Invalidate()
   EXEC.Permit()
 
 RETURN

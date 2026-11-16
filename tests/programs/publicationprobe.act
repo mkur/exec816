@@ -1,0 +1,92 @@
+; Fixture-only preemption point after snapshot construction pins registrations.
+MODULE PUBLICATIONPROBE
+USE EXEC
+USE EXECLISTS
+USE TASKSTACKS
+USE HEAPCORE
+USE AESSTATE
+USE AESTYPES
+
+PUBLIC CARD checks
+PUBLIC AESTYPES.Endpoint POINTER endpoint
+EXEC.Task closer
+EXEC.Task POINTER reader
+PROC POINTER noFinal(),invalidate()
+BYTE FUNC POINTER publish()
+LONGCARD readerMask,closerMask
+BYTE armed,ready
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb90+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Close()
+
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit>=0)
+  closerMask=LONGCARD(1) LSH bit
+  ready=1
+  EXEC.Wait(closerMask)
+  EXEC.Forbid()
+  Require(endpoint.holds=2)
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  invalidate()
+  EXEC.Permit()
+  EXEC.Signal(reader,readerMask)
+  EXEC.FreeSignal(bit)
+
+RETURN
+
+PUBLIC PROC Pause()
+
+  IF armed<>0 THEN
+    armed=0
+    EXEC.Signal(@closer,closerMask)
+    EXEC.Wait(readerMask)
+  FI
+
+RETURN
+
+PUBLIC PROC Check(AESTYPES.Endpoint POINTER target ADDRESS invalidateEntry,publishEntry)
+
+  LET invalidator=ADDRESS POINTER(@invalidate)
+  LET publisher=ADDRESS POINTER(@publish)
+  invalidator^=invalidateEntry
+  publisher^=publishEntry
+  endpoint=target
+  reader=EXEC.FindTask(NULL)
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit>=0)
+  readerMask=LONGCARD(1) LSH bit
+  Require(endpoint.holds=1)
+  closer.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@closer.tc_MemEntry)
+  closer.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  closer.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  closer.tc_SPReg=closer.tc_SPUpper-SIZE(2)
+  Require(EXEC.AddTask(@closer,@Close,noFinal)<>NULL)
+  WHILE ready=0 OR closer.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  armed=1
+  invalidate()
+  Require(publish()<>0)
+  Require(endpoint.holds=0)
+  ; Closing during construction must not lose that publication invalidation.
+  Require(publish()<>0)
+  Require(publish()=0)
+  WHILE closer.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  invalidate()
+  Require(publish()<>0 AND endpoint.holds=1)
+  EXEC.FreeSignal(bit)
+
+RETURN
+ENDMODULE

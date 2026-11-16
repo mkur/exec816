@@ -161,6 +161,18 @@ manager must not Obtain a caller's semaphore to complete that caller's retained
 effect. Cache/physical continuations require owners and retirement before the
 final SCRENMGR wait loop; no new GUI-specific platform service is assumed.
 
+### Registration and copied event lifetimes
+
+SM3b publishes registration identity/binding/endpoint/count as one guarded
+transition and retires them together after publishers have drained. Snapshot
+construction first pins copied registrations, using the existing prepared
+rows; closing endpoints are rejected before publication, and an invalidation
+arriving during construction remains pending. Window geometry still requires
+UPDATE and the interim scene gate. Console input-window association uses that
+same UPDATE resource, without opening a paint journal. Copied GUI event queues
+and endpoint transitions use their short Task guards; no scene lookup or drawing
+is moved into input.device.
+
 ### SM3a selected read boundary
 
 MagiC AESWIN `wind_find` (2812–2838) walks `whdlx` and current window rectangles

@@ -8,6 +8,8 @@
 #define ExecAESMouseProfile Peer_ExecAESMouseProfile
 #define ExecAESUpdate Peer_ExecAESUpdate
 #define ExecAESBeginUpdate Peer_ExecAESBeginUpdate
+#define ExecAESDisplayClose Peer_ExecAESDisplayClose
+#define ExecAESFrameApply Peer_ExecAESFrameApply
 #define ExecAESFindView Peer_ExecAESFindView
 #define ExecAESWindowEpoch Peer_ExecAESWindowEpoch
 #define ExecAESChanged Peer_ExecAESChanged

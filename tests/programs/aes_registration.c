@@ -157,11 +157,10 @@ UWORD AESRun(void)
              destination->state != AES_ENDPOINT_CLOSING; ++attempts) ExecYield();
         CHECK(destination->state == AES_ENDPOINT_CLOSING);
         CHECK(AESDone == 0 && destination->records != NULL && destination->input != NULL);
-        /* A repaint may still own the native display. A blocking acquisition
-         * proves this RPC progresses while the other client's exit is held;
-         * TRY is legitimately allowed to report busy at this boundary. */
-        CHECK(wind_update(BEG_UPDATE) == 1);
-        CHECK(wind_update(END_UPDATE) == 1);
+        /* Exit retains UPDATE while its endpoint holds drain. A native TRY
+         * must fail; a genuine registration RPC must still make progress. */
+        CHECK(wind_update(BEG_UPDATE|AES_TRY) == 0);
+        CHECK(ExecAESSubmit(c,AES_OP_INIT));
         CHECK(ExecAESReserve(c, ids[1], &destination) == NULL);
         CHECK(ExecAESDiagnostic() == AES_IDENTITY);
         for (i = 0; i < AES_MESSAGE_WORDS; ++i) record->words[i] = 400+i;

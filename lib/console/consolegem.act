@@ -52,6 +52,7 @@ PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
   IF bit=$ff THEN
     RETURN(VIEW.RESOURCE)
   FI
+  AESLOCKS.ObtainUI()
   AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
   client=NULL
   FOR slot=0 TO AESTYPES.CLIENTS-1 DO
@@ -79,6 +80,7 @@ PUBLIC CARD FUNC InputWindow(LONGCARD handle INT window BYTE bound)
     FI
   FI
   AESGATE.Release(0)
+  AESLOCKS.ReleaseUI()
   EXEC.FreeSignal(bit)
 
 RETURN(status)

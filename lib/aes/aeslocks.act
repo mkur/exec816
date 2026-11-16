@@ -48,6 +48,22 @@ PROC ReturnResource(AESSTATE.Service POINTER service BYTE final)
 
 RETURN
 
+; Native facade scopes use the same UPDATE resource and release notification.
+; They do not open an application paint journal or alter explicit nesting.
+PUBLIC PROC ObtainUI()
+
+  LET service=AESSTATE.Get()
+  EXEC.ObtainSemaphore(@service.updateResource)
+
+RETURN
+
+PUBLIC PROC ReleaseUI()
+
+  LET service=AESSTATE.Get()
+  ReturnResource(service,service.updates=0)
+
+RETURN
+
 ; The presenter tries once; failed acquisition leaves independent input/fences
 ; running. Publish the hint and retry under one guard to close the release race.
 PUBLIC BYTE FUNC SystemReady()

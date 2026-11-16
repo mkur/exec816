@@ -297,3 +297,46 @@ checks pass 718 tests with five historical skips. Only this focused optimized
 fixture and host checks ran for SM3a; no QED, demo refresh, raw matrix or release
 qualification. SM3b next assigns registration/retirement and copied-publication
 lifetimes before the remaining gate cutover.
+
+
+## SM3b: registration, publication and retirement lifetimes
+
+Snapshot construction now copies and pins each accepted registration under a
+short Task guard before it follows endpoint storage. The existing prepared
+rows own those holds until publication transfers them or rejects a closing
+endpoint. An invalidation during construction survives the final copy, so a
+concurrent close cannot disappear behind a clean-cache flag. Raw window handles
+remain separate from input admission. Registry identity, binding, endpoint and
+client count commit together; final detach withdraws them in one guarded
+transition. GUI event publication rejects a closing endpoint inside its existing
+queue guard. The GUI queue remains copied, guarded event state rather than a
+live geometry reader.
+
+The console input-window facade now obtains the ordinary UPDATE semaphore
+before changing a window's route association. Its scope opens no application
+paint journal and uses the existing final-release notification. Scene admission
+remains in place until SM3d. No drawing or device wait occurs under Forbid.
+
+This follows MagiC's caller application/window cleanup and common UPDATE flow;
+MagiC's supervisor exclusion is adapted using Exec's short publication guards
+and existing endpoint/Task leases. AESMAIN `appl_init` (5164–5187) reads the
+registered APPL identity; AESEVT `appl_exit` / `_appl_exit` (118–138) drains its
+message path and observes UPDATE. Exec's current cooperative exit still retains
+its context and UPDATE while callback/delivery holds drain.
+
+The existing snapshot dirty declaration bound absolute address `$000001`.
+It is now an ordinary image global, with explicit clean/building/dirty states.
+This adds one upper-image byte and no bank-zero reservation. No public layout,
+Task, signal, persistent heap payload or VRAM reservation changes. Reserved
+bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public Task**,
+including guards, alignment and unused capacity.
+
+The [development record](../development/screnmgr-sm3b.json) covers the optimized
+snapshot fixture, including 110 raw-hit assertions and ten construction/close
+assertions with a real preempting peer, plus the small C registration fixture.
+The latter's peer binding needed aliases for the newer display/frame helpers.
+Its old blocking UPDATE probe deadlocked correctly behind an exiting owner's
+retained UPDATE; it now checks a failed native TRY and progress of a real
+registration RPC while the endpoint hold remains live. No ownership assertion
+was relaxed. Host checks and local documentation links are included. These are
+development checks, with no QED/catalog/demo build or release qualification.

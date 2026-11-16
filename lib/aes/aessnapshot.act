@@ -33,12 +33,15 @@ TYPE Publication=[
 ]
 Publication published,prepared
 LONGCARD layoutEpoch
-BYTE clientCount,dirty=1
+CONST STATE_CLEAN=0, STATE_DIRTY=1, STATE_BUILDING=2
+BYTE clientCount,dirty
 INT selection
 
 PUBLIC PROC Invalidate()
 
-  dirty=1
+  EXEC.Forbid()
+  dirty=STATE_DIRTY
+  EXEC.Permit()
 
 RETURN
 
@@ -64,22 +67,21 @@ RETURN
 ; Only a scene owner calls Publish. All costly lookup/geometry work precedes
 ; the guarded value copy and endpoint-lifetime exchange.
 PUBLIC BYTE FUNC Publish()
-  BYTE rank,slot,index
+  BYTE rank,slot,index,registered,clientSlot
   INT selected
 
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
   selected=0
+  EXEC.Forbid()
   IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
     IF service.mouseHolds<>0 THEN
       BEGIN
         LET client=AESSTATE.Find(service,service.mouseOwner)
         IF client<>NULL THEN
-          EXEC.Forbid()
           IF client.binding.view<>NULL THEN
             selected=client.binding.view.handle
           FI
-          EXEC.Permit()
         FI
       END
     FI
@@ -90,13 +92,34 @@ PUBLIC BYTE FUNC Publish()
         AND (service.mouseHolds=0 OR published.mouseOwner=service.mouseOwner)
         AND published.mouseHolds=service.mouseHolds
         AND published.menuActive=DESKSTATE.menuActive AND selection=selected THEN
+      EXEC.Permit()
       RETURN(0)
     FI
   ELSEIF published.count=0 AND clientCount=0 THEN
+    EXEC.Permit()
     RETURN(0)
   FI
+  dirty=STATE_BUILDING
+  EXEC.Permit()
   A816MEMORY.Clear(BYTE POINTER(@prepared),SIZEOF(Publication))
+  registered=0
   IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
+    ; Pin one complete registration per slot before following any endpoint.
+    ; The prepared defaults become the publication's existing lifetime holds.
+    EXEC.Forbid()
+    registered=service.count
+    FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+      BEGIN
+        LET client=@service.clients(slot)
+        IF client.id<>0 AND client.endpoint<>NULL
+            AND client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
+          prepared.defaults(slot).client=client.id
+          prepared.defaults(slot).endpoint=client.endpoint
+          client.endpoint.holds==+1
+        FI
+      END
+    OD
+    EXEC.Permit()
     prepared.focus=desktop.focus
     prepared.mouseOwner=service.mouseOwner
     prepared.mouseHolds=service.mouseHolds
@@ -131,15 +154,17 @@ PUBLIC BYTE FUNC Publish()
                     AND service.windows(index)=window THEN
                   BEGIN
                     LET item=service.windows(index)
-                    LET client=AESSTATE.Find(service,item.owner)
                     ; A raw hit names a live window even while its input
                     ; endpoint closes. Recipient admission is separate.
                     route.handle=item.gui.window
-                    IF client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
-                      route.client=client.id
-                      route.endpoint=client.endpoint
-                      route.epoch=item.view.epoch
-                    FI
+                    FOR clientSlot=0 TO AESTYPES.CLIENTS-1 DO
+                      IF prepared.defaults(clientSlot).client=item.owner THEN
+                        route.client=item.owner
+                        route.endpoint=prepared.defaults(clientSlot).endpoint
+                        route.epoch=item.view.epoch
+                        EXIT
+                      FI
+                    OD
                   END
                   EXIT
                 FI
@@ -154,31 +179,25 @@ PUBLIC BYTE FUNC Publish()
     prepared.count=desktop.scene.count
     FOR slot=0 TO AESTYPES.CLIENTS-1 DO
       BEGIN
-        LET client=@service.clients(slot)
-        IF client.id<>0 AND client.endpoint<>NULL
-            AND client.endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
-          BEGIN
-            LET target=@prepared.defaults(slot)
-            target.client=client.id
-            target.endpoint=client.endpoint
-            rank=0
-            WHILE rank<prepared.count DO
-              BEGIN
-                LET route=@prepared.routes(rank)
-                IF route.client=client.id THEN
-                  IF (service.mouseHolds<>0 AND service.mouseOwner=client.id
-                      AND selected=route.handle)
-                      OR ((service.mouseHolds=0 OR service.mouseOwner<>client.id)
-                        AND route.window=desktop.focus) THEN
-                    A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(route),
-                        SIZEOF(WindowRoute))
-                    EXIT
-                  FI
+        LET target=@prepared.defaults(slot)
+        IF target.endpoint<>NULL THEN
+          rank=0
+          WHILE rank<prepared.count DO
+            BEGIN
+              LET route=@prepared.routes(rank)
+              IF route.client=target.client THEN
+                IF (service.mouseHolds<>0 AND service.mouseOwner=target.client
+                    AND selected=route.handle)
+                    OR ((service.mouseHolds=0 OR service.mouseOwner<>target.client)
+                      AND route.window=desktop.focus) THEN
+                  A816MEMORY.Move(BYTE POINTER(target),BYTE POINTER(route),
+                      SIZEOF(WindowRoute))
+                  EXIT
                 FI
-              END
-              rank==+1
-            OD
-          END
+              FI
+            END
+            rank==+1
+          OD
         FI
       END
     OD
@@ -186,26 +205,46 @@ PUBLIC BYTE FUNC Publish()
 
   EXEC.Forbid()
   FOR slot=0 TO AESTYPES.CLIENTS-1 DO
-    IF prepared.defaults(slot).endpoint<>NULL THEN
-      prepared.defaults(slot).endpoint.holds==+1
-    FI
+    BEGIN
+      LET target=@prepared.defaults(slot)
+      IF target.endpoint<>NULL
+          AND target.endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING THEN
+        Drop(target.endpoint)
+        A816MEMORY.Clear(BYTE POINTER(target),SIZEOF(WindowRoute))
+      FI
+    END
+  OD
+  rank=0
+  WHILE rank<prepared.count DO
+    BEGIN
+      LET route=@prepared.routes(rank)
+      IF route.endpoint<>NULL
+          AND route.endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING THEN
+        route.client=0
+        route.endpoint=NULL
+        route.epoch=0
+      FI
+    END
+    rank==+1
   OD
   FOR slot=0 TO AESTYPES.CLIENTS-1 DO
     Drop(published.defaults(slot).endpoint)
   OD
   A816MEMORY.Move(BYTE POINTER(@published),BYTE POINTER(@prepared),
       SIZEOF(Publication))
-  EXEC.Permit()
   IF service<>NULL AND service.live<>0 AND desktop<>NULL THEN
     layoutEpoch=desktop.scene.layoutEpoch
-    clientCount=service.count
+    clientCount=registered
     selection=selected
   ELSE
     layoutEpoch=0
     clientCount=0
     selection=0
   FI
-  dirty=0
+  IF dirty=STATE_BUILDING THEN
+    dirty=STATE_CLEAN
+  FI
+  EXEC.Permit()
 
 RETURN(1)
 

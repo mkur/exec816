@@ -82,7 +82,7 @@ PUBLIC PROC Publish(AESSTATE.Service POINTER service
 
   LET endpoint=client.endpoint
   EXEC.Forbid()
-  IF endpoint.guiFree=0 THEN
+  IF endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING OR endpoint.guiFree=0 THEN
     EXEC.Permit()
     RETURN
   FI

@@ -211,6 +211,7 @@ service. Commit executable prerequisites separately.
    settlement, input-window association and endpoint close a complete owner and
    lifetime boundary. Preserve input callback/queued-manager holds. Use short
    publication guards for copied state; never draw or wait under Forbid.
+   Status: implemented; see the [SM3b record](../../history/screnmgr-migration.md#sm3b-registration-publication-and-retirement-lifetimes).
 3. **SM3c: UPDATE-owned mutation and completion.** Assign every live window,
    menu, Layers, paint-journal and cache operation to UPDATE, including readiness
    scans and END. A retained caller effect must complete under that operation's

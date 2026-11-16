@@ -111,7 +111,11 @@ before reuse, reserving the last sequence for exit.
 
 Registration also publishes a caller-owned receive port, sixteen 32-byte
 application message records and one 40-byte GUI delivery record in the service's
-shared endpoint directory. This directory works
+shared endpoint directory. Identity, binding, endpoint and client count publish
+and retire coherently under short Task guards. Snapshot construction pins copied
+registrations before following their endpoint storage, and rejects closing
+recipients before publication. Raw window hits remain independent of input
+admission. Console input-window binding uses UPDATE. This directory works
 across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
 admission, waits for existing publishers without blocking the presenter, drains
