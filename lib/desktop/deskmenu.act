@@ -891,22 +891,6 @@ PUBLIC PROC Advance()
 
 RETURN
 
-BYTE FUNC InspectRunnable()
-
-RETURN(Pending()<>0 AND AESLOCKS.SystemBlocked()=0 AND AESLOCKS.NativeReady()<>0
-    AND AESLOCKS.MouseBlocked()=0 AND AESLOCKS.PaintBlocked()=0)
-
-PUBLIC BYTE FUNC Runnable()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectRunnable()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
 PUBLIC BYTE FUNC Active()
   BYTE result
 

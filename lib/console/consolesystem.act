@@ -6,29 +6,30 @@ USE CONSOLEBATCH
 USE CONSOLETYPES
 USE CONSOLEDISPLAY
 USE CONSOLEBITMAP
+USE CONSOLEFRONT
+USE CONSOLECONTROL
 
 CONST REQUEST_MASK=$80000000, STOP_MASK=$20000000
-BYTE FUNC POINTER consoleRunnable()
 BYTE FUNC POINTER consoleStopping()
 BYTE FUNC POINTER consoleStop()
-BYTE FUNC POINTER consoleTurn(BYTE deferred BYTE POINTER again,writing,handoff)
-PROC POINTER consoleControls()
 
-PUBLIC PROC BindConsole(ADDRESS runnable,stopping,stop,turn,controls)
+; Driver lifecycle remains driver policy in both frontend modes.
+PUBLIC PROC BindLifecycle(ADDRESS stopping,stop)
 
-  LET runnableEntry=ADDRESS POINTER(@consoleRunnable)
   LET stoppingEntry=ADDRESS POINTER(@consoleStopping)
   LET stopEntry=ADDRESS POINTER(@consoleStop)
-  LET turnEntry=ADDRESS POINTER(@consoleTurn)
-  LET controlsEntry=ADDRESS POINTER(@consoleControls)
-  runnableEntry^=runnable
   stoppingEntry^=stopping
   stopEntry^=stop
-  turnEntry^=turn
-  controlsEntry^=controls
-  CONSOLEUI.BindConsole(runnable,stopping,stop,turn,controls)
 
 RETURN
+
+PUBLIC BYTE FUNC Stopping()
+
+RETURN(consoleStopping())
+
+PUBLIC BYTE FUNC RequestStop()
+
+RETURN(consoleStop())
 
 PUBLIC BYTE FUNC Start()
 
@@ -44,7 +45,7 @@ RETURN
 ; display-independent GUI turn is needed to render the standard text console.
 PUBLIC PROC Run()
   LONGCARD bits
-  BYTE again,writing,handoff,accepted,stopping
+  BYTE again,accepted,stopping
 
   IF CONSOLEUI.Enabled()<>0 THEN
     CONSOLEUI.Run()
@@ -66,10 +67,11 @@ PUBLIC PROC Run()
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
       EXIT
     FI
-    consoleControls()
+    CONSOLECONTROL.Process()
     again=0
-    accepted=consoleTurn(0,@again,@writing,@handoff)
-    IF again<>0 OR consoleRunnable()<>0 THEN
+    accepted=CONSOLEFRONT.Turn(@again)
+    IF again<>0 OR CONSOLEDISPLAY.CompletionReady()<>0
+        OR CONSOLEFRONT.Runnable()<>0 THEN
       EXEC.Yield()
       bits=0
     ELSE

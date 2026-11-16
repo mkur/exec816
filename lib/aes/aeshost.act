@@ -58,20 +58,6 @@ PUBLIC BYTE FUNC Runnable()
 
 RETURN(AESCORE.Runnable(service))
 
-; A notification-only turn may sleep again once cache maintenance finishes.
-; Called with the policy gate closed; all omitted settlement must be a no-op.
-BYTE FUNC InspectSettled()
-
-  LET service=AESSTATE.Get()
-  LET desktop=DESKSTATE.Get()
-
-RETURN(service<>NULL AND service.live=1
-    AND service.windowPending=0 AND AESSTATE.mouseDirty=0
-    AND AESCURSOR.Pending()=0
-    AND AESCORE.Runnable(service)=0 AND desktop<>NULL
-    AND service.windowRevision=desktop.scene.rebuilds
-    AND service.windowFocus=desktop.focus)
-
 PUBLIC BYTE FUNC Wake()
   BYTE changed
 
@@ -100,38 +86,31 @@ PUBLIC BYTE FUNC Idle()
 
 RETURN(AESCORE.Idle(service))
 
-; After this turn's native continuation/cursor work, prepare and grant pending
-; locks before deciding to sleep. No additional message admissions occur here.
-PUBLIC PROC Settle()
+; No live scene read or UPDATE acquisition: wake caller-owned continuations
+; and retire an application-owned outline before its drawing can resume.
+PUBLIC PROC Service()
 
   LET service=AESSTATE.Get()
   IF service=NULL OR service.live=0 THEN
     RETURN
   FI
-
-  ; An application outline is a retained physical visual under its owner's
-  ; MCTRL. Retire it before that same owner paints; do not obtain its semaphore.
+  BEGIN
+    LET changed=Wake()
+  END
   IF DESKDRAG.Application()<>0 THEN
     DESKDRAG.Suspend()
   FI
-  IF AESLOCKS.SystemBegin()<>0 THEN
-    BEGIN
-      LET desktop=DESKSTATE.Get()
-      IF (service.windowPending<>0
-          OR (service.updateHint & AESSTATE.UPDATE_REQUESTED)<>0)
-          AND desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0
-          AND DISPLAY.Blocked()=0 THEN
-        ; Abandon idle reuse before a waiting caller takes UPDATE. A real DMA
-        ; retains its existing owner and is excluded by the quiescence checks.
-        CONSOLEDISPLAY.DiscardBatch()
-      FI
-    END
-    AESWINDOWSTATE.Sync()
-    AESMOUSE.Refresh()
-    AESLOCKS.SystemEnd()
-  FI
   AESCORE.Settle(service)
   AESMOUSE.RefreshSnapshot()
+
+RETURN
+
+; The manager calls this only inside its actual interaction's UPDATE scope.
+PUBLIC PROC Commit()
+
+  AESWINDOWSTATE.Sync()
+  AESMOUSE.Refresh()
+  AESSNAPSHOT.Publish()
 
 RETURN
 
@@ -151,27 +130,6 @@ PUBLIC PROC Stop()
   service.port.mp_SigTask=NULL
   ; Last access: the controller may free storage after observing retirement.
   service.owner=NULL
-
-RETURN
-
-PUBLIC BYTE FUNC Settled()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectSettled()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-; Only UPDATE owners construct the shared prepared routing publication.
-PUBLIC PROC Publish()
-
-  IF AESLOCKS.SystemBegin()<>0 THEN
-    AESSNAPSHOT.Publish()
-    AESLOCKS.SystemEnd()
-  FI
 
 RETURN
 

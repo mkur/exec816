@@ -437,18 +437,6 @@ PROC FreeStorage(CONSOLETYPES.Service POINTER service CONSOLETYPES.Instance
 
 RETURN
 
-; Console backend operations used by the graphical system Task. Each turn
-; releases every borrowed instance before returning to input/event dispatch.
-PROC SystemControls()
-
-  CONSOLECONTROL.Process()
-
-RETURN
-
-BYTE FUNC SystemRunnable()
-
-RETURN(CONSOLEDISPLAY.CompletionReady()<>0 OR CONSOLEFRONT.Runnable())
-
 BYTE FUNC SystemStopping()
 
   LET service=GetService()
@@ -488,17 +476,6 @@ BYTE FUNC BackendTurn()
   OD
 
 RETURN(Runnable(service) OR CONSOLEINGRESS.Pending())
-
-BYTE FUNC SystemTurn(BYTE deferred BYTE POINTER again,writing,handoff)
-
-  writing^=0
-  handoff^=0
-  again^=0
-  IF deferred<>0 THEN
-    RETURN(0)
-  FI
-
-RETURN(CONSOLEFRONT.Turn(again))
 
 ; One bounded turn per borrowed instance. No request or instance pointer remains
 ; borrowed across Yield/Wait, and replies publish ownership exactly once.
@@ -543,9 +520,7 @@ PUBLIC PROC Worker()
     BOOTDIAG.Report(BOOTDIAG.WORKER,0)
   FI
 
-  CONSOLESYSTEM.BindConsole(ADDRESS(@SystemRunnable),
-      ADDRESS(@SystemStopping),ADDRESS(@SystemStop),ADDRESS(@SystemTurn),
-      ADDRESS(@SystemControls))
+  CONSOLESYSTEM.BindLifecycle(ADDRESS(@SystemStopping),ADDRESS(@SystemStop))
   CONSOLECAPTURE.BindReceiver(ADDRESS(@CONSOLEINPUT.Deliver),LONGCARD(ADDRESS(service)))
   registered=Initialize(service,defaultInstance)
   IF registered<>0 AND CONSOLESYSTEM.Start()=0 THEN
@@ -559,7 +534,7 @@ PUBLIC PROC Worker()
     registered=0
   FI
 
-  IF registered<>0 AND CONSOLEFRONT.Start()=0 THEN
+  IF registered<>0 AND CONSOLEUI.Enabled()=0 AND CONSOLEFRONT.Start()=0 THEN
     CONSOLEBACKEND.Stop()
     CONSOLESYSTEM.Stop()
     CONSOLECAPTURE.Release()
@@ -591,7 +566,9 @@ PUBLIC PROC Worker()
 
   CONSOLESYSTEM.Run()
 
-  CONSOLEFRONT.Stop()
+  IF CONSOLEUI.Enabled()=0 THEN
+    CONSOLEFRONT.Stop()
+  FI
   CONSOLESYSTEM.Stop()
   CONSOLEBACKEND.Stop()
   registered=EXEC.UnregisterResident()

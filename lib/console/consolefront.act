@@ -86,8 +86,8 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
-      OR CONSOLEUI.PaintBlocked()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
   LET windows=CONSOLEWINDOWS.Registry()
@@ -165,8 +165,8 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
   CONSOLETYPES.Presentation POINTER view
   CONSOLETYPES.Instance POINTER model
 
-  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0
-      OR CONSOLEUI.PaintBlocked()<>0 THEN
+  IF CONSOLEUI.Enabled()<>0 OR CONSOLEBITMAP.Pending()<>0
+      OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
   FI
   LET windows=CONSOLEWINDOWS.Registry()
@@ -194,9 +194,7 @@ PUBLIC BYTE FUNC Turn(BYTE POINTER again)
             AND (frame.first<>0 OR frame.complete<>2) THEN
           Copy(entry,frame)
         FI
-        IF CONSOLEUI.PaintReady()<>0 THEN
-          CONSOLEDISPLAY.Present(view,model)
-        FI
+        CONSOLEDISPLAY.Present(view,model)
         IF frame.handle<>0 AND frame.first=0 AND frame.complete=2
             AND CONSOLEBITMAP.Pending()=0
             AND (view.visible=0 OR model.dirtyRows=0) THEN

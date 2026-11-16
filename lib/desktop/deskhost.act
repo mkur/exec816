@@ -1,18 +1,9 @@
-; Lifecycle and scheduling hooks in the existing console presenter Task.
+; SCRENMGR lifecycle and controller-side shutdown admission.
 MODULE DESKHOST
-USE DISPLAY
 USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
-USE DESKFINISH
-USE DESKCACHE
-USE DESKMENUCACHE
-USE CONSOLEBITMAP
-USE LAYERS
-USE LAYERTYPES
-USE REGIONS
-USE DESKPAINT
 USE HEAPCORE
 USE DESKINPUT
 USE CONSOLECAPTURE
@@ -70,29 +61,6 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(service.mask OR DESKINPUT.Mask() OR AESHOST.Mask())
 
-BYTE FUNC InspectReady()
-
-  LET service=DESKSTATE.Get()
-
-; The console-control entry checks actual work and obtains UPDATE itself.
-RETURN(service=NULL OR service.scene.busy=0)
-
-BYTE FUNC InspectPaintReady()
-
-  LET service=DESKSTATE.Get()
-
-RETURN(DISPLAY.Blocked()=0 AND (service=NULL OR service.scene.busy=0)
-    AND AESLOCKS.PaintBlocked()=0)
-
-; Eligible controls that waited for the paint snapshot must get an admission
-; opportunity before a fresh console write acquires that same scene again.
-BYTE FUNC InspectControlPending()
-
-  LET service=DESKSTATE.Get()
-
-RETURN(service<>NULL AND service.live<>0 AND service.scene.busy=0
-    AND AESLOCKS.MouseBlocked()=0 AND AESHOST.Runnable()<>0)
-
 BYTE FUNC InspectIdle()
 
   IF AESHOST.Idle()=0 THEN
@@ -110,59 +78,6 @@ BYTE FUNC InspectIdle()
 
 
 RETURN(1)
-
-; A bounded active-service boundary, never an idle poll or periodic wake.
-; Capture/cursor can advance between bounded AES admissions.
-PUBLIC PROC InputBoundary()
-
-  DESKINPUT.Boundary()
-  DESKINPUT.Present()
-
-RETURN
-
-; Match already admitted waits at bounded service boundaries. An alarm can
-; complete during a paint/output quantum, after Controls took its clock sample.
-; Collect it before yielding, without admitting another request or polling time.
-PUBLIC PROC Events()
-
-  IF AESHOST.Wake()<>0 THEN
-    InputBoundary()
-  FI
-
-RETURN
-
-; Retire a notified foreground save/restore before unrelated control work.
-; This neither polls hardware nor admits requests or renews a worker budget.
-PUBLIC PROC MenuContinuation()
-
-  IF DESKMENUCACHE.Foreground()=0 OR AESLOCKS.SystemBegin()=0 THEN
-    RETURN
-  FI
-  DESKFINISH.Finish()
-  AESLOCKS.SystemEnd()
-
-RETURN
-
-PUBLIC PROC Controls()
-
-  Events()
-
-RETURN
-
-BYTE FUNC InspectRunnable()
-
-  LET service=DESKSTATE.Get()
-  IF service<>NULL AND service.live<>0 THEN
-    IF AESHOST.Runnable()<>0 THEN
-      RETURN(1)
-    FI
-  FI
-
-  IF AESHOST.Runnable()<>0 OR DESKPAINT.Runnable()<>0 THEN
-    RETURN(1)
-  FI
-
-RETURN(DESKINPUT.Runnable())
 
 PUBLIC PROC Stop()
 
@@ -183,39 +98,6 @@ PUBLIC PROC Stop()
 
 RETURN
 
-PUBLIC BYTE FUNC Ready()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectReady()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC PaintReady()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectPaintReady()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC ControlPending()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectControlPending()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
 ; Shutdown readiness is also called by the console controller. Its short
 ; resource borrow must not inherit the frontend's retained operation state.
 PUBLIC BYTE FUNC Idle()
@@ -230,21 +112,6 @@ PUBLIC BYTE FUNC Idle()
   FI
   result=InspectIdle()
   AESLOCKS.ReleaseUI()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC Runnable()
-  BYTE result
-
-  ; RPC admission remains runnable while drawing belongs to another Task.
-  IF AESHOST.Runnable()<>0 THEN
-    RETURN(1)
-  FI
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectRunnable()
-  AESLOCKS.SystemEnd()
 
 RETURN(result)
 

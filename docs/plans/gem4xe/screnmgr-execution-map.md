@@ -29,10 +29,10 @@ six public pools. Input and frontend stack observations are recorded in the
 [migration record](../../history/input-device-migration.md).
 
 No live scene mutation, drawing or UPDATE wait runs in input.device. Application
-inboxes remain independent while the frontend waits. The current AESSYSTEM loop
-stays in the frontend until SM3/SM4 satisfy the remaining caller-drawing,
-scene-reader and physical-retirement requirements. The final SCRENMGR blocking
-loop is not installed by this migration.
+inboxes remain independent while the frontend waits. SM3/SM4 now satisfy caller-drawing,
+scene-reader and physical-retirement prerequisites. The selected frontend runs
+the blocking SCRENMGR interaction loop; its independent input and backend Tasks
+retain the same placement and reservations.
 
 The alternatives below retain the earlier comparison. They are not the selected
 implementation map. Task-side delivery is an explicit Exec adaptation of

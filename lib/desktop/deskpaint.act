@@ -6,7 +6,6 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
-USE DESKCACHEWORK
 USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKMENU
@@ -18,7 +17,6 @@ USE LAYERCACHE
 USE REGIONS
 USE CONSOLEBITMAP
 USE HEAPCORE
-USE AESLOCKS
 USE AESWINDOWSTATE
 
 LONGCARD paintToken,paintLayer
@@ -192,74 +190,6 @@ LAYERTYPES.Layer POINTER FUNC MenuLayer()
   FI
 
 RETURN(NULL)
-
-; The caller has checked service lifetime and physical display availability.
-BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
-
-  IF paintToken<>0 THEN
-    RETURN(1)
-  FI
-
-  IF service.scene.visibleDamage=0 THEN
-    RETURN(0)
-  FI
-
-RETURN(AESLOCKS.SystemBlocked()=0)
-
-; Painting work only, independent of pending control messages.
-BYTE FUNC InspectPaintPending()
-
-  LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
-      OR DISPLAY.Blocked()<>0 THEN
-    RETURN(0)
-  FI
-
-RETURN(DamagePending(service))
-
-BYTE FUNC InspectRunnable()
-
-  LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
-    RETURN(0)
-  FI
-
-  IF CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN(0)
-  FI
-
-RETURN(DamagePending(service))
-
-; True only when the next paint quantum can run without waiting for another
-; scene owner or hardware completion. A retained dirty rectangle alone is not
-; sufficient reason to continue executing the presenter.
-BYTE FUNC InspectReady()
-
-  LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
-      OR DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0
-      OR (paintToken=0 AND service.scene.busy<>0) THEN
-    RETURN(0)
-  FI
-
-RETURN(DamagePending(service))
-
-; Continue completed menu strips within the same existing four-step allowance.
-; Ordinary windows retain their usual boundary and menu transaction fairness.
-BYTE FUNC InspectMenuReady()
-
-  IF Ready()=0 THEN
-    RETURN(0)
-  FI
-  IF paintToken<>0 THEN
-    RETURN(paintLayer=DESKSTATE.popupLayer OR paintLayer=DESKSTATE.barLayer)
-  FI
-
-  IF DESKSTATE.menuTurns>=2 THEN
-    RETURN(0)
-  FI
-
-RETURN(MenuLayer()<>NULL)
 
 ; Visit the title band, client, then remaining frame pieces. Partition before
 ; limiting frame height: a full client copy never enters the frame scratch.
@@ -502,69 +432,5 @@ PUBLIC BYTE FUNC Complete(CONSOLEBITMAP.Packet POINTER output)
   OD
 
 RETURN(1)
-
-PUBLIC BYTE FUNC PaintPending()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectPaintPending()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC Runnable()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectRunnable()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC Ready()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectReady()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC MenuReady()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  result=InspectMenuReady()
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
-
-PUBLIC BYTE FUNC Pump()
-  BYTE result
-
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  LET service=DESKSTATE.Get()
-  result=0
-  IF service<>NULL AND (service.scene.visibleDamage<>0 OR paintToken<>0) THEN
-    result=Complete(NULL)
-    IF result<>0 THEN
-      BEGIN
-        LET maintained=DESKCACHEWORK.Maintain(NULL)
-      END
-    FI
-  FI
-  AESLOCKS.SystemEnd()
-
-RETURN(result)
 
 ENDMODULE

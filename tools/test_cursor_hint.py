@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Small emitted cursor hint regression with deterministic late draw/BUSY.
+"""Small emitted cursor hint regression with deterministic late draw/failure.
 
-Extract the actual Mouse/Cursor/Changed routines unchanged. Only Run's physical
+Extract the actual Mouse/Cursor/Changed routines unchanged. Only Submit's physical
 boundary is supplied by the fixture, allowing a notification to arrive inside
 it. Real rendering and scene integration use the loaded MGVIEW scroll check.
 """
@@ -39,7 +39,7 @@ Packet POINTER FUNC GetPacket()
 
 RETURN(@request)
 
-BYTE FUNC Run(CARD operation)
+BYTE FUNC Submit(Packet POINTER output CARD operation)
 
   observedChanged=drawingChanged
   lastOperation=operation

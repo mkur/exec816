@@ -25,7 +25,8 @@ the user-selected nonblocking raw hit snapshot for `wind_find`. SM3b/c establish
 completion. SM3d removes the scene gate. SM4a–c complete background cache
 operations, direct display admission and caller registration/retirement. Shared
 exposure, restores and operation-bound cache maintenance are delivered by
-SM4d. The blocking SCRENMGR loop remains SM4e work.
+SM4d. SM4e installs the blocking SCRENMGR interaction loop and removes the
+combined renderer/control budget. SM5 remains the combined acceptance step.
 
 The [independent input.device design](../input-device-design.md) covers GEM,
 the standard Atari text console and a future VBXE text-mode console without

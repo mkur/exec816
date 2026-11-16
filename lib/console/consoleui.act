@@ -5,20 +5,14 @@ USE INPUT
 USE CONSOLEVIEWTYPES AS VIEW
 
 PUBLIC TYPE Hooks=[
-  ADDRESS bindEntry,startEntry,runEntry,stopEntry,idleEntry,paintEntry
-  ADDRESS beginEntry,endEntry,blockedEntry
+  ADDRESS startEntry,runEntry,stopEntry,idleEntry
   ADDRESS keyEntry,windowEntry
 ]
 BYTE configured
-PROC POINTER bindFn(ADDRESS runnable,stopping,stop,turn,controls)
 BYTE FUNC POINTER startFn()
 PROC POINTER runFn()
 PROC POINTER stopFn()
 BYTE FUNC POINTER idleFn()
-BYTE FUNC POINTER paintFn()
-BYTE FUNC POINTER beginFn()
-PROC POINTER endFn()
-BYTE FUNC POINTER blockedFn()
 BYTE FUNC POINTER keyFn(INPUT.Event POINTER event)
 CARD FUNC POINTER windowFn(LONGCARD handle INT window BYTE bound)
 
@@ -31,15 +25,10 @@ RETURN
 
 PUBLIC PROC Install(Hooks POINTER table)
 
-  BindEntry(ADDRESS(@bindFn),table.bindEntry)
   BindEntry(ADDRESS(@startFn),table.startEntry)
   BindEntry(ADDRESS(@runFn),table.runEntry)
   BindEntry(ADDRESS(@stopFn),table.stopEntry)
   BindEntry(ADDRESS(@idleFn),table.idleEntry)
-  BindEntry(ADDRESS(@paintFn),table.paintEntry)
-  BindEntry(ADDRESS(@beginFn),table.beginEntry)
-  BindEntry(ADDRESS(@endFn),table.endEntry)
-  BindEntry(ADDRESS(@blockedFn),table.blockedEntry)
   BindEntry(ADDRESS(@keyFn),table.keyEntry)
   BindEntry(ADDRESS(@windowFn),table.windowEntry)
   configured=1
@@ -55,14 +44,6 @@ RETURN
 PUBLIC BYTE FUNC Enabled()
 
 RETURN(configured)
-
-PUBLIC PROC BindConsole(ADDRESS runnable,stopping,stop,turn,controls)
-
-  IF configured<>0 THEN
-    bindFn(runnable,stopping,stop,turn,controls)
-  FI
-
-RETURN
 
 PUBLIC BYTE FUNC Start()
 
@@ -95,38 +76,6 @@ PUBLIC BYTE FUNC Idle()
   FI
 
 RETURN(1)
-
-PUBLIC BYTE FUNC PaintReady()
-
-  IF configured<>0 THEN
-    RETURN(paintFn())
-  FI
-
-RETURN(1)
-
-PUBLIC BYTE FUNC SystemBegin()
-
-  IF configured<>0 THEN
-    RETURN(beginFn())
-  FI
-
-RETURN(1)
-
-PUBLIC PROC SystemEnd()
-
-  IF configured<>0 THEN
-    endFn()
-  FI
-
-RETURN
-
-PUBLIC BYTE FUNC PaintBlocked()
-
-  IF configured<>0 THEN
-    RETURN(blockedFn())
-  FI
-
-RETURN(0)
 
 PUBLIC BYTE FUNC Key(INPUT.Event POINTER event)
 

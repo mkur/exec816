@@ -15,7 +15,7 @@ from sio_transaction_trace import BASE_HZ, read_events
 
 
 NAMES = set(BOOKKEEPING) | set('''
-AESLOCAL_PUBLISH AESHOST_PUBLISH AESLOCKS_CALL
+AESLOCAL_PUBLISH AESHOST_SERVICE AESHOST_COMMIT AESLOCKS_CALL
 AESLOCKS_SYSTEMBEGIN AESLOCKS_SYSTEMEND AESSNAPSHOT_PUBLISH DESKINPUT_REPLAYKEYS
 CONSOLEDISPLAY_POLL DESKHOST_MENUCONTINUATION DESKHOST_CONTROLS
 DESKHOST_READY DESKHOST_AFTERPAINT DESKHOST_EVENTS AESHOST_SETTLE
@@ -28,7 +28,7 @@ CONSOLEDRIVER_SYSTEMSTOPPING CONSOLEDRIVER_SYSTEMINPUT
 CONSOLEDRIVER_SYSTEMRUNNABLE CONSOLEDRIVER_SYSTEMTURN
 CONSOLEDRIVER_BACKENDTURN CONSOLECONTROL_PROCESS
 '''.split())
-DETAILED = set('''AESSYSTEM_RUN AESSYSTEM_COLLECT DISPLAY_BLOCKED
+DETAILED = set('''SCRENMGR_RUN SCRENMGR_COLLECT DISPLAY_BLOCKED
 DISPLAY_LEAVE DISPLAY_NEXT AESLOCAL_PUBLISH AESLOCKS_CALL
 DESKINPUT_REPLAYKEYS AESCORE_RUNNABLE'''.split())
 
@@ -97,18 +97,14 @@ def definition(program):
 
 
 PHASES = {
-    'signals': 'AESSYSTEM_COLLECT',
+    'signals': 'SCRENMGR_COLLECT',
     'input': 'DESKINPUT_REPLAYKEYS DESKINPUT_SERVICE DESKINPUT_ADVANCE DESKINPUT_PRESENT CONSOLEDRIVER_SYSTEMINPUT',
-    'completion_poll': 'CONSOLEDISPLAY_POLL',
-    'menu_continuation': 'DESKHOST_MENUCONTINUATION',
-    'controls': 'DESKHOST_CONTROLS DESKHOST_AFTERPAINT',
-    'painting': 'DESKPAINT_PUMP',
-    'console': 'CONSOLEDRIVER_SYSTEMTURN',
-    'events': 'DESKHOST_EVENTS',
-    'settlement': 'AESHOST_SETTLE',
-    'readiness': 'DESKHOST_READY AESHOST_SETTLED DESKHOST_RUNNABLE CONSOLEDRIVER_SYSTEMRUNNABLE DESKPAINT_READY AESLOCKS_NATIVEREADY',
+    'interaction_completion': 'DESKFINISH_FINISH',
+    'painting': 'DESKPAINT_COMPLETE',
+    'events': 'AESHOST_SERVICE',
+    'readiness': 'DESKINPUT_INTERACTIONPENDING AESLOCKS_NATIVEREADY',
     'cache': 'DESKHOST_CACHE DESKCACHEWORK_MAINTAIN',
-    'snapshot_publication': 'AESHOST_PUBLISH',
+    'snapshot_publication': 'AESHOST_COMMIT',
     'stop_check': 'CONSOLEDRIVER_SYSTEMSTOPPING',
 }
 
@@ -223,10 +219,10 @@ def analyze(out, definition, base_audit, foreign, directory):
                                 arguments=signal_arguments(nearby)))
 
     turn_pc = next(pc for pc, site in d['sites'].items()
-                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKINPUT_REPLAYKEYS')
+                   if site['caller'] == 'SCRENMGR_RUN' and site['target'] == 'SCRENMGR_COLLECT')
     turn_ticks = [t for t, e in worker_events if int(e[4], 16) == turn_pc]
     quiet_pc = min((pc for pc, site in d['sites'].items()
-                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKHOST_CACHE'), default=None)
+                   if site['caller'] == 'SCRENMGR_RUN' and site['target'] == 'DESKHOST_CACHE'), default=None)
     quiet_ticks = [t for t, e in worker_events if int(e[4], 16) == quiet_pc]
     result = []
     for sample in base_audit['samples']:
@@ -265,7 +261,7 @@ def analyze(out, definition, base_audit, foreign, directory):
                 if a >= end or b <= start:
                     continue
                 completed_waits = [w for w in waits if a <= w['start'] < b]
-                collected = [s['return_bits'] for s in spans if s['kind'] == 'AESSYSTEM_COLLECT'
+                collected = [s['return_bits'] for s in spans if s['kind'] == 'SCRENMGR_COLLECT'
                              and a <= s['start'] < b]
                 turns.append(dict(start=a, end=b, clipped=a < start or b > end,
                     quiet=any(a <= t < b for t in quiet_ticks), collected=collected,

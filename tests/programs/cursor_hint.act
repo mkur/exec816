@@ -14,7 +14,7 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; A draw notification inside Run models another Task drawing before Resume.
+; A late draw inside synchronous submission must survive its completion.
 PROC Check(BYTE fallback,oldHint,okay,lateDraw,expected)
   BYTE result
 

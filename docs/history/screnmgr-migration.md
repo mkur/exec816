@@ -749,3 +749,60 @@ inputs and stack observations. Reserved bank-zero growth is **0 fixed, root,
 kernel, idle and per public Task**, including guards/alignment/spare capacity.
 The combined loop remains until the next SM4e slice. No QED/demo build or release
 qualification is included.
+
+
+## SM4e2: SCRENMGR event loop and lifecycle cutover
+
+The existing graphical frontend is now named SCRENMGR and runs
+[`screnmgr.act`](../../lib/aes/screnmgr.act). The combined AESSYSTEM loop is
+removed. SCRENMGR acknowledges durable signals, services copied publication and
+cursor work, obtains UPDATE for actual copied manager interaction, finishes
+shared window/menu effects, publishes the result, releases and waits again.
+Remaining copied interactions run another operation without an idle poll or a
+voluntary Yield. Menus and native captures retain their source-defined UPDATE
+operation through input waits.
+
+This follows pinned MagiC AESMAIN `scrmg_mainloop` / `scrmg_next` (4235–4282,
+4453–4455): event wait, `update_1`, interaction, `update_0`, wait. Exec's already
+selected input.device Task supplies independent input delivery, and its native
+FIFO semaphore supplies blocking ownership. Ordinary AES/VDI operations remain
+in their callers. No additional Task, resource gate or scheduler service is
+introduced. See the [source model](../architecture/magic.md#input-events-and-application-messages)
+and [selected execution map](../plans/gem4xe/screnmgr-execution-map.md).
+
+Caller continuation wake hints and application-owned outline suspension use no
+foreign UPDATE. Cursor/outline submissions finish admission through the existing
+display FIFO and signal before an UPDATE Obtain. The old physical-busy deferrals
+in outline continuation are removed: an interaction cannot leave that work for
+an unavailable manager turn. An unrelated display borrower cannot retain a
+completed manager UPDATE level. Shared helpers still finish their own physical
+work and preserve the existing unsafe driver retention contract.
+
+The console driver retains lifecycle policy and its two stop callbacks. The
+combined rendering budget, no-op GEM text turns, readiness scans and callback
+bindings are removed. Standalone text mode calls its renderer and physical
+control loop directly; GEM model controls use SM4e1's caller completion. Obsolete
+paint/gesture polling helpers are retired. Fixture observers now select current
+manager boundaries. Native packaging excludes the shared desktop helpers from
+independently admissible Task entries; they run in the existing owning context.
+
+Development checks pass on the pinned optimized compiler and emulator profile:
+32 caller assertions and two model controls while SCRENMGR blocks in native
+UPDATE for a copied Ctrl-Tab interaction; an actual A key reaches the caller
+inbox during that wait. Exact fill/offscreen-copy pixels and cleanup pass. The
+ordinary 1,312-byte app pool touches 999 bytes, leaving 57 above the existing
+256-byte interrupt floor. That is an observed watermark, not a universal bound.
+The cache fixture passes 224 C and four native assertions across 32 checkpoints,
+with 18 terminal cache boundaries, exact work/frame/menu pixels and four sets of
+12 empty notification wakes entering zero UPDATE scopes. Standalone Atari text
+passes 16 input/render/restoration checks with no GUI routines linked; the small
+cursor-hint fixture passes 48 assertions. Host checks pass 718 tests with five
+existing skips. [Evidence](../development/screnmgr-sm4e2.json) records images,
+inputs, machine settings and per-Task observations.
+
+Reserved bank-zero growth is **0 fixed, root, kernel, idle and per public Task**,
+including guards, alignment and unused capacity. Task/DP pools, signals, VRAM
+and physical scratch reservations are unchanged. These are development checks;
+no QED, application catalog, demo refresh, release qualification or performance
+claim is included. SM4e is complete. SM5's combined scroll observation remains a
+separate next step.

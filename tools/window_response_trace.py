@@ -10,7 +10,7 @@ from native_program import read_build, require
 from sio_transaction_trace import BASE_HZ
 
 NATIVE = ('DESKINPUT_SERVICE DESKMENU_ADVANCE DESKMENUCACHE_PUMP '
-          'LAYERS_FINISHSAVE DESKPAINT_PUMP CONSOLEBITMAP_COPYSTART '
+          'LAYERS_FINISHSAVE DESKPAINT_COMPLETE CONSOLEBITMAP_COPYSTART '
           'CONSOLEBITMAP_POLL CONSOLEBITMAP_FRAME DESKAPPMENU_PAINT').split()
 DRAWING = ('GemDrawingFrameBatch GemDrawingWidgetBatch GemDrawingBatch '
            'GemDrawingCopyStart GemDrawingPoll GemFrameGadget GemWidgetFill '
@@ -23,7 +23,7 @@ def setup(out, bookkeeping=False):
     program = read_build(out)
     foreign = json.loads((out/'bitmap-console/c-image.json').read_text())
     spans = native_markers(program, [(n, n) for n in NATIVE])
-    optional = ('AESLOCAL_CALL AESLOCAL_PUBLISH AESHOST_PUBLISH '
+    optional = ('AESLOCAL_CALL AESLOCAL_PUBLISH AESHOST_COMMIT '
                 'AESLOCKS_NATIVEREADY AESLOCKS_CALL AESLOCKS_SYSTEMBEGIN').split()
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
@@ -42,9 +42,9 @@ def setup(out, bookkeeping=False):
     returns = listing_returns(foreign, out/'bitmap-console/drawing')
     exits = listing_returns(foreign, out/'bitmap-console/drawing', exits=True)
     collect = next(r['address'] for r in program['image']['routines']
-                   if r['name'].startswith('M_AESSYSTEM_COLLECT_'))
+                   if r['name'].startswith('M_SCRENMGR_COLLECT_'))
     mapped = {**program, 'labels': {**program['labels'], 'collect':collect}}
-    clock = {'turn':call_marker(mapped,'M_AESSYSTEM_RUN_','collect')}
+    clock = {'turn':call_marker(mapped,'M_SCRENMGR_RUN_','collect')}
     address = program['labels']['context_restore']
     hosted = (out/'hosted.bin').read_bytes()
     require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8] ==

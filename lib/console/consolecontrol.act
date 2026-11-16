@@ -43,11 +43,6 @@ PUBLIC PROC Process()
     EXEC.Permit()
     RETURN
   FI
-  IF CONSOLEUI.SystemBegin()=0 THEN
-    EXEC.Permit()
-    RETURN
-  FI
-
   IF service.worker<>BYTE POINTER(EXEC.FindTask(NULL))
       OR windows.presenting=0 OR windows.presenter.task=NULL THEN
     HEAPCORE.Abort(4)
@@ -61,7 +56,6 @@ PUBLIC PROC Process()
   control.result=result
   control.state=CONSOLETYPES.CTL_DONE
   EXEC.Permit()
-  CONSOLEUI.SystemEnd()
 
 RETURN
 

@@ -44,9 +44,11 @@ def instrument(out):
     # native semaphore level happens to retire before the caller returns.
     locks=read_source(ROOT/'lib/aes/aeslocks.act').replace(
         'USE EXEC\n','USE EXEC\nUSE HEAPCORE\n',1)
+    locks=locks.replace('BYTE systemHeld','PUBLIC LONGCARD managerScopes\nBYTE systemHeld',1)
     needle='PUBLIC BYTE FUNC SystemBegin()\n\n'
     require(locks.count(needle)==1,'Manager UPDATE scope boundary changed')
-    locks=locks.replace(needle,needle+'''  LET service=AESSTATE.Get()
+    locks=locks.replace(needle,needle+'''  managerScopes==+1
+  LET service=AESSTATE.Get()
   IF service<>NULL AND service.owner<>EXEC.FindTask(NULL) THEN
     HEAPCORE.Abort($fcef)
   FI
@@ -147,6 +149,7 @@ def physical(b,p,foreign,report):
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
         if phase in (5,13,20,23):
             before=get(at('DESKCACHEWORK','candidateInspections'))
+            scopes=get(at('AESLOCKS','managerScopes'))
             b.poke16(sy['AESCacheWake'],12)
             reach('dw($%x)=0'%sy['AESCacheWake'])
             reach('@frame>=%d'%(b.eval_expr('@frame')+20))
@@ -154,6 +157,9 @@ def physical(b,p,foreign,report):
                     'Unchanged rejected/evicted window was inspected again')
             row['unchanged_wakes']=12
             row['repeated_candidate_inspections']=0
+            require(get(at('AESLOCKS','managerScopes'))==scopes,
+                    'Empty notification entered manager UPDATE')
+            row['empty_notification_update_scopes']=0
         if phase in (1,2,3,4,6,7,9,10,11,12,14,15):require(valid,'Missing eligible AES image at phase '+str(phase))
         if phase in (5,8,13,16):require(not valid,'Ambiguous update/resize retained a usable image')
         if phase in (17,18,19,21,24,25,26):require(valid,'Missing preserved source at phase '+str(phase))

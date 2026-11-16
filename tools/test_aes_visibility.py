@@ -148,14 +148,14 @@ ENDMODULE
     if needle in routes:
         routes=routes.replace(needle,'LET result=VISPROBE.Retire(desktop.keyboard,\n      window.keyRoute,2)',1)
     (out/'aesroutes.act').write_text(routes)
-    driver=read_source(ROOT/'lib/aes/aessystem.act').replace(
-        'USE AESLOCKS\n','USE AESLOCKS\nUSE VISPROBE\n',1)
-    point='    ; Ownership scopes are complete; schedule the next turn.'
+    driver=read_source(ROOT/'lib/aes/screnmgr.act').replace(
+        'USE AESLOCKS\n','USE AESLOCKS\nUSE DESKSTATE\nUSE VISPROBE\n',1)
+    point='    ; Ownership scopes are complete; wait for the next interaction/device wake.'
     require(driver.count(point)==1,'Manager UPDATE release boundary changed')
     driver=driver.replace(point,
-        '    VISPROBE.ready=AESLOCKS.Quiescent() AND DESKPAINT.Runnable()=0\n'
-        '        AND CONSOLEBITMAP.Pending()=0\n'+point)
-    (out/'aessystem.act').write_text(driver)
+        '    VISPROBE.ready=CONSOLEBITMAP.Pending()=0\n'
+        '        AND DESKSTATE.outlineVisible=0\n'+point)
+    (out/'screnmgr.act').write_text(driver)
 
 
 def setup(symbols):

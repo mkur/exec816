@@ -421,7 +421,7 @@ PUBLIC BYTE FUNC Mouse(BYTE POINTER state)
   LET packet=GetPacket()
   packet.text=LONGCARD(ADDRESS(state))
   drawingChanged=0
-  LET result=Run(OP_MOUSE)
+  LET result=Submit(NULL,OP_MOUSE)
   IF result=0 THEN
     drawingChanged=1
   FI
@@ -491,7 +491,7 @@ PUBLIC BYTE FUNC Outline(CARD x,y,width,height BYTE visible)
   packet.foreground=CARD(visible)
   drawingChanged=1
 
-RETURN(Run(OP_OUTLINE))
+RETURN(Submit(NULL,OP_OUTLINE))
 
 ; The non-AES overlay follows the same consume-before-call hint protocol.
 PUBLIC BYTE FUNC Cursor(CARD x,y BYTE visible)
@@ -501,7 +501,7 @@ PUBLIC BYTE FUNC Cursor(CARD x,y BYTE visible)
   packet.y=y
   packet.width=CARD(visible)
   drawingChanged=0
-  LET result=Run(OP_POINTER)
+  LET result=Submit(NULL,OP_POINTER)
   IF result=0 THEN
     drawingChanged=1
   FI

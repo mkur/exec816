@@ -4,7 +4,7 @@ USE EXEC
 USE CONSOLEUI
 USE CONSOLEVIEWTYPES AS VIEW
 USE CONSOLEVIEWCORE AS VIEWS
-USE AESSYSTEM
+USE SCRENMGR
 USE AESLOCKS
 USE AESSTATE
 USE AESTYPES
@@ -19,15 +19,10 @@ USE DESKMENU
 PUBLIC PROC Install()
   CONSOLEUI.Hooks table
 
-  table.bindEntry=ADDRESS(@AESSYSTEM.BindConsole)
-  table.startEntry=ADDRESS(@AESSYSTEM.Start)
-  table.runEntry=ADDRESS(@AESSYSTEM.Run)
-  table.stopEntry=ADDRESS(@AESSYSTEM.Stop)
+  table.startEntry=ADDRESS(@SCRENMGR.Start)
+  table.runEntry=ADDRESS(@SCRENMGR.Run)
+  table.stopEntry=ADDRESS(@SCRENMGR.Stop)
   table.idleEntry=ADDRESS(@DESKHOST.Idle)
-  table.paintEntry=ADDRESS(@DESKHOST.PaintReady)
-  table.beginEntry=ADDRESS(@AESLOCKS.SystemBegin)
-  table.endEntry=ADDRESS(@AESLOCKS.SystemEnd)
-  table.blockedEntry=ADDRESS(@AESLOCKS.PaintBlocked)
   table.keyEntry=ADDRESS(@DESKINPUT.CaptureKey)
   table.windowEntry=ADDRESS(@InputWindow)
   CONSOLEUI.Install(@table)

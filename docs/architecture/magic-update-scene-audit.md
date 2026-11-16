@@ -145,7 +145,7 @@ uninspected GEM extensions or arbitrary application callbacks.
 | Console input-window association in CONSOLEVIEW.InputWindow | Gate only | Binding changes affect shared routing. Include this public non-AES facade in migration rather than auditing only `wind_set`. |
 | Physical calls in CONSOLEBITMAP / DESKMENURENDER; input resource calls in DESKROUTES / AESWINDOW / AESROUTES | Suspend/leave the gate; retain effect identity; resume/reenter afterwards | Physical display arbitration and INPUT lifetimes are existing platform responsibilities. Eliminate gate reacquisition only after the surrounding scene continuation is assigned an owner. |
 
-Relevant source: [presenter loop](../../lib/aes/aessystem.act),
+Relevant source: [presenter loop](https://github.com/mkur/exec816-public/blob/a768c4f4/lib/aes/aessystem.act),
 [scene gate](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover),
 [window state](../../lib/aes/aeswindowstate.act),
 [input publication](../../lib/aes/aessnapshot.act),

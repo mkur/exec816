@@ -45,8 +45,8 @@ def definition(cache,p,foreign,app):
             for m in re.finditer(r'\\ ([0-9a-f]{6}) 6b\s+(?:`[^`]+`: *)?rtl',section):
                 app_exits.add(base+int(m[1],16))
     require(app_returns and app_exits,'Missing emitted application call boundaries')
-    collect=next(r['address'] for r in p['image']['routines'] if r['name'].startswith('M_AESSYSTEM_COLLECT_'))
-    turn=call_marker({**p,'labels':{**p['labels'],'collect':collect}},'M_AESSYSTEM_RUN_','collect')
+    collect=next(r['address'] for r in p['image']['routines'] if r['name'].startswith('M_SCRENMGR_COLLECT_'))
+    turn=call_marker({**p,'labels':{**p['labels'],'collect':collect}},'M_SCRENMGR_RUN_','collect')
     restore=p['labels']['context_restore']
     require((p['output']/'hosted.bin').read_bytes()[restore-adapter.RESIDENT_BASE:restore-adapter.RESIDENT_BASE+8]==bytes.fromhex('c230ab2b7afa6840'),'Changed scheduler marker')
     clock={name:p['labels'][name] for name in ('native_irq','native_nmi','interrupt_schedule')}

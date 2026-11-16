@@ -10,7 +10,8 @@
   cutover to one UPDATE resource, SM4a cache-operation completion and SM4b
   direct display admission, followed by SM4c caller registration and final detach,
   and SM4d shared caller rendering, synchronous exposure and operation-owned
-  cache/manager completion, with focused development checks.
+  cache/manager completion, then SM4e's blocking SCRENMGR loop and independent
+  console lifecycle, with focused development checks.
 
 - [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
   UPDATE/MCTRL handler flow, native ownership and presenter operation scopes.

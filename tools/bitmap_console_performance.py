@@ -30,7 +30,7 @@ def native_markers(program, routines):
 
 def input_markers(program):
     result=native_markers(program,[('CONSOLEINPUT_PENDING','input_pending'),
-        ('CONSOLEINPUT_PUMP','pump'),('AESSYSTEM_COLLECT','input_collect'),('CONSOLEINPUT_SERVICE','input_service'),
+        ('CONSOLEINPUT_PUMP','pump'),('SCRENMGR_COLLECT','input_collect'),('CONSOLEINPUT_DELIVER','input_service'),
         ('INPUT_PENDING','public_pending'),('INPUT_TAKE','input_take'),
         ('INPUT_EXTENT','input_extent'),('TASKMEMORY_WRITABLE','writable'),
         ('CONSOLEDRIVER_RUNNABLE','runnable')])
@@ -55,19 +55,11 @@ def markers(program,foreign,output):
         if name in foreign['symbols']:
             result[name]=dict(entry=foreign['symbols'][name],returns=[],entry_only=True)
     if 'input_collect' in result:
-        from dos_concurrent_trace import call_marker
-        # Observe caller-side stores, flag arguments and branch decisions too.
-        # Keep control processing outside the input charge; it already existed.
-        targets=dict(collect=result['input_collect']['entry'],service=result['input_service']['entry'])
-        for name,routine in [('control','CONSOLECONTROL_PROCESS'),('arrival','CONSOLEDRIVER_ARRIVAL')]:
-            targets[name]=next(r['address'] for r in image['routines'] if r['name'].startswith('M_'+routine+'_'))
-        mapped={**program,'labels':{**program['labels'],**targets}}
-        if 'bitmap_poll' in result:
-            targets['poll']=result['bitmap_poll']['entry']
-            mapped['labels']['poll']=targets['poll']
-        calls={name:call_marker(mapped,'M_AESSYSTEM_RUN_',name) for name in targets}
-        result['input_collect_turn']=dict(entry=calls['collect'],returns=[calls.get('poll',calls['control'])])
-        result['input_service_turn']=dict(entry=calls['control']+4,returns=[calls['arrival']])
+        # SCRENMGR has no combined console/input budget. Charge the actual
+        # collection routine; input delivery runs in its independent Task.
+        result['input_collect_turn']=dict(result['input_collect'])
+    if 'input_service' in result:
+        result['input_service_turn']=dict(result['input_service'])
     result['call']=dict(entry=program['labels']['console_bitmap_call'],returns=[program['labels']['console_bitmap_done']])
     repaint=[r for r in image['routines'] if r['name'].startswith('M_BITMAPSCROLL_REPAINTBEGIN_')]
     if repaint:result['repaint']=dict(entry=repaint[0]['address'],returns=[])

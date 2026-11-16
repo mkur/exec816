@@ -93,7 +93,7 @@ in AES or input.device to conceal an unresolved owner.
 | [Console lifecycle](../../lib/console/console-lifetime.inc), [driver](../../lib/console/consoledriver.act) | Separate input service lifetime from console display/model startup. Repurpose the Worker without recreating the combined loop inside the device. |
 | [CONSOLEFRONT](../../lib/console/consolefront.act), [CONSOLEDISPLAY](../../lib/console/consoledisplay.act) | Remove GUI dependencies from the standard text frontend and place display Claim/Release, view subscription, painting and OS restoration in its selected context. |
 | [DESKINPUT](../../lib/desktop/deskinput.act), [AESKEYS](../../lib/aes/aeskeys.act), [AES snapshot](../../lib/aes/aessnapshot.act) | Extract copied-state input delivery from live menu/drag/scene mutation and physical cursor work. Preserve captured routes and endpoint holds. |
-| [AESSYSTEM](../../lib/aes/aessystem.act), [DESKHOST](../../lib/desktop/deskhost.act) | Relocate remaining manager/display responsibilities under the SCRENMGR plan; retire obsolete input-pump/console callback bindings when their users have moved. |
+| [SCRENMGR](../../lib/aes/screnmgr.act), [DESKHOST](../../lib/desktop/deskhost.act) | Relocate remaining manager/display responsibilities under the SCRENMGR plan; retire obsolete input-pump/console callback bindings when their users have moved. |
 
 ## IM0 — freeze ownership, interface and cutover ledger
 

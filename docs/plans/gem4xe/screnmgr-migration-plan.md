@@ -12,8 +12,9 @@ vertical slider positions in the caller; SM1c adds vertical slider sizes and
 SM1d adds horizontal position/size. SM1e completes caller-side title/info painting.
 SM3a implements the selected nonblocking raw hit query. SM3b/c implement
 registration lifetimes and operation ownership; SM3d removes the scene gate.
-SM4 is in progress; the blocking manager loop is not installed yet. Independent
-input delivery is implemented through input.device. The
+SM4 is complete: the selected frontend runs the blocking SCRENMGR interaction
+loop. Independent input delivery runs through input.device. SM5 remains the
+combined acceptance step. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
 replacement slice lands.
@@ -46,9 +47,9 @@ delivery and recursive UPDATE, AESWIN caller-context setters and frame drawing.
 Exec retains its native Tasks, scheduler, IRQ/NMI protocol and device services.
 GEM4XE remains the primary graphics implementation donor.
 
-## Current responsibilities to relocate
+## Migration baseline and delivered responsibilities
 
-| Current implementation | Target responsibility | Dependency to settle |
+| Baseline implementation | Target responsibility | Migration dependency |
 | --- | --- | --- |
 | AESSYSTEM.Run, DESKMENU and DESKDRAG | SCRENMGR menu/frame interaction | Separate interaction events from ordinary recipient delivery; retain source-defined capture and MCTRL lifetimes. |
 | AESLOCAL / AESWINDOW plus deferred DESKPAINT | Caller-context window operation and synchronous frame draw | Adapt frame renderer state and use existing delegated display access. The shared console packet cannot simply be called by another Task. |
@@ -59,7 +60,7 @@ GEM4XE remains the primary graphics implementation donor.
 | CONSOLEBITMAP / DISPLAY / VBXE completions | Physical operations, grants and completion owned by their resource users | Retire or independently service hardware work before a manager wait can block its owner. Preserve fault retention and device shutdown. |
 | DESKCACHE, DESKMENUCACHE and DESKMOVE | Cache/copy lifetime inside the corresponding AES operation | Finish client-owned continuations without acquiring the client's semaphore from a different Task; preserve existing pixel/cached-move behavior until explicitly migrated. |
 
-Current source seams: [system loop](../../../lib/aes/aessystem.act),
+Current source seams: [system loop](../../../lib/aes/screnmgr.act),
 [console resident](../../../lib/console/consoledriver.act),
 [console backend](../../../lib/console/consolebackend.act),
 [keyboard consumer](../../../lib/console/consoleinput.act),
@@ -70,8 +71,7 @@ Current source seams: [system loop](../../../lib/aes/aessystem.act),
 
 ## Execution-context decision before the blocking loop
 
-The selected frontend still calls AESSYSTEM.Run, but it no longer owns physical
-input. The [input.device migration](../input-device-migration-plan.md) moves
+The selected frontend now calls SCRENMGR.Run and owns no physical input. The [input.device migration](../input-device-migration-plan.md) moves
 Acquire/Take/Release into the generic device Task. Bounded AES handlers resolve
 held snapshots and publish application inboxes without UPDATE, scene access or
 physical drawing. Copied manager interactions wait for the frontend's ownership;
@@ -81,9 +81,9 @@ CONSOLEBACKEND remains a separate stream/model Task.
 The implementation uses three service contexts: input, backend and the selected
 text/GEM frontend. It occupies one more ordinary Task pool than the previous
 combined two-service arrangement, within the existing eight-pool map. The GUI
-frontend keeps its large stack. This delivers SM2's input-service portion; it
-does not install the final blocking SCRENMGR loop or complete SM3/SM4's scene
-reader, caller drawing and physical-retirement dependencies. The chosen Task
+frontend keeps its large stack. IM0–IM8 delivered SM2's input-service portion.
+SM3 and SM4 subsequently delivered scene-reader, caller-drawing and
+physical-retirement dependencies. The chosen Task
 placement is an explicit Exec adaptation of MagiC's scheduler-side input role.
 
 The [execution-placement comparison](screnmgr-execution-map.md) records this
@@ -334,7 +334,7 @@ Continue in executable commits:
    completes caller exposure and restores.
    [SM4d3](../../history/screnmgr-migration.md#sm4d3-operation-owned-cache-and-manager-effects)
    completes cache maintenance and manager-effect boundaries. SM4d is implemented;
-   the combined-loop replacement remains SM4e.
+   the combined-loop replacement is completed by SM4e below.
 5. **SM4e — manager interaction and lifecycle cutover.** Account for menu
    save/restore, native console controls, cursor/device completion and shutdown;
    remove GEM's no-op console-render callbacks while preserving the standalone
@@ -342,6 +342,7 @@ Continue in executable commits:
    blocking UPDATE for actual interaction, shared helpers, release and wait.
    Remove the combined scheduling loop and obsolete helpers, with no alternate
    presenter implementation, Task addition or new scheduler service.
+   Status: implemented; see the [SM4e record](../../history/screnmgr-migration.md#sm4e2-screnmgr-event-loop-and-lifecycle-cutover).
 
 Use minimal optimized emitted checks for each changed boundary and the small
 ABI probes when a layout/bridge changes. Commit passing slices separately. The

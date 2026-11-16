@@ -264,13 +264,13 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
             policy = policy.replace('PUBLIC BYTE FUNC NativeReady()\n', 'PUBLIC BYTE FUNC NativeReady()\n\n  IF AESLOCKPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
             (out/'aeslocks.act').write_text(policy)
-            worker = read_source(ROOT/'lib/aes/aessystem.act').replace('USE AESLOCKS\n',
+            worker = read_source(ROOT/'lib/aes/screnmgr.act').replace('USE AESLOCKS\n',
                 'USE AESLOCKS\nUSE AESLOCKPROBE\n', 1)
-            point = '    ; Ownership scopes are complete; schedule the next turn.'
+            point = '    ; Ownership scopes are complete; wait for the next interaction/device wake.'
             require(worker.count(point) == 1, 'Manager UPDATE release boundary changed')
             worker = worker.replace(point,
-                '    AESLOCKPROBE.ready=AESLOCKS.Quiescent()\n'+point, 1)
-            (out/'aessystem.act').write_text(worker)
+                '    AESLOCKPROBE.ready=CONSOLEBITMAP.Pending()=0\n'+point, 1)
+            (out/'screnmgr.act').write_text(worker)
         if input_events:
             from test_aes_input_events import caller
             caller(out)

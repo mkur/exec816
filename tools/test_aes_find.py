@@ -33,18 +33,12 @@ def run(out,publication=False,from_build=None,ownership_check=False):
     if ownership_check:
         from library_paths import read_source
         probe=read_source(source).replace('USE EXEC\n',
-            'USE EXEC\nUSE DESKPAINT\nUSE DESKHOST\nUSE AESHOST\nUSE AESCORE\nUSE AESWAIT\nUSE CONSOLEBATCH\nUSE CONSOLETYPES\n',1)
+            'USE EXEC\nUSE DESKPAINT\nUSE DESKHOST\nUSE AESHOST\nUSE AESCORE\nUSE AESWAIT\nUSE DESKINPUT\n',1)
         point='  Require(EXEC.AttemptSemaphore(@service.updateResource)=0)'
         require(probe.count(point)==1,'Competing UPDATE checkpoint changed')
         probe=probe.replace(point,point+"""
-  Require(DESKPAINT.Ready()=0 AND DESKPAINT.MenuReady()=0)
-  Require(DESKPAINT.Runnable()=0 AND DESKPAINT.PaintPending()=0)
-  Require(DESKPAINT.Pump()=0)
-  Require(DESKHOST.Ready()=0 AND DESKHOST.PaintReady()=0)
-  Require(DESKHOST.ControlPending()=0)
   Require(DESKHOST.Idle()=0)
-  Require(AESHOST.Settled()=0)
-  Require(AESLOCKS.Quiescent()=0)
+  Require(DESKINPUT.InteractionPending()=0)
   Require(managerTask.tc_State=EXEC.TS_WAIT)
   BEGIN
     LET reply=EXEC.CreateMsgPort()
@@ -67,27 +61,6 @@ def run(out,publication=False,from_build=None,ownership_check=False):
   END
 """,1)
         probe=probe.replace('CARD checks','CARD checks\nAESTYPES.InputInbox ownershipInbox',1)
-        point='  service.owner=EXEC.FindTask(NULL)'
-        require(probe.count(point)==2,'Fixture owner publication changed')
-        # The first assignment belongs to the initial setup; test after peer exit.
-        at=probe.rindex(point)+len(point)
-        probe=probe[:at]+"""
-  BEGIN
-    LET batch=CONSOLEBATCH.Get()
-    batch.phase=CONSOLETYPES.BATCH_GATHER
-    batch.unit=0
-    endpoint.input=@ownershipInbox
-    service.mouseHolds=0
-    service.mouseOwner=0
-    DESKSTATE.menuActive=0
-    Require(DESKHOST.Idle()=0)
-    Require(service.updateResource.ss_Private(2)=0)
-    service.updateHint=service.updateHint OR AESSTATE.UPDATE_REQUESTED
-    AESHOST.Settle()
-    Require(batch.phase=CONSOLETYPES.BATCH_IDLE)
-    Require(service.updateResource.ss_Private(2)=0)
-  END
-"""+probe[at:]
         source=out/'probe.act';source.write_text(probe)
     program=read_build(from_build/'program') if from_build else build(compiler(ROOT/'build/actionc',release=True),
         source,out/'program',
@@ -98,7 +71,7 @@ def run(out,publication=False,from_build=None,ownership_check=False):
         runtime,_=execute(bridge,program,frame_limit=600,timeout=60)
         ownership(bridge,program,program['output'])
         checks=data(bridge,program['image'],'AESFINDTEST_CHECKS',True)[0]
-        require(checks==109+17*ownership_check,'Incomplete committed hit checks: '+str(checks))
+        require(checks==109+7*ownership_check,'Incomplete committed hit checks: '+str(checks))
         publication_checks=data(bridge,program['image'],'PUBLICATIONPROBE_CHECKS',True)[0] if publication else 0
         if publication:require(publication_checks==10,'Incomplete publication lifetime checks: '+str(publication_checks))
     report=dict(status='pass',tier='development',qualification=False,mode='opt',

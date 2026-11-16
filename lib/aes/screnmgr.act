@@ -1,0 +1,90 @@
+; MagiC SCRENMGR: wait for interaction, own UPDATE, finish, release and wait.
+; Input delivery and ordinary AES/VDI operations run independently in their owners.
+MODULE SCRENMGR
+USE EXEC
+USE CONSOLESYSTEM
+USE CONSOLEBITMAP
+USE AESHOST
+USE AESLOCKS
+USE DESKHOST
+USE DESKINPUT
+USE DESKFINISH
+
+CONST REQUEST_MASK=$80000000, STOP_MASK=$20000000
+
+PUBLIC BYTE FUNC Start()
+
+  IF DESKHOST.Start()=0 THEN
+    RETURN(0)
+  FI
+  LET self=EXEC.FindTask(NULL)
+  self.tc_Node.ln_Name=BYTE POINTER(c"SCRENMGR")
+  ; Finish initial chrome before the driver publishes frontend readiness.
+  IF AESLOCKS.SystemBegin()<>0 THEN
+    DESKFINISH.Finish()
+    AESHOST.Commit()
+    AESLOCKS.SystemEnd()
+  FI
+  DESKINPUT.Present()
+
+RETURN(1)
+
+; Preserve Wait's consumed bits and any arrival since it returned. A producer
+; posting after this acknowledgment leaves its bit intact through the next Wait.
+LONGCARD FUNC Collect(EXEC.Task POINTER self LONGCARD bits,mask)
+
+  IF (self.tc_SigRecvd & mask)<>0 THEN
+    bits=bits OR EXEC.SetSignal(0,mask)
+  FI
+
+RETURN(bits)
+
+PUBLIC PROC Run()
+  LONGCARD bits
+  BYTE accepted
+
+  LET self=EXEC.FindTask(NULL)
+  LET mask=REQUEST_MASK OR STOP_MASK OR CONSOLEBITMAP.Mask() OR DESKHOST.Mask()
+  bits=0
+  DO
+    bits=Collect(self,bits,mask)
+    IF (bits & STOP_MASK)<>0 THEN
+      accepted=CONSOLESYSTEM.RequestStop()
+    FI
+    IF CONSOLESYSTEM.Stopping()<>0 THEN
+      EXIT
+    FI
+
+    ; Publication, caller continuation hints and application-owned outlines
+    ; need no foreign UPDATE. Complete their device work before an Obtain.
+    AESHOST.Service()
+    DESKINPUT.Present()
+    IF DESKINPUT.InteractionPending()<>0 THEN
+      IF AESLOCKS.SystemBegin()<>0 THEN
+        DESKINPUT.ReplayKeys()
+        DESKINPUT.Service()
+        DESKINPUT.Advance()
+        DESKFINISH.Finish()
+        AESHOST.Commit()
+        AESLOCKS.SystemEnd()
+      FI
+    FI
+    DESKINPUT.Present()
+    ; Ownership scopes are complete; wait for the next interaction/device wake.
+    IF DESKINPUT.InteractionPending()=0 THEN
+      bits=EXEC.Wait(mask)
+    ELSE
+      bits=0
+    FI
+  OD
+  CONSOLEBITMAP.Finish()
+  AESLOCKS.SystemStop()
+
+RETURN
+
+PUBLIC PROC Stop()
+
+  DESKHOST.Stop()
+
+RETURN
+ENDMODULE

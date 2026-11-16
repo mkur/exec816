@@ -508,10 +508,6 @@ RETURN(0)
 PROC AdvanceGesture()
   BYTE drawn
 
-  IF DISPLAY.Blocked()<>0 THEN
-    RETURN
-  FI
-
   IF appVisual<>0 THEN
     Track()
     RETURN
@@ -620,28 +616,13 @@ PUBLIC PROC Advance()
       AND lossEpoch=DESKSTATE.LossEpoch() THEN
     RETURN
   FI
-  IF DISPLAY.Blocked()<>0 OR AESLOCKS.SystemBegin()=0 THEN
+  IF AESLOCKS.SystemBegin()=0 THEN
     RETURN
   FI
   AdvanceGesture()
   DESKSTATE.managerCapture=Continuing()
   DESKFINISH.Finish()
   AESLOCKS.SystemEnd()
-
-RETURN
-
-; Erase only the native outline; retain the gesture for ownership release.
-PUBLIC PROC Loan()
-  BYTE drawn
-
-  IF DESKSTATE.outlineVisible<>0 AND DISPLAY.Blocked()=0
-      AND CONSOLEBITMAP.Pending()=0 THEN
-    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
-    IF drawn<>0 OR CONSOLEBITMAP.Failed()<>0 THEN
-      DESKSTATE.outlineVisible=0
-      dirty=1
-    FI
-  FI
 
 RETURN
 
@@ -654,10 +635,6 @@ PUBLIC PROC Suspend()
   FI
 
   IF phase=APP_DRAG AND ApplicationReady()<>0 THEN
-    RETURN
-  FI
-
-  IF DISPLAY.Blocked()<>0 THEN
     RETURN
   FI
 
@@ -674,10 +651,6 @@ RETURN
 PROC PresentOutline()
   BYTE drawn,visible
   LAYERTYPES.Rect bounds
-
-  IF DISPLAY.Blocked()<>0 THEN
-    RETURN
-  FI
 
   IF appVisual<>0 THEN
     Track()
@@ -730,36 +703,13 @@ PUBLIC PROC Present()
       AND (Outlined()=0 OR CONSOLEBITMAP.Changed()=0) THEN
     RETURN
   FI
-  IF DISPLAY.Blocked()<>0 OR CONSOLEBITMAP.Pending()<>0
-      OR AESLOCKS.SystemBegin()=0 THEN
+  IF CONSOLEBITMAP.Pending()<>0 OR AESLOCKS.SystemBegin()=0 THEN
     RETURN
   FI
   PresentOutline()
   AESLOCKS.SystemEnd()
 
 RETURN
-
-BYTE FUNC InspectRunnable()
-
-  IF DISPLAY.Blocked()<>0 THEN
-    RETURN(0)
-  FI
-
-  IF appVisual<>0 THEN
-    RETURN(dirty<>0 AND (phase=0 OR ApplicationReady()<>0)
-        AND CONSOLEBITMAP.Pending()=0)
-  FI
-
-  IF Continuing()=0 AND AESLOCKS.SystemBlocked()<>0 THEN
-    RETURN(0)
-  FI
-
-  LET service=DESKSTATE.Get()
-
-RETURN((dirty<>0 AND CONSOLEBITMAP.Pending()=0)
-    OR (phase<>0 AND phase<>DRAGGING AND phase<>CLOSING
-    AND phase<>SIZING AND phase<>SLIDING AND phase<>ARROWING
-    AND service.scene.busy=0 AND CONSOLEBITMAP.Pending()=0))
 
 PUBLIC PROC Reset()
 
@@ -776,22 +726,5 @@ PUBLIC PROC Cancel()
   EXEC.Permit()
 
 RETURN
-
-PUBLIC BYTE FUNC Runnable()
-  BYTE ready
-
-  IF appVisual<>0 THEN
-    EXEC.Forbid()
-    ready=InspectRunnable()
-    EXEC.Permit()
-    RETURN(ready)
-  FI
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  ready=InspectRunnable()
-  AESLOCKS.SystemEnd()
-
-RETURN(ready)
 
 ENDMODULE

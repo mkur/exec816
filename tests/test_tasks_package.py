@@ -104,8 +104,9 @@ class TaskPackageTests(unittest.TestCase):
         from generate_tasks import task_entries
         from unittest.mock import patch
         names = ('M_APP_MAIN_A', 'M_CONSOLEDRIVER_WORKER_B',
-                 'M_AESSYSTEM_RUN_C', 'M_AESSYSTEM_START_D',
-                 'M_AESSYSTEM_STOP_E', 'M_AESWAIT_REMOVEWINDOW_F')
+                 'M_SCRENMGR_RUN_C', 'M_SCRENMGR_START_D',
+                 'M_SCRENMGR_STOP_E', 'M_AESWAIT_REMOVEWINDOW_F',
+                 'M_DESKFINISH_FINISH_AA', 'M_DESKAPPMENU_FINISH_BB')
         image = dict(entry=0x10000,
                      segments=[dict(address=0x10000, bytes=[0]*8, executable=True)],
                      routines=[dict(name=name, address=0x10000+index, arguments=[],

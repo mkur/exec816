@@ -3,8 +3,8 @@
 [Reference](README.md) · [C application guide](../guides/aes-applications.md) ·
 [Development record](../history/aes-server.md)
 
-The optional AES endpoint and graphical system loop run in the existing desktop
-frontend Task ([system module](../../lib/aes/aessystem.act)). Registration,
+The optional AES endpoint and SCRENMGR run in the existing desktop frontend
+Task ([manager module](../../lib/aes/screnmgr.act)). Registration,
 final detach, mouse preferences, window/menu operations, UPDATE/MCTRL, copied
 messaging and event/timer waits use caller library entries. Window mutations,
 frame/background/menu-bar exposure and synchronous copy completion run in their
@@ -636,9 +636,21 @@ reservation needs a future manager turn. No idle cache sweep or periodic AES
 wake is required. Normal Task preemption and independent input.device delivery
 continue during these operations.
 
-The existing combined frontend loop remains for console controls, cursor work
-and lifecycle integration until the SM4e cutover. This is not yet the blocking
-SCRENMGR event loop; see the [migration plan](../plans/gem4xe/screnmgr-migration-plan.md).
+SCRENMGR waits on durable input, publication, device and lifecycle signals.
+Only copied manager interaction work enters native blocking UPDATE Obtain;
+ordinary pointer presentation and endpoint wake hints run without that resource.
+The manager finishes its shared window/menu effects before releasing UPDATE.
+An active menu or native capture retains the same operation through its input
+waits. Cursor/outline calls complete physical grant admission before a blocking
+UPDATE entry; unrelated borrower activity cannot keep an otherwise complete
+UPDATE level held. Input.device and the console backend remain independent.
+
+There is no combined console-output/GUI paint budget, cache sweep, idle scene
+probe or voluntary manager Yield. The separate standalone console retains its
+renderer and physical completion loop. SCRENMGR shares only the console
+driver's lifecycle predicates; the driver retains startup, stop admission,
+backend retirement and display/session teardown policy. See the
+[migration plan](../plans/gem4xe/screnmgr-migration-plan.md).
 
 `wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) reads the latest complete
 published hit stack under a short Task guard. It acquires neither UPDATE nor

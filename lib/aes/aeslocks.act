@@ -1,7 +1,6 @@
 ; MagiC's common UPDATE resource, backed by the public native semaphore.
 MODULE AESLOCKS
 USE EXEC
-USE DISPLAY
 USE AESTYPES
 USE AESSTATE
 USE AESMOUSE
@@ -10,8 +9,6 @@ USE AESSNAPSHOT
 USE AESWAIT
 USE DESKSTATE
 USE CONSOLEBITMAP
-USE CONSOLEBATCH
-USE CONSOLETYPES
 BYTE systemHeld
 CARD systemDepth
 
@@ -64,22 +61,18 @@ PUBLIC PROC ReleaseUI()
 
 RETURN
 
-; The presenter tries once; failed acquisition leaves independent input/fences
-; running. Publish the hint and retry under one guard to close the release race.
-PUBLIC BYTE FUNC SystemReady()
+; SCRENMGR enters only for actual interaction. Native FIFO Obtain can sleep;
+; input, caller operations and device completion retain independent owners.
+BYTE FUNC SystemReady()
 
   LET service=AESSTATE.Get()
   IF service=NULL OR service.live=0 OR systemHeld<>0 THEN
     RETURN(1)
   FI
-  EXEC.Forbid()
-  systemHeld=BYTE(EXEC.AttemptSemaphore(@service.updateResource)<>0)
-  IF systemHeld=0 THEN
-    service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
-  FI
-  EXEC.Permit()
+  EXEC.ObtainSemaphore(@service.updateResource)
+  systemHeld=1
 
-RETURN(systemHeld)
+RETURN(1)
 
 PUBLIC BYTE FUNC PaintBlocked()
 
@@ -116,18 +109,10 @@ RETURN(blocked)
 PUBLIC BYTE FUNC NativeReady()
 
   LET desktop=DESKSTATE.Get()
-  LET batch=CONSOLEBATCH.Get()
 
-RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
+RETURN(desktop<>NULL AND desktop.scene.busy=0
     AND CONSOLEBITMAP.Pending()=0 AND DESKSTATE.menuReplacing=0
-    AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)
-
-PUBLIC BYTE FUNC ControllerLoan()
-
-  LET service=AESSTATE.Get()
-
-RETURN(service<>NULL AND (service.updateHint & AESSTATE.CONTROLLER_LOAN)<>0)
 
 ; Retain ownership across an actual physical continuation, never across idle
 ; cache gathering. A control callback uses this same balanced Release/Try path.
@@ -144,7 +129,7 @@ PUBLIC PROC SystemRelease()
 
 RETURN
 
-; Nested presenter operations share one native level. A retained effect can
+; Nested manager operations share one native level. A retained gesture can
 ; keep that level between scopes; independent input never enters a scope.
 PUBLIC BYTE FUNC SystemBegin()
 
@@ -161,18 +146,6 @@ PUBLIC PROC SystemEnd()
   SystemRelease()
 
 RETURN
-
-; Readiness of live scene state has the same UPDATE authority as mutation.
-PUBLIC BYTE FUNC Quiescent()
-  BYTE ready
-
-  IF SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  ready=NativeReady()
-  SystemEnd()
-
-RETURN(ready)
 
 ; Shutdown has closed admission and drained all clients and physical effects.
 PUBLIC PROC SystemStop()

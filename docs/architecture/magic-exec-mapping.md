@@ -103,7 +103,7 @@ Useful existing implementation seams include
 [`aes-messages.c`](../../c/calypsi/aes-messages.c),
 [`aesgate.act`](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover),
 [`aeslocks.act`](../../lib/aes/aeslocks.act),
-[`aessystem.act`](../../lib/aes/aessystem.act),
+[`aessystem.act`](https://github.com/mkur/exec816-public/blob/a768c4f4/lib/aes/aessystem.act),
 [`display-access.inc`](../../lib/display/display-access.inc) and
 [`gem-vbxe.c`](../../ports/gem4xe/adapter/gem-vbxe.c).
 These are existing implementations, not a claim that every interface between
@@ -163,7 +163,7 @@ Source baselines are in the [standalone MagiC model](magic.md), especially its
 [input/event path](magic.md#input-events-and-application-messages), and the
 [operation-boundary analysis](../history/magic-operation-boundaries.md).
 Current implementations include [`AESLOCKS`](../../lib/aes/aeslocks.act),
-[`AESSYSTEM`](../../lib/aes/aessystem.act),
+[`AESSYSTEM`](https://github.com/mkur/exec816-public/blob/a768c4f4/lib/aes/aessystem.act),
 [`AESWINDOW`](../../lib/aes/aeswindow.act),
 [`AESWINDOWSTATE`](../../lib/aes/aeswindowstate.act) and
 [`DESKPAINT`](../../lib/desktop/deskpaint.act).

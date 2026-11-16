@@ -72,9 +72,9 @@ def listing_returns(image, directory, exits=False):
 
 def definition(program, foreign, app, directory, app_names=APP_NAMES, app_directory=None):
     collect = next(r['address'] for r in program['image']['routines']
-                   if r['name'].startswith('M_AESSYSTEM_COLLECT_'))
+                   if r['name'].startswith('M_SCRENMGR_COLLECT_'))
     mapped = {**program, 'labels': {**program['labels'], 'collect': collect}}
-    points = dict(turn=call_marker(mapped, 'M_AESSYSTEM_RUN_', 'collect'))
+    points = dict(turn=call_marker(mapped, 'M_SCRENMGR_RUN_', 'collect'))
     address = program['labels']['context_restore']
     hosted = (program['output']/'hosted.bin').read_bytes()
     require(hosted[address-adapter.RESIDENT_BASE:address-adapter.RESIDENT_BASE+8] ==
@@ -89,9 +89,9 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         'AESCORE_SETTLE',
         'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
         'DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
-    optional = ('AESLOCAL_CALL', 'AESLOCAL_PUBLISH', 'AESHOST_PUBLISH',
+    optional = ('AESLOCAL_CALL', 'AESLOCAL_PUBLISH', 'AESHOST_COMMIT',
                 'AESLOCKS_NATIVEREADY', 'AESLOCKS_SYSTEMBEGIN',
-                'AESLOCKS_RELEASE', 'AESHOST_SETTLED')
+                'AESLOCKS_RELEASE', 'DESKINPUT_INTERACTIONPENDING')
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
     native.update(native_markers(program, [(n,n) for n in present]))

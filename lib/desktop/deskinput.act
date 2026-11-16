@@ -468,27 +468,6 @@ PUBLIC PROC Service()
 
 RETURN
 
-; Active-service boundary: the signal field is only a read-only arrival hint.
-; Acknowledge through Exec, never by writing Task state. An interrupt arriving
-; after the hint or after an empty read retains its bit for the next boundary
-; or Wait. Service also drains retained input and eligible AES replay.
-PUBLIC PROC Boundary()
-  LONGCARD bits
-
-  IF acquired=0 THEN
-    RETURN
-  FI
-
-  LET desktop=DESKSTATE.Get()
-  LET owner=desktop.owner
-  bits=0
-  IF (owner.tc_SigRecvd & wakeMask)<>0 THEN
-    bits=EXEC.SetSignal(0,wakeMask)
-  FI
-  Service()
-
-RETURN
-
 ; Commit retained gestures after AES admission, preserving input ordering.
 PUBLIC PROC Advance()
 
@@ -516,7 +495,7 @@ PUBLIC PROC Present()
       AESCURSOR.Select(service)
     FI
   END
-  IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
+  IF acquired<>0 AND CONSOLEBITMAP.Pending()=0 THEN
     IF MouseReady()=0 AND DESKDRAG.Application()=0 THEN
       DESKDRAG.Suspend()
     ELSE
@@ -550,30 +529,10 @@ PUBLIC PROC Present()
 
 RETURN
 
-PUBLIC BYTE FUNC Runnable()
+; Durable copied work only: this hint neither inspects the live scene nor
+; attempts UPDATE. Ordinary pointer motion needs cursor service, not interaction.
+PUBLIC BYTE FUNC InteractionPending()
 
-  IF acquired=0 THEN
-    RETURN(0)
-  FI
-
-  IF keyLost<>0
-      OR (keyCount<>0 AND DESKMENU.InputBlocked()=0
-        AND AESLOCKS.SystemBlocked()=0) OR DESKMENU.Runnable()<>0
-      OR DESKDRAG.Runnable()<>0 THEN
-    RETURN(1)
-  FI
-
-  LET service=DESKSTATE.Get()
-  IF MouseReady()<>0 AND DESKMENU.InputBlocked()=0 THEN
-    IF AESINPUT.Pending()<>0 THEN
-      RETURN(1)
-    FI
-  FI
-
-  IF dirty=0 OR CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN(0)
-  FI
-
-RETURN(DISPLAY.Blocked()=0)
+RETURN(acquired<>0 AND (keyCount<>0 OR keyLost<>0 OR AESINPUT.Pending()<>0))
 
 ENDMODULE

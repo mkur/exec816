@@ -118,7 +118,7 @@ The next small step is to attribute presenter turns and wake reasons during
 the already-owned portion of UPDATE: collect/input/settle/paint work and
 display readiness retries. [`Display.Leave`](../../lib/display/display-access.inc)
 can hand off queued access or signal a blocked owner; the
-[presenter loop](../../lib/aes/aessystem.act) contains readiness and settling
+[presenter loop](https://github.com/mkur/exec816-public/blob/a768c4f4/lib/aes/aessystem.act) contains readiness and settling
 work. These are source-level candidates, not a proven cause of every measured
 turn. Capture the relevant boundaries before removing wakes or enlarging
 drawing quanta. No drawing limits or production behavior changed in this audit.

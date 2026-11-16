@@ -127,8 +127,6 @@ ENDMODULE
     (out/'aesmenuprobe.act').write_text(source)
     host = read_source(ROOT/'lib/aes/aeshost.act').replace('USE AESCORE',
         'USE AESCORE\nUSE AESMENUPROBE')
-    host=host.replace('PUBLIC BYTE FUNC Settled()\n',
-        'PUBLIC BYTE FUNC Settled()\n\n  IF AESMENUPROBE.Pending()<>0 THEN RETURN(0) FI\n')
     needle = '  changed=service.directory.changed<>0'
     require(host.count(needle) == 1, 'Menu producer wake boundary changed')
     (out/'aeshost.act').write_text(host.replace(needle, '  AESMENUPROBE.Pump()\n'+needle))
@@ -137,12 +135,15 @@ ENDMODULE
 def worker_probe(original):
     def generate(*args, **kwargs):
         directory=original(*args, **kwargs)
-        path=directory/'aessystem.act'
-        source=read_source(ROOT/'lib/aes/aessystem.act').replace('USE EXEC\n','USE EXEC\nUSE DESKSTATE\nUSE MENUTRANSITIONMARKS\n',1)
-        old='      bits=EXEC.Wait($e0000000 OR displayMask OR desktopMask)'
-        require(source.count(old)==1,'Presenter wait boundary changed')
-        source=source.replace(old, '      IF inputPending<>0 AND DESKSTATE.menuReplacing<>0 THEN\n'
-            '        MENUTRANSITIONMARKS.waits==+1\n      FI\n'+old)
+        path=directory/'consolebitmap.act'
+        source=read_source(ROOT/'lib/console/consolebitmap.act').replace(
+            'USE EXEC\n','USE EXEC\nUSE DESKSTATE\nUSE AESINPUT\nUSE MENUTRANSITIONMARKS\n',1)
+        start=source.index('PUBLIC PROC Finish()')
+        old='      EXEC.Wait(completionMask)'
+        require(source[start:].count(old)==1,'Owner completion wait boundary changed')
+        source=source[:start]+source[start:].replace(old,
+            '      IF AESINPUT.Pending()<>0 AND DESKSTATE.menuReplacing<>0 THEN\n'
+            '        MENUTRANSITIONMARKS.waits==+1\n      FI\n'+old,1)
         path.write_text(source)
         return directory
     return generate

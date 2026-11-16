@@ -60,13 +60,16 @@ ENDMODULE
     probe='''MODULE ADMISSIONPROBE
 USE EXEC
 USE AESLOCKS
+USE DESKINPUT
+USE INPUT
+USE A816MEMORY
 USE CONSOLETILING
 USE CONSOLECONTROL
 USE CONSOLEWINDOWS
 USE CONSOLETYPES
 USE HEAPCORE
 PUBLIC BYTE controlChecks
-PUBLIC PROC Controls()
+PUBLIC PROC Controls(BYTE unused)
 
   LET entered=CARD POINTER($AdmissionEntered)
   LET resumed=CARD POINTER($AdmissionResumed)
@@ -89,36 +92,58 @@ PUBLIC PROC Controls()
 
 RETURN
 
-PUBLIC PROC Pause(BYTE unused)
+PUBLIC PROC Pending(BYTE unused)
+  INPUT.Event key
 
   LET request=CARD POINTER($AdmissionRequest)
   IF request^<>0 THEN
     BEGIN
       LET entered=CARD POINTER($AdmissionEntered)
-      LET resumed=CARD POINTER($AdmissionResumed)
       request^=0
       entered^=1
-      AESLOCKS.ObtainUI()
-      AESLOCKS.ReleaseUI()
+      A816MEMORY.Clear(BYTE POINTER(@key),INPUT.EVENT_BYTES)
+      key.kind=INPUT.EVENT_KEY
+      key.code=44
+      key.qualifiers=INPUT.CONTROL
+      ; Feed the production copied-key route. The real interaction entry,
+      ; rather than this fixture hook, must block on native UPDATE.
+      BEGIN
+        LET handled=DESKINPUT.CaptureKey(@key)
+      END
+    END
+  FI
+
+RETURN
+
+PUBLIC PROC Completed(BYTE unused)
+
+  LET entered=CARD POINTER($AdmissionEntered)
+  IF entered^<>0 THEN
+    BEGIN
+      LET resumed=CARD POINTER($AdmissionResumed)
       resumed^=1
     END
   FI
 
 RETURN
+
 ENDMODULE
 '''
-    worker=read_source(ROOT/'lib/aes/aessystem.act').replace(
+    worker=read_source(ROOT/'lib/aes/screnmgr.act').replace(
         'USE AESLOCKS\n','USE AESLOCKS\nUSE ADMISSIONPROBE\n',1)
-    point='    DESKINPUT.ReplayKeys()'
-    require(worker.count(point)==1,'Manager loop entry changed')
-    (out/'aessystem.act').write_text(worker.replace(point,
-        '    ADMISSIONPROBE.Pause(0)\n'+point,1))
+    point='    AESHOST.Service()'
+    require(worker.count(point)==1,'Manager event boundary changed')
+    worker=worker.replace(point,'    ADMISSIONPROBE.Pending(0)\n'+point,1)
+    point='        AESLOCKS.SystemEnd()'
+    require(worker.count(point)==1,'Manager interaction completion changed')
+    (out/'screnmgr.act').write_text(worker.replace(point,
+        point+'\n        ADMISSIONPROBE.Completed(0)',1))
     caller=read_source(ROOT/'lib/aes/aeslocal.act').replace(
         'USE EXEC\n','USE EXEC\nUSE ADMISSIONPROBE\n',1)
     point='CARD FUNC Exposure(AESTYPES.Request POINTER request)\n  CONSOLEBITMAP.Packet packet\n'
     require(caller.count(point)==1,'Caller exposure boundary changed')
     (out/'aeslocal.act').write_text(caller.replace(point,
-        point+'\n  ADMISSIONPROBE.Controls()\n',1))
+        point+'\n  ADMISSIONPROBE.Controls(0)\n',1))
     original=builder.prepare
 
     def prepare(path,directory,foreign,*args):
@@ -214,6 +239,32 @@ def run(out,reuse=False,reuse_c=False):
                         at=yy*frame.stride+(xx+16)*4
                         require(pixels[at:at+3]==color,f'Caller pixels at {xx},{yy}')
                 report['caller_pixels']='exact 8x8 fill and offscreen round-trip while manager blocked'
+                from generate_tasks import constants as task_constants
+                tc=task_constants()
+                directory=get(context+rf['directory'])
+                manager=get(directory+records['Directory']['fields']['owner'],3)
+                control=get(manager+tc['TASK_TC_EXECPRIVATE'],3)
+                reason=get(control+tc['TCB_WAITREASON'],1)
+                require(reason==tc['WAIT_SEMAPHORE'],
+                        'SCRENMGR is not waiting in native UPDATE Obtain')
+                report['manager_wait']='native semaphore for copied Ctrl-Tab interaction'
+                endpoints=directory+records['Directory']['fields']['endpoints']
+                endpoint=next(endpoints+i*records['Endpoint']['size'] for i in range(
+                    (records['Directory']['fields']['mouse']-records['Directory']['fields']['endpoints'])//records['Endpoint']['size'])
+                    if get(endpoints+i*records['Endpoint']['size'])==get(context+rf['client']))
+                inbox=get(endpoint+records['Endpoint']['fields']['input'])
+                keytail=inbox+records['InputInbox']['fields']['keyTail']
+                previous=get(keytail,1)
+                def frames(n):
+                    condition=f'@frame>={b.eval_expr("@frame")+n}'
+                    b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
+                    run_to(b,p['labels']['native_irq'],condition=condition,timeout=30,frame_limit=60)
+                b._cmd_ok('KEY A down');frames(4)
+                b._cmd_ok('KEY A up');frames(2)
+                require(get(keytail,1)!=previous,'Input delivery waited for SCRENMGR UPDATE')
+                require(get(control+tc['TCB_WAITREASON'],1)==tc['WAIT_SEMAPHORE'],
+                        'SCRENMGR resumed before caller released UPDATE')
+                report['independent_input']='physical A key published to caller inbox while SCRENMGR waits'
                 b.poke16(sy['AdmissionGo'],1)
                 b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=120,frame_limit=6000)
