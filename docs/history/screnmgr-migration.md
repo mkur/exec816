@@ -877,8 +877,10 @@ Each sample has three successful native UPDATE Attempts and no Obtain wait.
 The interaction fixture separately covers contention and FIFO handoff. The
 owner-copy return establishes checked completion; it is not a raw hardware
 BUSY-edge timestamp. The two owner-copy calls across each whole sample include
-a separate slider-frame copy; only the call inside `vro_cpyfm` is the viewport
-copy above. Viewport visibility is frame-polled: mismatch-to-match brackets are
+an additional END_UPDATE copy, as corrected by the later
+[slider audit](gem-slider-drawing.md#baseline-audit); only the call inside
+`vro_cpyfm` is the viewport copy above. Viewport visibility is frame-polled:
+mismatch-to-match brackets are
 120.23–143.82 ms down and 144.34–176.92 ms up. The supervisor fixture's yielding
 loop contributes scheduling cost. Two actions establish neither a latency
 distribution nor a performance improvement. Existing observer names referring

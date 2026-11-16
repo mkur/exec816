@@ -178,7 +178,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out,presenter=False,expect_copy_units=None):
+def run(cache,out,presenter=False,expect_copy_units=None,slider=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview','counter')}
@@ -193,6 +193,10 @@ def run(cache,out,presenter=False,expect_copy_units=None):
         import mgview_presenter_trace
         d['presenter']=mgview_presenter_trace.definition(p)
         d['pcs']=sorted(set(d['pcs'])|set(d['presenter']['pcs']))
+    if slider:
+        import mgview_slider_trace
+        d['slider']=mgview_slider_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['slider']['pcs']))
     (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
     at=lambda name:next(r['address'] for r in p['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in r['name'])
     report=dict(status='running',tier='development',qualification=False,builds_run=0,samples=[],
@@ -311,6 +315,8 @@ def run(cache,out,presenter=False,expect_copy_units=None):
                 'Unexpected physical copy-unit count')
         if presenter:
             report['presenter']=mgview_presenter_trace.analyze(out,d,report['audit'],foreign,cache/'drawing')
+        if slider:
+            report['slider']=mgview_slider_trace.analyze(out,d,report['audit'])
         report['status']='pass'
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
@@ -334,6 +340,10 @@ def reanalyze(cache,out):
         import mgview_presenter_trace
         d['presenter']=mgview_presenter_trace.definition(p)
         d['pcs']=sorted(set(d['pcs'])|set(d['presenter']['pcs']))
+    if 'slider' in recorded:
+        import mgview_slider_trace
+        d['slider']=mgview_slider_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['slider']['pcs']))
     require(json.loads(json.dumps(d))==json.loads((out/'definition.json').read_text()),'Captured markers changed')
     r['audit']=analyze(out,d,r['loaded_base'],r['samples'])
     if r.get('expected_copy_units') is not None:
@@ -341,6 +351,8 @@ def reanalyze(cache,out):
             'Unexpected captured physical copy-unit count')
     if 'presenter' in d:
         r['presenter']=mgview_presenter_trace.analyze(out,d,r['audit'],foreign,cache/'drawing')
+    if 'slider' in d:
+        r['slider']=mgview_slider_trace.analyze(out,d,r['audit'])
     r.update(status='pass');r.pop('error',None)
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     return r
@@ -352,9 +364,10 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,default=ROOT/'build/mgview-audit')
     parser.add_argument('--analyze-only',action='store_true')
     parser.add_argument('--presenter',action='store_true',help='Trace presenter phases and signal sites')
+    parser.add_argument('--slider',action='store_true',help='Trace caller slider mutation, publication and frame raster costs')
     parser.add_argument('--expect-copy-units',type=int,help='Assert the measured physical copy count per scroll')
     args=parser.parse_args()
-    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units)
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
     if 'presenter' in r:
         for row in r['presenter']['samples']:
