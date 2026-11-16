@@ -209,7 +209,7 @@ UWORD AESRun(void)
     take(in, 620, 230, 1); take(in, 610, 220, 0);
     CHECK(wind_update(END_MCTRL));
 
-    /* Released deferred title sequence cannot prevent an owner upgrade. */
+    /* Released deferred title binding cannot prevent an owner upgrade. */
     CHECK(wind_update(BEG_UPDATE));
     edge(80, 46, 1);
     sample(3, 5, 0, 0, 0, 0); /* BREAK belongs to the deferred title gesture. */

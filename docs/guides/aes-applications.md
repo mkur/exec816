@@ -167,7 +167,7 @@ application with the service. A failed registration releases those resources;
 retry is permitted. The shared directory is internal to the binding.
 
 Detach calls `appl_exit()` when the application has not already done so, waits
-for endpoint retirement and the final reply, then deletes its ports, message
+for caller-side endpoint retirement, then deletes its ports, message
 pool and private context. A failed detach
 must prevent Task/image retirement. Do not remove a registered Task or free its
 image while the service retains its lease. Do not share one registration across

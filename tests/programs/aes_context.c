@@ -107,8 +107,8 @@ UWORD AESWireProbe(void)
         ExecAESPointer(NULL, 1)) return 1;
     if (r->version != AES_VERSION || r->bytes != sizeof(*r) ||
         r->owner != FindTask(NULL) || r->binding != (UBYTE *)r ||
-        r->sequence != 0x87654321UL) return 2;
-    for (i = 0; i < AES_RPC_INTIN_WORDS; ++i) {
+        (ULONG)r->service != 0x876543UL) return 2;
+    for (i = 0; i < AES_ARG_WORDS; ++i) {
         if (r->intin[i] != -100-(WORD)i) return 3;
         r->intin[i] = 300+i;
     }

@@ -95,7 +95,7 @@ static void horizontal(WORD old)
     WORD handle,other,plain,i;
     static WORD a,b,c,d,control[5]={105,6,1,0,0},global[15],in[6],out[1];
     AESPB pb={control,global,in,out,NULL,NULL};
-    ULONG revision,sequence;
+    ULONG revision,binding;
     const WORD kind=AES_WINDOW_KIND|FULLER|SIZER|UPARROW|DNARROW|VSLIDE|LFARROW|RTARROW|HSLIDE;
     CHECK(wind_close(old));CHECK(wind_delete(old));
     CHECK(wind_create(kind,32,32,63,80)==-1);
@@ -110,9 +110,9 @@ static void horizontal(WORD old)
     CHECK(wind_set(handle,WF_HSLSIZE,0,0,0,0));
     in[0]=handle;in[1]=WF_HSLSIZE;in[2]=250;aes_call(&pb);CHECK(out[0]);
     CHECK(wind_set(handle,WF_HSLIDE,1000,0,0,0));
-    revision=ExecAESWindowView(handle)->revision;sequence=ExecAESContext()->sequence;
+    revision=ExecAESWindowView(handle)->revision;binding=(ULONG)ExecAESContext()->request.service;
     CHECK(wind_set(handle,WF_HSLIDE,1000,0,0,0));
-    CHECK(ExecAESWindowView(handle)->revision==revision && ExecAESContext()->sequence==sequence);
+    CHECK(ExecAESWindowView(handle)->revision==revision && (ULONG)ExecAESContext()->request.service==binding);
     CHECK(!wind_set(handle,WF_HSLIDE,-1,0,0,0) && ExecAESDiagnostic()==AES_MALFORMED);
     CHECK(!wind_set(handle,WF_HSLSIZE,1001,0,0,0) && ExecAESDiagnostic()==AES_MALFORMED);
     geometry(handle,WF_HSLIDE,1000,0,0,0);geometry(handle,WF_HSLSIZE,250,0,0,0);

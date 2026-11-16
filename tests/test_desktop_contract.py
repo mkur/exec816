@@ -36,13 +36,13 @@ class DesktopContractTests(unittest.TestCase):
             for path, expected in generator.files().items():
                 self.assertEqual(path.read_text(), expected)
 
-    def test_hybrid_rpc_profile_excludes_message_and_event_opcodes(self):
+    def test_caller_service_operations_exclude_message_and_event_waits(self):
         import generate_aes_server as aes
-        self.assertEqual(aes.ABI['rpc_operations'], ['OP_INIT', 'OP_EXIT', 'OP_MOUSE_PROFILE'])
+        self.assertEqual(aes.ABI['service_operations'], ['OP_INIT', 'OP_DETACH', 'OP_MOUSE_PROFILE'])
         self.assertEqual(aes.layout()['Request']['size'], 418)
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)
         self.assertEqual(aes.layout()['GuiDelivery']['size'], 40)
         self.assertEqual(aes.ABI['constants']['QUEUE_DEPTH'], 16)
-        self.assertEqual(aes.ABI['constants']['RPC_INTIN_WORDS'], 6)
+        self.assertEqual(aes.ABI['constants']['ARG_WORDS'], 6)
         self.assertEqual(aes.ABI['constants']['INTIN_WORDS'], 16)

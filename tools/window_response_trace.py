@@ -16,7 +16,7 @@ DRAWING = ('GemDrawingFrameBatch GemDrawingWidgetBatch GemDrawingBatch '
            'GemDrawingCopyStart GemDrawingPoll GemFrameGadget GemWidgetFill '
            'blit_mask solid_record VbxeOwnerSubmit VbxeOwnerFence '
            'VbxeOwnerWrite pointer_erase wind_update ExecAESBeginUpdate ExecAESUpdate '
-           'ExecAESSubmit _AESLocalCall').split()
+           'ExecAESServiceCall _AESLocalCall').split()
 
 
 def setup(out, bookkeeping=False):

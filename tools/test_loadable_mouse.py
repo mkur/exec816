@@ -86,12 +86,12 @@ def run(out,replay=False):
                         if context and number(context+request['fields']['global']+4)==gem_id:
                             found.append(context)
                     require(len(found)==1,'No private loaded-probe context')
-                    sequence=found[0]+request['fields']['sequence']
-                    before_rpc=number(sequence,4)
+                    association=found[0]+request['fields']['service']
+                    before_binding=number(association,3)
                     position=schedule(bridge,program,position,(548,88))
                     reach('(dw($%x)=1)&(dw($%x)=15)'%(probe,probe+8))
-                    after_rpc=number(sequence,4)
-                    require(before_rpc==after_rpc,'Warm cursor/scroll added an RPC')
+                    after_binding=number(association,3)
+                    require(before_binding==after_binding,'Warm cursor/scroll changed its service binding')
                     reach('dw($%x)=%d'%(at('phase'),first+2))
                     after=[number(model+14,4) for model in models]
                     require(all(b>a for a,b in zip(counts,after)),
@@ -101,7 +101,7 @@ def run(out,replay=False):
                     report['cases'].append(dict(round=round,bases=bases,
                         counter_before=counts,counter_after=after,probe_checks=number(probe+4),
                         probe_rounds=number(probe+8,4),measured_warm_rounds=15,
-                        warm_rpc_delta=after_rpc-before_rpc))
+                        service_binding_delta=after_binding-before_binding))
                     bridge.screenshot(str(out/f'round-{round}.png'))
                     bridge.poke16(at('go'),first+2)
                 bridge.bp_clear_all()

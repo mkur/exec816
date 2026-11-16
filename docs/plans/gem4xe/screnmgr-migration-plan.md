@@ -322,6 +322,7 @@ Continue in executable commits:
    endpoint/client publication and queued input holds; retire obsolete transport
    dispatch and update bindings/callers together. Check a caller operation while
    the manager waits on its UPDATE, independent events and cooperative exit.
+   Status: implemented; see the [SM4c record](../../history/screnmgr-migration.md#sm4c-caller-registration-and-final-detach).
 4. **SM4d — operation-owned exposure and cache work.** Adapt shared GEM4XE
    painting to caller-owned packets and grants; finish frame/background exposure
    and cache restoration under the originating AES/manager operation. Application

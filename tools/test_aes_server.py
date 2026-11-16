@@ -16,7 +16,7 @@ from test_cooperative import data
 from library_paths import read_source
 
 
-def context_program(out, optimize):
+def context_program(out, optimize, reuse_c=False):
     out.mkdir(parents=True, exist_ok=True)
     for path, content in files().items():
         require(path.read_text() == content, 'Stale AES output: '+str(path))
@@ -24,7 +24,21 @@ def context_program(out, optimize):
     # whole-desktop C image exceeds its existing code bank; the code under
     # test and native bridge are independently exercised raw and optimized.
     from generate_display import expected_layout as display_layout
-    foreign = drawing(out, True, probe=True, desktop_style=True,
+    selected_drawing=drawing
+    if reuse_c:
+        from native_program import sha256
+        cached=json.loads((out/'c-image.json').read_text())
+        require(cached['provenance'].get('header_inputs'),'Cached C headers were not recorded')
+        for name,digest in {**cached['provenance']['source_inputs'],
+                            **cached['provenance']['header_inputs']}.items():
+            require(sha256(ROOT/name)==digest,'Changed cached C source: '+name)
+        require(cached['provenance']['compiler_flags'][-1]=='-O2','Wrong cached renderer mode')
+        require(cached['provenance']['source_optimization']==
+                {n:optimize for n in ('display.c','aes.c','aes-events.c',
+                                      'aes_context.c','aes-menu.c','menu-render.c')},
+                'Wrong cached client mode')
+        selected_drawing=lambda *args,**kwargs:cached
+    foreign = selected_drawing(out, True, probe=True, desktop_style=True,
         client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', ROOT/'c/calypsi/aes-events.c', ROOT/'tests/programs/aes_context.c'],
         client_entries=['AESClientOne', 'AESClientTwo'],
         client_roots=['AESContextProbe', 'AESWireProbe', 'AESProbePacket',
@@ -82,10 +96,10 @@ PROC Main()
   packetAddress^=LONGCARD(ADDRESS(packet))
   packet.version=AESTYPES.VERSION
   packet.bytes=SIZEOF(AESTYPES.Request)
-  packet.sequence=$87654321
+  packet.service=EXEC.MsgPort POINTER($876543)
   packet.owner=EXEC.FindTask(NULL)
   packet.binding=BYTE POINTER(packet)
-  FOR index=0 TO AESTYPES.RPC_INTIN_WORDS-1 DO
+  FOR index=0 TO AESTYPES.ARG_WORDS-1 DO
     packet.intin(index)=-100-INT(index)
   OD
 
@@ -97,7 +111,7 @@ PROC Main()
   entry^=${sy['AESWireProbe']:x}
   result=cProbe()
   Require(result=0)
-  FOR index=0 TO AESTYPES.RPC_INTIN_WORDS-1 DO
+  FOR index=0 TO AESTYPES.ARG_WORDS-1 DO
     Require(packet.intin(index)=INT(300+index))
   OD
 
@@ -124,19 +138,36 @@ ENDMODULE
     memory = out/'fixture-memory.json'
     memory.write_text(json.dumps(profile, indent=2)+'\n')
     launcher = prepare(source, out, foreign, desktop=True, aes=True)
+    # A transient manager read scope may make Stop report BUSY. Bound retries
+    # here rather than turning this layout probe into a shutdown race test.
+    text=launcher.read_text()
+    point='  IF CONSOLEDRIVER.Stop()=0 THEN\n    HEAPCORE.Abort($f732)\n  FI'
+    require(text.count(point)==1,'Console stop boundary changed')
+    launcher.write_text(text.replace(point,'''  BEGIN
+    CARD attempts
+
+    attempts=0
+    WHILE CONSOLEDRIVER.Stop()=0 DO
+      attempts==+1
+      IF attempts=64 THEN
+        HEAPCORE.Abort($f732)
+      FI
+      EXEC.Yield()
+    OD
+  END''',1))
     program = build(compiler(ROOT/'build/actionc',release=True), launcher, out/'program',
         optimize=optimize, tasks=True, task_capacity=8, foreign_image=foreign,
         console_deferred=True, memory_profile=memory)
     return program, foreign
 
 
-def run(out, mode, replay=False):
+def run(out, mode, replay=False, reuse_c=False):
     out.mkdir(parents=True, exist_ok=True)
     if replay:
         program = read_build(out/'program')
         foreign = json.loads((out/'c-image.json').read_text())
     else:
-        program, foreign = context_program(out, mode == 'opt')
+        program, foreign = context_program(out, mode == 'opt', reuse_c)
     report = dict(status='running', tier='development', qualification=False,
                   slice='AS0a', mode=mode, build=program['build'],
                   reserved_bank_zero_delta=dict(fixed=0, per_public_task=[0]*8))
@@ -179,13 +210,6 @@ def check_bridge(words, entry):
 
 
 def caller_probes(out, timer=False):
-    (out/'aeshybridprobe.act').write_text('MODULE AESHYBRIDPROBE\nPUBLIC BYTE park\nENDMODULE\n')
-    core = read_source(ROOT/'lib/aes/aescore.act').replace('USE HEAPCORE', 'USE HEAPCORE\nUSE AESHYBRIDPROBE')
-    needle='  IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN'
-    require(core.count(needle)==1,'Missing AES dispatch boundary')
-    core=core.replace(needle, '  IF request.operation=AESTYPES.OP_WRITE OR request.operation=AESTYPES.OP_MESAG\n      OR request.operation=AESTYPES.OP_TIMER OR request.operation=AESTYPES.OP_MULTI THEN\n    HEAPCORE.Abort($fcbe)\n  FI\n\n'+needle)
-    core=core.replace('  count=0', '  IF AESHYBRIDPROBE.park<>0 THEN\n    RETURN(0)\n  FI\n\n  count=0')
-    (out/'aescore.act').write_text(core)
     if not timer:
         return
     binding = (ROOT/'c/calypsi/aes-events.c').read_text().replace(
@@ -331,7 +355,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             foreign = selected_drawing(out, True, desktop_style=True, fault=borrowed, renderer_source=renderer,
                 client_sources=[ROOT/'c/calypsi/aes.c', ROOT/'c/calypsi/aes-messages.c', (out/'aes-events.c' if events or timers or input_events else ROOT/'c/calypsi/aes-events.c'), ROOT/('tests/programs/display_borrow.c' if borrowed else f'tests/programs/aes_{suite}.c')]+([ROOT/'tests/programs/aes_peer_binding.c'] if registration else [])+([ROOT/'tests/programs/aes_frame_markers.c'] if suite=='frame' else [])+([ROOT/'tests/programs/aes_geometry_markers.c'] if suite=='geometry' else []),
                 client_entries=entries,
-                client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+(['AESPark'] if events or timers or suite == 'messages' else [])+extra_roots,
+                client_roots=['AESRun', 'AESService', 'AESChecks', 'AESFailures']+(['AESExhausted'] if registration else [])+(['AESVisible', 'AESVisibleCount', 'AESPhysical', 'AESPhysicalGo', 'AESView', 'AESWindow', 'AESControl'] if windows else [])+extra_roots,
                 client_probes=[(ROOT/'c/calypsi/aes-layout.c', expected_layout())]+extra_probes,
                 client_optimization={n: mode == 'opt' for n in ('aes.c', 'aes-objects.c', 'aes-edit.c', 'aes-form.c', 'aes-resource.c', 'dos.c', f'aes_{suite}.c')})
         finally:
@@ -382,8 +406,6 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESMenuRevision"]:x})\n    item^=LONGCARD(ADDRESS(@service.menuRevision))\n  END\n'
         if timers or events:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESClock"]:x})\n    item^=TIMERMETA.BASE+4\n  END\n'
-        if events or timers or suite == 'messages':
-            setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESPark"]:x})\n    item^=LONGCARD(ADDRESS(@AESHYBRIDPROBE.park))\n  END\n'
         if locks:
             setup += ''
             for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds')):
@@ -397,7 +419,7 @@ USE AESSTATE
 USE AESCORE
 USE HEAPCORE
 {'USE DESKPAINT'+chr(10)+'USE AESLOCKS'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
-{'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
+{'USE TIMERMETA' if events or timers else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
 
@@ -629,7 +651,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[374,2510],
+                require(report['lifecycle_stats'][6:]==[370,2494],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')
@@ -729,7 +751,7 @@ if __name__ == '__main__':
     parser.add_argument('--visibility-local',choices=('open','all'),default='all',help='Expected migrated visibility calls in a frozen comparison image')
     args = parser.parse_args()
     if args.suite == 'context':
-        run(args.output.resolve(), args.mode, args.replay)
+        run(args.output.resolve(), args.mode, args.replay, args.reuse_c)
     elif args.suite in ('registration', 'messages', 'gui', 'inbox', 'keyboard', 'pointer', 'input_events', 'windows', 'cache', 'lifecycle', 'frame', 'geometry', 'visibility', 'multiwindow', 'display', 'objects', 'bindings', 'resources', 'mouse_profile', 'cursor', 'menus', 'forms', 'alerts', 'fsel', 'vdi', 'events', 'timers', 'locks'):
         applications(args.output.resolve(), args.suite, args.replay, args.mode,
                      args.video, args.from_build.resolve() if args.from_build else None,args.filesystem,args.frame_local,args.geometry_local,args.visibility_local,args.reuse_c)

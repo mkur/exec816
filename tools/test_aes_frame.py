@@ -19,7 +19,7 @@ FRAME_FIELDS=TEXT_FIELDS+SLIDER_FIELDS
 
 ROOTS = ['FrameNative','FrameBusy','FrameIcon','FrameIconBounds','FrameWaiting','FramePhase','FrameGo',
          'FramePoint','FrameHeld','FramePB','FrameField','FrameHandle',
-         'FrameResult','FrameStatus','FrameSequence','FrameView',
+         'FrameResult','FrameStatus','FrameBindingDelta','FrameView',
          'FrameCallBegin','FrameCallEnd','FrameRelease']
 
 
@@ -205,11 +205,11 @@ def physical(b,p,foreign,report):
         before_stats=[get(value('FrameNative',4)+2*i) for i in range(2)]
         b.poke16(sy['FrameGo'],phase*3-2)
         point(phase,3)
-        field=value('FrameField');sequence=value('FrameSequence',4)
+        field=value('FrameField');binding_delta=value('FrameBindingDelta',4)
         direct=field in (TEXT_FIELDS if report['frame_local']=='text' else
                          FRAME_FIELDS if report['frame_local']=='all' else ())
-        expected_sequence=1 if phase in (1,27) else 0
-        require(sequence==expected_sequence,f'Frame phase {phase}: unexpected RPC delta {sequence}')
+        expected_delta=0
+        require(binding_delta==expected_delta,f'Frame phase {phase}: changed service binding {binding_delta}')
         stats=[get(value('FrameNative',4)+2*i)-before_stats[i] for i in range(2)]
         if field in FRAME_FIELDS:
             require(stats[0]>0 if direct else stats[0]==0,f'Frame phase {phase}: wrong execution Task')
@@ -217,7 +217,7 @@ def physical(b,p,foreign,report):
         s=state()
         if phase==5:require(s['windows'][0]['title']=='T'*64,'Title scratch was not copied')
         row=dict(phase=phase,field=field,handle=value('FrameHandle'),held=value('FrameHeld'),pb=value('FramePB'),
-                 sequence_delta=sequence,helper_attempts=stats,status=value('FrameStatus'),
+                 binding_delta=binding_delta,helper_attempts=stats,status=value('FrameStatus'),
                  state=s,returned_clock=b.eval_expr('@clk'))
         if field in FRAME_FIELDS and row['status']==0:
             # Device drawing is fenced at return, but rawscreen is the last

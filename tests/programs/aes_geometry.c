@@ -8,7 +8,7 @@ ULONG AESService,GeoNative,GeoBusy,GeoWaiting;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD GeoPhase,GeoGo,GeoPoint;
 WORD GeoField,GeoHandle,GeoResult,GeoStatus;
-ULONG GeoSequence,GeoView;
+ULONG GeoBindingDelta,GeoView;
 static struct Task *controller,*peer;
 static ULONG wake,peerWake;
 static volatile UWORD command,finished,entered;
@@ -29,13 +29,13 @@ static void rectangle(WORD handle,WORD field,WORD x,WORD y,WORD w,WORD h,BOOL pb
 {
     WORD a,b,d,e,control[5]={AES_OP_GET,2,5,0,0},global[15],in[2],out[5];
     AESPB block={control,global,in,out,NULL,NULL};
-    ULONG sequence=ExecAESContext()->sequence;
+    ULONG binding=(ULONG)ExecAESContext()->request.service;
     if (pb) {
         in[0]=handle;in[1]=field;aes_call(&block);
         CHECK(out[0]);a=out[1];b=out[2];d=out[3];e=out[4];
     } else CHECK(wind_get(handle,field,&a,&b,&d,&e));
     CHECK(a==x && b==y && d==w && e==h);
-    CHECK(ExecAESContext()->sequence==sequence);
+    CHECK((ULONG)ExecAESContext()->request.service==binding);
 }
 
 static void lookup(WORD x,WORD y,WORD expected,WORD pb)
@@ -45,7 +45,7 @@ static void lookup(WORD x,WORD y,WORD expected,WORD pb)
     struct AESWindowView *selected=c->view;
     UWORD index=c->visibleIndex;
     BYTE nesting=self->tc_TDNestCnt;
-    ULONG sequence=c->sequence;
+    ULONG binding=(ULONG)c->request.service;
     WORD control[5]={AES_OP_FIND,2,1,0,0},global[15],in[2],out[1]={-1};
     AESPB block={control,global,in,out,NULL,NULL};
     in[0]=x;in[1]=y;GeoField=AES_OP_FIND;GeoHandle=expected;GeoPoint=0;++GeoPhase;
@@ -53,7 +53,7 @@ static void lookup(WORD x,WORD y,WORD expected,WORD pb)
     GeoCallBegin();
     if (pb) { aes_call(&block);GeoResult=out[0]; }
     else GeoResult=wind_find(x,y);
-    GeoCallEnd();GeoSequence=c->sequence-sequence;GeoStatus=ExecAESDiagnostic();
+    GeoCallEnd();GeoBindingDelta=(ULONG)c->request.service-binding;GeoStatus=ExecAESDiagnostic();
     GeoView=(ULONG)c->view;
     CHECK(GeoResult==expected && GeoStatus==AES_OK);
     CHECK(c->view==selected && c->visibleIndex==index && !c->busy);
@@ -66,7 +66,7 @@ static void bounds(WORD handle,WORD x,WORD y,WORD w,WORD h,WORD pb,WORD expected
     struct ExecAESContext *c=ExecAESContext();
     struct Task *self=FindTask(NULL);
     BYTE nesting=self->tc_TDNestCnt;
-    ULONG sequence=c->sequence;
+    ULONG binding=(ULONG)c->request.service;
     WORD control[5]={AES_OP_SET,6,1,0,0},global[15],in[6],out[1]={0};
     AESPB block={control,global,in,out,NULL,NULL};
     in[0]=handle;in[1]=WF_CXYWH;in[2]=x;in[3]=y;in[4]=w;in[5]=h;
@@ -75,7 +75,7 @@ static void bounds(WORD handle,WORD x,WORD y,WORD w,WORD h,WORD pb,WORD expected
     GeoCallBegin();
     if (pb) { aes_call(&block);GeoResult=out[0]; }
     else GeoResult=wind_set(handle,WF_CXYWH,x,y,w,h);
-    GeoCallEnd();GeoSequence=c->sequence-sequence;GeoStatus=ExecAESDiagnostic();
+    GeoCallEnd();GeoBindingDelta=(ULONG)c->request.service-binding;GeoStatus=ExecAESDiagnostic();
     GeoView=(ULONG)c->view;
     CHECK((GeoResult!=0)==(expected==AES_OK) && GeoStatus==expected);
     CHECK(!c->busy && FindTask(NULL)==self && self->tc_TDNestCnt==nesting);
@@ -85,7 +85,7 @@ static void bounds(WORD handle,WORD x,WORD y,WORD w,WORD h,WORD pb,WORD expected
 static void top(WORD handle,WORD pb,WORD expected)
 {
     struct ExecAESContext *c=ExecAESContext();
-    ULONG sequence=c->sequence;
+    ULONG binding=(ULONG)c->request.service;
     WORD control[5]={AES_OP_SET,6,1,0,0},global[15],in[6]={0},out[1]={0};
     AESPB block={control,global,in,out,NULL,NULL};
     in[0]=handle;in[1]=WF_TOP;
@@ -94,7 +94,7 @@ static void top(WORD handle,WORD pb,WORD expected)
     GeoCallBegin();
     if (pb) { aes_call(&block);GeoResult=out[0]; }
     else GeoResult=wind_set(handle,WF_TOP,0,0,0,0);
-    GeoCallEnd();GeoSequence=c->sequence-sequence;GeoStatus=ExecAESDiagnostic();
+    GeoCallEnd();GeoBindingDelta=(ULONG)c->request.service-binding;GeoStatus=ExecAESDiagnostic();
     GeoView=(ULONG)c->view;
     CHECK((GeoResult!=0)==(expected==AES_OK) && GeoStatus==expected);
     CHECK(!c->busy);GeoPoint=3;while (GeoGo<GeoPhase*2) ExecYield();
@@ -145,7 +145,7 @@ UWORD AESRun(void)
 {
     struct ExecAESContext *c;
     WORD a,b,d,e;
-    ULONG available=AvailMem(0),sequence;
+    ULONG available=AvailMem(0),binding;
     BYTE bit=AllocSignal(-1);
     CHECK(bit>=0);wake=1UL<<bit;controller=FindTask(NULL);
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
@@ -192,15 +192,15 @@ UWORD AESRun(void)
     CHECK(wind_update(BEG_UPDATE));pendingView=c->view;
     CHECK(wind_update(END_UPDATE));pendingRevision=pendingView->revision;
     (*(volatile UBYTE *)GeoBusy)=1;finished=0;command=2;Signal(peer,peerWake);
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     CHECK(wind_set(rootWindow,WF_CXYWH,48,40,256,176));
     rectangle(rootWindow,WF_PREVXYWH,48,40,248,168,TRUE);
     rectangle(rootWindow,WF_FULLXYWH,32,32,240,160,FALSE);
-    CHECK(c->sequence==sequence);
+    CHECK((ULONG)c->request.service==binding);
     while (finished!=2) Wait(wake);
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     CHECK(!wind_set(peerWindow,WF_TOP,0,0,0,0));
-    CHECK(ExecAESDiagnostic()==AES_IDENTITY && c->sequence==sequence);
+    CHECK(ExecAESDiagnostic()==AES_IDENTITY && (ULONG)c->request.service==binding);
     command=4;Signal(peer,peerWake);while (!AESDone) Wait(wake);
     CHECK(ExecAESDetach());FreeSignal(bit);CHECK(AvailMem(0)==available);
     return AESFailures;

@@ -188,7 +188,7 @@ UWORD AESRun(void)
     struct ExecAESContext *c;
     struct AESInputInbox *in;
     UWORD i, flags, before, kh, bh;
-    ULONG available = AvailMem(0), sequence;
+    ULONG available = AvailMem(0), binding;
     BYTE ack = AllocSignal(-1);
     AESInputAck = 1UL << ack;
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
@@ -201,12 +201,12 @@ UWORD AESRun(void)
     CHECK(event(MU_TIMER, 99, 99, 99, 0) == MU_TIMER);
     produce(1);
     snapshot(101, 111, 0, 0);
-    sequence = c->sequence;
+    binding = (ULONG)c->request.service;
     /* Rectangle-only motion wakes use the existing signal and no alarm. */
     snapshot(39,50,0,1);phase=18;before=sends;waits=0;
     CHECK(event(MU_M1,0,0,0,0)==MU_M1);
     CHECK(x==40 && y==50 && !key && !clicks && waits==1 && sends==before);
-    CHECK(in->interest==0 && c->sequence==sequence);
+    CHECK(in->interest==0 && (ULONG)c->request.service==binding);
     {
         MOBLK rect={1,40,50,10,10};
         snapshot(50,59,0,1);
@@ -230,7 +230,7 @@ UWORD AESRun(void)
         CHECK(x==((flags&MU_BUTTON) ? 22:(flags&MU_M1) ? 45:(flags&MU_KEYBD) ? 21:45));
         CHECK(in->keyHead==(UBYTE)(kh+((flags&MU_KEYBD)!=0)));
         CHECK(in->buttonHead==(UBYTE)(bh+((flags&MU_BUTTON)!=0)));
-        CHECK(in->interest==0 && sends==before && c->sequence==sequence);
+        CHECK(in->interest==0 && sends==before && (ULONG)c->request.service==binding);
         if (!(flags&MU_KEYBD)) CHECK(evnt_keybd()==0x1e61);
         if (!(flags&MU_BUTTON)) CHECK(evnt_button(1,1,1,&x,&y,&buttons,&modifiers));
         if (!(flags&MU_MESAG)) CHECK(evnt_mesag(words) && words[0]==777);
@@ -252,7 +252,7 @@ UWORD AESRun(void)
         CHECK(y == ((flags & MU_BUTTON) ? 41 : (flags & MU_KEYBD) ? 21 : 111));
         CHECK(modifiers == ((flags & MU_BUTTON) ? ((flags & MU_KEYBD) ? 6 : 2) :
                            (flags & MU_KEYBD) ? 4 : 0));
-        CHECK(in->interest == 0 && sends == before && c->sequence == sequence);
+        CHECK(in->interest == 0 && sends == before && (ULONG)c->request.service == binding);
         if (!(flags & MU_KEYBD)) CHECK(evnt_keybd() == 0x1e61);
         if (!(flags & MU_BUTTON)) CHECK(evnt_button(1, 1, 1, &x, &y, &buttons, &modifiers));
         if (!(flags & MU_MESAG)) CHECK(evnt_mesag(words) && words[0] == 777);
@@ -397,7 +397,7 @@ UWORD AESRun(void)
     CHECK(!event(MU_KEYBD | MU_TIMER, 1, 1, 1, 1000));
     CHECK(ExecAESDiagnostic() == AES_TIMER_ERROR && in->keyHead != in->keyTail);
     CHECK(evnt_keybd() == 0x1e61);
-    CHECK(c->sequence == sequence);
+    CHECK((ULONG)c->request.service == binding);
     CHECK(appl_exit() && appl_init() > 0);
     in = c->endpoint->input;
     produce(1); snapshot(101, 111, 0, 0);

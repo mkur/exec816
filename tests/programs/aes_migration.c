@@ -78,7 +78,7 @@ static void nested(struct ExecAESContext *c)
     WORD control[5]={107,1,1,0,0},in[1],out[1],global[15]={0};
     AESPB pb={control,global,in,out,0,0};
     UWORD depth=UPDATES;
-    ULONG sequence=c->sequence;
+    ULONG binding=(ULONG)c->request.service;
     Forbid();
     Check(wind_update(BEG_CHECK|BEG_UPDATE));
     in[0]=BEG_UPDATE;aes_call(&pb);Check(out[0]==1);
@@ -86,7 +86,7 @@ static void nested(struct ExecAESContext *c)
     Check(wind_update(END_UPDATE));
     in[0]=END_UPDATE;aes_call(&pb);Check(out[0]==1);
     Check(UPDATES==depth && c->view->updates==depth);
-    Check(c->sequence==sequence && FindTask(NULL)->tc_TDNestCnt==0);
+    Check((ULONG)c->request.service==binding && FindTask(NULL)->tc_TDNestCnt==0);
     Permit();
 }
 

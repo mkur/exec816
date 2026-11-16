@@ -1,6 +1,5 @@
-; Ordinary-message admission. Only the existing presenter executes policy.
+; Caller registration/retirement and copied event publication.
 MODULE AESCORE
-USE DISPLAY
 USE EXEC
 USE AESSNAPSHOT
 USE EXECLISTS
@@ -82,7 +81,7 @@ PROC Globals(AESTYPES.Request POINTER request INT id)
 
 RETURN
 
-CARD FUNC Register(AESSTATE.Service POINTER service
+CARD FUNC Admit(AESSTATE.Service POINTER service
     AESTYPES.Request POINTER request)
   BYTE index,slot
 
@@ -92,7 +91,9 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   FI
 
   IF request.owner=NULL OR request.binding<>BYTE POINTER(request)
-      OR request.client<>0 OR request.sequence<>1
+      OR request.client<>0 OR request.service<>@service.port
+      OR request.version<>AESTYPES.VERSION OR request.bytes<>AESTYPES.REQUEST_SIZE
+      OR request.message.mn_Length<>AESTYPES.REQUEST_SIZE
       OR Storage(BYTE POINTER(request),AESTYPES.REQUEST_SIZE)=0
       OR Storage(BYTE POINTER(request.message.mn_ReplyPort),
           EXEC.MSGPORT_SIZE)=0
@@ -175,7 +176,6 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   EXEC.Forbid()
   client.id=service.nextClient
   client.gemId=INT(service.nextGem)
-  client.sequence=1
   client.binding=request
   client.replies=port
   service.nextClient==+1
@@ -218,6 +218,21 @@ CARD FUNC Register(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
+; Registration resources are established once. The bounded creation guard
+; serializes competing caller admissions and complete client/endpoint publication.
+PUBLIC CARD FUNC Register(AESSTATE.Service POINTER service
+    AESTYPES.Request POINTER request)
+  CARD status
+
+  EXEC.Forbid()
+  status=Admit(service,request)
+  EXEC.Permit()
+  IF status=AESTYPES.OK THEN
+    EXEC.Signal(service.owner,service.mask)
+  FI
+
+RETURN(status)
+
 ; Owner-side wind_new preparation. Registration and its pool stay retained
 ; through publisher drainage, protected UI withdrawal and native release.
 PUBLIC BYTE FUNC PrepareExit(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
@@ -245,14 +260,13 @@ PUBLIC BYTE FUNC PrepareExit(AESSTATE.Service POINTER service AESSTATE.Client PO
 
 RETURN(1)
 
-; Final RPC only detaches a prepared registration. No presenter can release
-; a peer's UPDATE or run its protected UI cleanup.
-PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
+; Final caller detach follows UI withdrawal and C resource cleanup. No peer
+; releases this application's UPDATE or completes its registration retirement.
+PUBLIC CARD FUNC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
 
   IF client.waitMode<>AESWAIT.DEPARTED THEN
-    AESSTATE.Reply(request,AESTYPES.BUSY)
-    RETURN
+    RETURN(AESTYPES.BUSY)
   FI
   LET endpoint=client.endpoint
 
@@ -274,7 +288,6 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   request.client=0
   request.global(2)=0
   request.intout(0)=1
-  AESSTATE.Reply(request,AESTYPES.OK)
   IF EXEC.ReleaseTask(@client.lease)=0 THEN
     HEAPCORE.Abort($fca2)
   FI
@@ -284,99 +297,9 @@ PROC Retire(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   AESSNAPSHOT.Invalidate()
   EXEC.Permit()
 
-RETURN
+  EXEC.Signal(service.owner,service.mask)
 
-; Short descriptors get only their native header back, without output writes.
-PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
-  BYTE index
-  CARD status
-
-  IF request.message.mn_Length<>AESTYPES.REQUEST_SIZE THEN
-    EXEC.ReplyMsg(@request.message)
-    RETURN
-  FI
-
-  FOR index=0 TO AESTYPES.RPC_INTOUT_WORDS-1 DO
-    request.intout(index)=0
-  OD
-
-  IF request.operation=AESTYPES.OP_INIT OR request.operation=AESTYPES.OP_CREATE THEN
-    request.intout(0)=-1
-  FI
-
-  IF request.version<>AESTYPES.VERSION
-      OR request.bytes<>AESTYPES.REQUEST_SIZE THEN
-    AESSTATE.Reply(request,AESTYPES.MALFORMED)
-    RETURN
-  FI
-
-  IF request.client=0 AND request.operation<>AESTYPES.OP_INIT
-      AND request.operation<>AESTYPES.OP_EXIT THEN
-    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
-    RETURN
-  FI
-
-  IF request.operation=AESTYPES.OP_INIT AND request.client=0 THEN
-    status=Register(service,request)
-    AESSTATE.Reply(request,status)
-    RETURN
-  FI
-
-  LET client=AESSTATE.Find(service,request.client)
-  IF client=NULL THEN
-    AESSTATE.Reply(request,AESTYPES.IDENTITY)
-    RETURN
-  FI
-
-  IF client.binding<>request OR request.binding<>BYTE POINTER(request)
-      OR client.lease.task<>request.owner
-      OR client.replies<>request.message.mn_ReplyPort THEN
-    AESSTATE.Reply(request,AESTYPES.IDENTITY)
-    RETURN
-  FI
-
-  IF client.pending<>NULL THEN
-    AESSTATE.Reply(request,AESTYPES.BUSY)
-    RETURN
-  FI
-
-  IF request.sequence=0 OR client.sequence=$ffffffff
-      OR request.sequence<>client.sequence+LONGCARD(1) THEN
-    AESSTATE.Reply(request,AESTYPES.IDENTITY)
-    RETURN
-  FI
-
-  ; Reserve the last sequence for cooperative exit, so exhaustion cannot trap
-  ; a well-behaved client with an unreleaseable registration.
-  IF request.sequence=$ffffffff AND request.operation<>AESTYPES.OP_EXIT THEN
-    AESSTATE.Reply(request,AESTYPES.OVERFLOW)
-    RETURN
-  FI
-
-  client.sequence=request.sequence
-  IF AESTYPES.Rpc(request.operation)=0 THEN
-    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
-    RETURN
-  FI
-
-  IF request.operation=AESTYPES.OP_EXIT THEN
-    Retire(service,client,request)
-    RETURN
-  FI
-
-  IF request.operation=AESTYPES.OP_INIT THEN
-    request.intout(0)=client.gemId
-    Globals(request,client.gemId)
-    AESSTATE.Reply(request,AESTYPES.OK)
-  ELSEIF request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
-    request.intout(0)=DESKMOUSE.Profile(request.intin(0))
-    AESSTATE.Reply(request,AESTYPES.OK)
-
-  ELSE
-    AESSTATE.Reply(request,AESTYPES.UNSUPPORTED)
-  FI
-
-RETURN
+RETURN(AESTYPES.OK)
 
 ; Retry only admitted mutations, after the current frame/hardware unit retires.
 PUBLIC PROC Settle(AESSTATE.Service POINTER service)
@@ -423,28 +346,10 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
 
 RETURN
 
-; Budget counts every dequeued descriptor, including later pending calls.
-PUBLIC BYTE FUNC Pump(AESSTATE.Service POINTER service BYTE budget)
-  BYTE count
-  AESTYPES.Request POINTER request
-
-  count=0
-  WHILE count<budget AND count<4 DO
-    request=AESTYPES.Request POINTER(EXEC.GetMsg(@service.port))
-    IF request=NULL THEN
-      EXIT
-    FI
-
-    count==+1
-    Dispatch(service,request)
-  OD
-
-RETURN(count)
-
+; Copied publication can need a manager wake; ordinary calls have no queue.
 PUBLIC BYTE FUNC Runnable(AESSTATE.Service POINTER service)
 
-RETURN(service.directory.changed<>0
-    OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0)
+RETURN(service.directory.changed<>0)
 
 PUBLIC BYTE FUNC Idle(AESSTATE.Service POINTER service)
 

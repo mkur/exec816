@@ -25,12 +25,10 @@ static void check(BOOL okay, UWORD line)
 
 static void raw(struct ExecAESContext *c, UWORD status)
 {
-    struct Message *m;
-    c->request.status = AES_PENDING;
-    PutMsg(c->service, &c->request.message);
-    while ((m = GetMsg(c->replies)) == NULL) WaitPort(c->replies);
-    CHECK(m == &c->request.message);
-    CHECK(c->request.status == status);
+    c->request.status=AES_PENDING;
+    CHECK(_AESLocalCall(&c->request));
+    CHECK(c->request.status==status);
+    CHECK(GetMsg(c->replies)==NULL);
 }
 
 static void worker(UWORD who)
@@ -95,23 +93,23 @@ UWORD AESRun(void)
     c = ExecAESContext();
     CHECK(c->request.global[0] == 0 && c->request.global[1] == 4);
     CHECK(c->request.global[2] == first && c->request.global[10] == 4);
-    /* Rejected packets cannot consume sequence or change registration. */
-    c->request.operation = AES_OP_EXIT;
-    c->request.sequence = 1;
-    raw(c, AES_IDENTITY);
-    c->request.sequence = 2;
-    c->request.client = 0xdeadbeefUL;
-    raw(c, AES_IDENTITY);
-    c->request.client = c->identity;
-    c->request.owner = NULL;
-    raw(c, AES_IDENTITY);
-    c->request.owner = controller;
-    c->request.binding = NULL;
-    raw(c, AES_IDENTITY);
-    c->request.binding = (UBYTE *)c;
-    c->request.operation = 999;
-    raw(c, AES_UNSUPPORTED);
-    c->sequence = 2;
+    /* Native creation validates the rendezvous and resources once. No
+     * rejected call may publish a partial or duplicate registration. */
+    c->request.operation=AES_OP_INIT;
+    c->request.client=0;
+    c->request.service=NULL;
+    raw(c,AES_MALFORMED);
+    c->request.service=(struct MsgPort EXEC_PTR *)AESService;
+    c->request.owner=NULL;
+    raw(c,AES_MALFORMED);
+    c->request.owner=controller;
+    c->request.binding=NULL;
+    raw(c,AES_MALFORMED);
+    c->request.binding=(UBYTE *)c;
+    raw(c,AES_BUSY);
+    c->request.client=c->identity;
+    c->request.operation=AES_OP_DETACH;
+    raw(c,AES_BUSY);
     CHECK(appl_exit() == 1);
     CHECK(appl_exit() == 0 && ExecAESDiagnostic() == AES_IDENTITY);
     {
@@ -134,8 +132,8 @@ UWORD AESRun(void)
         aes_call(&pb);
         CHECK(result == 0 && ExecAESDiagnostic() == AES_UNSUPPORTED);
     }
-    /* Hold a destination across its exit. The presenter must keep serving
-     * RPC while exit is pending, and the caller must not free the pool. */
+    /* Hold a destination across its exit. Other callers must keep progressing
+     * while exit is pending, and the caller must not free the pool. */
     AESReady = AESDone = 0;
     workers[1] = CreateTask("AES retiring", 0, (APTR)AESClientTwo, 1024UL);
     CHECK(workers[1] != NULL);
@@ -158,9 +156,9 @@ UWORD AESRun(void)
         CHECK(destination->state == AES_ENDPOINT_CLOSING);
         CHECK(AESDone == 0 && destination->records != NULL && destination->input != NULL);
         /* Exit retains UPDATE while its endpoint holds drain. A native TRY
-         * must fail; a genuine registration RPC must still make progress. */
+         * must fail; a caller-side preference query must still make progress. */
         CHECK(wind_update(BEG_UPDATE|AES_TRY) == 0);
-        CHECK(ExecAESSubmit(c,AES_OP_INIT));
+        CHECK(ExecAESMouseProfile(-1)>=0);
         CHECK(ExecAESReserve(c, ids[1], &destination) == NULL);
         CHECK(ExecAESDiagnostic() == AES_IDENTITY);
         for (i = 0; i < AES_MESSAGE_WORDS; ++i) record->words[i] = 400+i;

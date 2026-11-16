@@ -10,7 +10,7 @@ import adapter_state as adapter
 
 ROOTS=['VisNative','VisBusy','VisFail','VisHold','VisHeld','VisRelease',
        'VisEpoch','VisWaiting','VisPeerTask','VisPhase','VisGo','VisPoint',
-       'VisOperation','VisResult','VisStatus','VisSequence','VisView',
+       'VisOperation','VisResult','VisStatus','VisBindingDelta','VisView',
        'VisPeerHeld','VisPeerRelease','VisWake','VisReady','VisRetireBusy',
        'VisEndpoint','VisPublisherHeld','VisPublisherGo','VisExitPending','VisQueue']
 
@@ -229,8 +229,8 @@ def physical(b,p,foreign,report):
         operation=val('VisOperation')
         direct=number not in (16,18) and (operation==101 or report['visibility_local']=='all')
         attempts=[get(pointer('VisNative')+2*i)-before[i] for i in range(8)]
-        require(val('VisSequence',4)==0,
-                f'Phase {number}: wrong transport; sequence={val("VisSequence",4)}, attempts={attempts}')
+        require(val('VisBindingDelta',4)==0,
+                f'Phase {number}: changed service binding; delta={val("VisBindingDelta",4)}, attempts={attempts}')
         slot=2*(operation==102)
         if direct and operation in (101,102):
             require(attempts[slot]>0 and attempts[slot+1]==0,f'Phase {number}: wrong Task')
@@ -242,13 +242,13 @@ def physical(b,p,foreign,report):
         state['bounds']=[get(view+vf['bounds']+2*i) for i in range(4)]
         if number==18:
             require(state['shown']==state['epoch']==0 and retiring_tag()==0,
-                    'Local close depended on an available transport sequence')
+                    'Local close changed its service binding')
         if number in (19,20):
             require(state['shown']!=0,
                     'Reopen did not publish a fresh window after retirement')
         if number==21:require(retiring_tag()==0,'Close retry retained its retired route')
         report['visibility'].append(dict(phase=number,operation=operation,result=val('VisResult'),
-            status=val('VisStatus'),sequence_delta=val('VisSequence',4),attempts=attempts,view=state))
+            status=val('VisStatus'),binding_delta=val('VisBindingDelta',4),attempts=attempts,view=state))
         if number==7:b.poke(pointer('VisFail'),0)
         if number==8:b.memload(pointer('VisEpoch'),epoch.to_bytes(4,'little'))
         if number==9:b.poke(pointer('VisHold'),0)

@@ -1,4 +1,4 @@
-; Caller entry to the same native policy used by RPC admission.
+; Caller entry to native AES policy and registration services.
 MODULE AESLOCAL
 USE EXEC
 USE AESTYPES
@@ -14,6 +14,7 @@ USE AESFRAME
 USE AESWINDOWSTATE
 USE AESCURSOR
 USE CALYPSICALL
+USE DESKMOUSE
 
 ADDRESS mouseApply
 
@@ -102,7 +103,7 @@ CARD FUNC Policy(LONGCARD value)
       IF status<>AESTYPES.PENDING THEN
         client.pending=NULL
         AESWAIT.RemoveWindow(service,client)
-        client.waitMode=AESWAIT.RPC
+        client.waitMode=AESWAIT.IDLE
         request.status=status
         ; Removing a failed waiter also unblocks deferred paint and peers.
         Publish(service,waiting<>0 OR (wake AND status=AESTYPES.OK))
@@ -149,7 +150,7 @@ PROC DrawingReady(AESTYPES.Request POINTER request)
     IF DESKDRAG.DrawReady()<>0 THEN
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
-      client.waitMode=AESWAIT.RPC
+      client.waitMode=AESWAIT.IDLE
       Publish(service,0)
       RETURN
     FI
@@ -182,7 +183,7 @@ CARD FUNC Depart(AESTYPES.Request POINTER request)
     IF ready<>0 THEN
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
-      client.waitMode=AESWAIT.RPC
+      client.waitMode=AESWAIT.IDLE
       Publish(service,0)
       EXIT
     FI
@@ -215,6 +216,33 @@ PUBLIC CARD FUNC Call(LONGCARD value)
   CARD status,result,handled
 
   LET request=AESTYPES.Request POINTER(ADDRESS(value))
+  IF request.operation=AESTYPES.OP_INIT
+      OR request.operation=AESTYPES.OP_DETACH
+      OR request.operation=AESTYPES.OP_MOUSE_PROFILE THEN
+    BEGIN
+      LET service=AESSTATE.Get()
+      request.intout(0)=IF request.operation=AESTYPES.OP_INIT THEN INT(-1)
+          ELSE INT(0) FI
+      IF service=NULL THEN
+        request.status=AESTYPES.IDENTITY
+      ELSEIF request.operation=AESTYPES.OP_INIT THEN
+        request.status=AESCORE.Register(service,request)
+      ELSE
+        BEGIN
+          LET client=AESSTATE.Find(service,request.client)
+          IF client=NULL THEN
+            request.status=AESTYPES.IDENTITY
+          ELSEIF request.operation=AESTYPES.OP_DETACH THEN
+            request.status=AESCORE.Retire(service,client,request)
+          ELSE
+            request.intout(0)=DESKMOUSE.Profile(request.intin(0))
+            request.status=AESTYPES.OK
+          FI
+        END
+      FI
+    END
+    RETURN(1)
+  FI
   IF request.operation=AESTYPES.OP_FIND THEN
     request.status=AESWINDOW.Query(request)
     RETURN(1)

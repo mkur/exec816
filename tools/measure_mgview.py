@@ -22,7 +22,7 @@ from desktop_mouse import schedule
 APP=('set_shift','_my_draw','_my_keyed','redraw_window','update_window',
      'arrowed','window_calc_slider','_my_arrange')
 RESIDENT=('vro_cpyfm','v_gtext','vr_recfl','ExecAESBeginUpdate','wind_update',
-    'ExecAESUpdate','ExecAESSubmit','ExecGemRasterCopy','ExecAESPainted',
+    'ExecAESUpdate','ExecAESServiceCall','ExecGemRasterCopy','ExecAESPainted',
     'GemDrawingRasterBorrow','GemDrawingBorrow','GemDrawingSolidBorrow',
     'GemDrawingMouseBorrow','VbxeOwnerSubmit','VbxeOwnerFence','VbxeOwnerCopy',
     'VbxeOwnerWrite','VbxeOwnerRead','GemVdiPaint','DisplayEnter','DisplayLeave')
@@ -248,7 +248,7 @@ def run(cache,out,presenter=False,expect_copy_units=None):
                         b._cmd_ok('KEY CTRL down');frames(3);b.profile_start();frames(2)
                         for label,key,shift in (('down','EQUALS',1),('up','MINUS',0)):
                             want=expected(font,work,content,shift);row_bytes=work[2]*8*3
-                            sample=dict(action=label,start=b.eval_expr('@clk')&0xffffffff,rpc_before=number(context+layout()['Request']['fields']['sequence'],4),polls=[])
+                            sample=dict(action=label,start=b.eval_expr('@clk')&0xffffffff,service_before=number(context+layout()['Request']['fields']['service'],3),polls=[])
                             b._cmd_ok('KEY '+key+' down')
                             first=None;full=None
                             for index in range(150):
@@ -266,9 +266,9 @@ def run(cache,out,presenter=False,expect_copy_units=None):
                             sample.update(first_row_tick=first,complete_tick=full,end=b.eval_expr('@clk')&0xffffffff,
                                 offered_to_first_row_ms=((first-sample['start'])&0xffffffff)*1000/BASE_HZ,
                                 offered_to_complete_ms=((full-sample['start'])&0xffffffff)*1000/BASE_HZ,
-                                rpc_delta=number(context+layout()['Request']['fields']['sequence'],4)-sample['rpc_before'],
+                                service_binding_delta=number(context+layout()['Request']['fields']['service'],3)-sample['service_before'],
                                 pixel_sha256=hashlib.sha256(got).hexdigest())
-                            require(sample['rpc_delta']==0,'Scroll unexpectedly used AES RPC')
+                            require(sample['service_binding_delta']==0,'Scroll changed its service binding')
                             report['samples'].append(sample)
                             (out/'samples.json').write_text(json.dumps(report['samples'],indent=2)+'\n')
                             print('MGVIEW',label,'complete pixels:',round(sample['offered_to_complete_ms'],2),'ms',flush=True)

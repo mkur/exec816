@@ -21,7 +21,6 @@ USE AESSTATE
 USE AESLOCKS
 USE DESKMENU
 
-BYTE lateAES
 
 PUBLIC BYTE FUNC Start()
   BYTE bit,stopped
@@ -120,20 +119,6 @@ PUBLIC PROC InputBoundary()
 
 RETURN
 
-BYTE FUNC AESAdmission(BYTE POINTER remaining)
-
-  IF remaining^=0 THEN
-    RETURN(0)
-  FI
-
-  LET admitted=AESHOST.Pump(1)
-  remaining^==-admitted
-  IF admitted<>0 THEN
-    InputBoundary()
-  FI
-
-RETURN(admitted)
-
 ; Match already admitted waits at bounded service boundaries. An alarm can
 ; complete during a paint/output quantum, after Controls took its clock sample.
 ; Collect it before yielding, without admitting another request or polling time.
@@ -162,7 +147,6 @@ PUBLIC PROC MenuContinuation()
 RETURN
 
 PUBLIC PROC Controls()
-  BYTE count,admitted,aesRemaining,limit
   LONGCARD priorToken
 
   LET service=DESKSTATE.Get()
@@ -176,50 +160,10 @@ PUBLIC PROC Controls()
       DESKCACHE.Pump(service)
       AESLOCKS.SystemRelease()
       IF priorToken<>0 AND service.scene.busy=0 THEN
-        ; Only one scene continuation can own the token. Service input after
-        ; its retirement, before a control can acquire the newly free scene.
         InputBoundary()
       FI
-
       AESLOCKS.SystemEnd()
     FI
-
-    lateAES=0
-    limit=4
-    aesRemaining=4
-    IF AESHOST.Runnable()<>0 AND DESKPAINT.Ready()<>0 THEN
-      ; Reserve one of the shared admissions after this paint quantum. Input
-      ; and visible feedback get the first opportunity; AES still advances in
-      ; every drawing turn, including a long full-window repaint.
-      lateAES=1
-      aesRemaining=0
-      limit=3
-    FI
-    ; The sole AES queue shares four admissions with the post-paint slot.
-    count=0
-    WHILE count<limit DO
-      admitted=AESAdmission(@aesRemaining)
-      IF admitted=0 THEN
-        EXIT
-      FI
-
-      count==+admitted
-    OD
-
-    IF lateAES=0 THEN
-      Events()
-    FI
-  FI
-
-RETURN
-
-PUBLIC PROC AfterPaint()
-  BYTE remaining,admitted
-
-  IF lateAES<>0 THEN
-    lateAES=0
-    remaining=1
-    admitted=AESAdmission(@remaining)
     Events()
   FI
 

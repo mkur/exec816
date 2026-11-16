@@ -49,16 +49,6 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(service.mask)
 
-PUBLIC BYTE FUNC Pump(BYTE budget)
-
-  LET service=AESSTATE.Get()
-  IF service=NULL OR service.live=0
-      OR EXECLISTS.IsListEmpty(@service.port.mp_MsgList)<>0 THEN
-    RETURN(0)
-  FI
-
-RETURN(AESCORE.Pump(service,budget))
-
 PUBLIC BYTE FUNC Runnable()
 
   LET service=AESSTATE.Get()

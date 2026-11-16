@@ -3,8 +3,7 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService, AESPark;
-#define PARK (*(volatile UBYTE *)AESPark)
+ULONG AESService;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone;
 static struct Task *controller;
 static ULONG wake;
@@ -57,7 +56,6 @@ static void loop(UWORD who)
             CHECK(appl_write(ids[0], 16, words) == 1);
         }
     }
-    PARK = 0;
     CHECK(ExecAESDetach());
     FreeSignal(bit);
     Forbid(); ++AESDone; Signal(controller, wake); RemTask(NULL);
@@ -79,7 +77,6 @@ UWORD AESRun(void)
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     id = appl_init();
     CHECK(id > 0);
-    PARK = 1;
     fill(words, 100);
     CHECK(!appl_write(id, 14, words) && ExecAESDiagnostic() == AES_MALFORMED);
     CHECK(!appl_write(id, 16, NULL) && ExecAESDiagnostic() == AES_MALFORMED);
@@ -113,7 +110,6 @@ UWORD AESRun(void)
     }
     /* Queue contents may be discarded on exit, then no ID can address them. */
     CHECK(appl_write(id, 16, words) == 1);
-    PARK = 0;
     CHECK(appl_exit() == 1);
     CHECK(appl_init() > id);
     CHECK(!appl_write(id, 16, words) && ExecAESDiagnostic() == AES_IDENTITY);
@@ -122,7 +118,6 @@ UWORD AESRun(void)
     two = CreateTask("AES receive", 0, (APTR)AESClientTwo, 1024UL);
     CHECK(one != NULL && two != NULL);
     while (AESReady < 2) Wait(wake);
-    PARK = 1;
     Signal(two, starts[1]);
     ExecYield();
     Signal(one, starts[0]);

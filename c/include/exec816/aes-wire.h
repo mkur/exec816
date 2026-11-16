@@ -2,7 +2,7 @@
 #ifndef EXEC816_AES_WIRE_H
 #define EXEC816_AES_WIRE_H
 #include <exec/ports.h>
-#define AES_VERSION 25
+#define AES_VERSION 26
 #define AES_CLIENTS 4
 #define AES_CONTEXTS 8
 #define AES_QUEUE_DEPTH 16
@@ -37,8 +37,6 @@
 #define AES_ENDPOINT_ACCEPTING 1
 #define AES_ENDPOINT_CLOSING 2
 #define AES_ENDPOINT_RETIRED 3
-#define AES_RPC_INTIN_WORDS 6
-#define AES_RPC_INTOUT_WORDS 5
 #define AES_GUI_KINDS 11
 #define AES_GUI_REDRAW 0
 #define AES_GUI_TOPPED 1
@@ -163,6 +161,9 @@
 #define AES_M_PREVIOUS 260
 #define AES_M_FORCE 32768
 #define AES_MFORM_WORDS 37
+#define AES_OP_DETACH 204
+#define AES_RESULT_WORDS 5
+#define AES_ARG_WORDS 6
 struct AESMenuObject {
     WORD next;
     WORD head;
@@ -443,13 +444,14 @@ struct AESRequest {
     UWORD operation;
     UWORD status;
     ULONG client;
-    ULONG sequence;
+    struct MsgPort EXEC_PTR * service;
+    UBYTE servicePad;
     struct Task EXEC_PTR * owner;
     UBYTE ownerPad;
     UBYTE EXEC_PTR * binding;
     UBYTE bindingPad;
-    WORD intin[AES_RPC_INTIN_WORDS];
-    WORD intout[AES_RPC_INTOUT_WORDS];
+    WORD intin[AES_ARG_WORDS];
+    WORD intout[AES_RESULT_WORDS];
     WORD global[AES_GLOBAL_WORDS];
     struct AESDirectory EXEC_PTR * directory;
     UBYTE directoryPad;
@@ -476,7 +478,8 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_OPERATION 20
 #define AES_REQUEST_OFFSET_STATUS 22
 #define AES_REQUEST_OFFSET_CLIENT 24
-#define AES_REQUEST_OFFSET_SEQUENCE 28
+#define AES_REQUEST_OFFSET_SERVICE 28
+#define AES_REQUEST_OFFSET_SERVICEPAD 31
 #define AES_REQUEST_OFFSET_OWNER 32
 #define AES_REQUEST_OFFSET_OWNERPAD 35
 #define AES_REQUEST_OFFSET_BINDING 36
@@ -501,5 +504,4 @@ struct AESRequest {
 #define AES_REQUEST_OFFSET_INVALIDATIONS 228
 #define AES_REQUEST_OFFSET_MOUSEWAIT 340
 #define AES_REQUEST_OFFSET_MOUSEFORM 344
-#define AES_RPC_OPERATION(op) ((op)==AES_OP_INIT || (op)==AES_OP_EXIT || (op)==AES_OP_MOUSE_PROFILE)
 #endif

@@ -37,7 +37,7 @@ def analyze(out):
             rows.append(dict(kind=NAMES[span['argument']],
                 **clock.measure(span['start'],span['end']),
                 calls={name:sum(s['kind']==name for s in nested)
-                       for name in ('FindTask','ExecAESContext','ExecAESSubmit','Forbid','Permit')}))
+                       for name in ('FindTask','ExecAESContext','ExecAESServiceCall','Forbid','Permit')}))
     groups = {}
     for name in NAMES:
         selected = [r for r in rows if r['kind']==name]
@@ -74,7 +74,7 @@ def run(out, replay=False):
                       turn=foreign['symbols']['AESBindingProbe'],worker_retire=p['labels']['done'])
         timeline=dict(spans={},points=points,task_dps=[t['dp'] for t in p['build']['memory']['task_pools']])
         entries={foreign['symbols'][name]:name for name in
-                 ('AESBindingProbe','FindTask','ExecAESContext','ExecAESSubmit','Forbid','Permit')}
+                 ('AESBindingProbe','FindTask','ExecAESContext','ExecAESServiceCall','Forbid','Permit')}
         returns=sorted(listing_returns(foreign,out/'drawing'))
         (out/'binding-definition.json').write_text(json.dumps(dict(timeline=timeline,
             entries=entries,returns=returns),indent=2)+'\n')

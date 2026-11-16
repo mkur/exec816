@@ -41,7 +41,7 @@ void ExecAESPublish(struct ExecAESContext *c, struct AESEndpoint *destination,
                     struct AESDelivery *record);
 void ExecAESRecycle(struct ExecAESContext *c, struct AESDelivery *record);
 BOOL ExecAESMessageReady(struct ExecAESContext *c);
-WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation);
+WORD ExecAESServiceCall(struct ExecAESContext *c, UWORD operation);
 UWORD ExecAESInputArm(struct ExecAESContext *c, UWORD flags);
 void ExecAESInputDisarm(struct ExecAESContext *c);
 UWORD ExecAESInputRecover(struct ExecAESContext *c, UWORD flags);

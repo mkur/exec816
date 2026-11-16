@@ -111,7 +111,7 @@ def trace_definition(p, foreign, out):
     names = ('MagicBaselineProbe', 'App_ob_offset', 'objc_draw', 'ExecAESDraw',
              'wind_update', 'v_bar', 'v_gtext', 'DisplayEnter', 'DisplayLeave',
              'GemDrawingBorrow', 'GemDrawingSolidBorrow', 'VbxeOwnerSubmit',
-             'GemDrawingCopyStart', 'ExecAESSubmit', 'DoIO', 'vdi_call')
+             'GemDrawingCopyStart', 'ExecAESServiceCall', 'DoIO', 'vdi_call')
     require(all(n in sy for n in names), 'Missing C measurement boundary')
     return dict(timeline=dict(points=points, spans={},
         task_dps=[t['dp'] for t in p['build']['memory']['task_pools']]),

@@ -83,7 +83,7 @@ UWORD AESRun(void)
 {
     struct ExecAESContext *c;
     struct Task *peer;
-    ULONG available=AvailMem(0),sequence;
+    ULONG available=AvailMem(0),binding;
     WORD kind,i,id,handle=1,input[11],output[57],words[8]={777,0,0,0,0,0,0,0};
     BYTE bit=AllocSignal(-1);
     CHECK(bit>=0);wake=1UL<<bit;controller=FindTask(NULL);
@@ -126,12 +126,12 @@ UWORD AESRun(void)
             CHECK(wind_update(END_UPDATE));
         }
     }
-    c->busy=1;sequence=c->sequence;
+    c->busy=1;binding=(ULONG)c->request.service;
     CHECK(!AESBindingProbe(0) && c->diagnostic==AES_BUSY);
     CHECK(!AESBindingProbe(1) && c->diagnostic==AES_BUSY);
     CHECK(!AESBindingProbe(2) && c->diagnostic==AES_BUSY);
     CHECK(!AESBindingProbe(6) && c->diagnostic==AES_BUSY);
-    CHECK(c->busy && c->sequence==sequence);c->busy=0;
+    CHECK(c->busy && (ULONG)c->request.service==binding);c->busy=0;
     Forbid();
     CHECK(AESBindingProbe(0));
     CHECK(controller->tc_TDNestCnt==0);

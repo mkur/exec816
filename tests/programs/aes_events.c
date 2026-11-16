@@ -3,7 +3,7 @@
 #include <clib/alib_protos.h>
 #include "aes_timer_vectors.h"
 
-ULONG AESService, AESClock, AESPark;
+ULONG AESService, AESClock;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone, AESFirstFailure;
 volatile ULONG AESBurns;
 UWORD AESFault;
@@ -11,7 +11,6 @@ static struct Task *controller;
 static ULONG wake, targetHigh, targetLow;
 static UWORD sends, waits, reads, spurious, phase, cohort;
 static volatile UBYTE stopBurn, burnDone;
-#define PARK (*(volatile UBYTE *)AESPark)
 #define TICKS (*(volatile ULONG *)AESClock)
 
 static void check(BOOL okay)
@@ -94,7 +93,7 @@ static void client(UWORD who)
         CHECK(evnt_mesag(words) == 1 && words[0] == 777);
     } else for (i=0; i<12; ++i) {
         CHECK(event(MU_TIMER,30,NULL) == MU_TIMER);
-        CHECK(c->timer.state == AES_ALARM_IDLE && c->sequence == 1);
+        CHECK(c->timer.state == AES_ALARM_IDLE && c->identity != 0);
     }
     CHECK(ExecAESDetach());
     Forbid(); ++AESDone; Signal(controller,wake); RemTask(NULL);
@@ -115,15 +114,14 @@ UWORD AESRun(void)
     WORD id, words[8] = {777,1,2,3,4,5,6,7}, x,y,b,s,k,n;
     UWORD before, i;
     struct ExecAESContext *c;
-    ULONG available=AvailMem(0), sequence;
+    ULONG available=AvailMem(0), binding;
     BYTE bit=AllocSignal(-1);
     CHECK(bit >= 0);
     controller=FindTask(NULL); wake=1UL << bit;
     CHECK(timer_vectors() == 0);
     CHECK(ExecAESAttach((struct MsgPort *)AESService));
     id=appl_init(); CHECK(id > 0);
-    c=ExecAESContext(); sequence=c->sequence;
-    PARK=1;
+    c=ExecAESContext(); binding=(ULONG)c->request.service;
     before=sends;
     CHECK(event(MU_TIMER,0,NULL) == MU_TIMER && sends == before);
     CHECK(appl_write(id,16,words) == 1);
@@ -180,8 +178,7 @@ UWORD AESRun(void)
     CHECK(event(MU_MESAG | MU_TIMER,0,words) == 0 && ExecAESDiagnostic() == AES_TIMER_ERROR);
     AESFault=0;
     CHECK(evnt_mesag(words) == 1 && words[0] == 777);
-    CHECK(c->sequence == sequence);
-    PARK=0;
+    CHECK((ULONG)c->request.service == binding);
     CHECK(appl_exit() == 1 && appl_init() > id);
     /* Clock failure after alarm publication must retire it and preserve
      * the arriving message before closing the private timer resources. */

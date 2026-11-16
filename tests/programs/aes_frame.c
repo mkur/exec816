@@ -8,7 +8,7 @@ ULONG AESService,FrameNative,FrameBusy,FrameIcon,FrameIconBounds,FrameWaiting;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD FramePhase,FrameGo,FramePoint,FrameHeld,FramePB;
 WORD FrameField,FrameHandle,FrameResult,FrameStatus;
-ULONG FrameSequence,FrameView;
+ULONG FrameBindingDelta,FrameView;
 static struct Task *controller,*peer;
 static ULONG wake,peerWake;
 static volatile UWORD command,finished;
@@ -33,7 +33,7 @@ static void attribute(WORD handle,WORD field,WORD value,char *text,
     BYTE nesting=self->tc_TDNestCnt;
     WORD control[5]={AES_OP_SET,6,1,0,0},global[15],in[6],out[1]={0};
     AESPB block={control,global,in,out,NULL,NULL};
-    ULONG sequence,pointer=(ULONG)text;
+    ULONG binding,pointer=(ULONG)text;
     WORD result;
     if (held) CHECK(wind_update(BEG_UPDATE));
     in[0]=handle;in[1]=field;
@@ -42,13 +42,13 @@ static void attribute(WORD handle,WORD field,WORD value,char *text,
     FrameHandle=handle;FrameField=field;FrameHeld=held;FramePB=pb;
     FramePoint=0;++FramePhase;
     while (FrameGo<FramePhase*3-2) ExecYield();
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     FrameCallBegin();
     if (pb) { aes_call(&block);result=out[0]; }
     else if (field==WF_NAME || field==WF_INFO) result=wind_set_str(handle,field,text);
     else result=wind_set(handle,field,value,0,0,0);
     FrameCallEnd();
-    FrameSequence=c->sequence-sequence;FrameResult=result;
+    FrameBindingDelta=(ULONG)c->request.service-binding;FrameResult=result;
     FrameStatus=ExecAESDiagnostic();FrameView=(ULONG)c->view;
     CHECK((result!=0)==(expected==AES_OK));CHECK(FrameStatus==expected);
     CHECK(!c->busy && FindTask(NULL)==self && self->tc_TDNestCnt==nesting);
@@ -72,13 +72,13 @@ void AESClientOne(void)
     CHECK(peerWindow>0);
     {
         struct ExecAESContext *c=ExecAESContext();
-        ULONG sequence=c->sequence;
+        ULONG binding=(ULONG)c->request.service;
         CHECK(wind_set(peerWindow,WF_VSLIDE,100,0,0,0));
-        CHECK(c->sequence==sequence && !c->request.displayGrant);
+        CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
         CHECK(wind_set(peerWindow,WF_VSLSIZE,500,0,0,0));
-        CHECK(c->sequence==sequence && !c->request.displayGrant);
+        CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
         CHECK(wind_set_str(peerWindow,WF_NAME,"Hidden peer"));
-        CHECK(c->sequence==sequence && !c->request.displayGrant);
+        CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
     }
     AESReady=1;Signal(controller,wake);
     for (;;) {
@@ -111,7 +111,7 @@ static void send(UWORD code)
 
 UWORD AESRun(void)
 {
-    ULONG available=AvailMem(0),sequence;
+    ULONG available=AvailMem(0),binding;
     struct ExecAESContext *c;
     char limit[66];
     WORD plain,i;
@@ -123,15 +123,15 @@ UWORD AESRun(void)
                           LFARROW|RTARROW|HSLIDE|SIZER,
                           32,32,240,160);
     CHECK(rootWindow>0);CHECK(wind_open(rootWindow,32,32,240,160));
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     CHECK(wind_set(rootWindow,WF_HSLIDE,0,0,0,0));
-    CHECK(c->sequence==sequence && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
     CHECK(wind_set(rootWindow,WF_HSLSIZE,1000,0,0,0));
-    CHECK(c->sequence==sequence && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
     CHECK(wind_set_str(rootWindow,WF_NAME,""));
-    CHECK(c->sequence==sequence && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
     CHECK(wind_set_str(rootWindow,WF_INFO,""));
-    CHECK(c->sequence==sequence && !c->request.displayGrant);
+    CHECK((ULONG)c->request.service==binding && !c->request.displayGrant);
     plain=wind_create(0,360,32,120,64);CHECK(plain>0);
     peer=CreateTask("frame peer",0,AESClientOne,1024);CHECK(peer!=NULL);
     while (!AESReady) Wait(wake);
@@ -176,13 +176,13 @@ UWORD AESRun(void)
         WORD handle=graf_handle(&i,&i,&i,&i);
         CHECK(!c->workstation && c->request.displayGrant);
         v_opnvwk(input,&handle,output);CHECK(handle>0 && c->workstation);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,601,0,0,0));
-        CHECK(c->sequence==sequence);
+        binding=(ULONG)c->request.service;CHECK(wind_set(rootWindow,WF_HSLSIZE,601,0,0,0));
+        CHECK((ULONG)c->request.service==binding);
         v_clsvwk(handle);CHECK(!c->workstation && !c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
-        CHECK(c->sequence==sequence+1 && c->request.displayGrant);
-        sequence=c->sequence;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
-        CHECK(c->sequence==sequence);
+        binding=(ULONG)c->request.service;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
+        CHECK((ULONG)c->request.service==binding && c->request.displayGrant);
+        binding=(ULONG)c->request.service;CHECK(wind_set(rootWindow,WF_HSLSIZE,602,0,0,0));
+        CHECK((ULONG)c->request.service==binding);
     }
     /* Use the existing native iconification policy through the fixture hook;
      * public WF_ICONIFY/WF_UNICONIFY bindings are not installed. */
@@ -197,12 +197,12 @@ UWORD AESRun(void)
     pendingRevision=pendingView->revision;CHECK(wind_update(END_UPDATE));
     pendingRevision=pendingView->revision;
     (*(volatile UBYTE *)FrameBusy)=1;finished=0;command=4;Signal(peer,peerWake);
-    sequence=c->sequence;CHECK(wind_set_str(rootWindow,WF_INFO,"After readiness"));
-    CHECK(c->sequence==sequence);
+    binding=(ULONG)c->request.service;CHECK(wind_set_str(rootWindow,WF_INFO,"After readiness"));
+    CHECK((ULONG)c->request.service==binding);
     while (finished!=4) Wait(wake);
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     CHECK(!wind_set_str(peerWindow,WF_NAME,"Foreign"));
-    CHECK(ExecAESDiagnostic()==AES_IDENTITY && c->sequence==sequence);
+    CHECK(ExecAESDiagnostic()==AES_IDENTITY && (ULONG)c->request.service==binding);
     command=5;Signal(peer,peerWake);while (!AESDone) Wait(wake);
     CHECK(ExecAESDetach());FreeSignal(bit);CHECK(AvailMem(0)==available);
     return AESFailures;

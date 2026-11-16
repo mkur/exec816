@@ -8,6 +8,11 @@ delay and changed offered load. They do not replace HY4's continuous workloads,
 pixel checks or frozen acceptance limits. The probes leave guest instructions
 and scheduling unchanged.
 
+The RPC milestone probes below apply to their frozen HY4 images. Current AES
+has no request/reply dispatch engine; use the current MGVIEW/G4BENCH call and
+Task observers for caller execution. Do not interpret absent RPC milestones as
+zero-cost work.
+
 ## Caller and presenter timing
 
 Add `--breakdown` to the existing bounded call probe. A loaded desktop image

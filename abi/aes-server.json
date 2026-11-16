@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 25,
+  "version": 26,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -36,8 +36,6 @@
     "ENDPOINT_ACCEPTING": 1,
     "ENDPOINT_CLOSING": 2,
     "ENDPOINT_RETIRED": 3,
-    "RPC_INTIN_WORDS": 6,
-    "RPC_INTOUT_WORDS": 5,
     "GUI_KINDS": 11,
     "GUI_REDRAW": 0,
     "GUI_TOPPED": 1,
@@ -161,7 +159,10 @@
     "M_RESTORE": 259,
     "M_PREVIOUS": 260,
     "M_FORCE": 32768,
-    "MFORM_WORDS": 37
+    "MFORM_WORDS": 37,
+    "OP_DETACH": 204,
+    "RESULT_WORDS": 5,
+    "ARG_WORDS": 6
   },
   "records": {
     "MenuObject": [
@@ -691,8 +692,12 @@
         "LONGCARD"
       ],
       [
-        "sequence",
-        "LONGCARD"
+        "service",
+        "EXEC.MsgPort POINTER"
+      ],
+      [
+        "servicePad",
+        "BYTE"
       ],
       [
         "owner",
@@ -713,12 +718,12 @@
       [
         "intin",
         "INT",
-        "RPC_INTIN_WORDS"
+        "ARG_WORDS"
       ],
       [
         "intout",
         "INT",
-        "RPC_INTOUT_WORDS"
+        "RESULT_WORDS"
       ],
       [
         "global",
@@ -798,11 +803,6 @@
       ]
     ]
   },
-  "rpc_operations": [
-    "OP_INIT",
-    "OP_EXIT",
-    "OP_MOUSE_PROFILE"
-  ],
   "public_constants": [
     "NAME",
     "CLOSER",
@@ -884,5 +884,10 @@
     "M_RESTORE",
     "M_PREVIOUS",
     "M_FORCE"
+  ],
+  "service_operations": [
+    "OP_INIT",
+    "OP_DETACH",
+    "OP_MOUSE_PROFILE"
   ]
 }

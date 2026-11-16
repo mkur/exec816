@@ -121,6 +121,7 @@ ENDMODULE
             release_compiler=True,client_sources=[ROOT/'c/calypsi/aes.c',
                 ROOT/'c/calypsi/aes-messages.c',ROOT/'c/calypsi/aes-events.c',
                 ROOT/'tests/programs/display_admission.c'],
+            client_entries=['AdmissionPeer'],
             client_roots=['AESRun','AESService','AESChecks','AESFailures','AESFirstFailure'])
     finally:
         builder.prepare=original
@@ -169,7 +170,7 @@ def run(out,reuse=False):
             ownership(b,p,p['output'])
             report.update(checks=b.peek16(sy['AESChecks']),failures=b.peek16(sy['AESFailures']),
                 first_failure=b.peek16(sy['AESFirstFailure']),stack_usage=stack_usage(b,p['build']['memory']))
-            require(report['checks']==19 and report['failures']==0,'Incomplete direct admission checks')
+            require(report['checks']==26 and report['failures']==0,'Incomplete direct admission checks')
         report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error));raise

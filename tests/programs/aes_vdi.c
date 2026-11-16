@@ -209,13 +209,13 @@ static void draw(UWORD who,WORD handle,WORD window)
     WORD clip[4],outside[4]={-8,-8,-1,-1};
     WORD x,y,w,h;
     struct ExecAESContext *c=ExecAESContext();
-    ULONG sequence;
+    ULONG binding;
     WORD control[12]={0,0,0,0,0,0,0,0,0,0,0,0},points[2];
     VDIPB pb={control,wordText[who],points,NULL,NULL};
     UWORD i,units;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_get(window,WF_WXYWH,&x,&y,&w,&h));
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     CHECK(c->workstation->fillColor==(who ? 2:4));
     CHECK(c->workstation->writeMode==MD_REPLACE);
     vs_clip(handle,0,huge);
@@ -262,7 +262,7 @@ static void draw(UWORD who,WORD handle,WORD window)
     CHECK(vswr_mode(handle,3)==0 && ExecAESDiagnostic()==AES_UNSUPPORTED);
     CHECK(vsf_interior(handle,2)==0 && ExecAESDiagnostic()==AES_UNSUPPORTED);
     CHECK(vswr_mode(handle,1)==1 && vsf_interior(handle,1)==1);
-    CHECK(c->sequence==sequence); /* Every warm VDI call is caller-local. */
+    CHECK((ULONG)c->request.service==binding); /* Every warm VDI call is caller-local. */
     CHECK(c->view->changed && c->request.paintCount==0 && !c->request.paintFailed);
     CHECK(ExecAESPainted(window,x,y,w,h));
     CHECK(c->request.paintCount>0);

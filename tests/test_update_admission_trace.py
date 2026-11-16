@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
-from update_admission_trace import decode, read_value
+from native_call_trace import decode, read_value
 from text_performance_trace import analyze_locks, busy_intervals, busy_markers, extend_clock, timeline
 from sio_transaction_trace import BASE_HZ, read_events
 from bitmap_console_performance import hardware_markers
@@ -152,7 +152,7 @@ class AdmissionTrace(unittest.TestCase):
             decode([event(1,0x200)],d)
 
     def test_c_return_uses_stack_and_task(self):
-        d=self.definition();d['calls']={0x200:dict(callee='ExecAESSubmit',end=0x204)}
+        d=self.definition();d['calls']={0x200:dict(callee='ExecAESServiceCall',end=0x204)}
         d['captures']={0x300:'request_low'}
         _,rows=decode([event(1,0x200,a=107),event(2,0x300,a=0x4567),
                        event(3,0x204,dp=0xc00),event(4,0x204,sp=0xff0),

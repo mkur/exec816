@@ -28,7 +28,7 @@ blit_glyph_run glyph_record blit_mask text_run VbxeOwnerFence idle
 VbxeOwnerSubmit VbxeOwnerRead VbxeOwnerWrite _VbxeUpload _VbxeTextUpload
 start fence_owner drain pointer_erase'''.split()
 # Optional boundaries let the same observer compare archived pre-fill images.
-FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESSubmit ExecAESUpdate ExecAESBeginUpdate _AESLocalCall PutMsg GetMsg Wait vsf_color'.split()
+FILL_NAMES='GemSolidRows GemSolidFill solid_record GemDrawingSolidBorrow drawing_borrow vdi_vr_recfl ExecAESServiceCall ExecAESUpdate ExecAESBeginUpdate _AESLocalCall PutMsg GetMsg Wait vsf_color'.split()
 
 
 def listing_returns(image, directory, exits=False):
@@ -86,9 +86,9 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         'DISPLAY_OWNERENTER','DISPLAY_OWNERDROP','DISPLAY_OWNEREND','DISPLAY_NEXT',
         'AESMOUSE_REFRESH','AESINBOX_SNAPSHOT','AESLOCKS_CALL','AESLOCKS_ACQUIRE',
         'AESLOCKS_NOTIFY','AESWINDOWSTATE_SYNC','AESWINDOWSTATE_PUBLISH',
-        'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH',
+        'AESCORE_SETTLE',
         'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
-        'AESSTATE_REPLY','DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
+        'DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
     optional = ('AESLOCAL_CALL', 'AESLOCAL_PUBLISH', 'AESHOST_PUBLISH',
                 'AESLOCKS_NATIVEREADY', 'AESLOCKS_SYSTEMBEGIN',
                 'AESLOCKS_RELEASE', 'AESHOST_SETTLED')

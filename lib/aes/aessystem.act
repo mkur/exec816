@@ -162,7 +162,6 @@ PUBLIC PROC Run()
         DESKINPUT.Present()
       FI
 
-      DESKHOST.AfterPaint()
       IF consoleTurn(deferOutput,@again,@writing,@handoff)<>0 THEN
         DESKHOST.InputBoundary()
       ELSE

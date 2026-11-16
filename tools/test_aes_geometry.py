@@ -9,7 +9,7 @@ from os_boundary import run_to
 from sio_transaction_trace import read_events,BASE_HZ
 
 ROOTS=['GeoNative','GeoBusy','GeoWaiting','GeoPhase','GeoGo','GeoPoint',
-       'GeoField','GeoHandle','GeoResult','GeoStatus','GeoSequence','GeoView',
+       'GeoField','GeoHandle','GeoResult','GeoStatus','GeoBindingDelta','GeoView',
        'GeoCallBegin','GeoCallEnd']
 
 
@@ -83,7 +83,7 @@ def physical(b,p,foreign,report):
         before=[get(val('GeoNative',4)+2*i) for i in range(4)]
         b.poke16(sy['GeoGo'],phase*2-1);reach(phase,3)
         field=val('GeoField');direct=report['geometry_local']=='all' or (field==106 and report['geometry_local']=='query')
-        require(val('GeoSequence',4)==(0 if direct else 1),f'Geometry phase {phase}: wrong transport')
+        require(val('GeoBindingDelta',4)==0,f'Geometry phase {phase}: changed service binding')
         stats=[get(val('GeoNative',4)+2*i)-before[i] for i in range(4)]
         offset=0 if field==106 else 2
         require(stats[offset]>0 and stats[offset+1]==0 if direct else stats[offset]==0 and stats[offset+1]>0,
@@ -96,7 +96,7 @@ def physical(b,p,foreign,report):
         state['visible']=[list(int.from_bytes(raw[vf['visible']+i*8+j*2:vf['visible']+i*8+j*2+2],'little',signed=True)
                                for j in range(4)) for i in range(state['visibleCount'])]
         report['geometry'].append(dict(phase=phase,field=field,result=val('GeoResult'),status=val('GeoStatus'),
-            sequence_delta=val('GeoSequence',4),helper_attempts=stats,view=state))
+            binding_delta=val('GeoBindingDelta',4),helper_attempts=stats,view=state))
         b.poke16(sy['GeoGo'],phase*2)
     b.bp_clear_all()
 

@@ -42,7 +42,7 @@ BOOL ExecAESAttach(struct MsgPort *service)
         return FALSE;
     context = ExecAESContext();
     if (context != NULL)
-        return context->service == service;
+        return context->request.service == service;
     /* Allocation can switch Tasks. Publish only a fully initialized context. */
     context = AllocMem(sizeof(*context), MEMF_PUBLIC | MEMF_CLEAR);
     if (context == NULL)
@@ -58,7 +58,7 @@ BOOL ExecAESAttach(struct MsgPort *service)
         FreeMem(context, sizeof(*context));
         return FALSE;
     }
-    context->service = service;
+    context->request.service = service;
     context->request.owner = FindTask(NULL);
     context->request.binding = (UBYTE *)context;
     context->request.message.mn_ReplyPort = context->replies;
@@ -112,79 +112,44 @@ UWORD ExecAESDiagnostic(void)
     return context != NULL ? context->diagnostic : AES_IDENTITY;
 }
 
-/* One caller, one packet, one outstanding call. A signal is only a hint: the
- * queue is checked first, including when the reply preceded PutMsg's return. */
-WORD ExecAESSubmit(struct ExecAESContext *c, UWORD operation)
+/* Ordinary AES lifecycle/preferences execute in their caller. The request
+ * keeps its established service and private wake port through actual waits. */
+WORD ExecAESServiceCall(struct ExecAESContext *c, UWORD operation)
 {
-    struct AESRequest *r = &c->request;
-    struct Task *owner = r->owner;
-    struct Message *reply;
-    ULONG sequence;
+    struct AESRequest *r=&c->request;
     UWORD i;
-    WORD failure = (operation == AES_OP_INIT || operation == AES_OP_CREATE) ? -1 : 0;
-    if (c->busy) { c->diagnostic = AES_BUSY; return failure; }
-    if (c->identity == 0 && operation != AES_OP_INIT) {
-        c->diagnostic = AES_IDENTITY; return failure;
+    WORD failure=operation==AES_OP_INIT ? -1:0;
+    if (c->busy) { c->diagnostic=AES_BUSY;return failure; }
+    if (!c->identity && operation!=AES_OP_INIT) {
+        c->diagnostic=AES_IDENTITY;return failure;
     }
-    if (c->sequence == 0xffffffffUL ||
-        (c->sequence == 0xfffffffeUL && operation != AES_OP_EXIT)) {
-        c->diagnostic = AES_OVERFLOW; return failure;
-    }
-    sequence = c->sequence+1;
-    r->operation = operation;
-    r->status = AES_PENDING;
-    r->client = c->identity;
-    r->sequence = sequence;
-    c->busy = 1;
-    PutMsg(c->service, &r->message);
-    while ((reply = GetMsg(c->replies)) == NULL)
-        Wait(1UL << c->replies->mp_SigBit);
-    /* This is a private port and binding. No borrowed pointers survive reply. */
-    if (reply != &r->message || r->version != AES_VERSION ||
-        r->bytes != sizeof(*r) || r->sequence != sequence ||
-        r->operation != operation || r->owner != owner ||
-        r->binding != (UBYTE *)c || r->message.mn_ReplyPort != c->replies ||
-        (operation != AES_OP_INIT && operation != AES_OP_EXIT &&
-         r->client != c->identity)) {
-        c->diagnostic = AES_MALFORMED;
-        c->busy = 0;
-        return failure;
-    }
-    c->diagnostic = r->status;
-    if (c->identity != 0)
-        c->sequence = sequence;
-    if (r->status == AES_OK) {
-        if (operation == AES_OP_INIT) {
-            if (r->client == 0 || r->intout[0] <= 0) {
-                c->diagnostic = AES_MALFORMED;
-            } else {
-                c->identity = r->client;
-                c->gemId = r->intout[0];
-                c->sequence = sequence;
-                c->directory = r->directory;
-                Forbid();
-                for (i = 0; i < AES_CLIENTS; ++i)
-                    if (c->directory->endpoints[i].id == c->identity)
-                        c->endpoint = &c->directory->endpoints[i];
-                Permit();
-            }
-        } else if (operation == AES_OP_EXIT) {
-            if (r->client != 0) c->diagnostic = AES_MALFORMED;
-            else { c->identity = 0; c->sequence = 0; c->gemId = 0; }
+    ExecAESLocal(c,operation);
+    c->diagnostic=r->status;
+    if (r->status==AES_OK) {
+        if (operation==AES_OP_INIT) {
+            c->identity=r->client;
+            c->gemId=r->intout[0];
+            c->directory=r->directory;
+            Forbid();
+            for (i=0;i<AES_CLIENTS;++i)
+                if (c->directory->endpoints[i].id==c->identity)
+                    c->endpoint=&c->directory->endpoints[i];
+            Permit();
+        } else if (operation==AES_OP_DETACH) {
+            c->identity=0;c->gemId=0;
         }
     }
-    c->busy = 0;
-    return c->diagnostic == AES_OK ? r->intout[0] : failure;
+    return c->diagnostic==AES_OK ? r->intout[0]:failure;
 }
 
-/* This infrequent desktop preference is serialized by the input owner. */
+/* This infrequent preference uses the native input state's short Task guard. */
 WORD ExecAESMouseProfile(WORD profile)
 {
     struct ExecAESContext *c = ExecAESContext();
     if (c == NULL) return -1;
     if (c->busy) { c->diagnostic = AES_BUSY; return -1; }
     c->request.intin[0] = profile;
-    ExecAESSubmit(c, AES_OP_MOUSE_PROFILE);
+    ExecAESServiceCall(c, AES_OP_MOUSE_PROFILE);
     return c->diagnostic == AES_OK ? c->request.intout[0] : -1;
 }
 
@@ -202,7 +167,7 @@ static WORD init(struct ExecAESContext *c)
     } else {
         c->request.receiving = c->receiving;
         c->request.records = c->records;
-        if (ExecAESSubmit(c, AES_OP_INIT) > 0)
+        if (ExecAESServiceCall(c, AES_OP_INIT) > 0)
             return c->gemId;
     }
     if (c->records != NULL) FreeMem(c->records, AES_REGISTRATIONSTORAGE_SIZE);
@@ -238,7 +203,7 @@ static WORD exit_application(struct ExecAESContext *c)
     c->busy=1;
     if (!ExecVDIClose(c) || !ExecAESDisplayClose(c)) { c->busy=0; return 0; }
     c->busy=0;
-    result = ExecAESSubmit(c, AES_OP_EXIT);
+    result = ExecAESServiceCall(c, AES_OP_DETACH);
     if (result) {
         c->busy = 1;
         ExecAESResourceFree(c);

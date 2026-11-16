@@ -192,7 +192,7 @@ class ViewerMeasurement:
         s.b._cmd_ok('KEY RETURN down');s.b.bp_clear_all()
 
 
-def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock_times=False):
+def measure(out,count,observe=False,panel=True,cancel=False,lock_times=False):
     out=out.resolve()
     (out/'measurement-observer.py').write_text(Path(__file__).read_text())
     with zipfile.ZipFile(out/'exec816-demo.zip') as archive:
@@ -202,10 +202,6 @@ def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock
     if observe:
         from text_performance_trace import prepare
         definition=prepare(out)
-        if admission:
-            from update_admission_trace import prepare as admission_prepare
-            admission_definition=admission_prepare(out)
-            definition['pcs']=sorted(set(definition['pcs']) | set(admission_definition['pcs']))
         os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in definition['pcs'])
         os.environ.pop('EXEC816_MASK_TRACE',None)
     if lock_times:
@@ -213,7 +209,7 @@ def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock
         lock_definition=prepare_locks(out)
         os.environ['EXEC816_LATENCY_PCS']=','.join(f'{pc:x}' for pc in lock_definition['pcs'])
         os.environ.pop('EXEC816_MASK_TRACE',None)
-    integration=ViewerMeasurement(count,panel,cancel,admission or lock_times)
+    integration=ViewerMeasurement(count,panel,cancel,lock_times)
     result=run(out,boot_smoke=True,distribution_root=out/'extracted/exec816-demo',integration=integration,profile_commands=False)
     result.update(scope='Physical text page/line and Panel feedback during viewer repaint',
                   qualification=False,zip_sha256=sha256(out/'exec816-demo.zip'),text_performance=integration.record)
@@ -228,9 +224,6 @@ def measure(out,count,observe=False,panel=True,admission=False,cancel=False,lock
     if definition:
         from text_performance_trace import analyze
         result['breakdown']=analyze(out,definition,integration.record)
-        if admission:
-            from update_admission_trace import analyze as admission_analyze
-            result['admission']=admission_analyze(out,admission_definition,definition,integration.record)
     if lock_times:
         from text_performance_trace import analyze_locks
         result['update_times']=analyze_locks(out,lock_definition,integration.record)
@@ -244,8 +237,7 @@ if __name__=='__main__':
     parser.add_argument('--count',type=int,default=10)
     parser.add_argument('--observe',action='store_true')
     parser.add_argument('--no-panel',action='store_true')
-    parser.add_argument('--admission',action='store_true',help='Trace UPDATE request admission (implies --observe)')
     parser.add_argument('--cancel',action='store_true',help='Append fixed-offset Escape and BREAK cases')
     parser.add_argument('--lock-times',action='store_true',help='Sparse BEGIN/END timing companion')
     args=parser.parse_args();require(args.count>0 and args.count%2==0,'Use a positive even count')
-    measure(args.bundle,args.count,args.observe or args.admission,not args.no_panel,args.admission,args.cancel,args.lock_times)
+    measure(args.bundle,args.count,args.observe,not args.no_panel,args.cancel,args.lock_times)

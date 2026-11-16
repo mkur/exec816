@@ -1,5 +1,5 @@
 /* A second linked binding instance has its own private contexts table. */
-#define ExecAESSubmit Peer_ExecAESSubmit
+#define ExecAESServiceCall Peer_ExecAESServiceCall
 #define ExecAESPointer Peer_ExecAESPointer
 #define ExecAESContext Peer_ExecAESContext
 #define ExecAESAttach Peer_ExecAESAttach

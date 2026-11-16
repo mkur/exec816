@@ -335,7 +335,7 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
       OD
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
-      client.waitMode=AESWAIT.RPC
+      client.waitMode=AESWAIT.IDLE
     FI
     status=Acquire(service,client,code,
         IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN

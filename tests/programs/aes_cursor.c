@@ -65,7 +65,7 @@ UWORD AESRun(void)
     struct ExecAESContext *c;
     struct AESMouseState *mouse;
     struct Task *counter;
-    ULONG available=AvailMem(0),revision,sequence;
+    ULONG available=AvailMem(0),revision,binding;
     WORD x,y,buttons,qualifiers,h=0,window,i;
     WORD input[11],output[57],control[5]={78,1,1,1,0},global[15],in[1],out[1];
     LONG address[1]={0};
@@ -87,7 +87,7 @@ UWORD AESRun(void)
     CHECK(x==121 && y==89 && buttons==1 && qualifiers==4);
     CHECK(c->endpoint->input->latest.x==5 && c->endpoint->input->selectedPointer.x==7);
     Forbid();mouse->buttons=0;Permit();
-    sequence=c->request.sequence;
+    binding=(ULONG)c->request.service;
     CHECK(graf_mouse(M_OFF,NULL));
     CHECK(mouse->depth==1 && !mouse->visible && mouse->completed==mouse->revision);
     observe(1);
@@ -97,7 +97,7 @@ UWORD AESRun(void)
     CHECK(graf_mouse(M_ON,NULL));CHECK(mouse->visible && !mouse->depth);
     observe(2);
     CHECK(graf_mouse(M_ON,NULL));CHECK(!mouse->depth);
-    CHECK(c->request.sequence==sequence);
+    CHECK((ULONG)c->request.service==binding);
     revision=mouse->revision;
     CHECK(!graf_mouse(8,NULL) && ExecAESDiagnostic()==AES_UNSUPPORTED);
     CHECK(mouse->revision==revision);
@@ -128,7 +128,7 @@ UWORD AESRun(void)
     h=graf_handle(&x,&y,&buttons,&qualifiers);CHECK(h>0);
     input[10]=2;v_opnvwk(input,&h,output);CHECK(h>0);
     CHECK(wind_update(BEG_UPDATE));
-    sequence=c->request.sequence;
+    binding=(ULONG)c->request.service;
     v_hide_c(h);CHECK(ExecAESDiagnostic()==AES_OK && mouse->depth==1);
     v_hide_c(h);CHECK(mouse->depth==2);
     CHECK(graf_mouse(M_OFF,NULL));CHECK(mouse->depth==3);
@@ -146,7 +146,7 @@ UWORD AESRun(void)
     CHECK(mouse->visible && ExecAESDiagnostic()==AES_OK);
     vq_mouse(h,&buttons,&x,&y);CHECK(ExecAESDiagnostic()==AES_OK);
     CHECK(x==mouse->x && y==mouse->y && buttons==mouse->buttons);
-    CHECK(c->request.sequence==sequence);
+    CHECK((ULONG)c->request.service==binding);
     v_hide_c(h+1);CHECK(ExecAESDiagnostic()==AES_IDENTITY && mouse->visible);
     {
         WORD box[4]={80,64,199,119},strip[4]={80,64,199,71};

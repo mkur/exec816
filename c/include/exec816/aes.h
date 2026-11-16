@@ -17,7 +17,6 @@ struct ExecAESForm;
  * controller retains the service until every attached Task has detached. */
 struct ExecAESContext {
     struct AESRequest request; /* Original binding address is also its packet. */
-    struct MsgPort *service;
     struct MsgPort *replies;
     struct MsgPort *receiving;
     struct AESDelivery *records;
@@ -28,7 +27,7 @@ struct ExecAESContext {
     LONG addrin[3], addrout[1];
     UWORD diagnostic;
     UBYTE busy;
-    ULONG identity, sequence;
+    ULONG identity;
     WORD gemId;
     struct ExecAESTimer timer;
     struct AESWindowView *view;

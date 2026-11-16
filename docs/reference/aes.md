@@ -4,10 +4,9 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint and graphical system loop run in the existing desktop
-frontend Task ([system module](../../lib/aes/aessystem.act)). Registration, final
-detach and platform service controls use ordinary Exec RPC. Window/menu
-operations, UPDATE/MCTRL, copied messaging and event/timer waits use caller
-library entries. Window mutations and synchronous frame/copy completion run in
+frontend Task ([system module](../../lib/aes/aessystem.act)). Registration,
+final detach, mouse preferences, window/menu operations, UPDATE/MCTRL, copied
+messaging and event/timer waits use caller library entries. Window mutations and synchronous frame/copy completion run in
 their caller under UPDATE. A pending operation keeps its pinned descriptor and
 retries in that caller; the manager publishes wake hints without executing it.
 This adds no Task or kernel gateway.
@@ -92,23 +91,22 @@ Raw [VDI hide/show](gem-vdi.md#mouse-device-calls) retains separate device state
 Startup retains the endpoint returned by `AESBOOT.Port()` until every C Task
 has detached. Each application wrapper calls `ExecAESAttach(endpoint)` before
 its GEM entry and `ExecAESDetach()` before ordinary Task removal. Detach calls
-`appl_exit` if needed, collects its final detach reply, then deletes the private
-port/context. The owning Task obtains or retains UPDATE, restores MCTRL routing,
+`appl_exit` if needed, completes final native detach in that caller, then deletes
+the private wake port/context. The owning Task obtains or retains UPDATE, restores MCTRL routing,
 withdraws menus/windows and finishes protected effects before releasing its
 levels. Cursor contributions are repaired after release. The registration and
 its storage remain live through that owner phase; held ownership is supported.
-Failed preparation retains the context for retry. A raw exit RPC without owner
-preparation reports `AES_BUSY` and cannot release another Task's resource.
+Failed preparation retains the context for retry. Final native detach before
+owner preparation reports `AES_BUSY` and cannot release another Task's resource.
 Failure to detach must prevent Task/image retirement. There is no forced client
 recovery or discovery by name in this profile.
 
-Each attached Task owns private parameter arrays, a request and reply port;
+Each attached Task owns private parameter arrays, a request and private wake port;
 there is no process-global GEM parameter block. Four applications can register
 at once. Successful init returns a positive signed 16-bit ID; repeated init on
 the same live binding returns that ID. Exit returns one. Failed init returns
-minus one. GEM IDs are never reused within a service lifetime. Native identities
-and request sequences are separately checked 32-bit values; exhaustion fails
-before reuse, reserving the last sequence for exit.
+minus one. GEM IDs and 32-bit native identities are never reused within a service
+lifetime; exhaustion fails before reuse. There is no request transport sequence.
 
 Registration also publishes a caller-owned receive port, sixteen 32-byte
 application message records and one 40-byte GUI delivery record in the service's
@@ -120,9 +118,8 @@ admission. Console input-window binding uses UPDATE. This directory works
 across separate C binding instances. Its lookup, publication holds and recycling
 use short Task-side `Forbid` guards; interrupts do not access it. Exit withdraws
 admission, waits for existing publishers without blocking the presenter, drains
-the port and acknowledges retirement before the caller frees its storage.
-Direct calls check the caller-local registration ID and one-call occupancy
-without advancing the RPC sequence. Registration pins the endpoint until this
+the port and completes native retirement before the caller frees its storage.
+Direct calls check the caller-local registration ID and one-call occupancy. Registration pins the endpoint until this
 Task exits, so admission does not repeatedly audit the shared endpoint. Guards
 around shared window snapshots, publication and event decisions remain required.
 Named and parameter-block window, UPDATE, menu and drawing entries reuse their
@@ -132,7 +129,7 @@ The context pointer is stable from attach through detach, including across
 preemption and `appl_exit`/`appl_init` cycles. Its window/workstation and other
 contents can change. The current public binding still locates that pointer
 through a current-Task lookup and the binding's context table; this is context
-selection, not an ownership recheck. RPC replies use the established caller
+selection, not an ownership recheck. Native entries use the established caller
 identity without another current-Task query.
 
 `appl_write(id, 16, words)` reserves a destination-owned record, copies eight
@@ -170,8 +167,7 @@ the presenter continue. Exit discards any queued messages.
 returns one when its absolute VBI-clock deadline expires. Conversion uses the
 reported 50/60 Hz rate, rounds upward and adds one tick to prevent early expiry.
 Standalone zero delay therefore waits at least one tick. Overflow returns zero
-with `AES_OVERFLOW`. This operation runs in the caller, without presenter RPC or
-request-sequence advancement. The named wrapper and parameter-block opcode use
+with `AES_OVERFLOW`. This operation runs in the caller. The named wrapper and parameter-block opcode use
 the same helper.
 
 `evnt_keybd()` waits for one GEM scan/ASCII word. `evnt_button(clicks, mask,
@@ -218,7 +214,7 @@ received is nonzero; it can accompany GUI/timer readiness.
 
 The caller owns the selected signal bits for the entire call. AES neither
 dequeues an external port nor collects a child or frees a borrowed signal.
-Masks overlapping its private receive, RPC-reply or retained timer signals fail
+Masks overlapping its private receive, native-wake or retained timer signals fail
 with AES_MALFORMED. Unrelated signal bits are left unchanged. A Process completion
 mask remains borrowed only until collection; try Collect before waiting so an
 already retired child does not depend on a new notification.
@@ -317,8 +313,7 @@ No display grant or Layers token is held across that Obtain.
 The busy C context and registration pin its descriptor/frame. Unrelated input,
 message and timer signals remain pending; native resource waits consume none.
 
-These calls send no RPC and do not advance its sequence. FIFO starts at native
-acquisition, independently of message-port arrival. There is no mixed AES
+These calls execute directly. FIFO starts at native acquisition. There is no mixed AES
 UPDATE/window queue or older-window-prefix barrier. TRY failure is a completed
 zero result. Physical input/outline/route continuations retain existing private
 reply-signal hints after ownership has been established; those hints never grant
@@ -328,8 +323,8 @@ Final local END consumes the binding's paint journal before returning and
 signals the existing AES wake bit. Input.device continues captured keyboard and
 pointer delivery through copied routing while another Task owns UPDATE. Manager
 window/control interpretation, cache work and scene commits try UPDATE at their
-operation boundary. RPC, message/timer waits and device completion remain
-independent. Caller drawing keeps UPDATE, its packet and any Layers token through
+operation boundary. Caller registration, message/timer waits and device completion
+remain independent. Caller drawing keeps UPDATE, its packet and any Layers token through
 physical completion; geometry commits only after terminal completion.
 
 There is no separate scene gate, scene waiter queue or turn-wide scene claim.
@@ -377,7 +372,7 @@ interpretation and drawing run in the frontend under UPDATE.
 The manager uses nonblocking native Try for live scene/readiness inspection,
 menu/gesture work, painting, cache candidates and console controls. Failed Try
 returns without inspecting the protected scene and arms the existing release
-hint. Copied endpoint/event queues and RPC admission remain independent, so
+hint. Copied endpoint/event queues and caller registration remain independent, so
 registration, input and pending-caller wakeups still progress. Nested operation
 scopes share one native hold. A native capture or open menu retains that hold
 through its interaction; physical/cache tokens retain it through completion.
@@ -421,7 +416,7 @@ Off-screen bounds fail without mutation.
 
 Hidden creation and ordinary closed-window deletion execute in the caller under
 the common UPDATE scope. Ordinary/PB calls use the same
-helpers and preserve transport sequence. View storage is allocated before entry
+helpers. View storage is allocated before entry
 and freed after release. Copied moves retain their Layers token and packet on
 the caller's stack through the delegated blitter fence. A manager never obtains
 or releases a caller's UPDATE to complete a window request.
@@ -480,9 +475,8 @@ Ordinary/PB closes withdraw the open epoch, GUI facts and capture, hide the wind
 and publish replacement focus before route retirement. Input.device consumes the
 lease independently. If capture still references the tag, the owning caller
 retains its hidden record and pending descriptor and retries after a wake hint.
-The manager performs no window mutation or completion on its behalf. Transport
-sequence exhaustion cannot interrupt retirement. Owner exit uses these same
-helpers; only final registration detach uses RPC.
+The manager performs no window mutation or completion on its behalf. Owner exit
+uses these same helpers and completes final registration detach in that caller.
 
 Pointer-sample routing and window-capture cancellation use one bounded Task
 transaction. It contains no drawing or wait; IRQ/NMI capture uses separate
@@ -647,8 +641,7 @@ quantum must run before another such deferral, preserving writer progress.
 published hit stack under a short Task guard. It acquires neither UPDATE nor
 scene ownership and does not wait for a drawing owner. An overlapping mutation
 may still yield the previous publication; completed operations publish before
-return. Ordinary and PB queries preserve the selected view, rectangle iterator
-and transport sequence. The result is the topmost AES window's global handle,
+return. Ordinary and PB queries preserve the selected view and rectangle iterator. The result is the topmost AES window's global handle,
 including inactive/foreign windows, borders and iconified windows. Native windows
 and chrome occlude lower handles; desktop, background and outside-screen hits
 retain the existing zero result. Focus, menu, MCTRL and input-endpoint admission
@@ -665,10 +658,16 @@ UPDATE for feedback; the outline is suspended around drawing. Other clients'
 UPDATE requests wait on the same native resource until MCTRL releases it. This is a bounded Exec extension, not GEM's synchronous drag-box API.
 
 The generated [wire ABI](../../abi/aes-server.json) is private to this source
-profile: version 25 has a 418-byte request. Init, final exit detach and session
-mouse preferences use the RPC endpoint. Cold frame and virtual-workstation
-grant admission call the general display driver directly in the application;
-they require no manager RPC or transport sequence advance. Window/menu
+profile: version 26 has a 418-byte request. Init, final detach and session mouse
+preferences execute in their caller. Creation validates resources and publishes
+the client/endpoint under a bounded Task guard. Final detach follows protected
+UI withdrawal and successful C resource closure, retaining the registration for
+retry if closure fails. The request's former four-byte sequence is a native
+service-port pointer plus one padding byte; the context uses this one canonical
+association. The port remains a rendezvous identity and wake resource, with no
+AES request queue or dispatch budget. The standard request header retains the
+private wake port for actual continuations. Cold frame and virtual-workstation
+grant admission call the general display driver directly in the application. Window/menu
 mutations, UPDATE, outline admission, owner-side exit and cursor policy use caller
 entries; `wind_find` uses the nonblocking caller snapshot query.
 Other window queries and rectangle conversion remain local. The input inbox is

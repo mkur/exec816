@@ -3,7 +3,7 @@
 #include <clib/alib_protos.h>
 #include "aes_timer_vectors.h"
 
-ULONG AESService, AESClock, AESPark;
+ULONG AESService, AESClock;
 volatile UWORD AESChecks, AESFailures, AESReady, AESDone, AESFirstFailure;
 volatile ULONG AESBurns;
 UWORD AESFault;
@@ -49,7 +49,7 @@ static void client(UWORD who)
     for (i = 0; i < 12; ++i) {
         CHECK(evnt_timer(20, 0) == 1);
         CHECK(c->timer.state == AES_ALARM_IDLE);
-        CHECK(c->sequence == 1);
+        CHECK(c->identity != 0);
     }
     CHECK(ExecAESDetach());
     Forbid(); ++AESDone; Signal(controller, wake); RemTask(NULL);
@@ -73,7 +73,7 @@ UWORD AESRun(void)
     struct ExecAESContext *c;
     struct MsgPort *port;
     struct TimerClockRequest *requests[16];
-    ULONG available = AvailMem(0), before, sequence;
+    ULONG available = AvailMem(0), before, binding;
     UWORD i, j;
     BYTE bit = AllocSignal(-1);
     WORD id, words[8] = {123, 1, 2, 3, 4, 5, 6, 7};
@@ -85,19 +85,19 @@ UWORD AESRun(void)
     CHECK(appl_init() > 0);
     c = ExecAESContext();
     CHECK(c->timer.port == NULL);
-    sequence = c->sequence;
+    binding = (ULONG)c->request.service;
     before = TICKS;
     CHECK(evnt_timer(0, 0) == 1);
-    CHECK(TICKS-before >= 1 && c->sequence == sequence);
+    CHECK(TICKS-before >= 1 && (ULONG)c->request.service == binding);
     before = TICKS;
     CHECK(evnt_timer(30, 0) == 1);
-    CHECK(TICKS-before >= 3 && c->sequence == sequence);
+    CHECK(TICKS-before >= 3 && (ULONG)c->request.service == binding);
     CHECK(c->timer.state == AES_ALARM_IDLE && GetMsg(c->timer.port) == NULL);
     {
         WORD control[5] = {24, 2, 1, 0, 0}, global[15], in[2] = {0, 0}, result;
         AESPB pb = {control, global, in, &result, NULL, NULL};
         aes_call(&pb);
-        CHECK(result == 1 && c->sequence == sequence && global[2] == c->gemId);
+        CHECK(result == 1 && (ULONG)c->request.service == binding && global[2] == c->gemId);
     }
     AESFault = 1;
     CHECK(evnt_timer(0xffff, 0xffff) == 1);

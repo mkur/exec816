@@ -12,7 +12,7 @@ volatile UWORD VisPhase,VisGo,VisPoint,VisPeerHeld,VisPeerRelease,VisWake;
 volatile UWORD VisPublisherHeld,VisPublisherGo,VisExitPending;
 volatile UWORD VisQueue;
 WORD VisOperation,VisResult,VisStatus;
-ULONG VisSequence,VisView;
+ULONG VisBindingDelta,VisView;
 static volatile UWORD command,peerReady,peerDone;
 static struct Task *controller,*peer;
 static ULONG wake;
@@ -73,7 +73,7 @@ static void call(UWORD phase,WORD operation,WORD pb,WORD x,WORD y,
     struct Task *self=FindTask(NULL);
     BYTE nesting=self->tc_TDNestCnt;
     WORD scoped=phase!=9 && phase!=11 && phase!=16 && phase!=18 && phase!=21;
-    ULONG sequence;
+    ULONG binding;
     WORD in[5],out[1]={0},global[15],control[5]={0,0,1,0,0};
     AESPB block={control,global,in,out,NULL,NULL};
     /* Hold normal mutations stable against unrelated frame preparation.
@@ -81,7 +81,7 @@ static void call(UWORD phase,WORD operation,WORD pb,WORD x,WORD y,
     if (scoped) CHECK(wind_update(BEG_UPDATE));
     VisPhase=phase;VisPoint=0;VisOperation=operation;
     while (VisGo<phase*2-1) ExecYield();
-    sequence=c->sequence;
+    binding=(ULONG)c->request.service;
     in[0]=window;in[1]=x;in[2]=y;in[3]=width;in[4]=height;
     if (pb) {
         control[0]=operation;control[1]=operation==AES_OP_OPEN ? 5:1;
@@ -89,7 +89,7 @@ static void call(UWORD phase,WORD operation,WORD pb,WORD x,WORD y,
     } else if (operation==AES_OP_OPEN) VisResult=wind_open(window,x,y,width,height);
     else if (operation==AES_OP_DELETE) VisResult=wind_delete(window);
     else VisResult=wind_close(window);
-    VisStatus=ExecAESDiagnostic();VisSequence=c->sequence-sequence;
+    VisStatus=ExecAESDiagnostic();VisBindingDelta=(ULONG)c->request.service-binding;
     VisView=(ULONG)c->view;
     CHECK(VisResult==expected && VisStatus==status);
     CHECK(c->view && c->view->handle==window && !c->busy);
@@ -140,10 +140,8 @@ UWORD AESRun(void)
     call(16,AES_OP_CLOSE,1,0,0,0,0,1,AES_OK);
     call(17,AES_OP_OPEN,1,32,24,160,80,1,AES_OK);
     {
-        ULONG sequence=c->sequence;
-        c->sequence=0xfffffffeUL;
+        ULONG binding=(ULONG)c->request.service;
         call(18,AES_OP_CLOSE,0,0,0,0,0,1,AES_OK);
-        c->sequence=sequence;
     }
     CHECK(!c->view->shown && !c->view->epoch);
     call(19,AES_OP_OPEN,0,32,24,160,80,1,AES_OK);

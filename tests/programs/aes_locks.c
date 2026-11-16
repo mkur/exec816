@@ -45,66 +45,51 @@ static void await_ready(void)
 static void local_pairs(void)
 {
     struct ExecAESContext *c=ExecAESContext();
-    struct AESRequest older={0};
-    struct MsgPort *reply=CreateMsgPort();
     struct Task *self=FindTask(NULL);
-    ULONG sequence;
+    ULONG binding;
     WORD windows[AES_WINDOWS],i;
-    CHECK(reply!=NULL);
     /* Maximum owned-window snapshot depth, with actual open window records. */
     for (i=0;i<AES_WINDOWS;++i) {
         windows[i]=wind_create(NAME|CLOSER|MOVER,32+i*16,32+i*8,128,64);
         CHECK(windows[i]>0);
         CHECK(wind_open(windows[i],32+i*16,32+i*8,128,64));
     }
-    await_ready(); sequence=c->sequence;
+    await_ready(); binding=(ULONG)c->request.service;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
     CHECK(wind_update(END_UPDATE));
     CHECK(wind_update(END_UPDATE));
-    CHECK(c->sequence==sequence && c->updateDepth==0 && UPDATES==0);
+    CHECK((ULONG)c->request.service==binding && c->updateDepth==0 && UPDATES==0);
     CHECK(self->tc_TDNestCnt==0);
     Permit();
     /* A readiness hint cannot block the owning caller's local END. */
-    await_ready(); sequence=c->sequence;
+    await_ready(); binding=(ULONG)c->request.service;
     CHECK(wind_update(BEG_UPDATE));
-    CHECK(c->sequence==sequence);
+    CHECK((ULONG)c->request.service==binding);
     NATIVE_BUSY=1;
     CHECK(wind_update(END_UPDATE));
-    CHECK(c->sequence==sequence && c->updateDepth==0);
+    CHECK((ULONG)c->request.service==binding && c->updateDepth==0);
     CHECK(self->tc_TDNestCnt==0);
     NATIVE_BUSY=0; Permit();
     /* Local recursion preserves the caller's inherited Forbid. */
-    await_ready(); sequence=c->sequence; NATIVE_BUSY=1;
+    await_ready(); binding=(ULONG)c->request.service; NATIVE_BUSY=1;
     CHECK(wind_update(BEG_UPDATE));
-    CHECK(c->sequence==sequence);
+    CHECK((ULONG)c->request.service==binding);
     NATIVE_BUSY=0;Permit(); await_ready();
     CHECK(wind_update(END_UPDATE));
-    CHECK(c->sequence==sequence && c->updateDepth==0);
+    CHECK((ULONG)c->request.service==binding && c->updateDepth==0);
     Permit();
-    /* FIFO starts at native acquisition, independently of port arrival. */
-    older.message.mn_Length=sizeof(older);
-    older.message.mn_ReplyPort=reply;
-    await_ready(); sequence=c->sequence;
-    PutMsg(c->service,&older.message);
-    CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
-    CHECK(wind_update(END_UPDATE));
-    CHECK(c->diagnostic==AES_OK && c->sequence==sequence && !UPDATES);
-    Permit();
-    while (!GetMsg(reply)) Wait(1UL<<reply->mp_SigBit);
-    CHECK(older.status==AES_MALFORMED);
     for (i=AES_WINDOWS;i>0;--i) {
         CHECK(wind_close(windows[i-1]));
         CHECK(wind_delete(windows[i-1]));
     }
-    DeleteMsgPort(reply);
 }
 
 static void loop(UWORD who)
 {
     WORD words[8] = {765, 1, 2, 3, 4, 5, 6, 7}, id;
     WORD code = who == 1 ? BEG_MCTRL : BEG_UPDATE;
-    ULONG sequence;
+    ULONG binding;
     BYTE bit=AllocSignal(-1);
     CHECK(bit >= 0);
     starts[who]=1UL << bit;
@@ -120,11 +105,11 @@ static void loop(UWORD who)
     CHECK(wind_update(END_MCTRL) == 0 && ExecAESDiagnostic() == AES_IDENTITY);
     Forbid(); ++tried; Signal(controller, wake); Permit();
     Wait(starts[who]);
-    sequence=ExecAESContext()->sequence;
+    binding=(ULONG)ExecAESContext()->request.service;
     waiting[who]=1;
     CHECK(wind_update(code) == 1);
     waiting[who]=0;
-    CHECK(ExecAESContext()->sequence==sequence);
+    CHECK((ULONG)ExecAESContext()->request.service==binding);
     CHECK(!ExecAESContext()->busy);
     CHECK((SetSignal(0,starts[who]) & starts[who])!=0);
     Forbid(); order[orderCount++]=who; Permit();

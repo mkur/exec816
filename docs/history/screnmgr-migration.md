@@ -567,3 +567,51 @@ problem; its coordinates now derive independently from work x/y, and the failing
 emission is retained in that record. No Exec routine uses a compiler workaround.
 No QED, demo refresh, application catalog, raw system matrix, release or latency
 qualification is included.
+
+
+## SM4c: caller registration and final detach
+
+Ordinary initialization, final native registration retirement and mouse
+preferences now run in the application Task. This follows MagiC's caller-side
+AES service flow: SCRENMGR does not admit or execute ordinary AES requests.
+Exec retains its Task lease, message delivery and signal primitives. A bounded
+Task guard serializes client-slot selection and complete endpoint publication;
+creation checks establish the binding and resources once.
+
+Exit first withdraws the application's UI under its own UPDATE, drains retained
+publishers and repairs its cursor contribution. It then closes C-side resources
+and performs a separate final native detach. A failed resource close retains the
+registration for retry. Native detach rejects an unprepared live registration;
+it never releases another Task's UPDATE. Copied application messages still use
+ordinary Exec ports. The private wake port remains available for real retained
+continuations; it carries no AES request/reply traffic.
+
+The AES request queue, dispatch/reply engine, transport sequence and four-call
+admission budget are removed together. The existing service port remains the
+rendezvous identity and wake resource. Private AES version 26 keeps the request
+at 418 bytes: a three-byte service pointer and padding replace the four-byte
+sequence. The C context drops duplicate service/sequence storage (eight bytes
+per attached context); native Client shrinks 374 to 370 bytes and Service 2510
+to 2494 bytes. One obsolete upper-memory scheduling byte also disappears.
+Bindings and providers must be rebuilt together.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused reserved capacity. No Task,
+signal, VRAM reservation, physical scratch or platform ABI service is added.
+The capacity fixture uses twelve existing public-pool slots instead of the
+production eight only to exercise five competing applications and reuse.
+
+SM4 remains in progress. Shared exposure/cache painting and native frontend
+controls still need operation-owned completion before the manager loop may
+block on UPDATE. The current combined loop is retained until those dependencies
+are removed. No performance or release qualification is claimed.
+
+Development checks pass on the pinned compiler and dedicated AltirraOS PAL/VBXE
+setup: 26 blocked-manager caller checks with exact 8x8 pixels; 238 C plus six
+native registration checks; 19 native private-layout checks in each mode; and
+two C clients with 1,081 checks each in each raw/optimized bridge probe, including
+bank-crossing request access. The optimized bridge fixture needed bounded
+shutdown retries for a transient BUSY result after its C assertions completed;
+production shutdown policy is unchanged. Host checks pass: 718 tests, five
+existing skips. [Inputs, hashes and results](../development/screnmgr-sm4c.json)
+record the exact scope. No QED, catalog or demo rebuild was run.

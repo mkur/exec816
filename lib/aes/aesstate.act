@@ -27,7 +27,6 @@ PUBLIC TYPE Menu=[
 
 PUBLIC TYPE Client=[
   LONGCARD id
-  LONGCARD sequence
   INT gemId
   EXEC.TaskLease lease
   AESTYPES.Request POINTER binding
@@ -99,14 +98,6 @@ PUBLIC PROC Bind(Service POINTER value)
       value.windows(index).geometryEpoch=0
     OD
   FI
-
-RETURN
-
-; Callers detach every service reference before this ownership transfer.
-PUBLIC PROC Reply(AESTYPES.Request POINTER request CARD status)
-
-  request.status=status
-  EXEC.ReplyMsg(@request.message)
 
 RETURN
 

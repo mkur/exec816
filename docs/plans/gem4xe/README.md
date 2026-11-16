@@ -22,7 +22,9 @@ SM1b–e complete caller-side vertical/horizontal sliders and title/info paintin
 Input.device now supplies independent capture/delivery in its own Task, with
 separate console backend and selected text/GEM frontend contexts. SM3a installs
 the user-selected nonblocking raw hit snapshot for `wind_find`. SM3b/c establish registration lifetimes, UPDATE scene authority and caller-owned
-completion. The SM3d scene-gate cutover and SM4 SCRENMGR loop remain pending.
+completion. SM3d removes the scene gate. SM4a–c complete background cache
+operations, direct display admission and caller registration/retirement. Shared
+exposure painting and the blocking SCRENMGR loop remain pending.
 
 The [independent input.device design](../input-device-design.md) covers GEM,
 the standard Atari text console and a future VBXE text-mode console without

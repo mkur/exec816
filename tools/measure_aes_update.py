@@ -67,7 +67,7 @@ def analyze(out):
                 phases[name] = dict(calls=len(selected),
                     caller_cpu_ms=sum(clock.measure(u['start'],u['end'])['charged_cpu_ms'] for u in selected),
                     elapsed_ms=sum(clock.measure(u['start'],u['end'])['elapsed_ms'] for u in selected),
-                    rpc_calls=sum(1 for s in c if s['kind']=='ExecAESSubmit' and
+                    service_calls=sum(1 for s in c if s['kind']=='ExecAESServiceCall' and
                         any(u['start']<=s['start']<s['end']<=u['end'] for u in selected)),
                     helpers=helpers)
             rows.append(dict(case=corpus.NAMES[work['argument']],start=work['start'],phases=phases))
@@ -80,7 +80,7 @@ def analyze(out):
         phases = {}
         for phase in ('begin','end'):
             phases[phase] = {key:corpus.summary([r['phases'][phase][key] for r in selected])
-                for key in ('calls','caller_cpu_ms','elapsed_ms','rpc_calls')}
+                for key in ('calls','caller_cpu_ms','elapsed_ms','service_calls')}
             phases[phase]['helpers'] = {n:{key:corpus.summary([
                 r['phases'][phase]['helpers'][n][key] for r in selected])
                 for key in ('calls','caller_cpu_ms','other_task_cpu_ms')} for n in ROUTINES}
