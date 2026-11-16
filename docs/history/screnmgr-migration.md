@@ -483,3 +483,46 @@ record the actual execution scope:
 
 No QED, full catalog, demo refresh, raw system matrix, release qualification or
 scroll-performance claim is included.
+
+
+## SM4a: background cache operation completion
+
+The SM4 owner inventory identifies dependencies that must retire before the
+frontend can become a blocking SCRENMGR loop. This first executable prerequisite
+keeps background window snapshots, local patches and popup image captures inside
+their current cache operation. DESKHOST.Cache retains UPDATE, waits for its
+accepted device copy through the existing completion/watchdog signal, then
+retires the Layers read token and image pin before returning. Normal Task
+preemption and independent input remain enabled. No frontend callback or later
+Controls turn is needed to finish that operation.
+
+BUSY copy admission has started no hardware: the optional snapshot releases its
+read token/pin immediately. A terminal background copy likewise retires logical
+state even when an unrelated physical borrower has since acquired access.
+Foreground menu replacement/restore still checks physical readiness when it
+needs another copy. Quiescent device failure discards the image; unsafe hardware
+keeps the existing reset-required retention.
+
+SM4 remains in progress. The [owner inventory and display-admission decision](../plans/gem4xe/screnmgr-migration-plan.md#sm4-display-admission-decision)
+record why the current frontend cannot yet block on UPDATE: ordinary AES RPCs,
+cold display grant admission, exposure painting and native presentation controls
+still require it. The user selected general borrower-side display admission, following MagiC
+workstation setup directly in the caller. That service is the next executable
+slice; no additional Task or alternate manager placement is selected.
+The independent input/backend Tasks and the combined loop remain in their
+current contexts pending those migrations.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused reserved capacity. Public/private
+records, Task pools, persistent heap, signals, VRAM and physical copy scratch
+reservations are unchanged.
+
+Development checks pass with the pinned optimized compiler and dedicated
+AltirraOS PAL/VBXE setup: 224 C checks, four native checks, 32 cache checkpoints
+and 18 terminal cache-operation boundaries. The fixture forces physical BUSY
+only during logical retirement after each real copy, verifying that this cannot
+retain its token. Restored client/frame pixels, saved menu backgrounds, guards
+and normal cleanup pass. Host checks pass: 718 tests, five existing skips.
+[Settings, source/image hashes and results](../development/screnmgr-sm4a.json)
+record the executed scope. No QED, demo refresh, application catalog, raw system
+matrix, release qualification or performance claim is included.

@@ -10,8 +10,9 @@ this plan uses that spelling. SM0 records the decision and current responsibilit
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
 vertical slider positions in the caller; SM1c adds vertical slider sizes and
 SM1d adds horizontal position/size. SM1e completes caller-side title/info painting.
-SM3a implements the selected nonblocking raw hit query. SM3b/c implement registration lifetimes and operation ownership. The remaining
-scene-gate cutover and manager-loop migration remain pending. Independent
+SM3a implements the selected nonblocking raw hit query. SM3b/c implement
+registration lifetimes and operation ownership; SM3d removes the scene gate.
+SM4 is in progress; the blocking manager loop is not installed yet. Independent
 input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
@@ -248,6 +249,95 @@ callback interface once remaining responsibilities have their intended owners.
 Update module/task names with this responsibility change. Preserve cooperative
 startup, failure retention and shutdown, plus the separate standalone console
 path. Do not retain an alternate presenter implementation.
+
+#### SM4 ownership audit and executable order
+
+MagiC AESMAIN `screnmgr` / `scrmg_mainloop` (4235–4282) waits in `_evnt_multi`
+and then calls `update_1`; `scrmg_next` (4453–4455) releases with `update_0`.
+Ordinary application AES and workstation admission do not require SCRENMGR to
+service a request. Exec cannot install the blocking Obtain while retaining its
+current owner-side service dependencies.
+
+| Remaining responsibility | Current execution dependency | Required owner/boundary |
+| --- | --- | --- |
+| Background window capture/patch and popup capture | DESKHOST.Cache starts DMA and leaves its token/pin for a later Controls turn. | SM4a: retire the started copy and token inside that cache operation's UPDATE scope, using the existing device completion/watchdog signal. |
+| Ordinary frame/background exposure and cache restore | DESKPAINT owns a shared packet and retained paint token across frontend turns. | Finish under the originating caller/manager operation; send client `WM_REDRAW` for application work. Adapt the shared GEM4XE renderer to caller packets before removing its executor. |
+| Menu save/restore/replacement | DESKMENUCACHE and DESKMENU keep physical and interaction state. | Keep the source-defined manager operation and finish its hardware work before blocking on a different resource. |
+| Console painting | CONSOLEFRONT already declines GEM mode; loaded Terminal paints normally. | Preserve the standalone loop. Remove GEM's no-op console render budget after native presentation controls have their owner. |
+| Native console presentation controls | CONSOLECONTROL.Submit waits for the display-owner Task. | Account for existing erase/cursor controls before the frontend can block; retain driver lifecycle policy. |
+| AES registration/init/final detach/profile RPC | AESCORE.Dispatch is still executed by the frontend. | Move ordinary library operations to their caller, with existing registration/publication guards. Retire the transport dependency coherently with its callers and fixtures. |
+| Cold display grants | AES_OP_DISPLAY RPC calls DISPLAY.Delegate in the lifetime owner. | Resolve general display-service admission below. A caller can already own UPDATE when it opens VDI or needs its first frame grant. |
+| Copied application input and endpoint wakes | input.device and guarded copied publication. | Preserve independent delivery; no AES request server or drawing is added to input.device. |
+
+**SM4a** is an executable prerequisite, not the completed manager-loop migration.
+It changes only cache-operation completion. Background snapshot pixels and pins
+must be terminal before Cache returns, normal preemption remains enabled, and
+unsafe hardware keeps the existing reset-required retention. Check optimized
+cache pixels/pins and normal cleanup; no public record or bank-zero reservation
+change is needed.
+
+#### SM4 display-admission decision
+
+`DISPLAY.Valid` requires the lifetime owner's current Task; Delegate uses it.
+Both `c/calypsi/aes-windows.c:display_ensure` and `c/calypsi/vdi.c:open_virtual`
+therefore submit AES_OP_DISPLAY to that Task. A queued manager interaction can
+make it wait on UPDATE while an existing UPDATE owner issues one of these calls:
+the caller waits for its RPC, and the manager waits for that caller. Draining the
+port before Obtain cannot close the race with later admission. Existing native
+semaphores and signals cannot change the display API's caller contract.
+
+Selected on 2026-11-16: general driver grant admission callable by the requesting
+borrower while the retained display lifetime owner is asleep. Admission uses the
+existing active generation, eight-slot table, Task retention and short driver
+guard. It opens no hardware access; Enter/Leave retain their FIFO and fence rules.
+Session shutdown still requires all grants to retire. The existing caller-owned
+32-byte grant and signal are reused; no new Task, bank-zero reservation, GUI
+queue or kernel operation is proposed. The public driver contract and its
+machine-readable bindings must describe the selected admission rule.
+
+The user selected direct borrower-side admission, then reaffirmed MagiC's
+structure and flow as the default. This follows the inspected VDI DISP
+`vdi_entry` / `vdi_disp` (40–54) and CONTROL `v_opnvwk` (785–806): dispatch,
+allocate/init the workstation, increment the driver use count, return in the
+application's call. SCRENMGR is absent from that call path. Exec retains its own
+display generation, Task lease and physical FIFO/fence implementation below it.
+No additional display-service Task or nonblocking substitute manager loop is
+selected. Routine mechanics within this selected model need no new decision.
+
+Continue in executable commits:
+
+1. **SM4a — terminal background cache operation.** Finish and check the current
+   cache prerequisite above, then commit its production code and focused evidence.
+   Status: implemented; see the [SM4a record](../../history/screnmgr-migration.md#sm4a-background-cache-operation-completion).
+2. **SM4b — direct general display admission.** Generalize the one public
+   Delegate operation to ordinary Task callers; retain live target Tasks, existing
+   grants, capacity and generation rules. Guard admission and closing-state
+   publication together. Call it directly from cold AES frame/VDI setup, remove
+   AES_OP_DISPLAY and its request-server path, and update current generated
+   bindings/contracts and affected fixtures. Check admission while the lifetime
+   owner sleeps, shutdown exclusion, capacity, physical FIFO and normal cleanup.
+3. **SM4c — caller registration and ordinary AES service.** Move initialization,
+   final registration retirement and profile calls out of manager RPC. Preserve
+   endpoint/client publication and queued input holds; retire obsolete transport
+   dispatch and update bindings/callers together. Check a caller operation while
+   the manager waits on its UPDATE, independent events and cooperative exit.
+4. **SM4d — operation-owned exposure and cache work.** Adapt shared GEM4XE
+   painting to caller-owned packets and grants; finish frame/background exposure
+   and cache restoration under the originating AES/manager operation. Application
+   work receives WM_REDRAW. Move cache maintenance to its operation boundary;
+   preserve current pixels, pins, cached moves and failure retention.
+5. **SM4e — manager interaction and lifecycle cutover.** Account for menu
+   save/restore, native console controls, cursor/device completion and shutdown;
+   remove GEM's no-op console-render callbacks while preserving the standalone
+   console loop. Install and name the selected frontend SCRENMGR: event wait,
+   blocking UPDATE for actual interaction, shared helpers, release and wait.
+   Remove the combined scheduling loop and obsolete helpers, with no alternate
+   presenter implementation, Task addition or new scheduler service.
+
+Use minimal optimized emitted checks for each changed boundary and the small
+ABI probes when a layout/bridge changes. Commit passing slices separately. The
+SM5 combined check remains a separate acceptance step; no broad application or
+release matrix is implied.
 
 ### SM5 — minimal combined development check
 

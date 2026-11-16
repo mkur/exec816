@@ -150,7 +150,8 @@ PUBLIC BYTE FUNC CapturePopup()
   popupOperation=POPUP_CAPTURE
   keys(index)=key
   LAYERCACHE.Prepare(@popups.slots(index),key.owner,key.revision,width,height)
-  IF PopupTransfer(@layer.bounds,0)=0 AND DISPLAY.Blocked()=0 THEN
+  ; A refused copy owns no hardware; discard the optional image immediately.
+  IF PopupTransfer(@layer.bounds,0)=0 THEN
     status=LAYERS.Finish(@service.scene,token,0)
     LAYERCACHE.Captured(@popups.slots(index),0)
     token=0
@@ -570,15 +571,13 @@ PUBLIC PROC Pump()
   BYTE status,okay
   LONGCARD bytes
 
-  IF token=0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+  IF token=0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
   LET service=DESKSTATE.Get()
-  IF DESKSTATE.menuReplacing<>0 THEN
-    ReplacePump()
-    RETURN
-  FI
   okay=(CONSOLEBITMAP.Failed()=0)
+  ; A completed background read has no more physical work. Retire its pin
+  ; even if an unrelated renderer acquired access after the completion poll.
   IF popupOperation=POPUP_CAPTURE THEN
     BEGIN
       LET slot=@popups.slots(popupSlot)
@@ -593,6 +592,13 @@ PUBLIC PROC Pump()
       popupOperation=0
       RETURN
     END
+  FI
+  IF DISPLAY.Blocked()<>0 THEN
+    RETURN
+  FI
+  IF DESKSTATE.menuReplacing<>0 THEN
+    ReplacePump()
+    RETURN
   FI
   bytes=LONGCARD(service.scene.under.slot.width RSH 1)
       *LONGCARD(service.scene.under.slot.height)

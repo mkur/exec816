@@ -12,13 +12,53 @@ from os_boundary import run_to
 def instrument(out):
     from library_paths import read_source
     from native_program import ROOT
+    (out/'cachecompletionprobe.act').write_text(
+        'MODULE CACHECOMPLETIONPROBE\nPUBLIC BYTE finishing\nENDMODULE\n')
     host=read_source(ROOT/'lib/desktop/deskhost.act')
+    host=host.replace('USE AESLOCKS\n','USE AESLOCKS\nUSE CACHECOMPLETIONPROBE\n',1)
     start=host.index('BYTE FUNC Capture()')
     needle='          LET layer=LAYERS.Find(@service.scene,window.layer)'
     require(host[start:].count(needle)==1,'Window candidate inspection boundary changed')
-    host=host[:start]+'PUBLIC LONGCARD candidateInspections\n'+host[start:].replace(
+    host=host[:start]+'PUBLIC LONGCARD candidateInspections,cacheCompletions\n'+host[start:].replace(
         needle,'          candidateInspections==+1\n'+needle)
+    needle='    CONSOLEBITMAP.Finish()\n    DESKMENUCACHE.Pump()\n    DESKCACHE.Pump(service)\n  FI\n  AESLOCKS.SystemEnd()'
+    require(host.count(needle)==1,'Background cache completion boundary changed')
+    host=host.replace(needle,'''    CONSOLEBITMAP.Finish()
+    CACHECOMPLETIONPROBE.finishing=1
+    DESKMENUCACHE.Pump()
+    DESKCACHE.Pump(service)
+    CACHECOMPLETIONPROBE.finishing=0
+    BEGIN
+      LET aes=AESSTATE.Get()
+      LET owner=ADDRESS POINTER(@aes.updateResource)
+      IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
+          OR owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
+        HEAPCORE.Abort($fcee)
+      FI
+      cacheCompletions==+1
+    END
+  FI
+  AESLOCKS.SystemEnd()''',1)
     (out/'deskhost.act').write_text(host)
+    # A terminal copy must release its logical pin even if a different unit
+    # has become physically busy. Inject only that readiness observation;
+    # accepted copies and their pixel/fence behavior remain production code.
+    access=read_source(ROOT/'lib/display/display-access.inc')
+    needle='PUBLIC BYTE FUNC Blocked()\n\n'
+    require(access.count(needle)==1,'Display readiness boundary changed')
+    access=access.replace(needle,needle+'''  IF CACHECOMPLETIONPROBE.finishing<>0 THEN
+    RETURN(1)
+  FI
+''',1)
+    (out/'display-access.inc').write_text(access)
+    display=read_source(ROOT/'lib/display/display.act').replace(
+        'USE EXEC\n','USE EXEC\nUSE CACHECOMPLETIONPROBE\n',1)
+    for include in ('display-types.inc','bitmap-types.inc'):
+        display=display.replace('INCLUDE "'+include+'"',
+            'INCLUDE "'+str(ROOT/'lib/display'/include)+'"')
+    display=display.replace('INCLUDE "display-access.inc"',
+        'INCLUDE "'+str(out/'display-access.inc')+'"')
+    (out/'display.act').write_text(display)
 
 
 def physical(b,p,foreign,report):
@@ -169,4 +209,6 @@ def physical(b,p,foreign,report):
         report['aes_cache'].append(row);previous=row
         b.poke16(sy['AESCacheGo'],phase)
     # The emitted fixture checks genuine exposure after the final phase.
+    report['cache_completion_checks']=get(at('DESKHOST','cacheCompletions'))
+    require(report['cache_completion_checks']>0,'No owner-completed cache operations')
     b.bp_clear_all()

@@ -337,6 +337,11 @@ Snapshot construction uses UPDATE; copied registration/event/capture publication
 uses short Task guards. Physical calls do not release and re-enter UI ownership.
 All scene metadata work remains preemptible. The combined frontend loop remains
 until the separate SCRENMGR event-loop migration.
+Background cache captures and patches now retain their UPDATE operation through
+the accepted copy's completion/watchdog wake and token/pin retirement. They do
+not rely on a later frontend turn to complete. Refused physical admission drops
+the optional image; a different borrower's readiness cannot delay logical
+retirement of an already completed copy.
 
 `ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
 tracking, repaint obligations and cache holds to one caller-owned window. End

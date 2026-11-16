@@ -325,8 +325,8 @@ BYTE FUNC Capture()
 
 RETURN(0)
 
-; Candidate inspection does not own UPDATE. Starting a cache transfer does;
-; its existing scene token retains that ownership until completion.
+; A background cache operation owns UPDATE through physical completion and
+; token/pin retirement. It never needs a later frontend turn to finish.
 BYTE FUNC InspectCache()
   BYTE started
 
@@ -342,6 +342,11 @@ BYTE FUNC InspectCache()
     RETURN(0)
   FI
   started=Capture()
+  IF started<>0 THEN
+    CONSOLEBITMAP.Finish()
+    DESKMENUCACHE.Pump()
+    DESKCACHE.Pump(service)
+  FI
   AESLOCKS.SystemEnd()
 
 RETURN(started)

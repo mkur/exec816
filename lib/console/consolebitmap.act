@@ -386,6 +386,20 @@ PUBLIC PROC Poll()
 
 RETURN
 
+; Finish a launched owner operation before its logical scope returns. IRQ or
+; watchdog publication uses the existing completion bit; no frontend callback
+; is required while this Task waits. Other Tasks and input remain preemptible.
+PUBLIC PROC Finish()
+
+  WHILE drawingPending<>0 DO
+    Poll()
+    IF drawingPending<>0 THEN
+      EXEC.Wait(completionMask)
+    FI
+  OD
+
+RETURN
+
 PUBLIC BYTE FUNC Completed()
 
 RETURN(physicalCompleted)

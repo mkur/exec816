@@ -196,10 +196,12 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
   BYTE status,okay
 
   IF (active<>ACTIVE_CAPTURE AND active<>ACTIVE_PATCH)
-      OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+      OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN
   FI
 
+  ; This copy is terminal. A different physical borrower cannot delay its
+  ; UPDATE-owned token/pin retirement; no hardware call occurs below.
   LET slot=@service.cache.slots(activeSlot)
   okay=(CONSOLEBITMAP.Failed()=0 AND capturing.id=slot.identity
       AND capturing.visualRevision=slot.revision AND slot.revision<>0)
@@ -289,7 +291,9 @@ PUBLIC BYTE FUNC Capture(DESKTYPES.Service POINTER service
   activeSlot=index
   readToken=token
   active=ACTIVE_CAPTURE
-  IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+  ; BUSY admits no copy. Retire this optional read instead of treating an
+  ; unrelated borrower's later release as our completion.
+  IF CONSOLEBITMAP.CopyStart()=0 THEN
     status=LAYERS.Finish(@service.scene,token,0)
     LAYERCACHE.Captured(slot,0)
     capturing=NULL
@@ -361,7 +365,8 @@ PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
           activeSlot=index
           readToken=token
           active=ACTIVE_PATCH
-          IF CONSOLEBITMAP.CopyStart()=0 AND DISPLAY.Blocked()=0 THEN
+          ; No admitted copy means no retained read or image pin.
+          IF CONSOLEBITMAP.CopyStart()=0 THEN
             status=LAYERS.Finish(@service.scene,token,0)
             LAYERCACHE.Captured(slot,0)
             repair.state=0
