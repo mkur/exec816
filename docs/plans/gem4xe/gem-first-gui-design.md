@@ -173,6 +173,35 @@ same UPDATE resource, without opening a paint journal. Copied GUI event queues
 and endpoint transitions use their short Task guards; no scene lookup or drawing
 is moved into input.device.
 
+### SM3c operation and continuation ownership
+
+SM3c keeps ordinary window/menu mutations, copied moves, input-route close
+retries and END journal/cache completion in the owning caller under UPDATE.
+The manager no longer executes a waiting client's request. Pending-descriptor
+publication and wake scans use short Task guards; signals are readiness hints.
+A copied move owns a local packet and Layers token through the existing delegated
+blitter fence, publishing geometry only on terminal completion. No new service,
+renderer, copy scratch, Task or public ABI is introduced.
+
+Manager scene/readiness/cache/paint/menu inspection takes the same native UPDATE
+resource with Try. Failure leaves live scene state untouched while RPC, copied
+input and lifetime wakeups keep progressing. Console shutdown idle checks can
+also run in the controller; they use a short caller-owned native borrow and
+never inherit the manager's retained scope state. A failed borrow reports busy. Native captures and open menus
+retain their manager operation until its source-defined end. Startup/teardown
+remain exclusive lifecycle boundaries. The existing scene gate remains until
+SM3d performs the whole-inventory cutover; these scopes do not remove its second
+admission wait yet.
+
+Input.device classifies global shortcuts and keys for a published active menu
+into copied manager events, rather than delivering them to the focused AES inbox.
+It performs no live scene access, UPDATE wait or drawing. Application MCTRL
+outlines keep their existing retained visual authority: guarded capture values,
+frozen draw coordinates and preserved cancellation across the physical call.
+They retire before that owner's drawing without obtaining its semaphore.
+END keeps its painting marker until journal completion. Idle console gathering
+is discarded under manager UPDATE before handoff; active DMA retains its owner.
+
 ### SM3a selected read boundary
 
 MagiC AESWIN `wind_find` (2812–2838) walks `whdlx` and current window rectangles

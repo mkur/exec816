@@ -11,7 +11,7 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 
 
-def run(out,publication=False,from_build=None):
+def run(out,publication=False,from_build=None,ownership_check=False):
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     profile=json.loads(PROFILE.read_text());profile['image_data_bytes']=16384
     memory=out/'fixture-memory.json'
@@ -30,6 +30,67 @@ def run(out,publication=False,from_build=None):
         probe=probe.replace('  managerTask.tc_Node.ln_Type=EXEC.NT_TASK',
             '  PUBLICATIONPROBE.Check(@endpoint,ADDRESS(@AESSNAPSHOT.Invalidate),ADDRESS(@AESSNAPSHOT.Publish))\n  managerTask.tc_Node.ln_Type=EXEC.NT_TASK',1)
         source=out/'probe.act';source.write_text(probe)
+    if ownership_check:
+        from library_paths import read_source
+        probe=read_source(source).replace('USE EXEC\n',
+            'USE EXEC\nUSE DESKPAINT\nUSE DESKHOST\nUSE AESHOST\nUSE AESCORE\nUSE AESWAIT\nUSE CONSOLEBATCH\nUSE CONSOLETYPES\n',1)
+        point='  Require(EXEC.AttemptSemaphore(@service.updateResource)=0)'
+        require(probe.count(point)==1,'Competing UPDATE checkpoint changed')
+        probe=probe.replace(point,point+"""
+  Require(DESKPAINT.Ready()=0 AND DESKPAINT.MenuReady()=0)
+  Require(DESKPAINT.Runnable()=0 AND DESKPAINT.PaintPending()=0)
+  Require(DESKPAINT.Pump()=0)
+  Require(DESKHOST.Ready()=0 AND DESKHOST.PaintReady()=0)
+  Require(DESKHOST.ControlPending()=0 AND DESKHOST.Cache()=0)
+  Require(DESKHOST.Idle()=0)
+  Require(AESHOST.Settled()=0)
+  Require(AESLOCKS.Quiescent()=0)
+  Require(service.sceneOwner=@managerTask AND service.sceneWaiters=NULL)
+  BEGIN
+    LET reply=EXEC.CreateMsgPort()
+    Require(reply<>NULL)
+    LET waiting=@service.clients(0)
+    waiting.lease.task=EXEC.FindTask(NULL)
+    waiting.replies=reply
+    request.status=AESTYPES.PENDING
+    AESWAIT.Window(service,waiting,@request)
+    AESCORE.Settle(service)
+    Require(waiting.pending=@request AND request.status=AESTYPES.PENDING)
+    LET mask=LONGCARD(1) LSH reply.mp_SigBit
+    Require((EXEC.SetSignal(0,mask) & mask)<>0)
+    waiting.pending=NULL
+    AESWAIT.RemoveWindow(service,waiting)
+    Require(service.windowPending=0)
+    waiting.replies=NULL
+    waiting.lease.task=NULL
+    EXEC.DeleteMsgPort(reply)
+  END
+""",1)
+        probe=probe.replace('CARD checks','CARD checks\nAESTYPES.InputInbox ownershipInbox',1)
+        point='  service.owner=EXEC.FindTask(NULL)'
+        require(probe.count(point)==2,'Fixture owner publication changed')
+        # The first assignment belongs to the initial setup; test after peer exit.
+        at=probe.rindex(point)+len(point)
+        probe=probe[:at]+"""
+  BEGIN
+    LET batch=CONSOLEBATCH.Get()
+    batch.phase=CONSOLETYPES.BATCH_GATHER
+    batch.unit=0
+    endpoint.input=@ownershipInbox
+    service.mouseHolds=0
+    service.mouseOwner=0
+    DESKSTATE.menuActive=0
+    Require(DESKHOST.Idle()=0)
+    Require(service.updateResource.ss_Private(2)=0)
+    service.updateHint=service.updateHint OR AESSTATE.UPDATE_REQUESTED
+    Require(AESGATE.TryOwner()<>0)
+    AESHOST.Settle()
+    Require(batch.phase=CONSOLETYPES.BATCH_IDLE)
+    Require(service.updateResource.ss_Private(2)=0)
+    AESGATE.Offer()
+  END
+"""+probe[at:]
+        source=out/'probe.act';source.write_text(probe)
     program=read_build(from_build/'program') if from_build else build(compiler(ROOT/'build/actionc',release=True),
         source,out/'program',
         tasks=True,task_capacity=8,optimize=True,memory_profile=memory,
@@ -39,11 +100,11 @@ def run(out,publication=False,from_build=None):
         runtime,_=execute(bridge,program,frame_limit=600,timeout=60)
         ownership(bridge,program,program['output'])
         checks=data(bridge,program['image'],'AESFINDTEST_CHECKS',True)[0]
-        require(checks==110,'Incomplete committed hit checks: '+str(checks))
+        require(checks==110+18*ownership_check,'Incomplete committed hit checks: '+str(checks))
         publication_checks=data(bridge,program['image'],'PUBLICATIONPROBE_CHECKS',True)[0] if publication else 0
         if publication:require(publication_checks==10,'Incomplete publication lifetime checks: '+str(publication_checks))
     report=dict(status='pass',tier='development',qualification=False,mode='opt',
-        checks=checks,publication_checks=publication_checks,
+        checks=checks,publication_checks=publication_checks,ownership_check=ownership_check,
         machine=machine,runtime=runtime,build=program['build'])
     (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     print('Committed hit checks passed:',checks,flush=True)
@@ -54,4 +115,5 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--publication',action='store_true')
     parser.add_argument('--from-build',type=Path)
-    args=parser.parse_args();run(args.output,args.publication,args.from_build.resolve() if args.from_build else None)
+    parser.add_argument('--ownership',action='store_true')
+    args=parser.parse_args();run(args.output,args.publication,args.from_build.resolve() if args.from_build else None,args.ownership)

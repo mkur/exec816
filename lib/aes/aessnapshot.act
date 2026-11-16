@@ -328,6 +328,16 @@ PUBLIC BYTE FUNC Select(BYTE mode LONGCARD identity INT x,y WindowRoute POINTER 
 
 RETURN(found)
 
+; Keyboard manager eligibility is copied too; capture never reads live menus.
+PUBLIC BYTE FUNC MenuActive()
+  BYTE active
+
+  EXEC.Forbid()
+  active=published.menuActive
+  EXEC.Permit()
+
+RETURN(active)
+
 ; An empty slot defines only the null endpoint; successful copies hold storage.
 PUBLIC BYTE FUNC Default(BYTE slot WindowRoute POINTER target)
 

@@ -7,9 +7,7 @@ USE AESSTATE
 
 PUBLIC CONST RPC=0
 PUBLIC CONST CALLER=1
-PUBLIC CONST SYSTEM=2
 PUBLIC CONST DEPARTED=3
-PUBLIC CONST SYSTEM_WORK=256
 
 ; Reuse the registration-owned private reply signal as a hint, never a reply.
 PUBLIC PROC Signal(AESSTATE.Client POINTER client)
@@ -22,21 +20,26 @@ RETURN
 PUBLIC PROC Window(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
 
+  EXEC.Forbid()
   client.pending=request
+  client.waitMode=CALLER
   IF client.windowWaiting=0 THEN
     client.windowWaiting=1
     service.windowPending==+1
   FI
+  EXEC.Permit()
 
 RETURN
 
 PUBLIC PROC RemoveWindow(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client)
 
+  EXEC.Forbid()
   IF client.windowWaiting<>0 THEN
     client.windowWaiting=0
     service.windowPending==-1
   FI
+  EXEC.Permit()
 
 RETURN
 

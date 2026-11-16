@@ -18,20 +18,23 @@ from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, ROM, PIN
 
 
-def build(out):
+def build(out,reuse_c=False):
     probe = '''MODULE WINDOWEFFECTPROBE
 USE EXEC
 USE AESGATE
+USE AESTYPES
 PUBLIC BYTE stage,release
-PUBLIC LONGCARD guiEpochAddress
-PUBLIC PROC Pause(BYTE value)
+PUBLIC LONGCARD guiEpochAddress,tokenAddress,windowAddress,requestAddress
+PUBLIC PROC Pause(BYTE value AESTYPES.Request POINTER request)
 
-  LET held=IF value<3 THEN AESGATE.Suspend() ELSE BYTE(0) FI
+  LET held=IF value<3 THEN AESGATE.Leave() ELSE BYTE(0) FI
   stage=value
   WHILE release<value DO
     EXEC.Yield()
   OD
-  AESGATE.Resume(held)
+  IF value<3 THEN
+    AESGATE.Reenter(held,request)
+  FI
 
 RETURN
 ENDMODULE
@@ -39,18 +42,19 @@ ENDMODULE
     (out/'windoweffectprobe.act').write_text(probe)
     move = read_source(ROOT/'lib/desktop/deskmove.act')
     move = move.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
-    for signature, number in (
-        ('BYTE FUNC SubmitCopy(LAYERTYPES.Scene POINTER scene)\n', 1),
-        ('PROC CommitCopy(DESKTYPES.Service POINTER service BYTE completed)\n', 2),
-    ):
-        require(move.count(signature) == 1, 'Move effect boundary changed')
-        move = move.replace(signature, signature+f'\n  WINDOWEFFECTPROBE.Pause({number})\n', 1)
+    needle='      AESFRAME.Apply(@packet,request)'
+    require(move.count(needle)==1,'Caller copied-move fence boundary changed')
+    move=move.replace(needle,"""      WINDOWEFFECTPROBE.tokenAddress=LONGCARD(ADDRESS(@token))
+      WINDOWEFFECTPROBE.windowAddress=LONGCARD(ADDRESS(window))
+      WINDOWEFFECTPROBE.requestAddress=LONGCARD(ADDRESS(request))
+      WINDOWEFFECTPROBE.Pause(1,request)
+"""+needle+'\n      WINDOWEFFECTPROBE.Pause(2,request)',1)
     (out/'deskmove.act').write_text(move)
     routes = read_source(ROOT/'lib/aes/aesroutes.act')
     routes = routes.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
     drain = '  LET held=AESGATE.Leave()'
     require(routes.count(drain) == 1, 'Close route retirement boundary changed')
-    routes = routes.replace(drain, drain+'\n  WINDOWEFFECTPROBE.Pause(3)')
+    routes = routes.replace(drain, drain+'\n  WINDOWEFFECTPROBE.Pause(3,request)')
     (out/'aesroutes.act').write_text(routes)
     source = out/'window-effects.act'
     source.write_text('''MODULE WINDOWEFFECTS
@@ -58,6 +62,10 @@ USE EXEC
 USE AESBOOT
 USE AESSTATE
 USE AESCORE
+USE AESGATE
+USE AESLOCKS
+USE DESKSTATE
+USE CONSOLEBITMAP
 USE HEAPCORE
 USE WINDOWEFFECTPROBE
 CARD FUNC POINTER run()
@@ -70,9 +78,30 @@ PROC Main()
   LET entry=ADDRESS POINTER(@run)
   entry^=$AES_RUN
   LET result=run()
-  IF result<>0 OR service.count<>0 OR AESCORE.Idle(service)=0 THEN
+  IF result<>0 OR service.count<>0 THEN
     HEAPCORE.Abort($fc40)
   FI
+  BEGIN
+    BYTE pending
+
+    LET bit=EXEC.AllocSignal(-1)
+    LET desktop=DESKSTATE.Get()
+    DO
+      AESLOCKS.ObtainUI()
+      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
+      pending=(desktop.scene.visibleDamage<>0 AND CONSOLEBITMAP.Failed()=0)
+          OR CONSOLEBITMAP.Pending()<>0
+          OR desktop.scene.busy<>0 OR service.policyEffects<>0
+          OR AESCORE.Runnable(service)<>0
+      AESGATE.Release(0)
+      AESLOCKS.ReleaseUI()
+      IF pending=0 THEN
+        EXIT
+      FI
+      EXEC.Yield()
+    OD
+    EXEC.FreeSignal(bit)
+  END
 
 RETURN
 ENDMODULE
@@ -80,12 +109,52 @@ ENDMODULE
     # Replace the two fixture symbols after the common C renderer is linked.
     import build_bitmap_console as builder
     original = builder.prepare
+    original_emit=builder.emit
+    original_drawing=builder.drawing
 
     def prepare(path, directory, foreign, *args):
         text = path.read_text().replace('$AES_SERVICE', f'${foreign["symbols"]["AESService"]:x}')
         text = text.replace('$AES_RUN', f'${foreign["symbols"]["AESRun"]:x}')
         path.write_text(text)
-        return original(path, directory, foreign, *args)
+        launcher=original(path,directory,foreign,*args)
+        text=launcher.read_text()
+        needle='  IF CONSOLEDRIVER.Stop()=0 THEN\n    HEAPCORE.Abort($f732)\n  FI'
+        require(text.count(needle)==1,'Console stop boundary changed')
+        # A manager can be preempted in an otherwise empty UPDATE probe. Stop
+        # legitimately reports busy; bounded fixture retries preserve that API.
+        text=text.replace(needle,"""  BEGIN
+    CARD attempts
+
+    attempts=0
+    WHILE CONSOLEDRIVER.Stop()=0 DO
+      attempts==+1
+      IF attempts=64 THEN
+        HEAPCORE.Abort($f732)
+      FI
+      EXEC.Yield()
+    OD
+  END""",1)
+        launcher.write_text(text)
+        return launcher
+
+    def emit(directory,sources,*args,**kwargs):
+        # The move now uses synchronous typed copying. Inject after its actual
+        # launch, keeping the existing watchdog and stop/recovery hooks.
+        hardware=next(p for p in sources if p.name=='vbxe-fault.c')
+        text=hardware.read_text()
+        text=text.replace('static UWORD submit(',
+            'static UBYTE effectCopyArmed;\nstatic UWORD submit(',1)
+        needle='    launch(d,records,count);\n    return VbxeOwnerFence(d);'
+        require(text.count(needle)==1,'Typed-copy fence boundary changed')
+        text=text.replace(needle,'    launch(d,records,count);\n'
+            '    if (effectCopyArmed) { effectCopyArmed=0; ConsoleFaultCopy(); }\n'
+            '    return VbxeOwnerFence(d);',1)
+        needle='        copy_record(bcb,&copy,rows);\n        return submit(d,bcb,1);'
+        require(text.count(needle)==1,'Typed screen-copy admission changed')
+        text=text.replace(needle,'        copy_record(bcb,&copy,rows);\n'
+            '        effectCopyArmed=1;\n        return submit(d,bcb,1);',1)
+        hardware.write_text(text)
+        return original_emit(directory,sources,*args,**kwargs)
 
     import generate_tasks
     task_entries = generate_tasks.task_entries
@@ -96,6 +165,14 @@ ENDMODULE
         return [entry for entry in task_entries(image) if entry not in setup]
 
     builder.prepare = prepare
+    builder.emit=emit
+    if reuse_c:
+        from native_program import sha256
+        cached=json.loads((out/'c-image.json').read_text())
+        for name,digest in {**cached['provenance']['source_inputs'],
+                            **cached['provenance']['header_inputs']}.items():
+            require(sha256(ROOT/name)==digest,'Changed cached C input: '+name)
+        builder.drawing=lambda *args,**kwargs:cached
     generate_tasks.task_entries = entries
     try:
         return build_bitmap(source, out, desktop=True, aes=True, fault=True,
@@ -110,12 +187,14 @@ ENDMODULE
                           'EffectQueryX', 'EffectQueryY'])
     finally:
         builder.prepare = original
+        builder.emit=original_emit
+        builder.drawing=original_drawing
         generate_tasks.task_entries = task_entries
 
 
-def run(out, reuse=False, variants=(0, 3, 4)):
+def run(out, reuse=False, variants=(0, 3, 4), reuse_c=False):
     out.mkdir(parents=True, exist_ok=True)
-    program = read_build(out/'program') if reuse else build(out)
+    program = read_build(out/'program') if reuse else build(out,reuse_c)
     symbols = json.loads((out/'c-image.json').read_text())['symbols']
     at = lambda module, name: next(d['address'] for d in program['image']['data']
                                    if d['name'].startswith(f'M_{module}_{name.upper()}_'))
@@ -179,9 +258,10 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                         reach(f'db(${at("WINDOWEFFECTPROBE", "stage"):x})={boundary}')
                         require(get(scene+lf['Scene']['fields']['busy']) != 0,
                                 'Move lost logical ownership')
-                        require(get(at('DESKMOVE', 'moving'), 3) == window
-                                and get(at('DESKMOVE', 'aesReply'), 3) != 0,
-                                'Move lost retained window or request')
+                        require(get(at('WINDOWEFFECTPROBE','windowAddress')) == window
+                                and get(at('WINDOWEFFECTPROBE','requestAddress')) != 0
+                                and get(get(at('WINDOWEFFECTPROBE','tokenAddress'))) != 0,
+                                'Move lost caller-owned window/request/token')
                         require(bridge.memdump(layer+lf['Layer']['fields']['bounds'], 8) == old,
                                 'Effect published speculative layer geometry')
                         require(bridge.memdump(view+af['WindowView']['fields']['bounds'], 8) == old,
@@ -231,17 +311,32 @@ def run(out, reuse=False, variants=(0, 3, 4)):
                     bridge.poke(at('WINDOWEFFECTPROBE', 'release'), 3)
                     bridge.bp_clear_all()
 
-                row['runtime'], _ = execute(bridge, program, before_run=before,
-                    expected_status=0xff93 if variant == 4 else 0, timeout=120, frame_limit=6000)
+                try:
+                    row['runtime'], _ = execute(bridge, program, before_run=before,
+                        expected_status=0xff93 if variant == 4 else 0, timeout=120, frame_limit=6000)
+                except Exception:
+                    # Private layout diagnostics, never a production access path.
+                    row['failure_state']={name:get(symbols[name],size) for name,size in
+                        [('EffectPhase',2),('peerDone',2),('EffectPeer',4),('AESChecks',2),('AESFailures',2)]}
+                    row['failure_state'].update(boot_cause=get(adapter.BOOT_CAUSE,2),systemHeld=get(at('AESLOCKS','systemHeld'),1),
+                        systemDepth=get(at('AESLOCKS','systemDepth'),2))
+                    rf=af['Request']['fields']
+                    row['failure_state']['requests']=[]
+                    for index in range(8):
+                        context=get(symbols['contexts']+4*index)
+                        if context:
+                            row['failure_state']['requests'].append({name:get(context+rf[name],size)
+                                for name,size in [('owner',3),('client',4),('operation',2),('status',2)]})
+                    raise
                 row['checks'] = get(symbols['AESChecks'], 2)
                 row['failures'] = get(symbols['AESFailures'], 2)
                 row['first_failure'] = get(symbols['AESFirstFailure'], 2)
                 require(row['failures'] == 0, 'Window effect C assertion failed')
                 if variant == 4:
                     require(get(scene+lf['Scene']['fields']['busy']) != 0
-                            and get(at('DESKMOVE', 'moveToken')) != 0
-                            and get(at('DESKMOVE', 'moving'), 3) != 0
-                            and get(at('DESKMOVE', 'aesReply'), 3) != 0,
+                            and get(get(at('WINDOWEFFECTPROBE','tokenAddress'))) != 0
+                            and get(at('WINDOWEFFECTPROBE','windowAddress')) != 0
+                            and get(at('WINDOWEFFECTPROBE','requestAddress')) != 0,
                             'Unquiesced copy released retained operation storage')
                 else:
                     ownership(bridge, program, program['output'])
@@ -272,6 +367,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--reuse', action='store_true')
+    parser.add_argument('--reuse-c',action='store_true')
     parser.add_argument('--variant', type=int, choices=(0, 3, 4), action='append')
     args = parser.parse_args()
-    run(args.output.resolve(), args.reuse, args.variant or (0, 3, 4))
+    run(args.output.resolve(), args.reuse, args.variant or (0, 3, 4),args.reuse_c)

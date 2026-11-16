@@ -95,10 +95,10 @@ PUBLIC PROC Run()
     ; turn in that case. Settled excludes waiters, messages and publication
     ; work. Maintain caches with policy closed; new signals survive to Wait.
     IF bits=aesMask AND aesMask<>0 AND stopping=0 AND consoleStopping()=0
-        AND AESHOST.Settled()<>0 AND AESLOCKS.NativeReady()<>0
+        AND AESHOST.Settled()<>0 AND AESLOCKS.Quiescent()<>0
         AND consoleRunnable()=0 AND DESKHOST.Runnable()=0 THEN
       workPending=DESKHOST.Cache()
-      policyReady=AESLOCKS.NativeReady()
+      policyReady=AESLOCKS.Quiescent()
       ; A started cache continuation needs the normal turn and completion wait.
       schedule=IF policyReady<>0 THEN 2 ELSE 0 FI
       bits=0
@@ -213,11 +213,12 @@ PUBLIC PROC Run()
         FI
       FI
 
-      policyReady=stopping=0 AND consoleStopping()=0 AND AESLOCKS.NativeReady()<>0
+      policyReady=stopping=0 AND consoleStopping()=0 AND AESLOCKS.Quiescent()<>0
     FI
     IF AESLOCKS.ControllerLoan()<>0 THEN
       DESKDRAG.Loan()
     FI
+    AESHOST.Publish()
     AESLOCKS.SystemRelease()
     AESGATE.Offer()
     ; No shared-state hints after publication: schedule or reclaim next turn.

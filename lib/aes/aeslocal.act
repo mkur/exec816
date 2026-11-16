@@ -57,66 +57,48 @@ CARD FUNC Policy(LONGCARD value)
     FI
     BEGIN
       LET client=AESSTATE.Find(service,request.client)
-      IF waiting<>0 AND client.waitMode=AESWAIT.SYSTEM THEN
-        IF client.pending<>NULL THEN
-          AESGATE.Release(0)
-          EXEC.Wait(mask)
+      wake=1
+      request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
+          ELSE INT(0) FI
+      IF request.operation=AESTYPES.OP_MENU THEN
+        status=AESMENU.Request(service,client,request)
+      ELSEIF request.operation=AESTYPES.OP_OPEN
+          OR request.operation=AESTYPES.OP_CLOSE THEN
+        AESWINDOWSTATE.PrepareUpdate(client)
+        status=AESWINDOW.Visibility(service,client,request)
+      ELSEIF request.operation=AESTYPES.OP_SET THEN
+        IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
+          status=AESWINDOW.Frame(service,client,request,@wake)
+          IF status=AESTYPES.OK AND wake<>0 THEN
+            status=AESFRAME.Paint(client,request)
+          FI
+        ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
+          AESWINDOWSTATE.PrepareUpdate(client)
+          status=AESWINDOW.Geometry(service,client,request)
         ELSE
-          client.waitMode=AESWAIT.RPC
-          AESGATE.Release(1)
-          RETURN(1)
+          status=AESWINDOW.Request(service,client,request)
         FI
       ELSE
-        wake=1
-        request.intout(0)=IF request.operation=AESTYPES.OP_CREATE THEN INT(-1)
-            ELSE INT(0) FI
-        IF request.operation=AESTYPES.OP_MENU THEN
-          status=AESMENU.Request(service,client,request)
-        ELSEIF request.operation=AESTYPES.OP_OPEN
-            OR request.operation=AESTYPES.OP_CLOSE THEN
-          AESWINDOWSTATE.PrepareUpdate(client)
-          status=AESWINDOW.Visibility(service,client,request)
-        ELSEIF request.operation=AESTYPES.OP_SET THEN
-          IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
-            status=AESWINDOW.Frame(service,client,request,@wake)
-            IF status=AESTYPES.OK AND wake<>0 THEN
-              status=AESFRAME.Paint(client,request)
-            FI
-          ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
-            AESWINDOWSTATE.PrepareUpdate(client)
-            status=AESWINDOW.Geometry(service,client,request)
-          ELSE
-            status=AESWAIT.SYSTEM_WORK
-          FI
-        ELSE
-          AESWINDOWSTATE.PrepareUpdate(client)
-          status=AESWINDOW.Lifecycle(service,client,request)
-        FI
-        IF status=AESWAIT.SYSTEM_WORK THEN
-          AESWAIT.Window(service,client,request)
-          client.waitMode=AESWAIT.SYSTEM
-          request.status=AESTYPES.PENDING
-          status=AESTYPES.PENDING
-          ; A metadata retry can discover physical work after its first wake.
-          waiting=0
-        ELSEIF status=AESTYPES.PENDING AND waiting=0 THEN
-          AESWAIT.Window(service,client,request)
-          client.waitMode=AESWAIT.CALLER
-          request.status=AESTYPES.PENDING
-        FI
-        IF status<>AESTYPES.PENDING THEN
-          client.pending=NULL
-          AESWAIT.RemoveWindow(service,client)
-          client.waitMode=AESWAIT.RPC
-          request.status=status
-          ; Removing a failed waiter also unblocks deferred paint and peers.
-          AESGATE.Release(waiting<>0 OR (wake AND status=AESTYPES.OK))
-          RETURN(1)
-        FI
-        AESGATE.Release(waiting=0)
-        waiting=1
-        EXEC.Wait(mask)
+        AESWINDOWSTATE.PrepareUpdate(client)
+        status=AESWINDOW.Lifecycle(service,client,request)
       FI
+      IF status=AESTYPES.PENDING AND waiting=0 THEN
+        AESWAIT.Window(service,client,request)
+        client.waitMode=AESWAIT.CALLER
+        request.status=AESTYPES.PENDING
+      FI
+      IF status<>AESTYPES.PENDING THEN
+        client.pending=NULL
+        AESWAIT.RemoveWindow(service,client)
+        client.waitMode=AESWAIT.RPC
+        request.status=status
+        ; Removing a failed waiter also unblocks deferred paint and peers.
+        AESGATE.Release(waiting<>0 OR (wake AND status=AESTYPES.OK))
+        RETURN(1)
+      FI
+      AESGATE.Release(waiting=0)
+      waiting=1
+      EXEC.Wait(mask)
     END
   OD
 
@@ -203,10 +185,10 @@ CARD FUNC Depart(AESTYPES.Request POINTER request)
     status=Scope(request,AESTYPES.END_UPDATE,1)
   OD
   status=Scope(request,AESTYPES.END_UPDATE,0)
-  AESGATE.EnterTask(request.owner,mask)
+  EXEC.Forbid()
   ready=AESCURSOR.Retire(service,client,request)
   request.status=AESTYPES.OK
-  AESGATE.Release(0)
+  EXEC.Permit()
   IF ready=0 THEN
     BEGIN
       LET ignored=CALYPSICALL.Invoke(mouseApply,LONGCARD(ADDRESS(request)))

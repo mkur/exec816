@@ -1,7 +1,8 @@
-; One presenter continuation owns copied geometry until the shared DMA retires.
+; Synchronous caller-owned copied moves under UPDATE.
 MODULE DESKMOVE
 USE AESTYPES
 USE AESWINDOWSTATE
+USE AESFRAME
 USE DISPLAY
 USE DESKTYPES
 USE DESKSTATE
@@ -9,62 +10,6 @@ USE LAYERTYPES
 USE LAYERS
 USE CONSOLEBITMAP
 USE HEAPCORE
-
-LONGCARD moveToken
-DESKTYPES.Window POINTER moving
-AESTYPES.Request POINTER aesReply
-CARD aesStatus
-
-; Both submission failure and completed DMA retire the same reservation.
-; A reset-required failure never returns from the display adapter.
-PROC CommitCopy(DESKTYPES.Service POINTER service BYTE completed)
-
-  IF LAYERS.Finish(@service.scene,moveToken,completed)<>LAYERTYPES.OK THEN
-    HEAPCORE.Abort($faed)
-  FI
-
-  AESWINDOWSTATE.Geometry(moving,completed)
-  AESWINDOWSTATE.Sync()
-  moveToken=0
-  moving=NULL
-
-RETURN
-
-PUBLIC PROC Pump()
-
-  IF moveToken=0 OR CONSOLEBITMAP.Pending()<>0 THEN
-    RETURN
-  FI
-
-  LET completed=(CONSOLEBITMAP.Failed()=0)
-  CommitCopy(DESKSTATE.Get(),completed)
-  aesStatus=IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI
-
-RETURN
-
-; The Layers move token retains the source and target through submission
-; and completion. The effect only consumes these frozen coordinates.
-BYTE FUNC SubmitCopy(LAYERTYPES.Scene POINTER scene)
-
-  LET packet=CONSOLEBITMAP.GetPacket()
-  LET source=@scene.copySource
-  LET target=@scene.copyTarget
-  packet.copy.source.offset=0
-  packet.copy.source.pitch=320
-  packet.copy.source.width=640
-  packet.copy.source.height=240
-  packet.copy.destination.offset=0
-  packet.copy.destination.pitch=320
-  packet.copy.destination.width=640
-  packet.copy.destination.height=240
-  packet.copy.sourceX=CARD(source.left)
-  packet.copy.sourceY=CARD(source.top)
-  packet.copy.destinationX=CARD(target.left)
-  packet.copy.destinationY=CARD(target.top)
-  packet.copy.width=CARD(source.right-source.left)
-  packet.copy.height=CARD(source.bottom-source.top)
-
-RETURN(CONSOLEBITMAP.CopyStart())
 
 ; Both admission and the presenter use the same copy eligibility. A
 ; caller declines this effect before BeginMove reserves or changes anything.
@@ -79,90 +24,60 @@ PUBLIC BYTE FUNC CopyEligible(DESKTYPES.Window POINTER window
 
 RETURN(eligible)
 
-; Unsupported placement and nonclean sources retain the ordinary redraw path.
-CARD FUNC Start(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window INT left,top)
-  BYTE status,drawn,eligible
-
-  IF window.iconified<>0 THEN
-    BEGIN
-      LET bounds=@window.normalBounds
-      bounds.right=left+bounds.right-bounds.left
-      bounds.bottom=top+bounds.bottom-bounds.top
-      bounds.left=left
-      bounds.top=top
-    END
-    RETURN(DESKTYPES.OK)
-  FI
+; The Layers token and native packet stay on the owning caller's stack.
+; No shared bitmap packet or manager reply continuation survives this call.
+PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
+    DESKTYPES.Window POINTER window INT left,top
+    AESTYPES.Request POINTER request)
+  BYTE status,completed
+  LONGCARD token
+  CONSOLEBITMAP.Packet packet
 
   LET layer=LAYERS.Find(@service.scene,window.layer)
   IF layer.bounds.left=left AND layer.bounds.top=top THEN
     RETURN(DESKTYPES.OK)
   FI
-
-  eligible=CopyEligible(window,layer,left)
-
-  IF eligible<>0 THEN
-    ; Remove transient pixels while the old scene can still admit paint.
-    drawn=CONSOLEBITMAP.Outline(0,0,0,0,0)
-    IF drawn=0 THEN
+  IF CopyEligible(window,layer,left)<>0 THEN
+    IF request.displayGrant=NULL THEN
       RETURN(DESKTYPES.DRAW_FAILED)
     FI
-
-    status=LAYERS.BeginMove(@service.scene,window.layer,left,top,@moveToken)
-    IF status=LAYERTYPES.EMPTY THEN
+    status=LAYERS.BeginMove(@service.scene,window.layer,left,top,@token)
+    IF status=LAYERTYPES.OK THEN
+      packet.operation=CONSOLEBITMAP.OP_COPY_START
+      packet.copy.source.offset=0
+      packet.copy.source.pitch=320
+      packet.copy.source.width=640
+      packet.copy.source.height=240
+      packet.copy.destination.offset=0
+      packet.copy.destination.pitch=320
+      packet.copy.destination.width=640
+      packet.copy.destination.height=240
+      packet.copy.sourceX=CARD(service.scene.copySource.left)
+      packet.copy.sourceY=CARD(service.scene.copySource.top)
+      packet.copy.destinationX=CARD(service.scene.copyTarget.left)
+      packet.copy.destinationY=CARD(service.scene.copyTarget.top)
+      packet.copy.width=CARD(service.scene.copySource.right
+          -service.scene.copySource.left)
+      packet.copy.height=CARD(service.scene.copySource.bottom
+          -service.scene.copySource.top)
+      AESFRAME.Apply(@packet,request)
+      completed=(packet.status=DISPLAY.OK)
+      IF LAYERS.Finish(@service.scene,token,completed)<>LAYERTYPES.OK THEN
+        HEAPCORE.Abort($faed)
+      FI
+      AESWINDOWSTATE.Geometry(window,completed)
+      AESWINDOWSTATE.Sync()
+      RETURN(IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI)
+    ELSEIF status=LAYERTYPES.EMPTY THEN
       RETURN(DESKTYPES.OK)
     FI
-
-    IF status=LAYERTYPES.OK THEN
-      moving=window
-      IF SubmitCopy(@service.scene)=0 THEN
-        CommitCopy(service,0)
-        RETURN(DESKTYPES.DRAW_FAILED)
-      FI
-      RETURN(DESKTYPES.PENDING)
-    FI
   FI
-
   status=LAYERS.Move(@service.scene,window.layer,left,top)
+  IF status=LAYERTYPES.OK THEN
+    AESWINDOWSTATE.Geometry(window,0)
+    AESWINDOWSTATE.Sync()
+  FI
 
 RETURN(IF status=LAYERTYPES.OK THEN DESKTYPES.OK ELSE DESKTYPES.BAD_ARGUMENT FI)
-
-; AESCORE owns the reply and retries this same retained request. Only Pump
-; publishes a completed copied move; an ordinary fallback still damages work.
-PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window INT left,top
-    AESTYPES.Request POINTER request)
-  CARD status
-
-  IF aesReply<>NULL THEN
-    IF aesReply<>request OR moveToken<>0 THEN
-      RETURN(DESKTYPES.PENDING)
-    FI
-
-    aesReply=NULL
-    RETURN(aesStatus)
-  FI
-
-  aesReply=request
-  status=Start(service,window,left,top)
-  IF status<>DESKTYPES.PENDING THEN
-    aesReply=NULL
-    IF status=DESKTYPES.OK THEN
-      AESWINDOWSTATE.Geometry(AESWINDOWSTATE.FindRecord(window.id),0)
-      AESWINDOWSTATE.Sync()
-    FI
-  FI
-
-RETURN(status)
-
-; Retirement already waits for scene/DMA quiescence before releasing a client.
-PUBLIC PROC Forget(AESTYPES.Request POINTER request)
-
-  IF aesReply=request THEN
-    aesReply=NULL
-  FI
-
-RETURN
 
 ENDMODULE

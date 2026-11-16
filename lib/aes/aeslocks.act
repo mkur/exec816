@@ -136,7 +136,8 @@ RETURN(service<>NULL AND (service.updateHint & AESSTATE.CONTROLLER_LOAN)<>0)
 PUBLIC PROC SystemRelease()
 
   LET service=AESSTATE.Get()
-  IF systemDepth=0 AND systemHeld<>0 AND NativeReady()<>0 THEN
+  IF systemDepth=0 AND systemHeld<>0 AND NativeReady()<>0
+      AND DESKSTATE.managerCapture=0 AND DESKSTATE.menuActive=0 THEN
     service.updateHint=service.updateHint &
         ($ff-AESSTATE.CONTROLLER_LOAN-AESSTATE.UPDATE_REQUESTED)
     systemHeld=0
@@ -163,6 +164,18 @@ PUBLIC PROC SystemEnd()
 
 RETURN
 
+; Readiness of live scene state has the same UPDATE authority as mutation.
+PUBLIC BYTE FUNC Quiescent()
+  BYTE ready
+
+  IF SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  ready=NativeReady()
+  SystemEnd()
+
+RETURN(ready)
+
 ; Shutdown has closed admission and drained all clients and physical effects.
 PUBLIC PROC SystemStop()
 
@@ -187,6 +200,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
     service.updateWindow=window
     AESWINDOWSTATE.BeginUpdate(client)
   FI
+  EXEC.Forbid()
   service.updateOwner=client.id
   service.updates==+1
   IF code=AESTYPES.BEG_MCTRL THEN
@@ -198,6 +212,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
   ELSEIF painting<>0 THEN
     service.updateHolds==+1
   FI
+  EXEC.Permit()
   IF painting<>0 THEN
     AESWINDOWSTATE.Updates(client,service.updateHolds+service.mouseHolds)
   FI
@@ -210,40 +225,49 @@ RETURN(AESTYPES.OK)
 ; Publication and the journal finish before the resource is made available.
 CARD FUNC Release(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code BYTE painting)
+  CARD updates,mouse
 
   IF service.updateOwner<>client.id OR service.updates=0 THEN
     RETURN(AESTYPES.IDENTITY)
   FI
+  updates=service.updateHolds
+  mouse=service.mouseHolds
   IF code=AESTYPES.END_MCTRL THEN
-    IF service.mouseOwner<>client.id OR service.mouseHolds=0 THEN
+    IF service.mouseOwner<>client.id OR mouse=0 THEN
       RETURN(AESTYPES.IDENTITY)
     FI
-    service.mouseHolds==-1
-    IF service.mouseHolds=0 THEN
-      AESSTATE.mouseDirty=1
-      service.mouseOwner=0
-    FI
+    mouse==-1
   ELSEIF painting<>0 THEN
-    IF service.updateHolds=0 THEN
+    IF updates=0 THEN
       RETURN(AESTYPES.IDENTITY)
     FI
-    service.updateHolds==-1
+    updates==-1
   FI
   IF painting<>0 THEN
-    AESWINDOWSTATE.Updates(client,service.updateHolds+service.mouseHolds)
-    IF service.updateHolds+service.mouseHolds=0 THEN
+    AESWINDOWSTATE.Updates(client,updates+mouse)
+    IF updates+mouse=0 THEN
+      ; Keep the painting marker live until journal/cache completion finishes.
+      ; Retained application visuals cannot resume halfway through END.
       AESWINDOWSTATE.EndUpdate(client)
       service.updateWindow=0
-      ; Journal completion can create cache/paint work while the presenter
-      ; sleeps, even if it never attempted UPDATE during this short scope.
-      service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
     FI
+  FI
+  EXEC.Forbid()
+  service.updateHolds=updates
+  service.mouseHolds=mouse
+  IF code=AESTYPES.END_MCTRL AND mouse=0 THEN
+    AESSTATE.mouseDirty=1
+    service.mouseOwner=0
+  FI
+  IF painting<>0 AND updates+mouse=0 THEN
+    service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
   FI
   service.updates==-1
   IF service.updates=0 THEN
     service.updateOwner=0
   FI
-  IF code=AESTYPES.END_MCTRL AND service.mouseHolds=0 THEN
+  EXEC.Permit()
+  IF code=AESTYPES.END_MCTRL AND mouse=0 THEN
     AESMOUSE.Refresh()
   FI
 

@@ -5,7 +5,6 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
-USE DESKMOVE
 USE DESKCACHE
 USE DESKMENUCACHE
 USE CONSOLEBITMAP
@@ -18,6 +17,7 @@ USE DESKINPUT
 USE CONSOLECAPTURE
 USE CONSOLEWINDOWS
 USE AESHOST
+USE AESSTATE
 USE AESLOCKS
 USE DESKMENU
 
@@ -70,14 +70,14 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(service.mask OR DESKINPUT.Mask() OR AESHOST.Mask())
 
-PUBLIC BYTE FUNC Ready()
+BYTE FUNC InspectReady()
 
   LET service=DESKSTATE.Get()
 
 ; The console-control entry checks actual work and obtains UPDATE itself.
 RETURN(service=NULL OR service.scene.busy=0)
 
-PUBLIC BYTE FUNC PaintReady()
+BYTE FUNC InspectPaintReady()
 
   LET service=DESKSTATE.Get()
 
@@ -86,14 +86,14 @@ RETURN(DISPLAY.Blocked()=0 AND (service=NULL OR service.scene.busy=0)
 
 ; Eligible controls that waited for the paint snapshot must get an admission
 ; opportunity before a fresh console write acquires that same scene again.
-PUBLIC BYTE FUNC ControlPending()
+BYTE FUNC InspectControlPending()
 
   LET service=DESKSTATE.Get()
 
 RETURN(service<>NULL AND service.live<>0 AND service.scene.busy=0
     AND AESLOCKS.MouseBlocked()=0 AND AESHOST.Runnable()<>0)
 
-PUBLIC BYTE FUNC Idle()
+BYTE FUNC InspectIdle()
 
   IF AESHOST.Idle()=0 THEN
     RETURN(0)
@@ -149,11 +149,15 @@ RETURN
 ; This neither polls hardware nor admits requests or renews a worker budget.
 PUBLIC PROC MenuContinuation()
 
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN
+  FI
   IF DESKMENUCACHE.Foreground()<>0 AND CONSOLEBITMAP.Pending()=0
       AND DISPLAY.Blocked()=0 THEN
     DESKMENUCACHE.Pump()
     DESKMENU.Advance()
   FI
+  AESLOCKS.SystemEnd()
 
 RETURN
 
@@ -163,18 +167,21 @@ PUBLIC PROC Controls()
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
-    priorToken=service.scene.busy
-    DESKMENUCACHE.Pump()
-    IF DESKMENUCACHE.Replacing()<>0 THEN
-      DESKMENU.Advance()
-    FI
-    DESKCACHE.Pump(service)
-    DESKMOVE.Pump()
-    AESLOCKS.SystemRelease()
-    IF priorToken<>0 AND service.scene.busy=0 THEN
-      ; Only one scene continuation can own the token. Service input after
-      ; its retirement, before a control can acquire the newly free scene.
-      InputBoundary()
+    IF AESLOCKS.SystemBegin()<>0 THEN
+      priorToken=service.scene.busy
+      DESKMENUCACHE.Pump()
+      IF DESKMENUCACHE.Replacing()<>0 THEN
+        DESKMENU.Advance()
+      FI
+      DESKCACHE.Pump(service)
+      AESLOCKS.SystemRelease()
+      IF priorToken<>0 AND service.scene.busy=0 THEN
+        ; Only one scene continuation can own the token. Service input after
+        ; its retirement, before a control can acquire the newly free scene.
+        InputBoundary()
+      FI
+
+      AESLOCKS.SystemEnd()
     FI
 
     lateAES=0
@@ -218,7 +225,7 @@ PUBLIC PROC AfterPaint()
 
 RETURN
 
-PUBLIC BYTE FUNC Runnable()
+BYTE FUNC InspectRunnable()
 
   LET service=DESKSTATE.Get()
   IF service<>NULL AND service.live<>0 THEN
@@ -320,7 +327,7 @@ RETURN(0)
 
 ; Candidate inspection does not own UPDATE. Starting a cache transfer does;
 ; its existing scene token retains that ownership until completion.
-PUBLIC BYTE FUNC Cache()
+BYTE FUNC InspectCache()
   BYTE started
 
   LET service=DESKSTATE.Get()
@@ -357,5 +364,81 @@ PUBLIC PROC Stop()
   AESHOST.Stop()
 
 RETURN
+
+PUBLIC BYTE FUNC Ready()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectReady()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC PaintReady()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectPaintReady()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC ControlPending()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectControlPending()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+; Shutdown readiness is also called by the console controller. Its short
+; resource borrow must not inherit the frontend's retained operation state.
+PUBLIC BYTE FUNC Idle()
+  BYTE result
+
+  LET aes=AESSTATE.Get()
+  IF aes=NULL THEN
+    RETURN(InspectIdle())
+  FI
+  IF EXEC.AttemptSemaphore(@aes.updateResource)=0 THEN
+    RETURN(0)
+  FI
+  result=InspectIdle()
+  AESLOCKS.ReleaseUI()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE result
+
+  ; RPC admission remains runnable while drawing belongs to another Task.
+  IF AESHOST.Runnable()<>0 THEN
+    RETURN(1)
+  FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectRunnable()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Cache()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectCache()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
 
 ENDMODULE

@@ -253,8 +253,7 @@ CARD FUNC Close(DESKTYPES.Window POINTER item AESTYPES.Request POINTER request)
   FI
 
   IF AESROUTES.Retire(window,request)=0 THEN
-    RETURN(IF AESGATE.SystemOwned()<>0 THEN CARD(AESTYPES.PENDING)
-        ELSE CARD(AESWAIT.SYSTEM_WORK) FI)
+    RETURN(AESTYPES.PENDING)
   FI
 
 RETURN(AESTYPES.OK)
@@ -322,7 +321,6 @@ PUBLIC BYTE FUNC Retire(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
   BYTE slot
 
-  DESKMOVE.Forget(client.binding)
   FOR slot=0 TO AESTYPES.WINDOWS-1 DO
     IF service.windows(slot).owner=client.id THEN
       BEGIN
@@ -372,25 +370,12 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   FI
 
   IF same<>0 AND service.updateHolds+service.mouseHolds=0 THEN
-    IF AESGATE.SystemOwned()<>0 THEN
-      BEGIN
-        LET status=DESKMOVE.Application(desktop,window,
-            bounds.left,bounds.top,request)
-        IF status=DESKTYPES.PENDING THEN
-          RETURN(AESTYPES.PENDING)
-        FI
-        IF status<>DESKTYPES.OK THEN
-          RETURN(AESTYPES.DISPLAY_ERROR)
-        FI
-        RETURN(AESTYPES.OK)
-      END
-    ELSEIF layer.shown<>0 AND
-        (bounds.left<>current.left OR bounds.top<>current.top)
-        AND DESKMOVE.CopyEligible(window,layer,bounds.left)<>0 THEN
-      ; The presenter retains copy identity, frozen pixels and its continuation.
-      ; Retain an explicit system continuation before physical preparation.
-      RETURN(AESWAIT.SYSTEM_WORK)
-    FI
+    BEGIN
+      LET status=DESKMOVE.Application(desktop,window,
+          bounds.left,bounds.top,request)
+      RETURN(IF status=DESKTYPES.OK THEN CARD(AESTYPES.OK)
+          ELSE CARD(AESTYPES.DISPLAY_ERROR) FI)
+    END
   FI
 
   IF LAYERS.Bounds(@desktop.scene,window.layer,bounds.left,bounds.top,

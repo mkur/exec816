@@ -72,7 +72,6 @@ PUBLIC PROC Offer()
     RETURN
   FI
 
-  AESSNAPSHOT.Publish()
   EXEC.Forbid()
   service.policyGate=IF service.live=1 THEN AVAILABLE ELSE CLOSED FI
   service.sceneOwner=NULL

@@ -1,5 +1,10 @@
 # MagiC UPDATE and Exec scene-access audit
 
+The tables below describe the recorded baseline. The
+[SCRENMGR migration record](../history/screnmgr-migration.md) tracks delivered
+caller drawing, independent input, registration lifetimes and UPDATE ownership;
+the [current AES contract](../reference/aes.md) describes supported behavior.
+
 [Architecture index](README.md) · [MagiC model](magic.md) ·
 [Architecture mapping](magic-exec-mapping.md) ·
 [Source inventory and evidence](../development/magic-update-scene-audit.json)

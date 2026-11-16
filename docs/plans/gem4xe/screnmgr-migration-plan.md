@@ -10,8 +10,8 @@ this plan uses that spelling. SM0 records the decision and current responsibilit
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
 vertical slider positions in the caller; SM1c adds vertical slider sizes and
 SM1d adds horizontal position/size. SM1e completes caller-side title/info painting.
-SM3a implements the selected nonblocking raw hit query. The remaining scene
-ownership and manager migration remain pending. Independent
+SM3a implements the selected nonblocking raw hit query. SM3b/c implement registration lifetimes and operation ownership. The remaining
+scene-gate cutover and manager-loop migration remain pending. Independent
 input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
@@ -217,6 +217,7 @@ service. Commit executable prerequisites separately.
    scans and END. A retained caller effect must complete under that operation's
    authority or in its caller; the manager cannot Obtain a foreign owner's
    semaphore to reply to it. Resolve this before adding blocking manager waits.
+   Status: implemented; see the [SM3c record](../../history/screnmgr-migration.md#sm3c-update-owned-scene-work-and-caller-continuations).
 4. **SM3d: whole-inventory cutover.** Remove the scene waiter queue and turn-wide
    scene claim together only after all entry/read/continuation families above
    have owners. Retain the one current implementation and update private-layout

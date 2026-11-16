@@ -215,7 +215,7 @@ CARD FUNC Register(AESSTATE.Service POINTER service
   request.intout(0)=client.gemId
   Globals(request,client.gemId)
   AESSTATE.mouseDirty=1
-  AESMOUSE.Refresh()
+  AESMOUSE.RefreshSnapshot()
 
 RETURN(AESTYPES.OK)
 
@@ -400,48 +400,20 @@ RETURN
 ; Retry only admitted mutations, after the current frame/hardware unit retires.
 PUBLIC PROC Settle(AESSTATE.Service POINTER service)
   BYTE index
-  CARD status
 
   IF service.windowPending=0 THEN
     RETURN
   FI
-
+  EXEC.Forbid()
   FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
       LET client=@service.clients(index)
-      IF client.windowWaiting<>0 THEN
-        BEGIN
-          LET request=client.pending
-          IF client.waitMode=AESWAIT.CALLER THEN
-            IF (request.operation=AESTYPES.OP_EXIT AND client.endpoint.holds=0)
-                OR (request.operation=AESTYPES.OP_MENU AND AESLOCKS.NativeReady()<>0)
-                OR (request.operation=AESTYPES.OP_UPDATE
-                  AND (((CARD(request.intin(0)) & $ff)=AESTYPES.BEG_MCTRL
-                      AND AESMOUSE.LockReady(client.id)<>0)
-                    OR ((CARD(request.intin(0)) & $ff)<>AESTYPES.BEG_MCTRL
-                      AND DESKDRAG.DrawReady()<>0)))
-                OR (request.operation<>AESTYPES.OP_EXIT
-                  AND request.operation<>AESTYPES.OP_MENU
-                  AND request.operation<>AESTYPES.OP_UPDATE) THEN
-              AESWAIT.Signal(client)
-            FI
-          ELSE
-            status=AESWINDOW.Request(service,client,request)
-            IF status<>AESTYPES.PENDING THEN
-              client.pending=NULL
-              AESWAIT.RemoveWindow(service,client)
-              IF client.waitMode=AESWAIT.SYSTEM THEN
-                request.status=status
-                AESWAIT.Signal(client)
-              ELSE
-                AESSTATE.Reply(request,status)
-              FI
-            FI
-          FI
-        END
+      IF client.windowWaiting<>0 AND client.waitMode=AESWAIT.CALLER THEN
+        AESWAIT.Signal(client)
       FI
     END
   OD
+  EXEC.Permit()
 
 RETURN
 
@@ -454,6 +426,7 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
   EXEC.Permit()
   FOR index=0 TO AESTYPES.CLIENTS-1 DO
     BEGIN
+      EXEC.Forbid()
       LET client=@service.clients(index)
       LET endpoint=client.endpoint
       IF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_CLOSING
@@ -462,6 +435,7 @@ PUBLIC PROC Wake(AESSTATE.Service POINTER service)
       ELSEIF endpoint<>NULL AND endpoint.state=AESTYPES.ENDPOINT_ACCEPTING THEN
         AESGUI.Publish(service,client)
       FI
+      EXEC.Permit()
     END
   OD
 

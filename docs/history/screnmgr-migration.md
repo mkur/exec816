@@ -340,3 +340,85 @@ retained UPDATE; it now checks a failed native TRY and progress of a real
 registration RPC while the endpoint hold remains live. No ownership assertion
 was relaxed. Host checks and local documentation links are included. These are
 development checks, with no QED/catalog/demo build or release qualification.
+
+
+## SM3c: UPDATE-owned scene work and caller continuations
+
+Ordinary window/menu mutations and completion stay in the calling Task under
+UPDATE. `DESKMOVE` now keeps a local packet and Layers token through the existing
+GEM4XE delegated copy/fence instead of retaining global manager request state.
+Even horizontal coordinates/widths require no edge staging. Cold geometry copy
+access reuses the standalone frame grant path before mutation. Success publishes
+the moved geometry; a quiescent failure retires the token with old geometry.
+Copy refusal keeps the redraw fallback. Four old continuation globals are removed.
+
+`AESLOCAL` retries pending close/menu/readiness work in its caller. The former
+SYSTEM/SYSTEM_WORK wait states and manager request execution are removed.
+Pending-descriptor publication and settlement scans use short Task guards;
+`AESCORE.Settle` signals waiting callers without inspecting or mutating their
+window requests. Registration and copied GUI-event publication remain independent
+of UPDATE. END keeps the painting marker live until journal/cache completion,
+then publishes owner/count transitions under a short guard before native release.
+
+Manager live-scene, readiness, cache-candidate, paint and menu probes acquire
+UPDATE with nonblocking Try before inspecting state. A miss arms the existing
+release hint and leaves input/RPC/lifetime progress available. RPC queue readiness
+remains visible even when drawing belongs to another Task. Snapshot construction
+runs under its operation's UPDATE or exclusive startup/teardown; the old gate
+Offer no longer constructs scene state without that authority. Ordinary native
+captures and open menus retain manager UPDATE through the interaction. Their
+logical hold is separate from physical readiness, so menu completion can progress.
+The controller's console-idle probe borrows/releases UPDATE directly, without
+entering the manager's retained scope state; a miss reports busy. Idle console
+gathering is discarded under manager UPDATE before a waiter takes over; actual DMA retains its existing owner through retirement.
+
+The existing application MCTRL outline uses retained copied capture authority,
+not a manager acquisition of the application's semaphore. Admission/tracking
+values use short guards, drawing freezes coordinates and a concurrent cancel or
+replacement remains dirty after the physical call. A painting BEGIN waits for
+erasure through that retained visual path; END does not expose an intermediate
+painting-marker transition. No ordinary drawing or device wait is inside Forbid.
+
+This follows MagiC AESWIN `_wind_set` / `ws_curr` (2298–2326, 2520–2542) and
+`set_windxywh`: the caller changes geometry and finishes its graphics before
+`ws_endsw` releases UPDATE. Exec's existing semaphore, Task guards, input.device,
+display grants and typed blitter borrow supply the platform mechanisms. No new
+platform service or GUI-specific substitute is introduced. The scene gate and
+combined loop remain staged dependencies for SM3d and SM4; this slice does not
+claim their second wait has disappeared or establish a scrolling-speed gain.
+
+The cache fixture uncovered an input migration gap: Ctrl-Esc with an AES window
+focused went straight to the application inbox. Capture now reserves global
+shortcuts and keys for a published active menu into the copied manager queue.
+The callback classifies copied state only; the manager interprets the key under
+UPDATE. Menu-open/restore pixels now pass with the focused AES window. An early
+scope edit also retained menus by adding them to physical readiness; separating
+logical retention from physical readiness corrected that self-blocking condition.
+
+The [development record](../development/screnmgr-sm3c.json) includes the focused
+optimized native ownership/publication probe, cache/pixel fixture and lock fixture.
+The native probe checks 128 assertions plus ten publication-close assertions:
+foreign UPDATE excludes live scene/cache probes, pending requests receive only
+wake hints, idle batch handoff completes, caller-side shutdown probes release their borrow,
+and the native hold count is balanced.
+The cache fixture checks 224 application assertions, 32 checkpoints, copied-move
+pixels, repair/exposure policy, menu background restore and cleanup. The lock
+fixture checks 237 application assertions including FIFO handoff and restoration.
+The copied-move boundary fixture covers normal, quiescent-failure and unsafe
+hardware cases, with independent counter/query progress and retained operation
+storage. Its pause hooks and fault injection now follow the caller's synchronous
+copy/fence. A route-retirement pause leaves scene re-entry to its enclosing
+operation. Cleanup allows bounded retries of a busy console stop and skips
+unpaintable damage after a terminal drawing fault. Stack/domain guards, bank
+ownership and bounded completion pass. Host checks
+pass 718 tests with five historical skips. C images are reused only after source,
+header and generated-layout hash verification. No QED/catalog/demo refresh,
+full raw matrix, release or performance qualification is included.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused capacity. Public records, Task
+pools, signals, persistent heap and VRAM reservations are unchanged. The new
+manager-capture flag is one upper-image byte; removing copied-move continuation
+state releases twelve upper-image bytes. The 82-byte typed packet is stack-owned
+by the corresponding frame/move operation. Actual stack peaks are retained in
+the evidence, within the existing reservations.

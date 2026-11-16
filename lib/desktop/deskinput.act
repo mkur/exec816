@@ -67,6 +67,16 @@ BYTE FUNC SnapshotKey(INPUT.Event POINTER captured)
     EXEC.Permit()
   FI
 
+  ; Reserve global shortcuts and menu keys for the independent manager queue.
+  ; This is classification of copied input, never menu interpretation/drawing.
+  IF AESSNAPSHOT.MenuActive()<>0
+      OR (captured.kind=INPUT.EVENT_KEY
+        AND (captured.qualifiers & INPUT.CONTROL)<>0 AND buttons=0
+        AND ((captured.code & 63)=44 OR (captured.code & 63)=28)
+        AND AESMOUSE.NativeGesture()=0) THEN
+    DeferKey(captured)
+    RETURN(1)
+  FI
   target.endpoint=NULL
   IF AESSNAPSHOT.Select(AESSNAPSHOT.KEY_ROUTE,captured.route,0,0,@target)=0 THEN
     RETURN(0)
@@ -235,7 +245,7 @@ BYTE FUNC RouteKey(INPUT.Event POINTER captured)
 
 RETURN(0)
 
-PUBLIC PROC ReplayKeys()
+PROC Replay()
   INPUT.Event captured
   BYTE handled
 
@@ -271,6 +281,15 @@ PUBLIC PROC ReplayKeys()
     FI
     EXEC.Permit()
   OD
+
+RETURN
+
+PUBLIC PROC ReplayKeys()
+
+  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
+    Replay()
+    AESLOCKS.SystemEnd()
+  FI
 
 RETURN
 
@@ -317,15 +336,12 @@ RETURN
 ; Fresh gestures and focus changes keep their normal gates.
 BYTE FUNC MouseReady()
 
-RETURN(AESLOCKS.MouseBlocked()=0 OR DESKDRAG.Continuing()<>0)
+RETURN(AESLOCKS.MouseBlocked()=0 OR DESKSTATE.managerCapture<>0)
 
 ; Existing captures may finish under their retained gesture authority. Fresh
 ; native interpretation needs UPDATE; routing into a GEM inbox does not.
 BYTE FUNC MouseEnter()
 
-  IF DESKDRAG.Continuing()<>0 THEN
-    RETURN(1)
-  FI
   IF AESLOCKS.SystemBegin()<>0 THEN
     RETURN(2)
   FI
@@ -417,14 +433,19 @@ PUBLIC PROC Service()
   IF acquired=0 THEN
     RETURN
   FI
-  IF AESGATE.SystemOwned()<>0 THEN
+  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
     AESSNAPSHOT.Publish()
+    AESLOCKS.SystemEnd()
   FI
   count=0
   WHILE count<16 AND AESGATE.SystemOwned()<>0
-      AND DESKMENU.InputBlocked()=0 AND AESINPUT.Pending()<>0 DO
+      AND AESINPUT.Pending()<>0 DO
     scope=MouseEnter()
     IF scope=0 THEN
+      EXIT
+    FI
+    IF DESKMENU.InputBlocked()<>0 THEN
+      AESLOCKS.SystemEnd()
       EXIT
     FI
     IF AESINPUT.Pop(@sample,@target)<>0 THEN
@@ -437,12 +458,14 @@ PUBLIC PROC Service()
       AESSNAPSHOT.Drop(target.endpoint)
     FI
     IF scope=2 THEN
+      DESKSTATE.managerCapture=DESKDRAG.Continuing()
       AESLOCKS.SystemEnd()
     FI
     count==+1
   OD
-  IF AESGATE.SystemOwned()<>0 THEN
+  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
     AESMOUSE.Refresh()
+    AESLOCKS.SystemEnd()
   FI
 
 RETURN

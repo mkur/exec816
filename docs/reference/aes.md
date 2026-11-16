@@ -4,11 +4,12 @@
 [Development record](../history/aes-server.md)
 
 The optional AES endpoint and graphical system loop run in the existing desktop
-presenter Task ([system module](../../lib/aes/aessystem.act)). Registration,
-exit, menu association and platform service controls use ordinary Exec RPC.
-Window operations, UPDATE/MCTRL, copied messaging and event/timer waits use
-caller library entries. Eligible window metadata commits in the caller; physical
-window continuations run in the system Task and signal their waiting caller.
+frontend Task ([system module](../../lib/aes/aessystem.act)). Registration, final
+detach and platform service controls use ordinary Exec RPC. Window/menu
+operations, UPDATE/MCTRL, copied messaging and event/timer waits use caller
+library entries. Window mutations and synchronous frame/copy completion run in
+their caller under UPDATE. A pending operation keeps its pinned descriptor and
+retries in that caller; the manager publishes wake hints without executing it.
 This adds no Task or kernel gateway.
 The desktop, Control Panel, Files and terminal are ordinary GEM clients of
 this one service; there is no separate native window protocol.
@@ -360,26 +361,31 @@ checks. A completed empty update preserves a valid saved image; it never clears
 older unsatisfied damage. This uses existing local/presenter ownership and adds
 114 payload bytes to the request/context, with no new bank-zero reservation.
 
-Ordinary keyboard delivery and no-work scheduling probes acquire no UPDATE.
-The presenter uses native Try for pending menu/gesture, painting, cache-transfer
-and console-control operations, retaining ownership through an actual physical
-continuation. Nested operation scopes share that one native hold. It releases at
-a settled operation boundary and reacquires through the same public primitive.
-Readiness checks are hints; each protected entry still acquires the resource.
-A failed Try leaves independent input and fence
-completion running; a guarded release hint prevents a lost wake. Journal completion
-also wakes new cache/paint work when the presenter never encountered contention.
-Pending work discovered after its entry attempt arms the same release hint before
-sleeping. Readiness rechecks and final notification share the short Task guard.
-Normal Task preemption continues throughout ownership; short final publication
-and release guards do not extend over a drawing scope.
+Ordinary keyboard/button delivery follows copied routing without UPDATE.
+Global shortcuts and keys for a published active menu enter the manager's copied
+queue before application delivery. Capture only classifies those records; menu
+interpretation and drawing run in the frontend under UPDATE.
 
-Acquisition hints let the presenter discard idle cache gathering before handoff.
-A captured native gesture retains its resource through release, Escape or loss.
-Control notifications establish the prepared release/reacquire boundary. Application
-outlines are separately retained physical effects; a new painting scope waits for
-their erasure while already owning UPDATE. The service retains no Layers token
-across an application's completed BEGIN.
+The manager uses nonblocking native Try for live scene/readiness inspection,
+menu/gesture work, painting, cache candidates and console controls. Failed Try
+returns without inspecting the protected scene and arms the existing release
+hint. Copied endpoint/event queues and RPC admission remain independent, so
+registration, input and pending-caller wakeups still progress. Nested operation
+scopes share one native hold. A native capture or open menu retains that hold
+through its interaction; physical/cache tokens retain it through completion.
+
+Publication precedes final native release. END keeps its painting marker active
+until journal/cache completion finishes. Short Task guards cover copied state
+and owner transitions, with normal Task preemption across the operation. Idle
+console reuse is discarded under the manager's own UPDATE before a waiting
+caller takes over; active DMA keeps its existing owner through retirement.
+
+Application MCTRL outlines remain separately retained physical visuals. Their
+capture/admission values use short guards and frozen drawing coordinates;
+a concurrent cancel/replacement survives physical drawing. A new painting scope
+waits for erasure while already owning UPDATE, and the manager performs that
+retirement without attempting the application's semaphore. The service retains
+no Layers token across an application's completed BEGIN.
 
 Input capture and the serialized cursor path continue. Sixteen copied pointer
 records retain deferred gestures, coalescing adjacent motion; overflow reports
@@ -408,8 +414,9 @@ Off-screen bounds fail without mutation.
 Hidden creation and ordinary closed-window deletion execute in the caller under
 the common UPDATE scope and short scene gate. Ordinary/PB calls use the same
 helpers and preserve transport sequence. View storage is allocated before entry
-and freed after release. A real physical effect can retain a presenter continuation
-while the owning caller waits; the presenter cannot release that caller's semaphore.
+and freed after release. Copied moves retain their Layers token and packet on
+the caller's stack through the delegated blitter fence. A manager never obtains
+or releases a caller's UPDATE to complete a window request.
 
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
@@ -434,11 +441,11 @@ closes that standalone grant first; application exit closes either form before
 retiring the context. Failed grant close retains the live storage and identity.
 No application source or public wire layout changes are needed.
 
-Text frame fields still wake deferred painting after release. Equal
+Completed frame components need no deferred setter paint. Equal
 setters retain their existing publication and do not request painting, acquire
 physical access or establish a grant. Hidden/iconified slider changes
 only update metadata/damage. Separate unheld setter calls remain separate resource
-scopes. Physical extensions use the retained continuation described below.
+scopes. Exposure painting remains ordinary manager work.
 
 Eligible `WF_CXYWH` and `WF_TOP` calls share a caller/system geometry helper.
 Bounds changes inside the owner's UPDATE, ordinary resizes, hidden/iconified
@@ -447,30 +454,27 @@ return. Effect-free stacking/focus changes use the caller too. Native ownership
 serializes mutations;
 changed geometry invalidates an existing visible-rectangle walk.
 
-An unheld move needing a screen copy defers to the system before reserving a move or
-changing geometry. Its existing presenter continuation retains the request and
-old committed bounds until copy completion. Caret restoration, widget focus
-cancellation and console-bound geometry also retain system admission before
-mutation. Exposure painting, remaining frame fields and interactive gesture
-work run in the presenter, using the same bounds/top policy. Drawing releases
-scene ownership before physical access.
+An eligible unheld move performs its screen copy synchronously in the caller.
+The caller owns UPDATE, a local typed packet and the Layers move token until the
+existing delegated blitter borrow fences. Even X/width admission needs no edge
+staging. Cold access uses the existing standalone grant before mutation; an open
+workstation reuses its grant. Success commits the new geometry; a quiescent
+failure retires the token without publishing speculative bounds. Ordinary copy
+refusal retains the damage/redraw fallback. The manager paints exposure and
+handles interaction, using the same bounds/top policy.
 
 Ordinary/PB opens retain UPDATE while preparing an unpublished keyboard route
-outside the scene gate. Re-entering the scene does not re-arbitrate ownership.
-Route exhaustion and exhausted GUI epochs leave the hidden window and tag pool
-intact; failed preparation retires its unused route before return.
-Console-bound windows and caret/widget focus effects retain system admission.
+outside the interim scene gate. Re-entry does not re-arbitrate UPDATE. Exhausted
+routes/GUI epochs leave the hidden window and tag pool intact; failed preparation
+retires an unused route before return.
 
-Eligible ordinary/PB closes withdraw the open epoch, GUI facts and capture,
-hide the window and publish replacement focus before releasing the scene for
-route retirement. Only the presenter consumes input from its lease. A caller
-which finds referenced input retains the hidden window and tag for a system
-drain continuation; success is returned only after the route retires. This
-continuation borrows the pinned local descriptor, completes its status and
-signals the caller without `PutMsg` or `ReplyMsg`. Copied moves and physical
-focus/console effects use the same mechanism. Transport-sequence exhaustion
-therefore cannot interrupt window retirement. Owner-side exit shares these
-retirement helpers; only final registration detach uses RPC.
+Ordinary/PB closes withdraw the open epoch, GUI facts and capture, hide the window
+and publish replacement focus before route retirement. Input.device consumes the
+lease independently. If capture still references the tag, the owning caller
+retains its hidden record and pending descriptor and retries after a wake hint.
+The manager performs no window mutation or completion on its behalf. Transport
+sequence exhaustion cannot interrupt retirement. Owner exit uses these same
+helpers; only final registration detach uses RPC.
 
 Pointer-sample routing and window-capture cancellation use one bounded Task
 transaction. It contains no drawing or wait; IRQ/NMI capture uses separate
@@ -607,8 +611,8 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The presenter handles registration, prepared detach, physical window continuations,
-waiter wake hints and its own pending GUI delivery. Pending publishers retain an exit wake path; lock settlement and
+The frontend handles registration, prepared detach, waiter wake hints and
+pending copied GUI delivery. Caller window continuations stay in their caller. Pending publishers retain an exit wake path; lock settlement and
 native input/drawing gates remain active. Application message matching and
 timer waits stay caller-local. There is no presenter application-message FIFO,
 event-wait scan, timer alarm or periodic AES wake.

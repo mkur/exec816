@@ -13,7 +13,6 @@ USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
 USE DESKGEOMETRY
-USE DESKMOVE
 USE DESKMENU
 USE LAYERTYPES
 USE LAYERS
@@ -47,13 +46,14 @@ RETURN(appVisual=0 AND (phase=DRAGGING OR phase=CLOSING OR phase=SIZING
     OR phase=SLIDING OR phase=ARROWING)
     AND (service=NULL OR service.live=0 OR service.mouseOwner=0))
 
-PUBLIC PROC Reset()
+PROC ResetCapture()
 
   escapePending=0
   appOwner=0
   appVisual=0
   windowId=0
   phase=0
+  DESKSTATE.managerCapture=0
   blocked=0
   DESKSTATE.outlineVisible=0
   dirty=0
@@ -62,12 +62,13 @@ PUBLIC PROC Reset()
 
 RETURN
 
-PUBLIC PROC Cancel()
+PROC CancelCapture()
 
   escapePending=0
   appOwner=0
   windowId=0
   phase=0
+  DESKSTATE.managerCapture=0
   blocked=1
   IF appVisual<>0 THEN
     BEGIN
@@ -161,7 +162,7 @@ PUBLIC BYTE FUNC DrawReady()
 RETURN(appVisual=0 OR DESKSTATE.outlineVisible=0)
 
 ; Admit geometry once; tracking below follows capture without application RPC.
-PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
+CARD FUNC AdmitOutline(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
 
   IF request.intin(0)=0 THEN
@@ -208,8 +209,18 @@ PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
+PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
+    AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
+  CARD status
+
+  EXEC.Forbid()
+  status=AdmitOutline(service,client,request)
+  EXEC.Permit()
+
+RETURN(status)
+
 ; Capture and MCTRL own the lifetime. This remains cheap on each presenter turn.
-PUBLIC PROC Track()
+PROC TrackCapture()
   AESTYPES.InputRecord sampleCopy
 
   IF appOwner=0 THEN
@@ -228,9 +239,17 @@ PUBLIC PROC Track()
 
 RETURN
 
+PUBLIC PROC Track()
+
+  EXEC.Forbid()
+  TrackCapture()
+  EXEC.Permit()
+
+RETURN
+
 ; An ineligible peer UPDATE must not erase or spin the owner's visual. The
 ; existing mouse owner may upgrade; suspend as soon as its request is pending.
-BYTE FUNC ApplicationReady()
+BYTE FUNC InspectApplicationReady()
 
   LET service=AESSTATE.Get()
   IF service=NULL OR appOwner=0 OR service.updateHolds<>0
@@ -243,6 +262,15 @@ BYTE FUNC ApplicationReady()
 
 RETURN(client<>NULL AND client.pending=NULL AND service.mouseOwner=appOwner
     AND service.mouseHolds<>0)
+
+BYTE FUNC ApplicationReady()
+  BYTE ready
+
+  EXEC.Forbid()
+  ready=InspectApplicationReady()
+  EXEC.Permit()
+
+RETURN(ready)
 
 ; Resizing keeps its upper-left anchor. Applications may request larger minima.
 PROC SizePosition(INT x,y CARD kind)
@@ -595,6 +623,7 @@ PUBLIC PROC Advance()
     RETURN
   FI
   AdvanceGesture()
+  DESKSTATE.managerCapture=Continuing()
   AESLOCKS.SystemEnd()
 
 RETURN
@@ -641,7 +670,8 @@ PUBLIC PROC Suspend()
 RETURN
 
 PROC PresentOutline()
-  BYTE drawn
+  BYTE drawn,visible
+  LAYERTYPES.Rect bounds
 
   IF DISPLAY.Blocked()<>0 THEN
     RETURN
@@ -661,16 +691,27 @@ PROC PresentOutline()
 
   IF dirty<>0 OR (Outlined()<>0 AND CONSOLEBITMAP.Changed()<>0) THEN
     IF CONSOLEBITMAP.Pending()=0 THEN
-      drawn=CONSOLEBITMAP.Outline(CARD(target.left),CARD(target.top),
-          CARD(target.right-target.left),CARD(target.bottom-target.top),
-          Outlined())
+      EXEC.Forbid()
+      REGIONS.Copy(@target,@bounds)
+      visible=Outlined()
+      dirty=2
+      EXEC.Permit()
+      drawn=CONSOLEBITMAP.Outline(CARD(bounds.left),CARD(bounds.top),
+          CARD(bounds.right-bounds.left),CARD(bounds.bottom-bounds.top),visible)
+      EXEC.Forbid()
       IF drawn<>0 THEN
-        DESKSTATE.outlineVisible=Outlined()
-        dirty=0
-        IF phase=0 THEN
-          appVisual=0
+        DESKSTATE.outlineVisible=visible
+        ; A caller may cancel or replace its retained visual during the draw.
+        IF dirty=2 THEN
+          dirty=0
+          IF phase=0 AND visible=0 THEN
+            appVisual=0
+          FI
         FI
+      ELSEIF dirty=2 THEN
+        dirty=1
       FI
+      EXEC.Permit()
     FI
   FI
 
@@ -696,7 +737,7 @@ PUBLIC PROC Present()
 
 RETURN
 
-PUBLIC BYTE FUNC Runnable()
+BYTE FUNC InspectRunnable()
 
   IF DISPLAY.Blocked()<>0 THEN
     RETURN(0)
@@ -717,5 +758,38 @@ RETURN((dirty<>0 AND CONSOLEBITMAP.Pending()=0)
     OR (phase<>0 AND phase<>DRAGGING AND phase<>CLOSING
     AND phase<>SIZING AND phase<>SLIDING AND phase<>ARROWING
     AND service.scene.busy=0 AND CONSOLEBITMAP.Pending()=0))
+
+PUBLIC PROC Reset()
+
+  EXEC.Forbid()
+  ResetCapture()
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Cancel()
+
+  EXEC.Forbid()
+  CancelCapture()
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE ready
+
+  IF appVisual<>0 THEN
+    EXEC.Forbid()
+    ready=InspectRunnable()
+    EXEC.Permit()
+    RETURN(ready)
+  FI
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  ready=InspectRunnable()
+  AESLOCKS.SystemEnd()
+
+RETURN(ready)
 
 ENDMODULE

@@ -5,6 +5,7 @@
 #include <exec816/console.h>
 #include <exec/display.h>
 #include <hardware/console-bitmap.h>
+#include "../../ports/gem4xe/adapter/gem-drawing.h"
 
 /* AES frame drawing also works before a public VDI workstation is opened.
  * One standalone grant uses the context's existing reply signal. Its stable
@@ -45,7 +46,11 @@ LONG EXEC_CALL ExecAESFrameApply(ULONG value)
 {
     struct ConsoleBitmapPacket *packet=(struct ConsoleBitmapPacket *)value;
     struct ExecAESContext *c=ExecAESContext();
-    packet->status=DesktopFrameBorrow((struct DisplayGrant *)c->request.displayGrant,packet);
+    if (packet->operation==CON_BITMAP_COPY_START)
+        /* Accepted move rectangles have even X and width: no edge staging. */
+        packet->status=GemDrawingCopyBorrow((struct DisplayGrant *)c->request.displayGrant,
+                                           &packet->copy,NULL);
+    else packet->status=DesktopFrameBorrow((struct DisplayGrant *)c->request.displayGrant,packet);
     return 0;
 }
 
@@ -236,7 +241,7 @@ prepare:
          * with the live grant. No published-view visibility guess is needed. */
         if (c->diagnostic==AES_DISPLAY_ERROR && op==AES_OP_SET &&
             (b==WF_NAME || b==WF_INFO || b==WF_VSLIDE || b==WF_VSLSIZE ||
-             b==WF_HSLIDE || b==WF_HSLSIZE) &&
+             b==WF_HSLIDE || b==WF_HSLSIZE || b==WF_CXYWH) &&
             !c->request.displayGrant) {
             if (display_ensure(c)) goto prepare;
             result=fail;

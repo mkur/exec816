@@ -14,6 +14,9 @@ both standalone and GUI capture to the shared service.
 Closing the console detaches its consumer; input.device remains resident until
 its own shutdown. Stop admission and input enqueue use the same short Task
 guard, so no copied input arrives after a successful console stop decision.
+In GUI mode a stop attempt can return busy when UPDATE prevents idle inspection.
+Callers may retry after activity settles; accepted shutdown still waits for the
+frontend and physical work to retire before releasing storage.
 The normal text backend admits 40×24 cells. The optional bitmap backend admits
 80×30 on the pinned 640×240 VBXE display. An instance adds upper-RAM state,
 not a Task, stack or DP. The backend is selected before startup; live conversion

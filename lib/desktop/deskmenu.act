@@ -54,12 +54,12 @@ PROC PublishActive(BYTE active)
 
 RETURN
 
-PUBLIC BYTE FUNC Active()
+BYTE FUNC InspectActive()
 
 RETURN(menu<>0 OR pendingMenu<>0 OR down<>0 OR blocked<>0)
 
 ; Preserve input order from the first queued heading through snapshot adoption.
-PUBLIC BYTE FUNC InputBlocked()
+BYTE FUNC InspectInputBlocked()
 
 RETURN(DESKMENUCACHE.Replacing()<>0 OR (menu=GEM_MENU AND pendingMenu=GEM_MENU))
 
@@ -854,17 +854,52 @@ RETURN(1)
 ; UPDATE only after the pending-state check, including focus/bar changes.
 PUBLIC PROC Advance()
 
-  IF Pending()=0 OR AESLOCKS.SystemBegin()=0 THEN
+  IF AESLOCKS.SystemBegin()=0 THEN
     RETURN
   FI
-  AdvanceMenu()
+  IF Pending()<>0 THEN
+    AdvanceMenu()
+  FI
   AESLOCKS.SystemEnd()
 
 RETURN
 
-PUBLIC BYTE FUNC Runnable()
+BYTE FUNC InspectRunnable()
 
 RETURN(Pending()<>0 AND AESLOCKS.SystemBlocked()=0 AND AESLOCKS.NativeReady()<>0
     AND AESLOCKS.MouseBlocked()=0 AND AESLOCKS.PaintBlocked()=0)
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectRunnable()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Active()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectActive()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC InputBlocked()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(1)
+  FI
+  result=InspectInputBlocked()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
 
 ENDMODULE

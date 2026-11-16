@@ -24,10 +24,10 @@ PUBLIC BYTE busy
 PUBLIC PROC Observe(BYTE mutation)
 
   LET service=AESSTATE.Get()
-  IF service.sceneOwner<>EXEC.FindTask(NULL) THEN
+  IF mutation<>0 AND service.sceneOwner<>EXEC.FindTask(NULL) THEN
     HEAPCORE.Abort($fc64)
   FI
-  LET slot=2*mutation+BYTE(AESGATE.SystemOwned()<>0)
+  LET slot=2*mutation+BYTE(EXEC.FindTask(NULL)=service.owner)
   stats(slot)==+1
 
 RETURN
@@ -36,7 +36,7 @@ ENDMODULE
     text=read_source(ROOT/'lib/aes/aeswindow.act').replace('USE EXEC\n','USE EXEC\nUSE GEOPROBE\n',1)
     start=text.index('PUBLIC CARD FUNC Geometry(');at=text.index('\n\n',start)+2
     text=text[:at]+'  IF GEOPROBE.busy<>0 THEN\n    RETURN(AESTYPES.PENDING)\n  FI\n'+text[at:]
-    for signature,call in [('INT FUNC FindAt(', '  GEOPROBE.Observe(0)\n')]:
+    for signature,call in [('PUBLIC CARD FUNC Query(', '  GEOPROBE.Observe(0)\n')]:
         start=text.index(signature);at=text.index('\n\n',start)+2
         text=text[:at]+call+text[at:]
     if 'PUBLIC CARD FUNC Geometry(' in text:

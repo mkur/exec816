@@ -204,7 +204,7 @@ BYTE FUNC DamagePending(DESKTYPES.Service POINTER service)
 RETURN(AESLOCKS.SystemBlocked()=0)
 
 ; Painting work only, independent of pending control messages.
-PUBLIC BYTE FUNC PaintPending()
+BYTE FUNC InspectPaintPending()
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
@@ -214,7 +214,7 @@ PUBLIC BYTE FUNC PaintPending()
 
 RETURN(DamagePending(service))
 
-PUBLIC BYTE FUNC Runnable()
+BYTE FUNC InspectRunnable()
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
@@ -234,7 +234,7 @@ RETURN(DamagePending(service))
 ; True only when the next paint quantum can run without waiting for another
 ; scene owner or hardware completion. A retained dirty rectangle alone is not
 ; sufficient reason to continue executing the presenter.
-PUBLIC BYTE FUNC Ready()
+BYTE FUNC InspectReady()
 
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0
@@ -247,7 +247,7 @@ RETURN(DamagePending(service))
 
 ; Continue completed menu strips within the same existing four-step allowance.
 ; Ordinary windows retain their usual boundary and menu transaction fairness.
-PUBLIC BYTE FUNC MenuReady()
+BYTE FUNC InspectMenuReady()
 
   IF Ready()=0 THEN
     RETURN(0)
@@ -483,7 +483,7 @@ RETURN(1)
 
 ; A ready strip owns UPDATE through its physical/scene continuation. Empty
 ; paint probes do not acquire it, and retirement releases it at this boundary.
-PUBLIC BYTE FUNC Pump()
+BYTE FUNC InspectPump()
   BYTE progress
 
   LET service=DESKSTATE.Get()
@@ -502,5 +502,60 @@ PUBLIC BYTE FUNC Pump()
   AESLOCKS.SystemEnd()
 
 RETURN(progress)
+
+PUBLIC BYTE FUNC PaintPending()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectPaintPending()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Runnable()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectRunnable()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Ready()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectReady()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC MenuReady()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectMenuReady()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+PUBLIC BYTE FUNC Pump()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectPump()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
 
 ENDMODULE

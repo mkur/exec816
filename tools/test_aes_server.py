@@ -407,7 +407,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESLOCKS'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -438,11 +438,13 @@ PROC Main()
     LET bit=EXEC.AllocSignal(-1)
     Require(bit>=0)
     DO
+      AESLOCKS.ObtainUI()
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
-      pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
+      pending=desktop.scene.visibleDamage<>0 OR CONSOLEBITMAP.Pending()<>0
           OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
           OR desktop.scene.busy<>0
       AESGATE.Release(0)
+      AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI
@@ -461,11 +463,13 @@ PROC Main()
     LET bit=EXEC.AllocSignal(-1)
     Require(bit>=0)
     DO
+      AESLOCKS.ObtainUI()
       AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
-      pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
+      pending=desktop.scene.visibleDamage<>0 OR CONSOLEBITMAP.Pending()<>0
           OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
           OR desktop.scene.busy<>0
       AESGATE.Release(0)
+      AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI

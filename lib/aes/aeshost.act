@@ -11,6 +11,7 @@ USE AESLOCKS
 USE AESMOUSE
 USE AESCURSOR
 USE AESWINDOWSTATE
+USE AESSNAPSHOT
 USE DESKSTATE
 USE DESKDRAG
 USE CONSOLEBITMAP
@@ -69,7 +70,7 @@ RETURN(AESCORE.Runnable(service))
 
 ; A notification-only turn may sleep again once cache maintenance finishes.
 ; Called with the policy gate closed; all omitted settlement must be a no-op.
-PUBLIC BYTE FUNC Settled()
+BYTE FUNC InspectSettled()
 
   LET service=AESSTATE.Get()
   LET desktop=DESKSTATE.Get()
@@ -118,22 +119,29 @@ PUBLIC PROC Settle()
     RETURN
   FI
 
-  AESWINDOWSTATE.Sync()
-  AESMOUSE.Refresh()
-  IF service.windowPending=0
-      AND (service.updateHint & AESSTATE.UPDATE_REQUESTED)=0 THEN
-    RETURN
-  FI
-
-  LET desktop=DESKSTATE.Get()
-  IF desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0 AND DISPLAY.Blocked()=0 THEN
-    ; Abandon gathered pixel reuse while retaining the model and I/O request.
-    CONSOLEDISPLAY.DiscardBatch()
+  ; An application outline is a retained physical visual under its owner's
+  ; MCTRL. Retire it before that same owner paints; do not obtain its semaphore.
+  IF DESKDRAG.Application()<>0 THEN
     DESKDRAG.Suspend()
   FI
-
+  IF AESLOCKS.SystemBegin()<>0 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      IF (service.windowPending<>0
+          OR (service.updateHint & AESSTATE.UPDATE_REQUESTED)<>0)
+          AND desktop.scene.busy=0 AND CONSOLEBITMAP.Pending()=0
+          AND DISPLAY.Blocked()=0 THEN
+        ; Abandon idle reuse before a waiting caller takes UPDATE. A real DMA
+        ; retains its existing owner and is excluded by the quiescence checks.
+        CONSOLEDISPLAY.DiscardBatch()
+      FI
+    END
+    AESWINDOWSTATE.Sync()
+    AESMOUSE.Refresh()
+    AESLOCKS.SystemEnd()
+  FI
   AESCORE.Settle(service)
-  AESMOUSE.Refresh()
+  AESMOUSE.RefreshSnapshot()
 
 RETURN
 
@@ -153,6 +161,27 @@ PUBLIC PROC Stop()
   service.port.mp_SigTask=NULL
   ; Last access: the controller may free storage after observing retirement.
   service.owner=NULL
+
+RETURN
+
+PUBLIC BYTE FUNC Settled()
+  BYTE result
+
+  IF AESLOCKS.SystemBegin()=0 THEN
+    RETURN(0)
+  FI
+  result=InspectSettled()
+  AESLOCKS.SystemEnd()
+
+RETURN(result)
+
+; Only UPDATE owners construct the shared prepared routing publication.
+PUBLIC PROC Publish()
+
+  IF AESLOCKS.SystemBegin()<>0 THEN
+    AESSNAPSHOT.Publish()
+    AESLOCKS.SystemEnd()
+  FI
 
 RETURN
 
