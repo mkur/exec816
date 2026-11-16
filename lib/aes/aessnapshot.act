@@ -45,6 +45,28 @@ PUBLIC PROC Invalidate()
 
 RETURN
 
+; Temporary copied-thumb projection, removed when WG5 moves frame hits into
+; SCRENMGR. No route construction, lifetime change or visibility publication.
+PUBLIC PROC Sliders(DESKTYPES.Window POINTER window)
+  BYTE index
+
+  IF published.count=0 THEN
+    RETURN
+  FI
+  EXEC.Forbid()
+  FOR index=0 TO published.count-1 DO
+    IF published.routes(index).window=window.id THEN
+      published.routes(index).sliderTop=window.sliderTop
+      published.routes(index).sliderHeight=window.sliderHeight
+      published.routes(index).sliderLeft=window.sliderLeft
+      published.routes(index).sliderWidth=window.sliderWidth
+      EXIT
+    FI
+  OD
+  EXEC.Permit()
+
+RETURN
+
 ; Endpoint holds pin caller-owned inbox storage across scene withdrawal.
 PUBLIC PROC Drop(AESTYPES.Endpoint POINTER endpoint)
 

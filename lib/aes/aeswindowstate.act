@@ -121,6 +121,7 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
         LAYERTYPES.Rect POINTER(@view.full))
     A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
+    view.revision==+1
   FI
   view.shown=IF client.iconified<>0 THEN CARD(0) ELSE CARD(layer.shown) FI
   IF client.iconified<>0 THEN
@@ -132,7 +133,6 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   view.updates=IF service<>NULL AND client.owner=service.updateOwner
       AND (service.updateWindow=0 OR view.handle=service.updateWindow) THEN
         service.updateHolds+service.mouseHolds ELSE CARD(0) FI
-  view.revision==+1
   EXEC.Permit()
   client.geometryKind=client.frameKind
   client.geometryIconified=client.iconified
@@ -149,17 +149,20 @@ RETURN
 PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
 
   AESSNAPSHOT.Invalidate()
-  LET desktop=DESKSTATE.Get()
-  LET layer=LAYERS.Find(@desktop.scene,client.layer)
-  ; Temporary setter bridge until WG3 makes the frame values authoritative.
-  client.frame.vslide=client.view.vslide
-  client.frame.vsize=client.view.vsize
-  client.frame.hslide=client.view.hslide
-  client.frame.hsize=client.view.hsize
-  GEMFRAME.Slide(@client.frame,1)
-  GEMFRAME.Slide(@client.frame,0)
   DESKGEOMETRY.ProjectSliders(client)
   Publish(client,copied)
+
+RETURN
+
+; Scalar query facts do not change the visible-rectangle iterator revision.
+PUBLIC PROC Sliders(DESKTYPES.Window POINTER window)
+
+  EXEC.Forbid()
+  window.view.hslide=window.frame.hslide
+  window.view.hsize=window.frame.hsize
+  window.view.vslide=window.frame.vslide
+  window.view.vsize=window.frame.vsize
+  EXEC.Permit()
 
 RETURN
 

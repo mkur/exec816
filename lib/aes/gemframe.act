@@ -199,6 +199,17 @@ PUBLIC INT FUNC Scale(INT length,value)
 
 RETURN(INT((doubled+1)/2))
 
+PUBLIC INT FUNC Normalize(INT value)
+
+  IF value<0 THEN
+    RETURN(-1)
+  FI
+  IF value>1000 THEN
+    RETURN(1000)
+  FI
+
+RETURN(value)
+
 ; _wbm_sslid changes only the chosen stored track/thumb pair.
 PUBLIC PROC Slide(GEMOBJECTS.Frame POINTER frame BYTE vertical)
   INT length,minimum,size,position,thumb,offset

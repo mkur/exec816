@@ -13,11 +13,21 @@ from test_dos_stack import execute, ownership
 from test_cooperative import data
 
 
-def native_case(out, case):
+def native_case(out, case, provider_cache=None):
     out.mkdir(parents=True, exist_ok=True)
+    options = {}
+    if case=='policy':
+        require(provider_cache is not None, 'Policy probe needs --provider-cache')
+        foreign = json.loads((provider_cache/'c-image.json').read_text())
+        from native_program import sha256
+        for name, digest in {**foreign['provenance']['source_inputs'],
+                             **foreign['provenance']['header_inputs']}.items():
+            require(sha256(ROOT/name)==digest, 'Changed cached C provider: '+name)
+        options = dict(console_test=True, foreign_image=foreign,
+                       memory_profile=provider_cache/'fixture-memory.json')
     program = build(compiler(ROOT/'build/actionc', release=True),
                     ROOT/('tests/programs/gem_window_'+case+'.act'), out/'program',
-                    tasks=True, task_capacity=8, optimize=True)
+                    tasks=True, task_capacity=8, optimize=True, **options)
     with emulator(BRIDGE, ROM, out, pin=PIN) as bridge:
         machine = verify_machine(bridge, ROM, PIN)
         runtime, _ = execute(bridge, program, timeout=120, frame_limit=2000)
@@ -128,10 +138,11 @@ ENDMODULE
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--case', choices=('abi','storage','layout'), default='abi')
+    parser.add_argument('--case', choices=('abi','storage','layout','slider','policy'), default='abi')
+    parser.add_argument('--provider-cache', type=Path)
     args = parser.parse_args()
     if args.case!='abi':
-        native_case(args.output.resolve(), args.case)
+        native_case(args.output.resolve(), args.case, args.provider_cache)
     else:
         for optimize in (False, True):
             run(args.output.resolve()/('opt' if optimize else 'raw'), optimize)

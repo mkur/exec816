@@ -90,6 +90,9 @@ CARD FUNC Policy(LONGCARD value)
           IF status=AESTYPES.OK AND wake<>0 THEN
             status=AESFRAME.Paint(client,request)
           FI
+          IF AESWINDOW.SliderField(request.intin(1))<>0 THEN
+            wake=0
+          FI
         ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
           AESWINDOWSTATE.PrepareUpdate(client)
           status=AESWINDOW.Geometry(service,client,request)

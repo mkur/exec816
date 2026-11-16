@@ -464,6 +464,11 @@ RETURN(field=AESTYPES.WF_NAME OR field=AESTYPES.WF_INFO
     OR field=AESTYPES.WF_VSLIDE OR field=AESTYPES.WF_VSLSIZE
     OR field=AESTYPES.WF_HSLIDE OR field=AESTYPES.WF_HSLSIZE)
 
+PUBLIC BYTE FUNC SliderField(INT field)
+
+RETURN(field=AESTYPES.WF_VSLIDE OR field=AESTYPES.WF_VSLSIZE
+    OR field=AESTYPES.WF_HSLIDE OR field=AESTYPES.WF_HSLSIZE)
+
 PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.Request POINTER request
     BYTE POINTER changed)
@@ -551,16 +556,14 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       IF (window.frameKind & component)=0 THEN
         RETURN(AESTYPES.UNSUPPORTED)
       FI
-      IF request.intin(2)<0 OR request.intin(2)>1000 THEN
-        RETURN(AESTYPES.MALFORMED)
-      FI
+      LET value=GEMFRAME.Normalize(request.intin(2))
 
       IF horizontal<>0 THEN
-        position=@item.view.hslide
-        size=@item.view.hsize
+        position=@window.frame.hslide
+        size=@window.frame.hsize
       ELSE
-        position=@item.view.vslide
-        size=@item.view.vsize
+        position=@window.frame.vslide
+        size=@window.frame.vsize
       FI
       IF request.intin(1)=AESTYPES.WF_HSLIDE
           OR request.intin(1)=AESTYPES.WF_VSLIDE THEN
@@ -568,7 +571,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       ELSE
         target=size
       FI
-      IF target^=request.intin(2) THEN
+      IF target^=value THEN
         request.intout(0)=1
         RETURN(AESTYPES.OK)
       FI
@@ -581,7 +584,11 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
         RETURN(AESTYPES.DISPLAY_ERROR)
       FI
       DESKCACHE.Changed(desktop,window)
-      target^=request.intin(2)
+      target^=value
+      GEMFRAME.Slide(@window.frame,BYTE(horizontal=0))
+      DESKGEOMETRY.ProjectSliders(window)
+      AESWINDOWSTATE.Sliders(window)
+      AESSNAPSHOT.Sliders(window)
       ; MagiC draws O_HSCROLL/O_VSCROLL, excluding arrows and the corner.
       ; Include the object's outside frame edge, unlike its hit/drag range.
       ; An icon has no linked track: retain its value for normal restoration.
@@ -605,15 +612,10 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  IF window.iconified=0 AND (request.intin(1)=AESTYPES.WF_VSLIDE
-      OR request.intin(1)=AESTYPES.WF_VSLSIZE
-      OR request.intin(1)=AESTYPES.WF_HSLIDE
-      OR request.intin(1)=AESTYPES.WF_HSLSIZE) THEN
-    AESWINDOWSTATE.Geometry(item,0)
-  ELSE
+  IF SliderField(request.intin(1))=0 THEN
     AESWINDOWSTATE.Snapshot(item)
+    AESWINDOWSTATE.Sync()
   FI
-  AESWINDOWSTATE.Sync()
   request.intout(0)=1
   changed^=1
 

@@ -1,0 +1,92 @@
+; One hidden window exercises real AES policy without starting applications.
+MODULE GEMWINDOWPOLICY
+USE EXEC
+USE AESSTATE
+USE AESTYPES
+USE AESWINDOW
+USE DESKTYPES
+USE DESKSTATE
+USE DESKCORE
+USE GEMFRAME
+USE GEMOBJECTS
+USE HEAPCORE
+
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  BYTE changed
+
+  LET baseline=EXEC.AvailMem(0)
+  LET desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(DESKTYPES.SERVICE_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET view=AESTYPES.WindowView POINTER(EXEC.AllocMem(AESTYPES.WINDOWVIEW_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET request=AESTYPES.Request POINTER(EXEC.AllocMem(AESTYPES.REQUEST_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  LET storage=AESTYPES.RegistrationStorage POINTER(EXEC.AllocMem(
+      AESTYPES.REGISTRATIONSTORAGE_SIZE,EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(desktop<>NULL AND service<>NULL AND view<>NULL
+      AND request<>NULL AND storage<>NULL)
+  DESKSTATE.Bind(desktop)
+  Require(DESKCORE.Init(desktop,16)<>0)
+  EXEC.InitSemaphore(@service.updateResource)
+  EXEC.ObtainSemaphore(@service.updateResource)
+  AESSTATE.Bind(service)
+  service.nextWindow=1
+  LET client=@service.clients(0)
+  client.id=1
+  client.binding=request
+  client.endpoint=@service.directory.endpoints(0)
+  client.endpoint.input=@storage.input
+  Require(AESWINDOW.CreateHidden(service,client,view,4095,13,17,320,180)=0)
+  LET window=service.windows(0)
+  Require(window<>NULL AND desktop.windows(0)=window)
+  Require(view.bounds.right=0 AND view.previous.right=0)
+  Require(view.full.left=13 AND view.full.right=333)
+  GEMFRAME.SetSize(@window.frame,4095,13,17,320,180)
+  LET revision=view.revision
+  LET visual=window.visualRevision
+  request.intin(0)=view.handle
+  request.intin(1)=AESTYPES.WF_VSLSIZE
+  request.intin(2)=500
+  Require(AESWINDOW.Frame(service,client,request,@changed)=0 AND changed=1)
+  Require(window.frame.vsize=500 AND view.vsize=500)
+  Require(view.revision=revision)
+  Require(window.frame.hsize=-1 AND window.frame.hslide=0)
+  Require(window.visualRevision=visual+1)
+  Require(AESWINDOW.Frame(service,client,request,@changed)=0 AND changed=0)
+  Require(window.visualRevision=visual+1 AND view.revision=revision)
+  request.intin(1)=AESTYPES.WF_VSLIDE
+  request.intin(2)=-32768
+  Require(AESWINDOW.Frame(service,client,request,@changed)=0 AND changed=1)
+  Require(window.frame.vslide=-1 AND view.vslide=-1)
+  request.intin(2)=32767
+  Require(AESWINDOW.Frame(service,client,request,@changed)=0 AND changed=1)
+  Require(window.frame.vslide=1000 AND view.vslide=1000)
+  Require(view.revision=revision)
+  Require(AESWINDOW.DeleteHidden(window)=0)
+  Require(service.windows(0)=NULL AND desktop.windows(0)=NULL)
+  Require(view.handle=0)
+  EXEC.ReleaseSemaphore(@service.updateResource)
+  AESSTATE.Bind(NULL)
+  DESKSTATE.Bind(NULL)
+  EXEC.FreeMem(BYTE POINTER(storage),AESTYPES.REGISTRATIONSTORAGE_SIZE)
+  EXEC.FreeMem(BYTE POINTER(request),AESTYPES.REQUEST_SIZE)
+  EXEC.FreeMem(BYTE POINTER(view),AESTYPES.WINDOWVIEW_SIZE)
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+  EXEC.FreeMem(BYTE POINTER(desktop),DESKTYPES.SERVICE_SIZE)
+  Require(EXEC.AvailMem(0)=baseline)
+
+RETURN
+ENDMODULE

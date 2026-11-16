@@ -55,3 +55,20 @@ track positions, both minimum thumbs, an origin-only move and clipped overall
 projection. Guards passed. No reservations changed from WG1. During the cutover,
 legacy render/input consumers receive scalar projections from the tree; WG4/WG5
 remove them. WG2 also completes the menu object-size constant rename from WG0.
+
+WG3 makes the frame's per-mille values authoritative. Setters clamp to
+[-1,1000], return immediately for an equal value, update only the chosen stored
+thumb and publish scalar query values without advancing the visibility revision.
+`__sslid` preserves MagiC's signed DIVS/ASR behavior, including negative values.
+The other axis stays byte-for-byte intact. Slider setters no longer call the
+broad geometry publication path or request a manager turn. A small guarded
+copied-thumb projection temporarily serves capture until WG5 removes it.
+
+The optimized arithmetic/axis fixture passed 115 checks. A second focused,
+headless policy fixture passed 22 checks through real CreateHidden/Frame/Delete
+handlers under native UPDATE: empty-current/full defaults, value clamping,
+unchanged-setter return, stable visibility revision, pointer-table withdrawal
+and complete heap recovery. It reuses the current C provider and the established
+12 KiB upper GUI data arena; it starts no application or display session. Guards
+passed, with zero implementation bank-zero reservation growth. Physical subtree
+and FIRST/NEXT application checks follow with WG4's renderer cutover.

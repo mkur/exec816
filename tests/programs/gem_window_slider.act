@@ -1,0 +1,73 @@
+MODULE GEMWINDOWSLIDER
+USE EXEC
+USE DESKWINDOW
+USE GEMFRAME
+USE GEMOBJECTS
+USE A816MEMORY
+USE HEAPCORE
+
+CARD checks
+BYTE ARRAY untouched(48)
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  CARD index
+
+  Require(GEMFRAME.Normalize(-32768)=-1)
+  Require(GEMFRAME.Normalize(-1)=-1)
+  Require(GEMFRAME.Normalize(0)=0)
+  Require(GEMFRAME.Normalize(32767)=1000)
+  Require(GEMFRAME.Scale(1,499)=0)
+  Require(GEMFRAME.Scale(1,500)=1)
+  Require(GEMFRAME.Scale(1,-499)=0)
+  Require(GEMFRAME.Scale(1,-500)=-1)
+  Require(GEMFRAME.Scale(1,-1000)=-2)
+  Require(GEMFRAME.Scale(609,-1)=-1)
+  LET window=DESKWINDOW.Create(4095)
+  Require(window<>NULL)
+  LET frame=@window.frame
+  GEMFRAME.SetSize(frame,4095,13,17,320,180)
+  A816MEMORY.Move(@untouched(0),BYTE POINTER(@frame.tree(13)),48)
+  frame.vsize=500
+  GEMFRAME.Slide(frame,1)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).height=65)
+  frame.vslide=500
+  GEMFRAME.Slide(frame,1)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).y=33)
+  LET other=BYTE POINTER(@frame.tree(13))
+  FOR index=0 TO 47 DO
+    Require(untouched(index)=other(SIZE(index)))
+  OD
+  frame.vsize=-1
+  frame.vslide=-1
+  GEMFRAME.Slide(frame,1)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).height=11)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).y=0)
+  A816MEMORY.Move(@untouched(0),BYTE POINTER(@frame.tree(9)),48)
+  frame.hsize=500
+  frame.hslide=1000
+  GEMFRAME.Slide(frame,0)
+  Require(frame.tree(GEMOBJECTS.O_HSLIDE).width=138)
+  Require(frame.tree(GEMOBJECTS.O_HSLIDE).x=137)
+  LET vertical=BYTE POINTER(@frame.tree(9))
+  FOR index=0 TO 47 DO
+    Require(untouched(index)=vertical(SIZE(index)))
+  OD
+  frame.tree(GEMOBJECTS.O_VSCROLL).height=3
+  frame.vsize=-1
+  frame.vslide=1000
+  GEMFRAME.Slide(frame,1)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).height=3)
+  Require(frame.tree(GEMOBJECTS.O_VSLIDE).y=0)
+  DESKWINDOW.Free(window)
+
+RETURN
+ENDMODULE
