@@ -91,16 +91,8 @@ RETURN(boundService)
 
 ; Startup before presenter admission, or retirement after its last use.
 PUBLIC PROC Bind(Service POINTER value)
-  BYTE index
 
   boundService=value
-  IF value<>NULL THEN
-    FOR index=0 TO AESTYPES.WINDOWS-1 DO
-      IF value.windows(index)<>NULL THEN
-        value.windows(index).geometryEpoch=0
-      FI
-    OD
-  FI
 
 RETURN
 

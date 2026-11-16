@@ -3,7 +3,6 @@
 import argparse
 from pathlib import Path
 from build_c_program import build as application
-from c_program import ABI
 from native_program import ROOT
 from prepare_mgview import PORT,prepare
 
@@ -16,7 +15,9 @@ def build(output,optimize=True,**options):
     definitions.update(options.pop('definitions',{}))
     return application(output,sources,optimize,includes=[source,PORT/'native'],
         definitions=definitions,main_signature='args',gemdos=True,
-        minimum_stack=ABI['stack_floor_bytes'],extra_inputs=[PORT/'inputs.json',PORT/'native.patch'],**options)
+        # Caller-side frame drawing exceeds the small pool's ordinary stack.
+        # Admit this APP to an existing large pool; reserve no new bank zero.
+        minimum_stack=2560,extra_inputs=[PORT/'inputs.json',PORT/'native.patch'],**options)
 
 
 if __name__=='__main__':

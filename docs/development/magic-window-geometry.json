@@ -1,5 +1,5 @@
 {
-  "status": "in-progress",
+  "status": "implemented",
   "tier": "development",
   "qualification": false,
   "date": "2026-11-16",
@@ -228,7 +228,40 @@
     "proposed_window_bytes": 798,
     "proposed_service_bytes": 9284,
     "tree_and_text_bytes": 440,
-    "note": "Gross records before removing retired projections; allocator overhead measured in WG1."
+    "note": "Gross records before removing retired projections; allocator overhead measured in WG1.",
+    "final": {
+      "window_bytes": 786,
+      "service_bytes": 9284,
+      "window_rounded_bytes": 792,
+      "rounding_source": "HEAPCORE.Rounded; H_ALIGNMENT=8",
+      "mgview_minimum_stack": 2560,
+      "bank_zero_and_task_pools_equal_to_WG2": true,
+      "bank_zero_budget": {
+        "fixed_runtime": 10528,
+        "public": [
+          1824,
+          1600,
+          1600,
+          1600,
+          1600,
+          1600,
+          2848,
+          2848
+        ],
+        "idle": 800,
+        "runtime_excluding_os": 26848,
+        "loading_excluding_os": 20368,
+        "runtime_including_os": 46816,
+        "loading_including_os": 40336
+      },
+      "bank_zero_reserved_delta": {
+        "fixed": 0,
+        "root": 0,
+        "kernel": 0,
+        "idle": 0,
+        "per_public_task": 0
+      }
+    }
   },
   "bank_zero_reserved_delta": {
     "fixed": 0,
@@ -5483,6 +5516,890 @@
       "window_bytes": 790,
       "publication_before_bytes": 662,
       "publication_after_bytes": 532
+    },
+    "WG6": {
+      "status": "pass",
+      "abi_probe": {
+        "raw": {
+          "capture": "build/window-geometry/wg6-abi/raw/results.json",
+          "sha256": "dcabb12072e1dd0c42aa465a502bd0d07a1352861841b2ac44ad45a6751fc19e"
+        },
+        "opt": {
+          "capture": "build/window-geometry/wg6-abi/opt/results.json",
+          "sha256": "5f8351c6bbd5a59da66b360db7d77e52388f06028286c7610b53f96b5d419cb7"
+        }
+      },
+      "policy": {
+        "capture": "build/window-geometry/wg6-policy/results.json",
+        "sha256": "960f4cc48e6eb8a035cc7370d323b656d3020e5e42e2a096e8d550057007d6dc",
+        "checks": [
+          24
+        ]
+      },
+      "frame": {
+        "capture": "build/window-geometry/wg6-frame/results.json",
+        "sha256": "39bbd93e2aff8335c3958e19ffa27ffcebd816dd0b653d070ae181d41dce7e8c",
+        "binding_checks": 46,
+        "verified_pixels": 293020,
+        "routing_constructions": {
+          "2": 0,
+          "3": 0
+        },
+        "input": {
+          "queued_slots": [
+            2
+          ],
+          "identity": 1,
+          "key_before": 0,
+          "key_after": 1,
+          "manager": 137620,
+          "semaphore_owner": 4129500,
+          "blocked_during_key": true,
+          "withdrawn_before_release": true
+        },
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 332,
+          "native_irq_count": 16025,
+          "switches": 147,
+          "live_tasks": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 1055,
+              "untouched_above_floor": 225
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 328,
+              "untouched_above_floor": 728
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 142,
+              "untouched_above_floor": 914
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 720,
+              "untouched_above_floor": 1584
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 285,
+            "untouched_from_base": 1251,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      "viewer": {
+        "capture": "build/window-geometry/final/results.json",
+        "sha256": "15e232f7903c5140d6c7c80945751eda16ba27528826f96e0479e56b878f862c",
+        "checks": 20,
+        "completed": 3,
+        "pixels": [
+          {
+            "label": "round-0",
+            "pixels": 123200,
+            "shift": [
+              0,
+              0
+            ],
+            "sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403"
+          },
+          {
+            "label": "scroll-EQUALS",
+            "pixels": 123200,
+            "shift": [
+              0,
+              1
+            ],
+            "sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278"
+          },
+          {
+            "label": "scroll-ASTERISK",
+            "pixels": 123200,
+            "shift": [
+              1,
+              1
+            ],
+            "sha256": "f9b87bc2c3f1dbbfe1b0280448114803ecfb6a85f79344ca3ffd131e25e52a13"
+          },
+          {
+            "label": "scroll-MINUS",
+            "pixels": 123200,
+            "shift": [
+              1,
+              0
+            ],
+            "sha256": "4b2aa81b2da975e7ab74aaf81a3fb726e685d32e9a2cb249331aee53af765c90"
+          },
+          {
+            "label": "scroll-left-gadget",
+            "pixels": 123200,
+            "shift": [
+              0,
+              0
+            ],
+            "sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403"
+          },
+          {
+            "label": "resized",
+            "pixels": 74176,
+            "shift": [
+              0,
+              0
+            ],
+            "sha256": "a0b5e32e38ac38f03dc95e1c64b02d346410ccf107bc3687bfd07acaf750185e"
+          },
+          {
+            "label": "moved",
+            "pixels": 74176,
+            "shift": [
+              0,
+              0
+            ],
+            "sha256": "a0b5e32e38ac38f03dc95e1c64b02d346410ccf107bc3687bfd07acaf750185e"
+          },
+          {
+            "label": "thumb-vertical",
+            "pixels": 74176,
+            "shift": [
+              0,
+              6
+            ],
+            "sha256": "f3625bb21b2f77d6326710286d17d70ab962a4dc852a5745b4c1cde6c766ef96"
+          },
+          {
+            "label": "thumb-horizontal",
+            "pixels": 74176,
+            "shift": [
+              3,
+              6
+            ],
+            "sha256": "ec8f3a96e2663bd8d6814c2b31c9a4ba075bdb09ef9e016b31621f9080c69e75"
+          },
+          {
+            "label": "round-1",
+            "pixels": 4096,
+            "shift": [
+              0,
+              0
+            ],
+            "sha256": "6b069599c650b9066053a2a0e6230d59481b147f6e503e2d738b312987bf9a9b"
+          }
+        ],
+        "verified_pixels": 916800,
+        "resize": {
+          "before": [
+            0,
+            11,
+            633,
+            222
+          ],
+          "after": [
+            0,
+            11,
+            505,
+            174
+          ]
+        },
+        "thumbs": [
+          {
+            "axis": "vertical",
+            "before": 0,
+            "after": 6
+          },
+          {
+            "axis": "horizontal",
+            "before": 0,
+            "after": 3
+          }
+        ],
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "native_nmi_count": 4127,
+          "native_irq_count": 14428,
+          "switches": 5449,
+          "live_tasks": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 444,
+              "untouched_above_floor": 836
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 356,
+              "untouched_above_floor": 700
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 136,
+              "untouched_above_floor": 920
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 305,
+              "untouched_above_floor": 751
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 149,
+              "untouched_above_floor": 907
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 698,
+              "untouched_above_floor": 1606
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 1301,
+              "untouched_above_floor": 1003
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 68,
+              "untouched_above_floor": 188
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 287,
+            "untouched_from_base": 1249,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      "scroll": {
+        "capture": "build/window-geometry/wg6-scroll/results.json",
+        "sha256": "1cc3800f398e60d521940a4751155f062ca646e362ae09a0e6762d90ab37ed06",
+        "work": [
+          1,
+          22,
+          616,
+          200
+        ],
+        "samples": [
+          {
+            "action": "down",
+            "complete_viewport_bracket_ms": [
+              202.22983764673046,
+              223.58598154160188
+            ],
+            "phases": {
+              "_my_keyed": {
+                "calls": 1,
+                "elapsed_ms": 214.50726621453413,
+                "charged_cpu_ms": 162.69568171597976,
+                "off_cpu_ms": 16.182252364391957,
+                "interrupt_ms": 35.62933213416242
+              },
+              "set_shift": {
+                "calls": 1,
+                "elapsed_ms": 214.35699393413114,
+                "charged_cpu_ms": 162.58896866132207,
+                "off_cpu_ms": 16.182252364391957,
+                "interrupt_ms": 35.58577290841708
+              },
+              "ExecAESBeginUpdate": {
+                "calls": 1,
+                "elapsed_ms": 2.082807638793931,
+                "charged_cpu_ms": 1.729611392499637,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 0.353196246294294
+              },
+              "vro_cpyfm": {
+                "calls": 1,
+                "elapsed_ms": 97.0447391309864,
+                "charged_cpu_ms": 76.67382316082094,
+                "off_cpu_ms": 3.5175836893959365,
+                "interrupt_ms": 16.853332280769518
+              },
+              "_my_draw": {
+                "calls": 1,
+                "elapsed_ms": 23.748659038398372,
+                "charged_cpu_ms": 18.903999131634855,
+                "off_cpu_ms": 0.7328945457928695,
+                "interrupt_ms": 4.111765360970652
+              },
+              "GemDrawingMouseBorrow": {
+                "calls": 2,
+                "elapsed_ms": 7.462160565790643,
+                "charged_cpu_ms": 5.437925283945535,
+                "off_cpu_ms": 0.7330355141609775,
+                "interrupt_ms": 1.2911997676841294
+              },
+              "wind_update": {
+                "calls": 1,
+                "elapsed_ms": 15.802483580709323,
+                "charged_cpu_ms": 5.611104924166066,
+                "off_cpu_ms": 9.046997444243488,
+                "interrupt_ms": 1.144381212299772
+              },
+              "VbxeOwnerCopyRect": {
+                "calls": 15,
+                "elapsed_ms": 41.03236774700125,
+                "charged_cpu_ms": 31.81804084981371,
+                "off_cpu_ms": 2.1014154633841713,
+                "interrupt_ms": 7.112911433803369
+              }
+            },
+            "update_ownership": {
+              "attempts": 3,
+              "failed_attempts": 0,
+              "obtains": [],
+              "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+            },
+            "physical_copy_units": 15,
+            "physical_copy_completions": [
+              {
+                "tick": 70525991.0,
+                "status": 0
+              },
+              {
+                "tick": 70534537.0,
+                "status": 0
+              },
+              {
+                "tick": 70545955.0,
+                "status": 0
+              },
+              {
+                "tick": 70554654.75,
+                "status": 0
+              },
+              {
+                "tick": 70563208.625,
+                "status": 0
+              },
+              {
+                "tick": 70573688.75,
+                "status": 0
+              },
+              {
+                "tick": 70582382.875,
+                "status": 0
+              },
+              {
+                "tick": 70590996.375,
+                "status": 0
+              },
+              {
+                "tick": 70599549.5,
+                "status": 0
+              },
+              {
+                "tick": 70610453.0,
+                "status": 0
+              },
+              {
+                "tick": 70619149.25,
+                "status": 0
+              },
+              {
+                "tick": 70627703.375,
+                "status": 0
+              },
+              {
+                "tick": 70636255.375,
+                "status": 0
+              },
+              {
+                "tick": 70647073.0,
+                "status": 0
+              },
+              {
+                "tick": 70655178.375,
+                "status": 0
+              }
+            ],
+            "copy_completion_irqs": 0,
+            "copy_display_enters": 16,
+            "copy_display_leaves": 16,
+            "slider": {
+              "measured": {
+                "elapsed_ms": 55.12589180113874,
+                "charged_cpu_ms": 43.43707665436953,
+                "off_cpu_ms": 2.1517411707986844,
+                "interrupt_ms": 9.537073975970532
+              },
+              "exclusive_cpu_ms": {
+                "caller_other": 6.511751828007312,
+                "scope": 2.0815389234809603,
+                "mutation": 0.9291929983830928,
+                "publication": 0.016986688356999572,
+                "input_snapshot": 0.7478371928123048,
+                "thumb_geometry": 0.9446995188749596,
+                "window_view": 0.13899481095436997,
+                "damage": 0.8921888017547743,
+                "native_frame": 1.3177723050724648,
+                "renderer": 17.275391574884512,
+                "display_access": 0.36919615607453843,
+                "fills": 6.131912560140631,
+                "submission": 4.583375036475565,
+                "fence": 1.4962382590970411
+              },
+              "routines": {
+                "AESLOCKS_CALL": {
+                  "calls": 4,
+                  "elapsed_ms": 2.4758274490787016,
+                  "charged_cpu_ms": 2.0815389234809603
+                },
+                "AESWINDOW_FRAME": {
+                  "calls": 2,
+                  "elapsed_ms": 3.122801774509818,
+                  "charged_cpu_ms": 2.5952276568660757
+                },
+                "AESSNAPSHOT_PUBLISH": {
+                  "calls": 4,
+                  "elapsed_ms": 0.8785853542323637,
+                  "charged_cpu_ms": 0.7478371928123048
+                },
+                "AESLOCAL_PUBLISH": {
+                  "calls": 2,
+                  "elapsed_ms": 0.4811250403521954,
+                  "charged_cpu_ms": 0.3937951363093636
+                },
+                "GEMFRAME_SCALE": {
+                  "calls": 2,
+                  "elapsed_ms": 1.1214033682981877,
+                  "charged_cpu_ms": 0.9014927140498943
+                },
+                "GEMFRAME_SLIDE": {
+                  "calls": 1,
+                  "elapsed_ms": 1.164610173123253,
+                  "charged_cpu_ms": 0.9446995188749596
+                },
+                "AESWINDOWSTATE_SLIDERS": {
+                  "calls": 1,
+                  "elapsed_ms": 0.13899481095436997,
+                  "charged_cpu_ms": 0.13899481095436997
+                },
+                "LAYERS_INVALIDATE": {
+                  "calls": 1,
+                  "elapsed_ms": 0.714568657938845,
+                  "charged_cpu_ms": 0.5823403286536535
+                },
+                "DisplayEnter": {
+                  "calls": 1,
+                  "elapsed_ms": 0.22618374662909388,
+                  "charged_cpu_ms": 0.18262452088375888
+                },
+                "GemWidgetFill": {
+                  "calls": 8,
+                  "elapsed_ms": 9.201005386401345,
+                  "charged_cpu_ms": 7.665648405154368
+                },
+                "VbxeOwnerFence": {
+                  "calls": 8,
+                  "elapsed_ms": 1.8033378490200584,
+                  "charged_cpu_ms": 1.4962382590970411
+                },
+                "VbxeOwnerSubmit": {
+                  "calls": 3,
+                  "elapsed_ms": 7.360592856568914,
+                  "charged_cpu_ms": 6.0424681305761805
+                },
+                "DisplayLeave": {
+                  "calls": 1,
+                  "elapsed_ms": 0.23034231348827638,
+                  "charged_cpu_ms": 0.18657163519077954
+                },
+                "GemDrawingFrameBorrow": {
+                  "calls": 1,
+                  "elapsed_ms": 36.03877475933175,
+                  "charged_cpu_ms": 29.05280534100953
+                },
+                "DesktopFrameBorrow": {
+                  "calls": 1,
+                  "elapsed_ms": 36.06908295847495,
+                  "charged_cpu_ms": 29.083113540152727
+                },
+                "ExecAESFrameApply": {
+                  "calls": 1,
+                  "elapsed_ms": 37.01836394931341,
+                  "charged_cpu_ms": 29.856113586672286
+                },
+                "LAYERS_REPAIRED": {
+                  "calls": 1,
+                  "elapsed_ms": 0.3539715723188873,
+                  "charged_cpu_ms": 0.30984847310112085
+                },
+                "AESFRAME_PAINT": {
+                  "calls": 1,
+                  "elapsed_ms": 39.8356167859494,
+                  "charged_cpu_ms": 31.483734364845876
+                }
+              }
+            }
+          },
+          {
+            "action": "up",
+            "complete_viewport_bracket_ms": [
+              221.36150069285952,
+              240.73055447088228
+            ],
+            "phases": {
+              "_my_keyed": {
+                "calls": 1,
+                "elapsed_ms": 218.78086326209262,
+                "charged_cpu_ms": 164.2707212928491,
+                "off_cpu_ms": 18.753797335415907,
+                "interrupt_ms": 35.75634463382762
+              },
+              "set_shift": {
+                "calls": 1,
+                "elapsed_ms": 218.68155104676063,
+                "charged_cpu_ms": 164.1714090775171,
+                "off_cpu_ms": 18.753797335415907,
+                "interrupt_ms": 35.75634463382762
+              },
+              "ExecAESBeginUpdate": {
+                "calls": 1,
+                "elapsed_ms": 5.346789233963792,
+                "charged_cpu_ms": 2.347687202468638,
+                "off_cpu_ms": 2.4212022064368974,
+                "interrupt_ms": 0.5778998250582552
+              },
+              "vro_cpyfm": {
+                "calls": 1,
+                "elapsed_ms": 97.69840945390264,
+                "charged_cpu_ms": 77.27554664008943,
+                "off_cpu_ms": 3.6178826833046935,
+                "interrupt_ms": 16.804980130508515
+              },
+              "_my_draw": {
+                "calls": 1,
+                "elapsed_ms": 23.92522191945349,
+                "charged_cpu_ms": 19.042571037484898,
+                "off_cpu_ms": 0.7328945457928695,
+                "interrupt_ms": 4.1497563361757255
+              },
+              "GemDrawingMouseBorrow": {
+                "calls": 2,
+                "elapsed_ms": 5.779844060791199,
+                "charged_cpu_ms": 4.809840719840874,
+                "off_cpu_ms": 0.0,
+                "interrupt_ms": 0.9700033409503241
+              },
+              "wind_update": {
+                "calls": 1,
+                "elapsed_ms": 17.360959374325997,
+                "charged_cpu_ms": 6.20866983657537,
+                "off_cpu_ms": 9.780596831876894,
+                "interrupt_ms": 1.371692705873729
+              },
+              "VbxeOwnerCopyRect": {
+                "calls": 15,
+                "elapsed_ms": 39.663917313594,
+                "charged_cpu_ms": 31.40176125879114,
+                "off_cpu_ms": 1.4166616153001428,
+                "interrupt_ms": 6.84549443950272
+              }
+            },
+            "update_ownership": {
+              "attempts": 3,
+              "failed_attempts": 0,
+              "obtains": [],
+              "scope": "Native Obtain spans bound ownership admission; their off-CPU time also includes scheduling."
+            },
+            "physical_copy_units": 15,
+            "physical_copy_completions": [
+              {
+                "tick": 71160541.375,
+                "status": 0
+              },
+              {
+                "tick": 71169254.375,
+                "status": 0
+              },
+              {
+                "tick": 71180078.125,
+                "status": 0
+              },
+              {
+                "tick": 71188641.0,
+                "status": 0
+              },
+              {
+                "tick": 71197374.75,
+                "status": 0
+              },
+              {
+                "tick": 71206025.375,
+                "status": 0
+              },
+              {
+                "tick": 71216996.75,
+                "status": 0
+              },
+              {
+                "tick": 71225709.25,
+                "status": 0
+              },
+              {
+                "tick": 71234260.0,
+                "status": 0
+              },
+              {
+                "tick": 71242821.0,
+                "status": 0
+              },
+              {
+                "tick": 71253744.0,
+                "status": 0
+              },
+              {
+                "tick": 71262452.25,
+                "status": 0
+              },
+              {
+                "tick": 71271013.625,
+                "status": 0
+              },
+              {
+                "tick": 71279588.5,
+                "status": 0
+              },
+              {
+                "tick": 71290933.0,
+                "status": 0
+              }
+            ],
+            "copy_completion_irqs": 0,
+            "copy_display_enters": 16,
+            "copy_display_leaves": 16,
+            "slider": {
+              "measured": {
+                "elapsed_ms": 53.36900302941023,
+                "charged_cpu_ms": 42.6718298680959,
+                "off_cpu_ms": 1.4675511961870875,
+                "interrupt_ms": 9.229621965127246
+              },
+              "exclusive_cpu_ms": {
+                "caller_other": 5.874574804159694,
+                "scope": 2.0976798016293126,
+                "mutation": 0.9291929983830927,
+                "publication": 0.016986688356999572,
+                "input_snapshot": 0.7454407305544709,
+                "thumb_geometry": 0.9291929983830929,
+                "window_view": 0.14526790333517062,
+                "damage": 0.8930346119634215,
+                "native_frame": 0.691167908832937,
+                "renderer": 17.286880496885306,
+                "display_access": 0.369689545362916,
+                "fills": 6.1463618178716874,
+                "submission": 5.189679987707558,
+                "fence": 1.3566795746702396
+              },
+              "routines": {
+                "AESLOCKS_CALL": {
+                  "calls": 4,
+                  "elapsed_ms": 2.627579897346834,
+                  "charged_cpu_ms": 2.0976798016293126
+                },
+                "AESWINDOW_FRAME": {
+                  "calls": 2,
+                  "elapsed_ms": 3.1137093147668597,
+                  "charged_cpu_ms": 2.587333428252035
+                },
+                "AESSNAPSHOT_PUBLISH": {
+                  "calls": 4,
+                  "elapsed_ms": 0.8785148700483099,
+                  "charged_cpu_ms": 0.7454407305544709
+                },
+                "AESLOCAL_PUBLISH": {
+                  "calls": 2,
+                  "elapsed_ms": 0.4317156273303833,
+                  "charged_cpu_ms": 0.38716962300829316
+                },
+                "GEMFRAME_SCALE": {
+                  "calls": 2,
+                  "elapsed_ms": 1.0622671378769317,
+                  "charged_cpu_ms": 0.8861271619261355
+                },
+                "GEMFRAME_SLIDE": {
+                  "calls": 1,
+                  "elapsed_ms": 1.1053329743338893,
+                  "charged_cpu_ms": 0.9291929983830928
+                },
+                "AESWINDOWSTATE_SLIDERS": {
+                  "calls": 1,
+                  "elapsed_ms": 0.1888271290805056,
+                  "charged_cpu_ms": 0.14526790333517062
+                },
+                "LAYERS_INVALIDATE": {
+                  "calls": 1,
+                  "elapsed_ms": 0.7149210788591148,
+                  "charged_cpu_ms": 0.5836795281506783
+                },
+                "DisplayEnter": {
+                  "calls": 1,
+                  "elapsed_ms": 0.2271000410217951,
+                  "charged_cpu_ms": 0.18318839435619041
+                },
+                "GemWidgetFill": {
+                  "calls": 8,
+                  "elapsed_ms": 9.306872630850362,
+                  "charged_cpu_ms": 7.679745241965156
+                },
+                "VbxeOwnerFence": {
+                  "calls": 8,
+                  "elapsed_ms": 1.6212772016087311,
+                  "charged_cpu_ms": 1.3566795746702396
+                },
+                "VbxeOwnerSubmit": {
+                  "calls": 3,
+                  "elapsed_ms": 8.753430817658824,
+                  "charged_cpu_ms": 6.509496334117587
+                },
+                "DisplayLeave": {
+                  "calls": 1,
+                  "elapsed_ms": 0.2298489241998988,
+                  "charged_cpu_ms": 0.1865011510067256
+                },
+                "GemDrawingFrameBorrow": {
+                  "calls": 1,
+                  "elapsed_ms": 37.50858144940857,
+                  "charged_cpu_ms": 29.545912692650894
+                },
+                "DesktopFrameBorrow": {
+                  "calls": 1,
+                  "elapsed_ms": 37.53888964855176,
+                  "charged_cpu_ms": 29.57622089179409
+                },
+                "ExecAESFrameApply": {
+                  "calls": 1,
+                  "elapsed_ms": 38.48859354449455,
+                  "charged_cpu_ms": 30.349291422497707
+                },
+                "LAYERS_REPAIRED": {
+                  "calls": 1,
+                  "elapsed_ms": 0.35376011976672556,
+                  "charged_cpu_ms": 0.30935508381274324
+                },
+                "AESFRAME_PAINT": {
+                  "calls": 1,
+                  "elapsed_ms": 39.66539748145914,
+                  "charged_cpu_ms": 31.34981441514339
+                }
+              }
+            }
+          }
+        ],
+        "caveat": "Two frame-polled samples on changed geometry/parity; no overall speedup claim. Inclusive spans are not additive."
+      },
+      "inputs": {
+        "native_xex": "/Users/michalkurcewicz/action/exec816-public/build/window-geometry/final/program/program.xex",
+        "native_sha256": "34327c755bd3eb8d12d19b3e18d5a88939e88e83057ed78d0135d72618da7e72",
+        "provider": "build/window-geometry/final/c-image.json",
+        "provider_sha256": "44a5aa0a9fba9d2c11a7f17d77b725d4f6330feeef9956973bf12d1d5c291d15",
+        "app_sha256": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d",
+        "app_manifest_sha256": "488fa5660a92cee5ccba76ecc61bb2b97efbf92baf7c8bead66f76bf8b6dd790",
+        "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+        "compiler_override": false,
+        "compiler_flags": [
+          "--code-model=large",
+          "--data-model=huge",
+          "-O2"
+        ],
+        "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+        "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+      },
+      "storage": {
+        "window_bytes": 786,
+        "service_bytes": 9284,
+        "window_rounded_bytes": 792,
+        "rounding_source": "HEAPCORE.Rounded; H_ALIGNMENT=8",
+        "mgview_minimum_stack": 2560,
+        "bank_zero_and_task_pools_equal_to_WG2": true,
+        "bank_zero_budget": {
+          "fixed_runtime": 10528,
+          "public": [
+            1824,
+            1600,
+            1600,
+            1600,
+            1600,
+            1600,
+            2848,
+            2848
+          ],
+          "idle": 800,
+          "runtime_excluding_os": 26848,
+          "loading_excluding_os": 20368,
+          "runtime_including_os": 46816,
+          "loading_including_os": 40336
+        },
+        "bank_zero_reserved_delta": {
+          "fixed": 0,
+          "root": 0,
+          "kernel": 0,
+          "idle": 0,
+          "per_public_task": 0
+        }
+      },
+      "host_checks": {
+        "capture": "build/window-geometry/wg6-host.txt",
+        "sha256": "23d8da7d8e27a07c88bd5609630a65dfabff7e895d2d83602c5851f3e518bc42",
+        "tests": 722,
+        "skipped": 5
+      },
+      "scope": "Development only: current provider, native fixtures, MGVIEW alone; no Counter/QED/catalog/demo/release matrix."
     }
-  }
+  },
+  "completion_scope": "WG0\u2013WG6 complete; MGVIEW-only development acceptance, not hosted qualification."
 }

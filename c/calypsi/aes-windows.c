@@ -417,7 +417,7 @@ WORD ExecAESWindowCalc(struct ExecAESContext *c, WORD type, WORD kind, WORD x, W
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     c->diagnostic = AES_UNSUPPORTED;
-    if ((kind && (kind & AES_WINDOW_KIND) != AES_WINDOW_KIND) || (kind & ~AES_WINDOW_SUPPORTED) ||
+    if ((kind & ~AES_WINDOW_SUPPORTED) ||
         (type != WC_BORDER && type != WC_WORK)) return 0;
     if (!kind) right=inset=bottom=0;
     if (type == WC_BORDER) { left -= leftInset; top -= inset;

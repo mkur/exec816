@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 23,
   "constants": {
     "WINDOWS": 6,
     "TITLE_BYTES": 65,
@@ -19,48 +19,14 @@
     "CACHE_MISS": 0,
     "CACHE_PENDING": 1,
     "CACHE_FAILED": 2,
-    "WORK_LEFT": 1,
-    "WORK_TOP": 11,
-    "WORK_RIGHT": 1,
-    "WORK_BOTTOM": 1,
-    "FRAME_EDGE": 1,
-    "TITLE_HEIGHT": 11,
-    "TITLE_TEXT_Y": 2,
-    "TITLE_PAD": 2,
-    "CLOSE_LEFT": 1,
-    "CLOSE_TOP": 1,
-    "CLOSE_RIGHT": 15,
-    "CLOSE_BOTTOM": 10,
-    "CLOSE_TEXT_X": 3,
-    "CLOSE_GLYPH": 5,
-    "FRAME_GADGET_WIDTH": 16,
-    "FRAME_GADGET_HEIGHT": 11,
-    "FRAME_THUMB_MIN": 8,
-    "FRAME_MIN_WIDTH": 64,
-    "FRAME_MIN_SCROLL_HEIGHT": 80,
-    "FRAME_SIZER": 32,
-    "FRAME_UPARROW": 64,
-    "FRAME_DNARROW": 128,
-    "FRAME_VSLIDE": 256,
-    "FRAME_VERTICAL": 448,
-    "FRAME_MIN_SIZE_HEIGHT": 48,
-    "FRAME_FULLER": 4,
-    "FRAME_INFO": 16,
-    "FRAME_INFO_HEIGHT": 11,
     "FRAME_BORDERLESS": 4096,
-    "FRAME_ICONIFIED": 8192,
     "MENU_BAR_HEIGHT": 11,
     "MENU_ROW_HEIGHT": 11,
     "MENU_TEXT_Y": 1,
     "TILE_LEFT": 104,
     "TILE_WIDTH": 88,
     "TILE_HEIGHT": 11,
-    "TILE_BOTTOM": 2,
-    "FRAME_LFARROW": 512,
-    "FRAME_RTARROW": 1024,
-    "FRAME_HSLIDE": 2048,
-    "FRAME_HORIZONTAL": 3584,
-    "FRAME_MIN_SCROLL_WIDTH": 64
+    "TILE_BOTTOM": 2
   },
   "records": {
     "GuiNotice": [
@@ -181,16 +147,8 @@
         "BYTE"
       ],
       [
-        "geometryEpoch",
+        "visibilityEpoch",
         "LONGCARD"
-      ],
-      [
-        "geometryKind",
-        "CARD"
-      ],
-      [
-        "geometryIconified",
-        "BYTE"
       ],
       [
         "frame",

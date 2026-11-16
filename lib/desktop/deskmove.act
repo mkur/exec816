@@ -71,7 +71,7 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
       GEMFRAME.SetSize(@window.frame,window.frameKind,
           layer.bounds.left,layer.bounds.top,window.frame.current.width,
           window.frame.current.height)
-      AESWINDOWSTATE.Geometry(window,completed)
+      AESWINDOWSTATE.LayoutChanged(window,completed)
       AESWINDOWSTATE.Sync()
       RETURN(IF completed<>0 THEN DESKTYPES.OK ELSE DESKTYPES.DRAW_FAILED FI)
     ELSEIF status=LAYERTYPES.EMPTY THEN
@@ -82,7 +82,7 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
   IF status=LAYERTYPES.OK THEN
     GEMFRAME.SetSize(@window.frame,window.frameKind,left,top,
         window.frame.current.width,window.frame.current.height)
-    AESWINDOWSTATE.Geometry(window,0)
+    AESWINDOWSTATE.LayoutChanged(window,0)
     AESWINDOWSTATE.Sync()
   FI
 

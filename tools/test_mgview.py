@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Small original MGVIEW disk/paint/scroll/lifetime check beside one Counter."""
+"""Focused original MGVIEW disk, drawing, interaction and Process lifetime check."""
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
-import adapter_state as adapter
 from build_mgview import build as viewer
-from build_c_program import build as application
 from build_gem_desktop import build_desktop
 from c_program import ABI
-from desktop_mouse import schedule
+from desktop_mouse import schedule,slow_schedule
+from sio_transaction_trace import BASE_HZ
 from gem_render_oracle import Raster,DESKTOP_PALETTE,PENS,font_bytes
 from make_data_disk import make
 from native_program import ROOT,read_build,require,verify_machine,sha256
@@ -27,12 +27,11 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
     content=Path(document).read_bytes() if document else DOCUMENT
     if not reuse:
         viewer(out/'apps/mgview',probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
-        application(out/'apps/counter',[ROOT/'examples/gem-counter'/name for name in ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
         program=build_desktop(out,source=ROOT/'tests/programs/c_mgview.act',build_applications=False,
             program_output=out/'program',release_compiler=True,system_mount='D1',
             dos_mounts=[dict(alias='D1',unit=49,sectors=2880,sector_bytes=256,profile=4,format=2)])
     else:program=read_build(out/'program')
-    apps={name:json.loads((out/'apps'/name/'app.json').read_text()) for name in ('mgview','counter')}
+    apps={name:json.loads((out/'apps'/name/'app.json').read_text()) for name in ('mgview',)}
     media=out/'media';media.mkdir(exist_ok=True)
     for name in apps:(media/(name.upper()+'.APP')).write_bytes((out/'apps'/name/'program.app').read_bytes())
     (media/'VIEW.TXT').write_bytes(content);(media/'EMPTY.TXT').write_bytes(b'')
@@ -97,26 +96,34 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
                 return actual
             def before(b):
                 position=[320,120];b._cmd_ok('MOUSE ST')
-                def move(x,y):
+                def move(x,y,held=False):
                     nonlocal position
-                    position=schedule(b,program,position,(x,y))
                     cursor=lambda name:next(d['address'] for d in program['image']['data'] if '_DESKINPUT_'+name.upper()+'_' in d['name'])
-                    reach(f'(dw(${cursor("cursorX"):x})={position[0]})&(dw(${cursor("cursorY"):x})={position[1]})')
-                    frames(3)
-                def pulse(key,ctrl=False):
-                    if ctrl:b._cmd_ok('KEY CTRL down')
-                    b._cmd_ok('KEY '+key+' down');frames(3);b._cmd_ok('KEY '+key+' up')
-                    if ctrl:b._cmd_ok('KEY CTRL up')
-                    frames(40)
+                    if held:
+                        # Use isolated physical phases during a gesture. Coarse
+                        # bursts can cause raw input loss, which cancels a drag.
+                        position=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        distance=max(abs(a-c) for a,c in zip((x,y),position))
+                        target=slow_schedule(b,program,position,(x,y))
+                        frames(30+math.ceil((70000+math.ceil(distance/2)*130000)*50/BASE_HZ))
+                        position=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        require(position==target,'Held pointer did not settle: '+str((target,position)))
+                        return
+                    # Schedule from observed coordinates after earlier packets
+                    # settle; a transient exact coordinate is not completion.
+                    for _ in range(3):
+                        position=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        target=schedule(b,program,position,(x,y))
+                        frames(40)
+                        position=[number(cursor(n)) for n in ('cursorX','cursorY')]
+                        if position==target:return
+                    require(False,'Physical pointer did not settle: '+str((target,position)))
                 def edge(down):b._cmd_ok('MOUSE AT 2000 0 0 '+str(down));frames(15 if down else 60)
-                def drag(start,end):move(*start);edge(1);move(*end);edge(0)
-                def click(x,y):move(x,y);edge(1);edge(0)
+                def drag(start,end):move(*start);edge(1);move(*end,held=True);edge(0)
                 arguments=(b'SYS:BIG.TXT',b'SYS:TALL.TXT',b'') if failures else (b'"SYS:VIEW.TXT"',b'SYS:EMPTY.TXT',b'')
-                if interactions:arguments=(b'SYS:VIEW.TXT SYS:EMPTY.TXT',b'SYS:EMPTY.TXT',b'')
                 for round,argument in enumerate(arguments):
                     phase=round*2+1;reach(f'dw(${at("phase"):x})={phase}')
                     base=number(at('bases'),4);sy=symbols('mgview',base)
-                    counter=symbols('counter',number(at('bases')+4,4))['GEMCounter']
                     b.memload(at('argument'),argument+b'\0');b.poke16(at('argBytes'),len(argument));b.poke16(at('go'),phase)
                     reach(f'dw(${at("phase"):x})={phase+1}')
                     if failures and argument:
@@ -133,13 +140,11 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
                         require(number(sy['nwindows'])==0 and number(sy['windows'],4)==0,'Rejected loader published a document')
                         report['cases'].append(dict(arguments=argument.decode(),rejected=True))
                     elif argument:
-                        count=2 if interactions and round==0 else 1
+                        count=1
                         reach(f'dw(${sy["nwindows"]:x})={count}');frames(80)
                         window=number(sy['windows'],4);require(window,'Missing original window record')
                         paint_context[0]=context_for(number(sy['ap_id']))
-                        if count==2:pulse('W',True)
-                        position=schedule(b,program,position,(632,0));frames(30)
-                        initial=number(counter+14,4)
+                        move(632,0)
                         picture(window,f'round-{round}',content if round==0 else b'')
                         if scroll and round==0:
                             # Atari physical cursor keys use Ctrl with -, = and *.
@@ -152,7 +157,7 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
                             if not vertical_only:
                                 # This pinned bridge has no raw PLUS key name; use GEM's left-arrow gadget.
                                 ox,oy,ow,oh=[number(window+260+i*2) for i in range(4)]
-                                position=schedule(b,program,position,(ox+8,oy+oh-5));frames(10)
+                                move(ox+8,oy+oh-5)
                                 b._cmd_ok('MOUSE AT 2000 0 0 1');frames(3)
                                 b._cmd_ok('MOUSE AT 2000 0 0 0');frames(50)
                                 require(number(window+304,4)==0,'Horizontal left gadget did not restore the model')
@@ -168,36 +173,55 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
                             drag((ox+80,oy+5),(ox+104,oy+13))
                             require(outer()[:2]==(ox+24,oy+8),'Move message did not move the viewer')
                             move(632,0);picture(window,'moved',content)
-                            restored=outer();ox,oy,ow,oh=restored
-                            click(ox+ow-8,oy+5);move(632,0)
-                            require(outer()[2]>ow,'Full message did not enlarge the viewer')
-                            picture(window,'full',content)
-                            ox,oy,ow,oh=outer();click(ox+ow-8,oy+5);move(632,0)
-                            require(outer()==restored,'Previous geometry was not restored')
-                            picture(window,'restored',content)
-                            pulse('5');require(number(window+336)==5,'Digit did not change original tab width')
-                            picture(window,'tabs-five',content)
-                        frames(60);require(number(counter+14,4)>initial,'Counter did not progress beside MGVIEW')
-                        report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows']),counter_progress=number(counter+14,4)-initial))
+                            # Both drags use the stored track/thumb rectangles. They
+                            # verify the manager's object-based WM_*SLID path.
+                            for axis,object_id,offset in (('vertical',10,280),('horizontal',14,304)):
+                                from generate_desktop import layout as dl
+                                from generate_gem_objects import layout as gl
+                                desktop=next(d['address'] for d in program['image']['data'] if '_DESKSTATE_SERVICE_' in d['name'])
+                                service=number(desktop,3);fields=dl()['Window']['fields']
+                                record=0
+                                for slot in range(6):
+                                    candidate=number(service+dl()['Service']['fields']['windows']+slot*3,3)
+                                    if candidate and number(candidate+fields['gui'])==number(window):record=candidate;break
+                                require(record,'Missing canonical viewer frame')
+                                tree=record+fields['frame']+gl()['Frame']['fields']['tree']
+                                def object_rect(obj):
+                                    import struct
+                                    raw=b.memdump(tree+obj*24,24)
+                                    x,y,w,h=struct.unpack_from('<4h',raw,16)
+                                    root=b.memdump(tree,24);rx,ry=struct.unpack_from('<2h',root,16)
+                                    if obj in (10,14):
+                                        parent=b.memdump(tree+(obj-1)*24,24);px,py=struct.unpack_from('<2h',parent,16);x+=px;y+=py
+                                    return rx+x,ry+y,w,h
+                                x,y,w,h=object_rect(object_id)
+                                start=(x+w//2,y+h//2)
+                                end=(start[0],start[1]+16) if axis=='vertical' else (start[0]+16,start[1])
+                                before_shift=number(window+offset,4)
+                                drag(start,end)
+                                after_shift=number(window+offset,4)
+                                require(after_shift>before_shift,'Thumb did not scroll: '+axis)
+                                report.setdefault('thumbs',[]).append(dict(axis=axis,before=before_shift,after=after_shift))
+                                move(632,0);picture(window,'thumb-'+axis,content)
+                        frames(4)
+                        report['cases'].append(dict(arguments=argument.decode(),documents=number(sy['nwindows'])))
                         if round==0:
                             b._cmd_ok('KEY CTRL down');b._cmd_ok('KEY U down');frames(3)
                             b._cmd_ok('KEY U up');b._cmd_ok('KEY CTRL up')
-                            if count==2:
-                                reach(f'dw(${sy["nwindows"]:x})=1');pulse('Q',True)
                             reach(f'dw(${sy["nwindows"]:x})=0')
                     else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a document')
                     b.poke16(at('go'),phase+1)
                 b.bp_clear_all()
             report['runtime'],_=execute(b,program,before_run=before,timeout=300,frame_limit=30000)
             ownership(b,program,program['output'])
-            require(number(at('completed'))==4,'Viewer/Counter lifetimes incomplete')
-            report.update(status='pass',completed=4,checks=number(at('checks')),app_sha256={name:sha256(out/'apps'/name/'program.app') for name in apps})
+            require(number(at('completed'))==3,'Viewer lifetimes incomplete')
+            report.update(status='pass',completed=3,checks=number(at('checks')),app_sha256={name:sha256(out/'apps'/name/'program.app') for name in apps})
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
         payload=json.dumps(report,indent=2)+'\n'
         (out/'results.json').write_text(payload)
         (out/('results-'+('reference' if document else 'failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
-    print('MGVIEW development check passed: three lifetimes, exact pixels and Counter progress',flush=True)
+    print('MGVIEW development check passed: three lifetimes, exact pixels and guards',flush=True)
     return report
 
 

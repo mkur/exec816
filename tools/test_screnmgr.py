@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SM5: a small interaction/UPDATE case and loaded MGVIEW beside Counter."""
+"""Focused interaction/UPDATE case and a loaded MGVIEW-only fixture."""
 import argparse
 import json
 from pathlib import Path
@@ -7,7 +7,6 @@ import shutil
 from contextlib import nullcontext
 from unittest.mock import patch
 
-from build_c_program import build as application
 from build_gem_desktop import build_desktop
 from build_mgview import build as viewer
 from c_program import ABI
@@ -42,11 +41,7 @@ def build_scroll(out, apps_from=None, reuse_c=False):
         if apps_from:
             apps[name]=reuse_app(apps_from/'apps'/name,target)
         else:
-            if name=='mgview':
-                record=viewer(target,probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
-            else:
-                record=application(target,[ROOT/'examples/gem-counter'/n for n in
-                    ('main.c','counter.c')],minimum_stack=ABI['stack_floor_bytes'])
+            record=viewer(target,probes=[(ROOT/'tests/programs/mgview_layout.c',LAYOUT)])
             apps[name]=dict(mode='built',sha256=record['sha256'],abi=ABI['version'])
     # This builds the current shared provider and native fixture only. There is
     # no application catalog, demo packaging or QED build in this path.
@@ -107,7 +102,7 @@ def run(out, apps_from=None, interaction_from=None, reuse=False, presenter=True,
         else:
             fixture=build_scroll(cache,apps_from,reuse_c)
         report['apps']=fixture['apps']
-        observed=scroll(cache,out/'scroll',presenter=presenter,expect_copy_units=1)
+        observed=scroll(cache,out/'scroll',presenter=presenter)
         report['scroll']=dict(capture=str(out/'scroll'),results_sha256=sha256(out/'scroll/results.json'),
             native_sha256=observed['native_sha256'],samples=observed['audit']['samples'])
         report['status']='pass'
@@ -115,14 +110,14 @@ def run(out, apps_from=None, interaction_from=None, reuse=False, presenter=True,
         report.update(status='fail',error=str(error));raise
     finally:
         (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
-    print('SM5 interaction and MGVIEW/Counter acceptance passed',flush=True)
+    print('SM5 interaction and MGVIEW acceptance passed',flush=True)
     return report
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--apps-from',type=Path,help='Reuse matching MGVIEW/Counter APPs from this fixture')
+    parser.add_argument('--apps-from',type=Path,help='Reuse a matching MGVIEW APP from this fixture')
     parser.add_argument('--interaction-from',type=Path,help='Reuse a completed interaction check with matching inputs')
     mode=parser.add_mutually_exclusive_group()
     mode.add_argument('--reuse',action='store_true',help='Replay matching emitted fixtures without builds')

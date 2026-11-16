@@ -9,6 +9,7 @@ USE INPUTCLIENT
 USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
+USE GEMOBJECTS
 USE CONSOLEWINDOWS
 USE DESKGEOMETRY
 USE GEMFRAME
@@ -121,7 +122,7 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
             IF service.windows(index).frameKind<>DESKTYPES.FRAME_BORDERLESS
                 OR service.windows(index).iconified<>0 THEN
               REGIONS.Copy(@layer.bounds,@frame)
-              frame.bottom=frame.top+DESKTYPES.TITLE_HEIGHT
+              frame.bottom=frame.top+GEMOBJECTS.BOX_HEIGHT
               status=LAYERS.Invalidate(@service.scene,layer.id,@frame)
             FI
           FI

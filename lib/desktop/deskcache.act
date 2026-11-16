@@ -88,17 +88,6 @@ PUBLIC LONGCARD FUNC SlotAddress(BYTE slot)
 RETURN(IF slot=0 THEN DESKTYPES.SNAPSHOT_0_BASE
     ELSE DESKTYPES.SNAPSHOT_1_BASE FI)
 
-PUBLIC PROC ClientBounds(DESKTYPES.Window POINTER window
-    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER area)
-
-  IF window.iconified<>0 THEN
-    DESKGEOMETRY.Work(window,area)
-  ELSE
-    DESKGEOMETRY.Work(window,area)
-  FI
-
-RETURN
-
 PUBLIC BYTE FUNC Fits(CARD width,height)
 
 RETURN(width<>0 AND width<=640 AND (width & 1)=0
@@ -149,7 +138,7 @@ PUBLIC PROC EndChange(DESKTYPES.Service POINTER service
   FI
 
   LET layer=LAYERS.Find(@service.scene,window.layer)
-  ClientBounds(window,layer,@client)
+  DESKGEOMETRY.Work(window,@client)
   complete=(complete<>0 AND LAYERS.PixelsReady(layer,@client)<>0)
   ; Packed pixels share bytes. Include a complete neighbouring pixel at an
   ; odd edit edge; Patch still requires the expanded source to be visible.
@@ -324,7 +313,7 @@ PUBLIC BYTE FUNC Patch(DESKTYPES.Service POINTER service
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
           window.captureAttempt=window.visualRevision
-          ClientBounds(window,layer,@client)
+          DESKGEOMETRY.Work(window,@client)
           REGIONS.Assign(@area,layer.bounds.left+repair.bounds.left,
               layer.bounds.top+repair.bounds.top,layer.bounds.left+repair.bounds.right,
               layer.bounds.top+repair.bounds.bottom)

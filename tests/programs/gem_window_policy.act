@@ -49,11 +49,11 @@ PROC Main()
   client.binding=request
   client.endpoint=@service.directory.endpoints(0)
   client.endpoint.input=@storage.input
-  Require(AESWINDOW.CreateHidden(service,client,view,4095,13,17,320,180)=0)
+  Require(AESWINDOW.CreateHidden(service,client,view,4095,-1,17,320,180)=0)
   LET window=service.windows(0)
   Require(window<>NULL AND desktop.windows(0)=window)
   Require(view.bounds.right=0 AND view.previous.right=0)
-  Require(view.full.left=13 AND view.full.right=333)
+  Require(view.full.left=-1 AND view.full.right=319)
   GEMFRAME.SetSize(@window.frame,4095,13,17,320,180)
   LET revision=view.revision
   LET visual=window.visualRevision
@@ -78,6 +78,8 @@ PROC Main()
   Require(AESWINDOW.DeleteHidden(window)=0)
   Require(service.windows(0)=NULL AND desktop.windows(0)=NULL)
   Require(view.handle=0)
+  Require(AESWINDOW.CreateHidden(service,client,view,16,0,0,320,180)=0)
+  Require(AESWINDOW.DeleteHidden(service.windows(0))=0)
   EXEC.ReleaseSemaphore(@service.updateResource)
   AESSTATE.Bind(NULL)
   DESKSTATE.Bind(NULL)

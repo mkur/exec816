@@ -1,13 +1,15 @@
 # MagiC GUI port over Exec
 
 The current application acceptance target is MagiC's MGVIEW. Other existing
-apps may break during structural refactors. The proposed
+apps may break during structural refactors. The
 [window geometry design](magic-window-geometry-design.md) follows MagiC's
 frame objects, full layout, selected-axis slider updates and shared geometry
 for drawing/hit-testing, with focused MGVIEW acceptance.
-The [WG0–WG6 implementation plan](magic-window-geometry-plan.md) defines the
-proposed window allocation, metric mapping, selected-axis setters, rendering
-and input cutovers, with a commit and focused check for each slice.
+The [WG0–WG6 implementation plan](magic-window-geometry-plan.md) is complete:
+window allocation, metric mapping, selected-axis setters, rendering and input
+cutovers have focused checks and separate commits. See the
+[execution record](../../history/magic-window-geometry.md) for MGVIEW acceptance
+and the two-sample cost observation.
 
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use

@@ -4,13 +4,13 @@
 [Port guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing](../../contributing/testing.md)
 
-Status: implementation authorized, 2026-11-16. Progress and emitted evidence are
-recorded in [the execution record](../../history/magic-window-geometry.md).
+Status: WG0–WG6 implemented, 2026-11-16. Commits, development checks and measured
+limits are recorded in [the execution record](../../history/magic-window-geometry.md).
 MGVIEW is the sole application acceptance target. Other applications and their
-private bindings may break; they are not regression gates. This plan proposes
-adopting the design's frame tree, selected-object drawing and SCRENMGR frame-hit
-boundary together. Preparing the plan does not change the runtime contract or
-approve an additional architectural departure.
+private bindings may break; they are not regression gates. The cutover adopts
+the design's frame tree, selected-object drawing and SCRENMGR frame-hit boundary
+together. This does not establish hosted qualification or authorize further
+architectural departures.
 
 ## Outcome and fixed boundaries
 
@@ -69,6 +69,9 @@ or normal redraw fallback. The existing on-screen window-admission profile is a
 proposed temporary scope limit, not MagiC parity. Pure layout uses signed GEM
 coordinates; full off-screen window admission remains outside acceptance unless
 MGVIEW requires it. Report that requirement before broadening Layers policy.
+The creation-time FULLXYWH is metadata, not displayed admission: MGVIEW supplies
+a border at x=-1. WG6 retains that signed full rectangle while reserving a hidden
+Layers slot; open/set still require on-screen outer bounds.
 Clip the overall/shadow projection to the screen without altering canonical
 window geometry; a clipped move can take the redraw fallback.
 

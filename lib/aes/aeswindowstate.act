@@ -74,24 +74,20 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   LET view=client.view
   DESKGEOMETRY.Project(@client.frame.current,@nextBounds)
   bounds=@nextBounds
-  IF client.iconified<>0 THEN
-    bounds=@client.normalBounds
-  FI
 
   LET moved=(REGIONS.Equal(bounds,LAYERTYPES.Rect POINTER(@view.bounds))=0)
-  refresh=(client.geometryEpoch=0
-      OR client.geometryEpoch<>desktop.scene.layoutEpoch
-      OR client.geometryKind<>client.frameKind
-      OR client.geometryIconified<>client.iconified OR moved<>0)
+  refresh=(client.visibilityEpoch=0
+      OR client.visibilityEpoch<>desktop.scene.layoutEpoch
+      OR moved<>0)
   work=LAYERTYPES.Rect POINTER(@view.work)
   IF refresh<>0 THEN
     work=@nextWork
     DESKGEOMETRY.Work(client,work)
     IF client.iconified=0 THEN
       IF moved<>0 THEN
-        IF layer.bounds.right-layer.bounds.left<>
+        IF bounds.right-bounds.left<>
             view.bounds.right-view.bounds.left
-            OR layer.bounds.bottom-layer.bounds.top<>
+            OR bounds.bottom-bounds.top<>
             view.bounds.bottom-view.bounds.top THEN
           DESKCACHE.Changed(desktop,client)
         FI
@@ -114,11 +110,11 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
   FI
 
   EXEC.Forbid()
+  DESKGEOMETRY.Project(@client.frame.previous,
+      LAYERTYPES.Rect POINTER(@view.previous))
+  DESKGEOMETRY.Project(@client.frame.full,
+      LAYERTYPES.Rect POINTER(@view.full))
   IF refresh<>0 THEN
-    DESKGEOMETRY.Project(@client.frame.previous,
-        LAYERTYPES.Rect POINTER(@view.previous))
-    DESKGEOMETRY.Project(@client.frame.full,
-        LAYERTYPES.Rect POINTER(@view.full))
     A816MEMORY.Move(BYTE POINTER(@view.bounds),BYTE POINTER(bounds),8)
     A816MEMORY.Move(BYTE POINTER(@view.work),BYTE POINTER(work),8)
     view.revision==+1
@@ -134,9 +130,7 @@ PROC Publish(DESKTYPES.Window POINTER client BYTE copied)
       AND (service.updateWindow=0 OR view.handle=service.updateWindow) THEN
         service.updateHolds+service.mouseHolds ELSE CARD(0) FI
   EXEC.Permit()
-  client.geometryKind=client.frameKind
-  client.geometryIconified=client.iconified
-  client.geometryEpoch=desktop.scene.layoutEpoch
+  client.visibilityEpoch=desktop.scene.layoutEpoch
 
 RETURN
 
@@ -146,7 +140,7 @@ PUBLIC PROC Snapshot(DESKTYPES.Window POINTER client)
 
 RETURN
 
-PUBLIC PROC Geometry(DESKTYPES.Window POINTER client BYTE copied)
+PUBLIC PROC LayoutChanged(DESKTYPES.Window POINTER client BYTE copied)
 
   AESSNAPSHOT.Invalidate()
   Publish(client,copied)

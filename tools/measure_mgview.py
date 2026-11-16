@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Two-action passive MGVIEW audit using cached APPs/provider, without builds."""
+"""Two-action passive MGVIEW audit using its cached APP/provider, without builds."""
 import argparse,hashlib,json,os,re,shutil
 from collections import Counter
 from pathlib import Path
@@ -62,18 +62,6 @@ def definition(cache,p,foreign,app):
                 'Missing native semaphore observation: '+label)
         entries[p['labels'][label]]=label
         exits.append(p['labels'][label+'_end']-1)
-    copy_returns=[]
-    for path in (cache/'drawing').glob('*gem-vbxe.lst'):
-        for section in path.read_text().split('.section ')[1:]:
-            if not re.search(r'\\ 000000\s+GemDrawingCopyBorrow:',section):continue
-            for m in re.finditer(r'\\ ([0-9a-f]{6}) 22[.]{6}\s+jsl\s+long:VbxeOwnerCopyRect',section):
-                pc=foreign['symbols']['GemDrawingCopyBorrow']+int(m[1],16)
-                segment=next(s for s in foreign['segments'] if s['address']<=pc< s['address']+len(s['bytes']))
-                raw=bytes(segment['bytes'][pc-segment['address']:pc-segment['address']+4])
-                require(raw==b'\x22'+foreign['symbols']['VbxeOwnerCopyRect'].to_bytes(3,'little'),'Changed owned copy call')
-                require(pc+4 in returns,'Owned copy return was not selected')
-                copy_returns.append(pc+4)
-    require(len(copy_returns)==1,'Missing unique owned copy return')
     pcs=set(entries)|set(returns)|set(exits)|set(points)
     link=ABI['link_bank']<<16
     # Legal placements are selected before normal disk loading. No fixed base
@@ -83,7 +71,7 @@ def definition(cache,p,foreign,app):
         pcs.update(pc+delta for pc in set(app_entries)|app_returns|app_exits|set(sites))
     return dict(entries=entries,returns=returns,exits=exits,app_entries=app_entries,
         app_returns=sorted(app_returns),app_exits=sorted(app_exits),sites=sites,points=points,
-        pcs=sorted(pcs),copy_returns=copy_returns,
+        pcs=sorted(pcs),
         timeline=dict(points=clock,spans={},task_dps=[r['dp'] for r in p['build']['memory']['task_pools']]))
 
 
@@ -139,8 +127,8 @@ def analyze(out,d,base,samples):
             require(entered['return_a']==0 and entered['end']<=left['start'],'Copy grant was not owned')
             owned.append(dict(start=entered['end'],end=left['start'],
                 **timeline.measure(entered['end'],left['start'])))
-        physical=[dict(tick=t,status=int(e[5],16)) for t,e in events
-            if copy['start']<=t<=copy['end'] and int(e[9],16)==dp and int(e[4],16) in d['copy_returns']]
+        physical=[dict(tick=s['end'],status=s['return_a']) for s in selected
+            if s['kind']=='VbxeOwnerCopyRect' and copy['start']<=s['start']<s['end']<=copy['end']]
         require(physical and all(row['status']==0 for row in physical),'Owned hardware copy did not complete')
         physical_irqs=sum(copy['start']<=t<=copy['end'] and d['points'].get(int(e[4],16))=='blitter_irq_complete' for t,e in events)
         boundaries=[dict(name=points[int(e[4],16)],ms=(t-start)*1000/BASE_HZ,
@@ -254,7 +242,7 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False):
                         current=[number(cursor(n)) for n in ('cursorX','cursorY')]
                         report['pointer_positioning']=[]
                         for _ in range(3):
-                            # Park at the clipped corner, outside both windows.
+                            # Park at the clipped corner, outside the viewer.
                             # Do not rendezvous on an intermediate coordinate:
                             # queued physical packets can travel past it.
                             position=schedule(b,p,current,(639,0))

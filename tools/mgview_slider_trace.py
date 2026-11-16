@@ -1,4 +1,4 @@
-"""Passive caller-side slider costs on the existing MGVIEW/Counter fixture."""
+"""Passive caller-side slider costs on the MGVIEW-only fixture."""
 from collections import Counter, defaultdict
 
 from bitmap_console_performance import native_markers
@@ -10,15 +10,15 @@ from sio_transaction_trace import read_events
 GROUPS = {
     'scope': 'AESLOCKS_CALL',
     'mutation': 'AESWINDOW_FRAME',
-    'thumb_geometry': 'AESWINDOWSTATE_GEOMETRY DESKGEOMETRY_SLIDER DESKGEOMETRY_HSLIDER',
-    'window_view': 'AESWINDOWSTATE_PUBLISH AESWINDOWSTATE_SYNC',
+    'thumb_geometry': 'GEMFRAME_SLIDE GEMFRAME_SCALE',
+    'window_view': 'AESWINDOWSTATE_SLIDERS',
     'damage': 'LAYERS_INVALIDATE LAYERS_REPAIRED',
     'publication': 'AESLOCAL_PUBLISH',
     'input_snapshot': 'AESSNAPSHOT_PUBLISH',
     'native_frame': 'AESFRAME_PAINT',
     'renderer': 'ExecAESFrameApply DesktopFrameBorrow GemDrawingFrameBorrow',
     'fills': 'GemWidgetFill',
-    'gadgets': 'GemFrameGadget',
+    'gadgets': 'GemFrameGadgetCentered',
     'submission': 'VbxeOwnerSubmit',
     'fence': 'VbxeOwnerFence',
     'display_access': 'DisplayEnter DisplayLeave',

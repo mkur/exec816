@@ -1,24 +1,9 @@
-; Fixed desktop geometry shared by drawing, input and work-area publication.
+; Projections of the canonical GEM frame for Layers, drawing and publication.
 MODULE DESKGEOMETRY
 USE DESKTYPES
 USE GEMOBJECTS
-USE GEMFRAME
 USE LAYERTYPES
 USE REGIONS
-
-PUBLIC INT FUNC Top(CARD kind)
-  GEMOBJECTS.Rect inset
-
-  GEMFRAME.Margins(kind,@inset)
-
-RETURN(inset.y)
-
-PUBLIC INT FUNC Bottom(CARD kind)
-  GEMOBJECTS.Rect inset
-
-  GEMFRAME.Margins(kind,@inset)
-
-RETURN(inset.height)
 
 ; Rectangles in Layers and copied query views are projections of GEM GRECTs.
 PUBLIC PROC Project(GEMOBJECTS.Rect POINTER input LAYERTYPES.Rect POINTER out)
@@ -63,20 +48,6 @@ PUBLIC PROC ObjectRect(DESKTYPES.Window POINTER window INT object
     y==+frame.tree(GEMOBJECTS.O_HSCROLL).y
   FI
   REGIONS.Assign(out,x,y,x+item.width,y+item.height)
-
-RETURN
-
-PUBLIC PROC ScrollTrack(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds,track)
-
-  ObjectRect(window,GEMOBJECTS.O_VSCROLL,track)
-
-RETURN
-
-PUBLIC PROC HScrollTrack(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER bounds,track)
-
-  ObjectRect(window,GEMOBJECTS.O_HSCROLL,track)
 
 RETURN
 

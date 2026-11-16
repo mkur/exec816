@@ -1,7 +1,8 @@
 # Historical records
 
 - [MagiC window geometry](magic-window-geometry.md): shared records, canonical
-  window allocation and the MGVIEW geometry migration execution record.
+  window allocation, shared drawing/hit objects, MGVIEW acceptance and measured
+  scroll costs after the WG0–WG6 cutover.
 
 - [Caller slider drawing costs](gem-slider-drawing.md): passive caller-side
   breakdown and selected scrollbar-object painting from MagiC/GEM4XE, with

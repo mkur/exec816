@@ -13,6 +13,9 @@ retries in that caller; the manager publishes wake hints without executing it.
 This adds no Task or kernel gateway.
 The desktop, Control Panel, Files and terminal are ordinary GEM clients of
 this one service; there is no separate native window protocol.
+The current geometry cutover targets MGVIEW alone. Earlier bundled application
+and GUI fixture results are historical; they have not been revalidated against
+this geometry ABI. See the [geometry execution record](../history/magic-window-geometry.md).
 
 The current source profile in [gem.h](../../c/include/gem.h) implements
 `appl_init`, `appl_exit`, `appl_write`, `evnt_keybd`, `evnt_button`,
@@ -400,20 +403,28 @@ keep the presenter runnable. Device completions and cancelled console writes
 can retire while drawing is excluded.
 
 Each registration can own several windows; all AES windows share six desktop
-slots, with two additional layers reserved for menus. The base kind is `NAME | CLOSER | MOVER`, optionally combined with `SIZER`,
-`UPARROW`, `DNARROW`, `VSLIDE`, `LFARROW`, `RTARROW`, `HSLIDE`, `FULLER` and
-`INFO`. Create reserves a hidden
-window and returns a positive handle, or minus one on failure. Open shows it;
-close hides it and retires the open epoch without deleting the handle. Delete
-requires a closed window. Exit closes and deletes all remaining windows. Handles
-are not reused during a service lifetime. Accepted outer X positions are rounded
-down to an even pixel and widths up to an even pixel at create/open/set. Drag
-and resize proposals use the same alignment; Y and height retain single-pixel
-precision. Bounds must fit fully inside the 640 by 240 desktop.
-Fixed windows have a 32 by 32 minimum, including FULLER windows, and
-reject dimension changes. SIZER
-permits dimensions of at least 64 by 48; vertical gadgets require height 80.
-Off-screen bounds fail without mutation.
+slots, with two additional layers reserved for menus. Supported kind bits are
+`NAME`, `CLOSER`, `MOVER`, `SIZER`, `UPARROW`, `DNARROW`, `VSLIDE`, `LFARROW`,
+`RTARROW`, `HSLIDE`, `FULLER` and `INFO`; no compulsory base combination is
+imposed. Kind zero remains the Exec borderless extension described below.
+Create allocates a hidden window with an inline sixteen-object frame tree and
+two text specifications. Its signed creation rectangle supplies FULLXYWH;
+current, previous and work rectangles start empty. The hidden Layers slot has
+no displayed geometry until open. Open initializes current/previous/work;
+close clears current/work and retires the open epoch while retaining the
+allocation and handle. Delete requires a closed window and frees its record
+after route retirement. Exit closes and deletes all remaining windows. Handles
+are not reused during a service lifetime.
+
+The window owns GEM current/previous/full/work/overall rectangles, per-mille
+values and frame objects. Layers and copied query views project that model.
+MagiC's shared-border formulas use the selected 8×8 character, 16×11 box and
+11-pixel info metrics; minimum dimensions follow the linked controls. Dimensions
+can change without SIZER. Coordinates and dimensions retain pixel precision,
+including odd X/width. Displayed outer bounds must still fit the 640×240
+screen; this temporary admission limit does not constrain signed `wind_calc`
+or the creation-time full rectangle. Overall/shadow projection clips at the
+screen edge; an incompatible clipped move uses redraw.
 
 Hidden creation and ordinary closed-window deletion execute in the caller under
 the common UPDATE scope. Ordinary/PB calls use the same
@@ -431,12 +442,16 @@ before returning or releasing their handler UPDATE. UPDATE pins the window and
 frame-visible geometry throughout physical drawing. Slider changes invalidate
 and paint only the selected track/thumb object, excluding arrow cells and the
 corner. An icon retains slider values for restoration without invalidating an
-unlinked track. Frame, exposure and cache helpers borrow one 82-byte upper-memory
-console-format workspace under that
+unlinked track. Frame, exposure and cache helpers borrow one 78-byte upper-memory
+console-format workspace and a 20-byte tree/start/depth/clip descriptor under that
 UPDATE ownership through physical completion. Cursor work uses a separate
 packet; application VDI parameters remain separate too. Trusted renderer
 callbacks must not reenter AES while borrowing the workspace. This uses the
-shared GEM4XE frame raster under delegated display access.
+shared GEM4XE object traversal/prepared raster under delegated display access.
+The vertical draw visits objects 9/10 and the horizontal draw 13/14, rather
+than traversing a generic full frame behind a narrow clip. Title/info use the
+same tree renderer. A same-size move changes root origins without rewriting
+child-relative geometry.
 Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
@@ -459,7 +474,7 @@ still belongs to the application through `WM_REDRAW`. Quiescent display failure
 permits logical close/delete/exit and cleanup even when exposure cannot be drawn;
 unsafe hardware retains the driver's reset-required state.
 
-Completed frame components need no deferred setter paint. Equal
+Completed frame components need no deferred setter paint. Equal text/slider
 setters retain their existing publication and do not request painting, acquire
 physical access or establish a grant. Hidden slider changes retain metadata and
 damage for exposure; icons retain metadata for restoration. Separate unheld
@@ -476,8 +491,8 @@ changed geometry invalidates an existing visible-rectangle walk.
 
 An eligible unheld move performs its screen copy synchronously in the caller.
 The caller owns UPDATE, a local typed packet and the Layers move token until the
-existing delegated blitter borrow fences. Even X/width admission needs no edge
-staging. Cold access uses the existing standalone grant before mutation; an open
+existing delegated blitter borrow fences. Odd geometry uses the driver's packed
+edge path or redraw fallback. Cold access uses the existing standalone grant before mutation; an open
 workstation reuses its grant. Success commits the new geometry; a quiescent
 failure retires the token without publishing speculative bounds. Ordinary copy
 refusal retains the damage/redraw fallback. The manager paints exposure and
@@ -488,8 +503,8 @@ Input.device manages route capture independently; no UI re-admission follows. Ex
 routes/GUI epochs leave the hidden window and tag pool intact; failed preparation
 retires an unused route before return.
 
-Ordinary/PB closes withdraw the open epoch, GUI facts and capture, hide the window
-and publish replacement focus before route retirement. Input.device consumes the
+Ordinary/PB closes withdraw the open epoch, GUI facts and capture, hide the window,
+clear current/work and publish replacement focus before route retirement. Input.device consumes the
 lease independently. If capture still references the tag, the owning caller
 retains its hidden record and pending descriptor and retries after a wake hint.
 The manager performs no window mutation or completion on its behalf. Owner exit
@@ -513,30 +528,31 @@ matching NAME/INFO window component. Hidden windows store text without drawing;
 iconified windows paint their title and retain info text for restoration without
 painting an unlinked info component. Equal strings retain the existing publication
 and need no display access. `WF_CXYWH` moves
-or resizes the window and `WF_TOP` raises it. Work insets are left/right 8,
-top 11 and bottom 2 pixels. Vertical gadgets increase the right inset to 16;
-SIZER or horizontal gadgets increase the bottom inset to 11. INFO adds a 10-pixel information line
-below the title, raising the top inset to 21. `wind_calc` converts border/work rectangles locally; `wind_get`
+or resizes the window and `WF_TOP` raises it. With a title and both scrollbars,
+work insets are left/top/right/bottom 1/11/16/11. INFO raises the top inset to
+21. Other kinds follow MagiC's shared-border equations rather than these example
+insets. `wind_calc` converts signed border/work rectangles locally; `wind_get`
 provides `WF_KIND`, `WF_CXYWH`, `WF_WXYWH`, `WF_PXYWH`, `WF_FXYWH` and
 `WF_TOP` from published state. `WF_FXYWH` (`WF_FULLXYWH`) is the accepted
 rectangle supplied at creation. `WF_PXYWH` (`WF_PREVXYWH`) is initialized to
 the accepted open rectangle and thereafter records the previous committed
-normal geometry. Rejected/no-op mutations, focus changes and iconification
-preserve it; changing normal geometry while iconified updates it. Reopening
-initializes it again. Both queries are caller-local, including AESPB calls.
-Use those accepted rectangles after open/set; `wind_calc` itself remains an
-unsnapped border/work conversion. Fixed-size comparisons use normalized sizes.
-`WF_CURRXYWH` and `WF_WORKXYWH` are aliases. Handle zero permits desktop work and
-top queries.
+geometry. An accepted `WF_CXYWH` remembers the old current rectangle, including
+an equal request. Close preserves previous/full; reopening initializes previous
+to the new open rectangle. Rejected requests and focus changes preserve it.
+The private iconification extension retains separate normal bounds.
+Queries are caller-local, including AESPB calls. `WF_CURRXYWH` aliases
+`WF_CXYWH`; `WF_WORKXYWH` aliases `WF_WXYWH`. Handle zero permits desktop work
+and top queries.
 
 `WF_VSLIDE`/`WF_VSLSIZE` (`WF_VSLSIZ`) and
-`WF_HSLIDE`/`WF_HSLSIZE` (`WF_HSLSIZ`) set/query independent 0..1000 position
-and size, initially 0 and 1000. Setters require the corresponding slide gadget;
-values outside that range are rejected without changing state. Frame geometry
-is cached at mutation; minimum thumb length is eight pixels. Horizontal
-gadgets require an outer width of at least 64 pixels. Their bar reserves the
-corner when a vertical bar or SIZER uses it. Both axes retain state while
-hidden or iconified, and no-op setters preserve the publication revision.
+`WF_HSLIDE`/`WF_HSLSIZE` (`WF_HSLSIZ`) set/query independent position and size.
+Values clamp to [-1,1000]; positions start at zero and sizes at -1. Setters
+require the corresponding slide gadget. An equal normalized value returns
+before calculation or painting. A changed value calculates only its axis from
+the stored track, preserving MagiC's signed division/shift rounding. Minimum
+thumbs use the axis box extent, capped by a short track. Scalar query publication
+does not advance the visible-rectangle revision or rebuild input routing.
+Both axes retain state while hidden or iconified.
 
 `WF_FIRSTXYWH`/`WF_NEXTXYWH` enumerate visible work rectangles locally while the
 caller owns UPDATE or MCTRL painting permission. Geometry changes and paint
@@ -577,8 +593,8 @@ desktop is excluded. Negotiated `WM_ICONIFY` / `WF_ICONIFY` is not implemented.
 See [desktop iconification](desktop.md#iconification).
 
 Title clicks, completed title drags and closer clicks deliver `WM_TOPPED`,
-`WM_MOVED` and `WM_CLOSED` requests. The presenter commits them only when the
-application calls the corresponding set or close operation. Inactive clicks
+`WM_MOVED` and `WM_CLOSED` requests. The application commits them through the
+corresponding set or close operation. Inactive clicks
 request top first.
 
 Fuller release sends `WM_FULLED`; the application chooses its target, using
@@ -594,11 +610,18 @@ values after scrolling. These gestures never change client content by themselves
 Size/thumb outlines are nonblocking and cancellable; arrow/track release outside
 cancels. Hold repeat and live resizing remain unsupported.
 
-For application windows the presenter paints exposure and deferred frame fields
-and transfers work-area damage into durable `WM_REDRAW` delivery. Title, info
-and slider setters paint their own frame clips synchronously. The
-presenter's explicit Layers handoff retires manager damage after the complete
-frame transaction without claiming that application pixels have been drawn. Completed, fully visible clients may use
+Input delivery retains a frame click's identity, epoch, endpoint and coordinates,
+without copying thumb geometry or following frame pointers. Under UPDATE,
+SCRENMGR resolves the current window and hit-tests its stored object tree.
+Interpretation therefore uses processing-time frame geometry. Input delivery
+and keyboard inboxes continue while the manager waits for UPDATE; closing a
+target cancels its queued frame interaction before storage is freed.
+
+The originating caller or SCRENMGR interaction paints frame exposure. Work-area
+damage becomes durable `WM_REDRAW` delivery. Title, info and slider setters paint
+their own subtrees synchronously. The existing Layers handoff retires manager
+damage after the frame transaction without claiming that application pixels
+have been drawn. Completed, fully visible clients may use
 the shared VRAM snapshots. These contain the outer window, with current title
 pixels drawn live; INFO/slider changes invalidate the saved body. Conventional
 restoration still delivers external exposure, while the opt-in policy below

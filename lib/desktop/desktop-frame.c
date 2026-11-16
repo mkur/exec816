@@ -1,6 +1,6 @@
-/* Frame fragments. Compose in the existing widget strip, then
- * publish only complete pixels. Work rectangles are never part of a fragment.
- * The packet/title borrow ends at return; only a scalar glyph offset survives. */
+/* Stored frame objects, composed through the existing scratch and grant.
+ * UPDATE retains the tree/text; frame clips exclude client work. Native popup
+ * rows below retain their independent scalar glyph continuation. */
 #include <hardware/console-bitmap.h>
 #include <exec816/desktop-geometry.h>
 #include "gem-drawing.h"
@@ -31,12 +31,6 @@ static void text(WORD x,WORD y,UWORD count,UWORD pen)
 {
     GemWidgetText(x,y,glyphs,count,pen,paint->clipLeft,paint->clipTop,
                   paint->clipRight,paint->clipBottom);
-}
-
-static void gadget(UWORD image,WORD x,WORD y)
-{
-    GemFrameGadget(image,x,y,paint->clipLeft,paint->clipTop,
-                   paint->clipRight,paint->clipBottom);
 }
 
 /* The current physical borrower owns GSX scratch and this prepared object.

@@ -248,15 +248,36 @@ PUBLIC PROC Slide(GEMOBJECTS.Frame POINTER frame BYTE vertical)
 
 RETURN
 
-; _wbm_ssize: only a dimension/kind change visits the relative gadgets.
-PUBLIC PROC SetSize(GEMOBJECTS.Frame POINTER frame CARD kind
-    INT x,y,width,height)
-  INT length,origin,right,bottom
+; MagiC wind_open/ws_curr keep PREVXYWH at the operation boundary.
+PUBLIC PROC Remember(GEMOBJECTS.Frame POINTER frame)
 
   frame.previous.x=frame.current.x
   frame.previous.y=frame.current.y
   frame.previous.width=frame.current.width
   frame.previous.height=frame.current.height
+
+RETURN
+
+; wind_close retains the allocated frame and previous/full/overall rectangles.
+PUBLIC PROC Close(GEMOBJECTS.Frame POINTER frame)
+
+  frame.current.x=0
+  frame.current.y=0
+  frame.current.width=0
+  frame.current.height=0
+  frame.work.x=0
+  frame.work.y=0
+  frame.work.width=0
+  frame.work.height=0
+
+RETURN
+
+; _wbm_ssize: only a dimension/kind change visits the relative gadgets.
+PUBLIC PROC SetSize(GEMOBJECTS.Frame POINTER frame CARD kind
+    INT x,y,width,height)
+  INT length,origin,right,bottom
+
+  Remember(frame)
   frame.current.x=x
   frame.current.y=y
   frame.current.width=width

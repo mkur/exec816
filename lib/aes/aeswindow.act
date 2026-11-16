@@ -27,7 +27,7 @@ USE LAYERS
 USE REGIONS
 USE HEAPCORE
 
-BYTE FUNC ValidBounds(CARD kind INT x,y,width,height
+BYTE FUNC OnScreenBounds(INT x,y,width,height
     LAYERTYPES.Rect POINTER rect)
 
   ; Screen admission remains bounded; pure GEMFRAME.Calc has no such policy.
@@ -47,9 +47,9 @@ RETURN(first.right-first.left=second.right-second.left
     AND first.bottom-first.top=second.bottom-second.top)
 
 BYTE FUNC FitBounds(DESKTYPES.Window POINTER window
-    LAYERTYPES.Rect POINTER current,bounds INT x,y,width,height)
+    LAYERTYPES.Rect POINTER bounds INT x,y,width,height)
 
-RETURN(ValidBounds(window.frameKind,x,y,width,height,bounds)<>0
+RETURN(OnScreenBounds(x,y,width,height,bounds)<>0
     AND width>=window.frame.minWidth AND height>=window.frame.minHeight)
 
 ; The caller owns the scene and supplies the registered binding's window view.
@@ -57,14 +57,14 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client AESTYPES.WindowView POINTER view
     INT kind,x,y,width,height)
   BYTE slot,status
-  LAYERTYPES.Rect bounds
 
-  IF (kind<>0 AND (CARD(kind) & AESTYPES.WINDOW_KIND)<>AESTYPES.WINDOW_KIND)
-      OR (CARD(kind) & AESTYPES.WINDOW_SUPPORTED)<>CARD(kind) THEN
+  IF (CARD(kind) & AESTYPES.WINDOW_SUPPORTED)<>CARD(kind) THEN
     RETURN(AESTYPES.UNSUPPORTED)
   FI
 
-  IF view=NULL OR ValidBounds(CARD(kind),x,y,width,height,@bounds)=0 THEN
+  ; wind_create supplies FULLXYWH, not a displayed rectangle. MGVIEW's full
+  ; border can start at -1; only wind_open admits physical screen bounds.
+  IF view=NULL OR width<1 OR height<1 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
 
@@ -82,7 +82,7 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
           RETURN(AESTYPES.RESOURCE)
         FI
         LET item=window
-        status=LAYERS.Create(@desktop.scene,@bounds,@window.layer)
+        status=LAYERS.Create(@desktop.scene,@desktop.scene.screen,@window.layer)
         IF status<>LAYERTYPES.OK THEN
           DESKWINDOW.Free(window)
           RETURN(AESTYPES.RESOURCE)
@@ -96,7 +96,7 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         item.owner=client.id
         item.inputBound=0
         item.inputUnit=0
-        item.geometryEpoch=0
+        item.visibilityEpoch=0
         item.preserve=0
         item.focusNotices=0
         window.id=desktop.nextWindow
@@ -155,11 +155,13 @@ PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
   FI
   GEMFRAME.SetSize(@window.frame,window.frameKind,bounds.left,bounds.top,
       bounds.right-bounds.left,bounds.bottom-bounds.top)
+  ; MagiC wind_open initializes PREVXYWH to the accepted open rectangle.
+  GEMFRAME.Remember(@window.frame)
   DESKCORE.CommitFocus(desktop,window.id)
   IF client.closeRequested<>0 THEN
     AESGUI.Post(service,item,AESTYPES.GUI_CLOSED,0,0,0,0)
   FI
-  AESWINDOWSTATE.Geometry(item,0)
+  AESWINDOWSTATE.LayoutChanged(item,0)
   AESWINDOWSTATE.Sync()
 
 RETURN
@@ -185,7 +187,7 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     RETURN(AESTYPES.BUSY)
   FI
 
-  IF FitBounds(window,@layer.bounds,@bounds,request.intin(1),request.intin(2),
+  IF FitBounds(window,@bounds,request.intin(1),request.intin(2),
       request.intin(3),request.intin(4))=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
@@ -221,6 +223,7 @@ PROC CommitClose(DESKTYPES.Service POINTER desktop
     HEAPCORE.Abort($fcb5)
   FI
   DESKCORE.ForgetIcon(desktop,window)
+  GEMFRAME.Close(@window.frame)
   DESKCORE.CommitFocus(desktop,focus)
   AESWINDOWSTATE.Snapshot(item)
   AESWINDOWSTATE.Sync()
@@ -349,7 +352,7 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   IF window.iconified<>0 THEN
     REGIONS.Copy(@window.normalBounds,@current)
   FI
-  IF FitBounds(window,@current,@bounds,request.intin(2),request.intin(3),
+  IF FitBounds(window,@bounds,request.intin(2),request.intin(3),
       request.intin(4),request.intin(5))=0 THEN
     RETURN(AESTYPES.MALFORMED)
   FI
@@ -360,6 +363,13 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
       DESKCACHE.Changed(desktop,window)
     FI
     REGIONS.Copy(@bounds,@window.normalBounds)
+    AESWINDOWSTATE.Snapshot(item)
+    RETURN(AESTYPES.OK)
+  FI
+
+  IF REGIONS.Equal(@current,@bounds)<>0 THEN
+    ; MagiC ws_curr remembers CURRXYWH even when the requested size is equal.
+    GEMFRAME.Remember(@window.frame)
     AESWINDOWSTATE.Snapshot(item)
     RETURN(AESTYPES.OK)
   FI
@@ -388,7 +398,7 @@ CARD FUNC SetBounds(AESSTATE.Service POINTER service
   FI
   GEMFRAME.SetSize(@window.frame,window.frameKind,bounds.left,bounds.top,
       bounds.right-bounds.left,bounds.bottom-bounds.top)
-  AESWINDOWSTATE.Geometry(item,0)
+  AESWINDOWSTATE.LayoutChanged(item,0)
   AESWINDOWSTATE.Sync()
 
 RETURN(AESTYPES.OK)
@@ -593,9 +603,9 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       status=LAYERTYPES.OK
       IF window.iconified=0 THEN
         IF horizontal<>0 THEN
-          DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@bounds)
+          DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_HSCROLL,@bounds)
         ELSE
-          DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@bounds)
+          DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_VSCROLL,@bounds)
         FI
         status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
       FI

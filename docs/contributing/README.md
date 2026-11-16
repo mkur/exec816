@@ -27,8 +27,9 @@ inventory to assess against that baseline.
 The current application acceptance target is MagiC's MGVIEW. The user permits
 breaking other existing applications during this port; do not retain obsolete
 paths to preserve them. Keep standard GEM calls and follow MagiC's structure.
-The proposed [window geometry design](../plans/gem4xe/magic-window-geometry-design.md)
-records the next geometry and consumer boundaries. Exec synchronization,
+The [window geometry design](../plans/gem4xe/magic-window-geometry-design.md)
+and [execution record](../history/magic-window-geometry.md) record the canonical
+frame tree and its drawing/input boundaries. Exec synchronization,
 preemption and platform-safety requirements remain in force.
 
 Exec supplies Tasks, signals, ports, native semaphores, timers, memory, DOS,

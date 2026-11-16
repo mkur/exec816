@@ -110,6 +110,29 @@ PROC Open(INT window,x,y,width,height)
 
 RETURN
 
+PROC QueryRect(INT window,field,x,y,width,height)
+
+  pb.inputs(0)=window
+  pb.inputs(1)=field
+  Call(104,2,5)
+  Require(pb.outputs(0)=1 AND pb.outputs(1)=x AND pb.outputs(2)=y
+      AND pb.outputs(3)=width AND pb.outputs(4)=height)
+
+RETURN
+
+PROC SetBounds(INT window,x,y,width,height)
+
+  pb.inputs(0)=window
+  pb.inputs(1)=AESTYPES.WF_CXYWH
+  pb.inputs(2)=x
+  pb.inputs(3)=y
+  pb.inputs(4)=width
+  pb.inputs(5)=height
+  Call(105,6,1)
+  Require(pb.outputs(0)=1)
+
+RETURN
+
 PROC Close(INT window BYTE destroy)
 
   pb.inputs(0)=window
@@ -172,9 +195,13 @@ PROC Main()
   END
   Require(clientId<>0)
   first=Create(4095,13,17,320,180)
+  QueryRect(first,AESTYPES.WF_CXYWH,0,0,0,0)
+  QueryRect(first,AESTYPES.WF_PXYWH,0,0,0,0)
+  QueryRect(first,AESTYPES.WF_FXYWH,13,17,320,180)
   SetText(first,AESTYPES.WF_NAME,c"Geometry")
   SetText(first,AESTYPES.WF_INFO,c"Stored objects")
   Open(first,13,17,320,180)
+  QueryRect(first,AESTYPES.WF_PXYWH,13,17,320,180)
   pb.inputs(0)=256
   Call(78,1,1)
   Require(pb.outputs(0)=1)
@@ -228,6 +255,10 @@ PROC Main()
   FI
   Close(second,1)
   Close(first,0)
+  QueryRect(first,AESTYPES.WF_CXYWH,0,0,0,0)
+  QueryRect(first,AESTYPES.WF_WXYWH,0,0,0,0)
+  QueryRect(first,AESTYPES.WF_PXYWH,13,17,320,180)
+  QueryRect(first,AESTYPES.WF_FXYWH,13,17,320,180)
   IF INPUT_CHECKS<>0 THEN
     Rendezvous(7)
   FI
@@ -236,7 +267,12 @@ PROC Main()
     LET window=AESWINDOWSTATE.Handle(AESSTATE.Find(service,clientId),first)
     Require(window<>NULL AND window.id=identity)
   END
-  Open(first,13,17,320,180)
+  Open(first,25,19,320,180)
+  QueryRect(first,AESTYPES.WF_PXYWH,25,19,320,180)
+  SetBounds(first,37,27,320,180)
+  QueryRect(first,AESTYPES.WF_PXYWH,25,19,320,180)
+  SetBounds(first,37,27,320,180)
+  QueryRect(first,AESTYPES.WF_PXYWH,37,27,320,180)
   Close(first,1)
   pb.inputs(0)=0
   Call(107,1,1)

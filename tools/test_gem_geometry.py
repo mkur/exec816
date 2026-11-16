@@ -6,6 +6,7 @@ from pathlib import Path
 
 from calypsi_build import emit
 from generate_gem_objects import ABI, layout
+from generate_desktop import layout as desktop_layout
 from generate_console_bitmap import ABI as BITMAP
 from native_program import ROOT, build, compiler, require, verify_machine
 from os_boundary import emulator
@@ -83,12 +84,28 @@ int main(void) { return 0; }
     for name, record in ABI['records'].items():
         statements.append(f'  Require(SIZEOF(GEMOBJECTS.{name})={layout()[name]["size"]})')
     statements += [f'  Require(words({i})={v})' for i, v in enumerate(values)]
+    desktop=desktop_layout()
+    statements += [f'  Require(SIZEOF(DESKTYPES.{name})={desktop[name]["size"]})'
+                   for name in ('Window','Service')]
+    statements += ['  LET window=DESKTYPES.Window POINTER(EXEC.AllocMem(\n'
+                   '      DESKTYPES.WINDOW_SIZE,EXEC.MEMF_PUBLIC+EXEC.MEMF_CLEAR))',
+                   '  Require(window<>NULL)']
+    statements += [f'  Require(LONGCARD(ADDRESS(@window.{field}'+
+                   ('(0)' if field in ('title','info') else '')+'))=\n'
+                   f'      LONGCARD(ADDRESS(window))+{offset})'
+                   for field,offset in desktop['Window']['fields'].items()]
+    statements += ['  window.frame.current.x=-17',
+                   '  LET current=INT POINTER(ADDRESS(LONGCARD(ADDRESS(window))+'+
+                   str(desktop['Window']['fields']['frame'])+'))',
+                   '  Require(current(0)=-17)',
+                   '  EXEC.FreeMem(BYTE POINTER(window),DESKTYPES.WINDOW_SIZE)']
     source = out/'probe.act'
     source.write_text('''MODULE GEMGEOMETRYTEST
 USE EXEC
 USE HEAPCORE
 USE CALYPSICALL
 USE GEMOBJECTS
+USE DESKTYPES
 USE DISPLAY
 INCLUDE "%s"
 
