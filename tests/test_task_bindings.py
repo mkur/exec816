@@ -31,6 +31,8 @@ class TaskBindingsTests(unittest.TestCase):
         from generate_tasks import application_entry
         self.assertFalse(application_entry({'name':'M_BOOTCONFIG_INIT_1234'}))
         self.assertFalse(application_entry({'name':'M_CONSOLECAPTURE_RELEASE_1234'}))
+        for module in ('CONSOLEUI','CONSOLEGEM','CONSOLESYSTEM'):
+            self.assertFalse(application_entry({'name':'M_'+module+'_RUN_1234'}))
         self.assertTrue(application_entry({'name':'M_APPLICATION_WORKER_1234'}))
 
     def test_borrowed_storage_excludes_kernel_globals_and_preserves_bank_width(self):

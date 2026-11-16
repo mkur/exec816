@@ -1,7 +1,6 @@
 ; Console policy owns its binding; input.device owns physical capture.
 MODULE CONSOLECAPTURE
 USE EXEC
-USE CONSOLEUI
 USE CONSOLEINPUTEPOCH
 USE INPUT
 USE INPUTCLIENT
@@ -11,7 +10,6 @@ USE HEAPCORE
 USE A816MEMORY AS MEM
 INCLUDE "console-storage-action.inc"
 PUBLIC CONST WAKE_MASK=$40000000
-INPUT.Lease lease
 INPUT.Config config
 INPUTDEVICE.Consumer receiver
 BYTE POINTER client
@@ -31,13 +29,12 @@ RETURN(client<>NULL)
 
 PUBLIC BYTE FUNC Active()
 
-RETURN(client<>NULL OR lease.state=INPUT.ACTIVE)
+RETURN(client<>NULL)
 
-; GUI consumption remains in the frontend until IM6. No private device lease
-; is exposed by the shared path; its route operations use the public binding.
-PUBLIC INPUT.Lease POINTER FUNC GetLease()
+; Borrowed public control handle; it grants no native Take authority.
+PUBLIC BYTE POINTER FUNC Binding()
 
-RETURN(@lease)
+RETURN(client)
 
 PUBLIC BYTE FUNC Acquire()
   CARD status
@@ -52,9 +49,6 @@ PUBLIC BYTE FUNC Acquire()
   config.filter0Mask=$bf
   config.filterCount=1
   config.flags=INPUT.CAPTURE_BREAK
-  IF CONSOLEUI.Enabled()<>0 THEN
-    RETURN(INPUT.Acquire(@lease,@config)=INPUT.OK)
-  FI
   client=INPUTCLIENT.Open()
   IF client=NULL THEN
     RETURN(0)
@@ -76,37 +70,19 @@ RETURN(1)
 
 PUBLIC CARD FUNC CreateRoute(CARD flags LONGCARD POINTER tag)
 
-  IF client<>NULL THEN
-    RETURN(INPUTCLIENT.CreateRoute(client,INPUT.SOURCE_KEYBOARD,flags,tag))
-  FI
-
-RETURN(INPUT.CreateRoute(@lease,flags,tag))
+RETURN(INPUTCLIENT.CreateRoute(client,INPUT.SOURCE_KEYBOARD,flags,tag))
 
 PUBLIC CARD FUNC RetireRoute(LONGCARD tag)
 
-  IF client<>NULL THEN
-    RETURN(INPUTCLIENT.RetireRoute(client,INPUT.SOURCE_KEYBOARD,tag))
-  FI
-
-RETURN(INPUT.RetireRoute(@lease,tag))
+RETURN(INPUTCLIENT.RetireRoute(client,INPUT.SOURCE_KEYBOARD,tag))
 
 PUBLIC CARD FUNC Discard(LONGCARD tag)
 
-  IF client<>NULL THEN
-    RETURN(INPUTCLIENT.Discard(client,INPUT.SOURCE_KEYBOARD,tag))
-  FI
-
-RETURN(INPUT.Discard(@lease,tag))
+RETURN(INPUTCLIENT.Discard(client,INPUT.SOURCE_KEYBOARD,tag))
 
 PUBLIC PROC Publish(LONGCARD tag)
-  CARD status
 
-  IF client<>NULL THEN
-    status=INPUTCLIENT.PublishRoute(client,INPUT.SOURCE_KEYBOARD,tag)
-  ELSE
-    status=INPUT.PublishRoute(@lease,tag)
-  FI
-  IF status<>INPUT.OK THEN
+  IF INPUTCLIENT.PublishRoute(client,INPUT.SOURCE_KEYBOARD,tag)<>INPUT.OK THEN
     HEAPCORE.Abort($ff95)
   FI
 
@@ -121,8 +97,6 @@ PUBLIC PROC Release()
     FI
     INPUTCLIENT.Close(client)
     client=NULL
-  ELSEIF INPUT.Release(@lease)<>INPUT.OK THEN
-    HEAPCORE.Abort($ff95)
   FI
   EXEC.Forbid()
   LET routes=CONSOLETYPES.Routes POINTER(ADDRESS(CS_ROUTES))

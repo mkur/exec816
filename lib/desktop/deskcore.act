@@ -5,6 +5,7 @@ USE AESWINDOWSTATE
 USE AESMOUSE
 USE EXEC
 USE INPUT
+USE INPUTCLIENT
 USE A816MEMORY
 USE HEAPCORE
 USE DESKTYPES
@@ -88,7 +89,7 @@ PUBLIC PROC PublishInput(DESKTYPES.Service POINTER service)
       FI
     END
 
-    inputStatus=INPUT.PublishRoute(INPUT.Lease POINTER(service.keyboard),route)
+    inputStatus=INPUTCLIENT.PublishRoute(service.keyboard,INPUT.SOURCE_KEYBOARD,route)
     IF inputStatus<>INPUT.OK THEN
       HEAPCORE.Abort($fae8)
     FI

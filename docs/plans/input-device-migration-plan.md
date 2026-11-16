@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM5 are recorded; IM6–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM6 are recorded; IM7–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -281,6 +281,19 @@ callback/stack cost. Split keyboard and pointer/manager commits if necessary.
 **Commit:** `Separate AES input delivery from manager interaction`.
 
 ## IM6 — switch GUI startup to the shared input service
+
+Status: implemented shared keyboard/pointer ownership and copied callback entry
+points in GUI startup. All production GUI source Acquire/Take/Release calls are
+removed. Public client handles control keyboard focus routes; pointer detach
+retires callbacks before manager/cursor teardown. Pointer preference changes and
+samples share short Task guards; drag code receives copied pointer values.
+The focused two-Counter fixture includes pointer-busy startup rollback/retry,
+input inbox delivery and console acceptance during UPDATE ownership. Evidence:
+[IM6 development record](../development/input-device-im6.json).
+Fixed/root/kernel/idle/per-Task reserved bank-zero delta: **0 bytes**; existing
+Task pools and 16-entry admission table stay the same size. The separated GUI
+uses input, backend and frontend Tasks; root plus two Counters occupies six pools.
+This is input migration only; SM3/SM4 remain outstanding.
 
 Depends on IM0's selected GUI placement and IM5. The input Task acquires both
 configured sources, then AES attaches its consumer. Move GUI lifetime/display

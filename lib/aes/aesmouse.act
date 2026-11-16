@@ -54,9 +54,15 @@ PUBLIC BYTE FUNC DragReady(LONGCARD client,epoch)
 RETURN(owner=client AND owner<>0 AND openEpoch=epoch
     AND latest.buttons<>0 AND needRelease=0)
 
-PUBLIC AESTYPES.InputRecord POINTER FUNC PointerSample()
+; Callers receive a consistent value; input.device may advance latest at any
+; normal Task boundary, independently of the caller's scene/UPDATE ownership.
+PUBLIC PROC CopySample(AESTYPES.InputRecord POINTER sample)
 
-RETURN(@latest)
+  EXEC.Forbid()
+  A816MEMORY.Move(BYTE POINTER(sample),BYTE POINTER(@latest),AESTYPES.INPUTRECORD_SIZE)
+  EXEC.Permit()
+
+RETURN
 
 ; The routed work recipient owns form selection, independently of Task
 ; scheduling and UPDATE admission. Explicit MCTRL can select a windowless app.

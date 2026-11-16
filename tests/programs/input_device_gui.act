@@ -1,0 +1,73 @@
+; Minimal live GUI ownership, failed startup and concurrent console acceptance.
+MODULE INPUTDEVICEGUI
+USE EXEC
+USE INPUT
+USE INPUTDRIVER
+USE CONSOLECAPTURE
+USE CONSOLEDRIVER
+USE DOS
+USE AESBOOT
+USE AESSTATE
+USE AESCORE
+USE HEAPCORE
+
+CARD checks,ready,mode,writeCommand
+INPUT.Lease blockedPointer
+INPUT.Config pointerConfig
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fb70+checks)
+  FI
+  checks==+1
+
+RETURN
+
+; The root reserves the physical pointer to force the GUI attach prefix to fail.
+PROC StartupProbe()
+
+  LET before=EXEC.AvailMem(0)
+  LET bit=EXEC.AllocSignal(-1)
+  Require(bit<>$ff)
+  pointerConfig.wakeMask=LONGCARD(1) LSH bit
+  pointerConfig.version=INPUT.VERSION
+  pointerConfig.source=INPUT.SOURCE_POINTER
+  pointerConfig.pointerProtocol=INPUT.POINTER_ST
+  pointerConfig.pointerPort=INPUT.POINTER_PORT
+  pointerConfig.flags=INPUT.POINTER_RELATIVE
+  Require(INPUT.Acquire(@blockedPointer,@pointerConfig)=INPUT.OK)
+  Require(CONSOLEDRIVER.Start()=0)
+  Require(CONSOLEDRIVER.State()=0 AND CONSOLECAPTURE.Active()=0)
+  Require(INPUT.Release(@blockedPointer)=INPUT.OK)
+  EXEC.FreeSignal(bit)
+  Require(INPUTDRIVER.Stop()<>0)
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+
+PROC Main()
+
+  LET available=EXEC.AvailMem(0)
+  Require(CountersStart()<>0)
+  ready=1
+  WHILE mode<>9 DO
+    IF writeCommand=1 THEN
+      BEGIN
+        LET stream=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
+        Require(stream<>NULL)
+        Require(DOS.Write(stream,BYTE POINTER(c"input alive\n"),12)=12)
+        Require(DOS.Close(stream)<>0)
+        DOS.ReleaseContext()
+        writeCommand=2
+      END
+    FI
+    EXEC.Yield()
+  OD
+  Require(CountersStop()<>0)
+  Require(EXEC.AvailMem(0)=available)
+  LET service=AESSTATE.Get()
+  Require(service.count=0 AND AESCORE.Idle(service)<>0)
+
+RETURN
+ENDMODULE

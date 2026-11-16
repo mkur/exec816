@@ -35,10 +35,9 @@ acknowledges after callback/source retirement. Close requires a detached binding
 
 The service Task uses signals and an owned request port, sleeps while idle and
 calls bounded handlers without a driver guard. It never calls AES or draws.
-Stop refuses live opens. This slice starts the Task only in isolated service
-fixtures or selected standalone console startup. The standard console starts
-the shared input service before its display frontend and backend, then attaches
-its native consumer. GUI source acquisition remains in the frontend until IM6. The extracted AES
+Stop refuses live opens. Console startup starts the shared input service before the selected display
+frontend and backend. Standard text attaches keyboard alone; GEM attaches the
+keyboard and relative pointer through public device handles. The extracted AES
 consumer resolves copied AESSNAPSHOT routes and publishes application inboxes
 without UPDATE or scene access. Native menu/drag interactions enter guarded
 copied queues for the manager; pointer normalization occurs once in the

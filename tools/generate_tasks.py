@@ -410,6 +410,10 @@ ENDMODULE
 
 
 def application_entry(routine):
+    # Selected frontend bindings are called in their owning Task. They do not
+    # register additional independently admissible application entries.
+    if routine['name'].startswith(('M_CONSOLEUI_', 'M_CONSOLEGEM_', 'M_CONSOLESYSTEM_')):
+        return False
     if routine['name'].startswith(('M_DESKMENU_', 'M_DESKMENUPAINT_', 'M_DESKMENUCACHE_', 'M_LAYERCACHE_')):
         return False
     if routine['name'].startswith(('M_AESCORE_', 'M_AESCURSOR_', 'M_AESSYSTEM_', 'M_AESWAIT_', 'M_AESHOST_', 'M_AESBOOT_', 'M_AESSTATE_', 'M_AESGATE_', 'M_AESSNAPSHOT_', 'M_AESDEFER_', 'M_AESMOUSE_',

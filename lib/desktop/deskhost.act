@@ -48,7 +48,7 @@ PUBLIC BYTE FUNC Start()
   FI
 
   LET windows=CONSOLEWINDOWS.Registry()
-  service.keyboard=BYTE POINTER(CONSOLECAPTURE.GetLease())
+  service.keyboard=CONSOLECAPTURE.Binding()
   service.consoleFocus=@windows.focusSlot
   IF DESKINPUT.Start()=0 THEN
     DESKMENU.Stop()

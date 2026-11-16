@@ -71,8 +71,9 @@ PUBLIC PROC Cancel()
   blocked=1
   IF appVisual<>0 THEN
     BEGIN
-      LET samplePointer=AESMOUSE.PointerSample()
-      blocked=samplePointer.buttons<>0
+      AESTYPES.InputRecord sampleCopy
+      AESMOUSE.CopySample(@sampleCopy)
+      blocked=sampleCopy.buttons<>0
     END
   FI
   dirty=1
@@ -199,8 +200,9 @@ PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
   REGIONS.Assign(@origin,0,0,request.intin(3),request.intin(4))
   dirty=1
   BEGIN
-    LET samplePointer=AESMOUSE.PointerSample()
-    Position(samplePointer.x,samplePointer.y)
+    AESTYPES.InputRecord sampleCopy
+      AESMOUSE.CopySample(@sampleCopy)
+    Position(sampleCopy.x,sampleCopy.y)
   END
   request.intout(0)=1
 
@@ -208,6 +210,7 @@ RETURN(AESTYPES.OK)
 
 ; Capture and MCTRL own the lifetime. This remains cheap on each presenter turn.
 PUBLIC PROC Track()
+  AESTYPES.InputRecord sampleCopy
 
   IF appOwner=0 THEN
     RETURN
@@ -220,8 +223,8 @@ PUBLIC PROC Track()
     RETURN
   FI
 
-  LET samplePointer=AESMOUSE.PointerSample()
-  Position(samplePointer.x,samplePointer.y)
+  AESMOUSE.CopySample(@sampleCopy)
+  Position(sampleCopy.x,sampleCopy.y)
 
 RETURN
 

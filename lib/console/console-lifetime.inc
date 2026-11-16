@@ -141,7 +141,7 @@ PUBLIC BYTE FUNC Start()
   BYTE okay
   CARD generation
 
-  IF CONSOLEUI.Enabled()=0 AND INPUTDRIVER.Start()=0 THEN
+  IF INPUTDRIVER.Start()=0 THEN
     RETURN(0)
   FI
 

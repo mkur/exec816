@@ -1,14 +1,26 @@
 #include "../../examples/gem-counter/counter.h"
 #include <exec816/runtime.h>
 #include <proto/exec.h>
+#include <gem.h>
+#include <exec816/aes.h>
 extern struct Counter GEMCounters[2];
 volatile UWORD CounterPause[2],CounterHeld[2],CounterEvents[2],CounterBoth[2];
+volatile UWORD CounterInputHold[2],CounterInputHeld[2];
+volatile ULONG CounterInputInbox[2];
 volatile UWORD CounterMessages[2][4];
 void CounterBeforeWait(struct Counter *app)
 {
     UWORD who=app==GEMCounters ? 0:1;
+    CounterInputInbox[who]=(ULONG)ExecAESContext()->endpoint->input;
     while (CounterPause[who]) { CounterHeld[who]=1; ExecYield(); }
     CounterHeld[who]=0;
+    if (CounterInputHold[who]) {
+        if (!wind_update(BEG_UPDATE)) return;
+        CounterInputHeld[who]=1;
+        while (CounterInputHold[who]) ExecYield();
+        wind_update(END_UPDATE);
+        CounterInputHeld[who]=0;
+    }
 }
 extern void CounterNoticeOne(void),CounterNoticeTwo(void);
 void CounterObserved(struct Counter *app,WORD events)
@@ -33,7 +45,8 @@ extern UWORD GEMCountersStart(void),GEMCountersStop(void);
 volatile UWORD CounterTimerPause[2],CounterTimerHeld[2];
 volatile UWORD CounterPostCommand,CounterPostDone,CounterPostStatus;
 WORD CounterPostWords[8];
-#define HOLD_COUNT 5
+/* Root, input.device, backend and selected frontend occupy four slots. */
+#define HOLD_COUNT 4
 extern volatile UWORD GEMCountersDone;
 static struct Task *holds[HOLD_COUNT];
 static volatile UWORD holdDone,holdReady;

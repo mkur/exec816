@@ -1,0 +1,154 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "cases": [
+    "pointer-busy GUI startup rollback and retry",
+    "two ordinary GEM Counters",
+    "key/button inbox and console write while A owns UPDATE",
+    "retained manager interaction resumes after UPDATE"
+  ],
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "runtime": {
+    "status": 0,
+    "native_nmi_count": 578,
+    "native_irq_count": 35248,
+    "return_s": 11278,
+    "return_d": 3328,
+    "return_p": 0,
+    "return_e": 0,
+    "switches": 1135,
+    "created": 7,
+    "live_tasks": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 549,
+        "untouched_above_floor": 731
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 398,
+        "untouched_above_floor": 658
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 160,
+        "untouched_above_floor": 896
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 618,
+        "untouched_above_floor": 438
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 608,
+        "untouched_above_floor": 448
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 805,
+        "untouched_above_floor": 1499
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "native_checks": 14,
+  "slice": "IM6",
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "additional_occupied_service_tasks": 1,
+    "peak_steady_task_pools": 6,
+    "native_client_heap_bytes_per_source_binding": 133
+  },
+  "host": {
+    "status": "pass",
+    "cases": 718,
+    "skipped": 5
+  },
+  "xex_sha256": "50e67d3d2c26d8954b2beaaa4cc7f28201566d0b82ea19a9eb75699abf832ea2",
+  "compiler": {
+    "schema_version": 1,
+    "repository": "https://github.com/mkur/actionc.git",
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "binary": "actionc-65816",
+    "target": "wdc-65816-native",
+    "abi": "action65816.native.v2",
+    "image_format_version": 3,
+    "abi_json": "docs/abi/action65816-native-v2.json",
+    "abi_assembly": "docs/abi/action65816-native-v2.inc",
+    "abi_action": "docs/abi/action65816-native-v2.act"
+  }
+}

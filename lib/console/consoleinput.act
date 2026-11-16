@@ -1,5 +1,4 @@
-; Captured keyboard/menu dispatch stays in the system Task. Cooked input and
-; stream reads belong to the backend; ingress contains copied records only.
+; Input Task delivers copied routes; the console backend owns stream reads.
 MODULE CONSOLEINPUT
 USE EXEC
 USE CONSOLEUI
@@ -19,6 +18,10 @@ PUBLIC PROC Deliver(LONGCARD context INPUT.Event POINTER event)
   LET service=CONSOLETYPES.Service POINTER(ADDRESS(context))
   EXEC.Forbid()
   IF service.stop=0 THEN
+    IF CONSOLEUI.Key(event)<>0 THEN
+      EXEC.Permit()
+      RETURN
+    FI
     entry=CONSOLEFOREGROUND.Resolve(event.route)
     IF entry<>NULL THEN
       CONSOLEINGRESS.Capture(entry.unit,event)
@@ -27,69 +30,5 @@ PUBLIC PROC Deliver(LONGCARD context INPUT.Event POINTER event)
   EXEC.Permit()
 
 RETURN
-
-; Route at most RAW_SLOTS events. A full count may leave work; a shorter count
-; means Take observed EMPTY unless menu input was deferred. Invalid authority is
-; an invariant failure, never an empty observation that discards its wake.
-PUBLIC CARD FUNC Pump(CONSOLETYPES.Instance POINTER instance)
-  INPUT.Event capturedEvent
-  CARD consumed,status
-  CONSOLETYPES.Window POINTER entry
-
-  IF CONSOLECAPTURE.Shared()<>0 THEN
-    RETURN(0)
-  FI
-  consumed=0
-  WHILE consumed<CONSOLETYPES.RAW_SLOTS DO
-    IF CONSOLEUI.KeyReady()=0 THEN
-      EXIT
-    FI
-    status=INPUT.Take(CONSOLECAPTURE.GetLease(),@capturedEvent)
-    IF status=INPUT.EMPTY THEN
-      EXIT
-    FI
-
-    IF status<>INPUT.OK THEN
-      HEAPCORE.Abort(4)
-    FI
-
-    IF CONSOLEUI.Key(@capturedEvent)=0 THEN
-      EXEC.Forbid()
-      entry=CONSOLEFOREGROUND.Resolve(capturedEvent.route)
-      IF entry<>NULL THEN
-        CONSOLEINGRESS.Capture(entry.unit,@capturedEvent)
-      FI
-      EXEC.Permit()
-    FI
-
-    consumed==+1
-  OD
-
-RETURN(consumed)
-
-; Keep possible work across turns until a bounded drain actually observes EMPTY.
-; New arrivals after collection keep their signal even if this drain clears the
-; local flag. Only the worker calls this helper; the flag belongs to its frame.
-PUBLIC BYTE FUNC Service(CONSOLETYPES.Instance POINTER instance LONGCARD bits
-    BYTE pending)
-  CARD pumped
-
-  IF (bits & CONSOLECAPTURE.WAKE_MASK)<>0 THEN
-    pending=1
-  FI
-
-  IF pending<>0 THEN
-    pumped=Pump(instance)
-    ; Keep a deferred-key hint before advancement can clear the menu block.
-    pending=(pumped=CONSOLETYPES.RAW_SLOTS OR CONSOLEUI.KeyReady()=0)
-    IF pumped<>0 THEN
-      ; Start captured menu feedback in this turn, after the bounded drain.
-      IF CONSOLEUI.SystemOwned()<>0 THEN
-        CONSOLEUI.Advance()
-      FI
-    FI
-  FI
-
-RETURN(pending)
 
 ENDMODULE

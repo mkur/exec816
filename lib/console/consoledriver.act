@@ -447,7 +447,7 @@ RETURN
 
 BYTE FUNC SystemInput(LONGCARD bits BYTE pending)
 
-RETURN(CONSOLEINPUT.Service(GetInstance(),bits,pending))
+RETURN(0)
 
 BYTE FUNC SystemRunnable(BYTE pending)
 

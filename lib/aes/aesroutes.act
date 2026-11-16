@@ -1,8 +1,8 @@
 ; Window route resources stay separate from scene and GUI publication.
-; Preparation/rollback run outside the scene; only the presenter drains input.
+; Preparation/rollback run outside the scene; the input Task drains capture.
 MODULE AESROUTES
 USE INPUT
-USE CONSOLEINPUT
+USE INPUTCLIENT
 USE AESSTATE
 USE AESTYPES
 USE AESGATE
@@ -15,9 +15,9 @@ PUBLIC CARD FUNC Prepare(DESKTYPES.Window POINTER window LONGCARD POINTER route)
   CARD status
 
   LET desktop=DESKSTATE.Get()
-  LET keyboard=INPUT.Lease POINTER(desktop.keyboard)
+  LET keyboard=desktop.keyboard
   route^=0
-  status=INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,route)
+  status=INPUTCLIENT.CreateRoute(keyboard,INPUT.SOURCE_KEYBOARD,INPUT.ROUTE_UNFILTERED,route)
   IF status<>INPUT.OK THEN
     RETURN(AESTYPES.RESOURCE)
   FI
@@ -30,7 +30,7 @@ PUBLIC PROC Discard(LONGCARD route)
   IF route<>0 THEN
     BEGIN
       LET desktop=DESKSTATE.Get()
-      IF INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),route)<>INPUT.OK THEN
+      IF INPUTCLIENT.RetireRoute(desktop.keyboard,INPUT.SOURCE_KEYBOARD,route)<>INPUT.OK THEN
         HEAPCORE.Abort($fcc2)
       FI
     END
@@ -40,11 +40,10 @@ RETURN
 
 ; The scene has withdrawn the window and published its replacement focus.
 ; Retain the hidden window and tag across a busy input retirement retry.
-; Callers never consume from the presenter's lease; BUSY keeps its existing
+; Callers use the shared device control handle; BUSY keeps its existing
 ; RPC drain continuation, including the retained window/view lifetime.
 PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window
     AESTYPES.Request POINTER request)
-  CARD captured
 
   IF window.keyRoute=0 THEN
     RETURN(1)
@@ -52,10 +51,7 @@ PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window
 
   LET desktop=DESKSTATE.Get()
   LET held=AESGATE.Leave()
-  IF held<>AESGATE.CALLER THEN
-    captured=CONSOLEINPUT.Pump(NULL)
-  FI
-  LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),
+  LET result=INPUTCLIENT.RetireRoute(desktop.keyboard,INPUT.SOURCE_KEYBOARD,
       window.keyRoute)
   AESGATE.Reenter(held,request)
   IF result=INPUT.BUSY THEN

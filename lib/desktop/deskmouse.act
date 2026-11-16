@@ -1,6 +1,7 @@
 ; Desktop policy over timed relative INPUT records. No IRQ or timer work.
 MODULE DESKMOUSE
 USE INPUT
+USE EXEC
 USE DESKMOUSECONFIG
 INCLUDE "mouse-gains.inc"
 
@@ -19,9 +20,11 @@ PUBLIC PROC Start(INT x,y BYTE selected)
 
 RETURN
 
-; Only the presenter calls this. Keep a gesture's gain through its release.
+; Frontend preferences and input normalization share one short Task guard.
+; Keep a gesture's gain through its release.
 PUBLIC INT FUNC Profile(INT profile)
 
+  EXEC.Forbid()
   IF profile>=0 THEN
     requestedProfile=BYTE(profile)
     IF holding=0 AND selectedProfile<>requestedProfile THEN
@@ -31,7 +34,10 @@ PUBLIC INT FUNC Profile(INT profile)
     FI
   FI
 
-RETURN(INT(requestedProfile))
+  LET chosen=INT(requestedProfile)
+  EXEC.Permit()
+
+RETURN(chosen)
 
 ; The curve uses only these fixed gains; no general arithmetic helper is needed.
 INT FUNC ScaledDistance(INT steps BYTE gain)
@@ -80,6 +86,7 @@ PUBLIC PROC Apply(INPUT.Event POINTER event)
   BYTE gain
   INT steps,distance
 
+  EXEC.Forbid()
   IF event.kind=INPUT.EVENT_LOSS
       OR (event.motionInfo & INPUT.MOTION_CLASS_MASK)=INPUT.MOTION_RESET THEN
     remainderX=0
@@ -115,6 +122,7 @@ PUBLIC PROC Apply(INPUT.Event POINTER event)
   event.y=pixelY
   event.motionInfo=0
   event.flags=event.flags & BYTE(255-INPUT.RELATIVE)
+  EXEC.Permit()
 
 RETURN
 ENDMODULE

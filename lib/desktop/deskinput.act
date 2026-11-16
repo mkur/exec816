@@ -1,4 +1,4 @@
-; One presenter consumes captured input. IRQ code follows no window pointers.
+; input.device delivers copied input; the frontend interprets manager work.
 MODULE DESKINPUT
 USE DISPLAY
 USE EXEC
@@ -13,6 +13,8 @@ USE AESMOUSE
 USE AESSTATE
 USE AESCURSOR
 USE INPUT
+USE INPUTDEVICE
+USE INPUTCLIENT
 USE DESKMOUSE
 USE DESKMOUSECONFIG
 USE A816MEMORY
@@ -26,12 +28,12 @@ USE CONSOLEBITMAP
 USE HEAPCORE
 USE CONSOLETYPES
 
-INPUT.Lease lease
-INPUT.Config config
+BYTE POINTER pointerClient
+INPUTDEVICE.Consumer receiver
 LONGCARD wakeMask,route
 INT cursorX,cursorY
 CARD buttons
-BYTE pending,dirty,acquired,signalBit,released
+BYTE dirty,acquired,signalBit,released
 INPUT.Event ARRAY deferredKeys(CONSOLETYPES.RAW_SLOTS)
 BYTE keyHead,keyCount,keyLost
 
@@ -106,10 +108,6 @@ PUBLIC LONGCARD FUNC Mask()
 
 RETURN(wakeMask)
 
-PUBLIC BYTE FUNC FreshPending()
-
-RETURN(pending)
-
 PUBLIC BYTE FUNC Start()
   CARD status
 
@@ -119,39 +117,45 @@ PUBLIC BYTE FUNC Start()
   FI
 
   wakeMask=LONGCARD(1) LSH signalBit
-  A816MEMORY.Clear(BYTE POINTER(@config),INPUT.CONFIG_BYTES)
-  config.version=INPUT.VERSION
-  config.source=INPUT.SOURCE_POINTER
-  config.wakeMask=wakeMask
-  config.pointerProtocol=INPUT.POINTER_ST
-  config.pointerPort=INPUT.POINTER_PORT
-  config.flags=INPUT.POINTER_RELATIVE
-  status=INPUT.Acquire(@lease,@config)
-  IF status=INPUT.OK THEN
-    status=INPUT.CreateRoute(@lease,0,@route)
+  pointerClient=INPUTCLIENT.Open()
+  IF pointerClient<>NULL THEN
+    A816MEMORY.Clear(BYTE POINTER(@receiver),INPUTDEVICE.CONSUMER_BYTES)
+    receiver.version=INPUTDEVICE.VERSION
+    receiver.sources=INPUTDEVICE.POINTER_SET
+    receiver.entry=LONGCARD(ADDRESS(@CapturePointer))
+    receiver.pointerConfig.pointerProtocol=INPUT.POINTER_ST
+    receiver.pointerConfig.pointerPort=INPUT.POINTER_PORT
+    receiver.pointerConfig.flags=INPUT.POINTER_RELATIVE
+    ; Initialize all callback state before source acquisition can deliver.
+    DESKDRAG.Reset()
+    AESMOUSE.Reset()
+    cursorX=320
+    cursorY=120
+    DESKMOUSE.Start(cursorX,cursorY,DESKMOUSECONFIG.DEFAULT)
+    buttons=0
+    released=0
+    keyHead=0
+    keyCount=0
+    keyLost=0
+    dirty=1
+    status=INPUTCLIENT.Attach(pointerClient,@receiver)
     IF status=INPUT.OK THEN
-      status=INPUT.PublishRoute(@lease,route)
+      status=INPUTCLIENT.CreateRoute(pointerClient,INPUT.SOURCE_POINTER,0,@route)
+      IF status=INPUT.OK THEN
+        status=INPUTCLIENT.PublishRoute(pointerClient,INPUT.SOURCE_POINTER,route)
+      FI
+      IF status=INPUT.OK THEN
+        acquired=1
+        RETURN(1)
+      FI
+      status=INPUTCLIENT.Detach(pointerClient)
+      IF status<>INPUT.OK THEN
+        HEAPCORE.Abort($faea)
+      FI
     FI
-
-    IF status<>INPUT.OK THEN
-      status=INPUT.Release(@lease)
-    ELSE
-      acquired=1
-      DESKDRAG.Reset()
-      AESMOUSE.Reset()
-      cursorX=320
-      cursorY=120
-      DESKMOUSE.Start(cursorX,cursorY,DESKMOUSECONFIG.DEFAULT)
-      buttons=0
-      released=0
-      pending=1
-      dirty=1
-
-
-      RETURN(1)
-    FI
+    INPUTCLIENT.Close(pointerClient)
+    pointerClient=NULL
   FI
-
   EXEC.FreeSignal(signalBit)
   wakeMask=0
 
@@ -162,22 +166,20 @@ PUBLIC PROC Stop()
   BYTE drawn
 
   IF acquired<>0 THEN
-
-
-
-    DESKDRAG.Cancel()
-    DESKDRAG.Present()
-    drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
-    status=INPUT.Release(@lease)
+    ; Acknowledgment retires callbacks before manager/cursor state or signals.
+    status=INPUTCLIENT.Detach(pointerClient)
     IF status<>INPUT.OK THEN
       HEAPCORE.Abort($faea)
     FI
-
+    INPUTCLIENT.Close(pointerClient)
+    pointerClient=NULL
+    DESKDRAG.Cancel()
+    DESKDRAG.Present()
+    drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
     EXEC.FreeSignal(signalBit)
     acquired=0
     wakeMask=0
     route=0
-    pending=0
     dirty=0
 
 
@@ -294,7 +296,6 @@ PROC Consume(INPUT.Event POINTER sample)
 
   LET service=DESKSTATE.Get()
   IF sample.kind=INPUT.EVENT_LOSS THEN
-    AESMOUSE.Lost()
     DESKMENU.Cancel()
     released=0
     DESKDRAG.Cancel()
@@ -349,8 +350,7 @@ BYTE FUNC MouseEnter()
 RETURN(0)
 
 ; Classify fresh absolute capture once, before any deferred native replay.
-PROC Fresh(INPUT.Event POINTER sample BYTE nativeAllowed)
-  BYTE scope
+PROC Fresh(INPUT.Event POINTER sample)
 
   ; Observe the latest cursor separately from retained gesture events.
   IF sample.kind<>INPUT.EVENT_LOSS THEN
@@ -376,19 +376,8 @@ PROC Fresh(INPUT.Event POINTER sample BYTE nativeAllowed)
   FI
 
   IF AESMOUSE.Route(sample)=0 THEN
-    scope=0
-    IF nativeAllowed<>0 AND AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0 THEN
-      scope=MouseEnter()
-    FI
-    IF scope=0 THEN
-      AESMOUSE.Retained()
-      AESINPUT.Push(sample)
-    ELSE
-      Consume(sample)
-      IF scope=2 THEN
-        AESLOCKS.SystemEnd()
-      FI
-    FI
+    AESMOUSE.Retained()
+    AESINPUT.Push(sample)
   FI
 
 RETURN
@@ -400,7 +389,7 @@ PUBLIC PROC CapturePointer(LONGCARD context INPUT.Event POINTER captured)
 
   A816MEMORY.Move(BYTE POINTER(@sample),BYTE POINTER(captured),INPUT.EVENT_BYTES)
   DESKMOUSE.Apply(@sample)
-  Fresh(@sample,0)
+  Fresh(@sample)
   AESMOUSE.RefreshSnapshot()
   LET desktop=DESKSTATE.Get()
   IF desktop<>NULL AND wakeMask<>0 THEN
@@ -409,65 +398,36 @@ PUBLIC PROC CapturePointer(LONGCARD context INPUT.Event POINTER captured)
 
 RETURN
 
-; Retain a hint only until an actual empty observation. Never poll while idle.
+; Only retained manager interactions run here. Physical capture and ordinary
+; application inbox delivery continue independently in input.device.
 PUBLIC PROC Service(LONGCARD bits)
   INPUT.Event sample
-  CARD count,status
+  CARD count
   BYTE scope
 
   IF acquired=0 THEN
     RETURN
   FI
-
   IF AESGATE.SystemOwned()<>0 THEN
     AESSNAPSHOT.Publish()
   FI
-  IF (bits & wakeMask)<>0 THEN
-    pending=1
-  FI
-
   count=0
-  WHILE count<16 DO
-    scope=0
-    IF AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0
-        AND AESINPUT.Pending()<>0 THEN
-      scope=MouseEnter()
+  WHILE count<16 AND AESGATE.SystemOwned()<>0
+      AND DESKMENU.InputBlocked()=0 AND AESINPUT.Pending()<>0 DO
+    scope=MouseEnter()
+    IF scope=0 THEN
+      EXIT
     FI
-    IF scope<>0 THEN
-      IF AESINPUT.Pop(@sample)<>0 THEN
-        Consume(@sample)
-      FI
-      IF scope=2 THEN
-        AESLOCKS.SystemEnd()
-      FI
-    ELSE
-      IF pending=0 THEN
-        EXIT
-      FI
-
-      status=INPUT.Take(@lease,@sample)
-      IF status=INPUT.EMPTY THEN
-        pending=0
-        EXIT
-      FI
-
-      IF status<>INPUT.OK THEN
-        HEAPCORE.Abort($faeb)
-      FI
-
-      ; Transform fresh capture once; replayed AES input is already absolute.
-      DESKMOUSE.Apply(@sample)
-      Fresh(@sample,1)
+    IF AESINPUT.Pop(@sample)<>0 THEN
+      Consume(@sample)
     FI
-
+    IF scope=2 THEN
+      AESLOCKS.SystemEnd()
+    FI
     count==+1
   OD
-
   IF AESGATE.SystemOwned()<>0 THEN
-
     AESMOUSE.Refresh()
-  ELSE
-    AESMOUSE.RefreshSnapshot()
   FI
 
 RETURN
@@ -557,7 +517,7 @@ PUBLIC BYTE FUNC Runnable()
     RETURN(0)
   FI
 
-  IF pending<>0 OR keyLost<>0
+  IF keyLost<>0
       OR (keyCount<>0 AND DESKMENU.InputBlocked()=0
         AND AESLOCKS.SystemBlocked()=0) OR DESKMENU.Runnable()<>0
       OR DESKDRAG.Runnable()<>0 THEN
