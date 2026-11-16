@@ -1,0 +1,203 @@
+; Device Task delivers copied AES input while the manager sleeps on UPDATE.
+MODULE INPUTDEVICEDELIVERY
+USE EXEC
+USE INPUT
+USE INPUTDEVICE
+USE INPUTCLIENT
+USE INPUTDRIVER
+USE INPUTDEVICESOURCE AS SOURCE
+USE AESSTATE
+USE AESTYPES
+USE AESSNAPSHOT
+USE AESLOCKS
+USE AESMOUSE
+USE DESKINPUT
+USE DESKMOUSE
+USE DESKMOUSECONFIG
+USE DESKSTATE
+USE DESKTYPES
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE TASKSTACKS
+USE EXECLISTS
+USE HEAPCORE
+USE A816MEMORY
+
+CARD checks
+BYTE delivered,managerEntered,managerAcquired
+AESSTATE.Service POINTER service
+DESKTYPES.Service POINTER desktop
+EXEC.Task managerTask
+PROC POINTER noFinal()
+INPUTDEVICE.Consumer consumer
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fba0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Manager()
+
+  managerEntered=1
+  EXEC.ObtainSemaphore(@service.updateResource)
+  managerAcquired=1
+  EXEC.ReleaseSemaphore(@service.updateResource)
+
+RETURN
+
+PROC Deliver(LONGCARD context INPUT.Event POINTER captured)
+  INPUT.Event pointerSample
+
+  LET handled=DESKINPUT.CaptureKey(captured)
+  A816MEMORY.Clear(BYTE POINTER(@pointerSample),INPUT.EVENT_BYTES)
+  pointerSample.kind=INPUT.EVENT_POINTER
+  pointerSample.flags=INPUT.TICK_VALID OR INPUT.RELATIVE
+  pointerSample.motionInfo=INPUT.MOTION_RESET
+  DESKINPUT.CapturePointer(0,@pointerSample)
+  pointerSample.kind=INPUT.EVENT_BUTTON
+  pointerSample.buttons=INPUT.LEFT
+  DESKINPUT.CapturePointer(0,@pointerSample)
+  pointerSample.buttons=0
+  DESKINPUT.CapturePointer(0,@pointerSample)
+  delivered==+1
+
+RETURN
+
+PROC Main()
+  BYTE index
+  LAYERTYPES.Rect bounds
+  LONGCARD layer
+
+  LET before=EXEC.AvailMem(0)
+  service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(DESKTYPES.Service),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(service<>NULL AND desktop<>NULL)
+  AESSTATE.Bind(service)
+  DESKSTATE.Bind(desktop)
+  service.live=1
+  service.count=1
+  service.owner=EXEC.FindTask(NULL)
+  desktop.owner=service.owner
+  AESLOCKS.Init(service)
+  LET port=EXEC.CreateMsgPort()
+  Require(port<>NULL)
+  service.mask=LONGCARD(1) LSH port.mp_SigBit
+  FOR index=0 TO AESTYPES.WINDOWS-1 DO
+    service.windows(index)=@desktop.windows(index)
+  OD
+  LET registered=@service.clients(0)
+  registered.id=11
+  registered.binding=AESTYPES.Request POINTER(EXEC.AllocMem(AESTYPES.REQUEST_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  registered.endpoint=AESTYPES.Endpoint POINTER(EXEC.AllocMem(SIZEOF(AESTYPES.Endpoint),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(registered.binding<>NULL AND registered.endpoint<>NULL)
+  LET endpoint=registered.endpoint
+  endpoint.input=AESTYPES.InputInbox POINTER(EXEC.AllocMem(AESTYPES.INPUTINBOX_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(endpoint.input<>NULL)
+  endpoint.id=11
+  endpoint.state=AESTYPES.ENDPOINT_ACCEPTING
+  endpoint.owner=service.owner
+  endpoint.port=port
+  endpoint.input.windowEpoch=101
+  LET window=service.windows(0)
+  window.id=101
+  window.owner=11
+  window.gui.window=1
+  window.keyRoute=7000
+  window.frameKind=DESKTYPES.FRAME_BORDERLESS
+  window.view=AESTYPES.WindowView POINTER(EXEC.AllocMem(AESTYPES.WINDOWVIEW_SIZE,
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(window.view<>NULL)
+  window.view.handle=1
+  window.view.epoch=101
+  registered.binding.view=window.view
+  desktop.focus=101
+  Require(LAYERS.Init(@desktop.scene,640,240)=LAYERTYPES.OK)
+  REGIONS.Assign(@bounds,40,40,160,136)
+  Require(LAYERS.Create(@desktop.scene,@bounds,@layer)=LAYERTYPES.OK)
+  window.layer=layer
+  Require(LAYERS.SetExternal(@desktop.scene,layer)=LAYERTYPES.OK)
+  Require(LAYERS.Show(@desktop.scene,layer,1)=LAYERTYPES.OK)
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()<>0)
+  AESMOUSE.Reset()
+  DESKMOUSE.Start(60,60,DESKMOUSECONFIG.DEFAULT)
+  Require(INPUTDRIVER.Start()<>0)
+  LET client=INPUTCLIENT.Open()
+  Require(client<>NULL)
+  consumer.version=INPUTDEVICE.VERSION
+  consumer.sources=INPUTDEVICE.KEYBOARD_SET
+  consumer.entry=LONGCARD(ADDRESS(@Deliver))
+  Require(INPUTCLIENT.Attach(client,@consumer)=INPUT.OK)
+  EXEC.ObtainSemaphore(@service.updateResource)
+  managerTask.tc_Node.ln_Type=EXEC.NT_TASK
+  EXECLISTS.NewList(@managerTask.tc_MemEntry)
+  managerTask.tc_SPLower=ADDRESS(TASKSTACKS.StackLower(2))
+  managerTask.tc_SPUpper=ADDRESS(TASKSTACKS.StackUpper(2))
+  managerTask.tc_SPReg=managerTask.tc_SPUpper-SIZE(2)
+  Require(EXEC.AddTask(@managerTask,@Manager,noFinal)<>NULL)
+  WHILE managerEntered=0 OR managerTask.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  SOURCE.routeTag=7000
+  SOURCE.keyCode=$3f
+  SOURCE.Inject(1)
+  WHILE delivered<1 DO
+    EXEC.Yield()
+  OD
+  Require(managerAcquired=0 AND managerTask.tc_State=EXEC.TS_WAIT)
+  Require(endpoint.input.keyTail=1 AND endpoint.input.keys(0).key<>0)
+  Require(endpoint.input.buttonTail=2)
+  ; MCTRL routes outside the focused window through its published copy.
+  desktop.focus=0
+  service.mouseOwner=11
+  service.mouseHolds=1
+  Require(AESSNAPSHOT.Publish()<>0)
+  SOURCE.Inject(1)
+  WHILE delivered<2 DO
+    EXEC.Yield()
+  OD
+  Require(endpoint.input.keyTail=2 AND endpoint.input.buttonTail=4)
+  ; Withdraw the recipient before releasing its inbox storage.
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()<>0 AND endpoint.holds=0)
+  SOURCE.Inject(1)
+  WHILE delivered<3 DO
+    EXEC.Yield()
+  OD
+  Require(endpoint.input.keyTail=2 AND endpoint.input.buttonTail=4)
+  Require(managerAcquired=0)
+  Require(INPUTCLIENT.Detach(client)=INPUT.OK)
+  INPUTCLIENT.Close(client)
+  EXEC.ReleaseSemaphore(@service.updateResource)
+  WHILE managerTask.tc_State<>EXEC.TS_REMOVED DO
+    EXEC.Yield()
+  OD
+  Require(managerAcquired<>0)
+  Require(INPUTDRIVER.Stop()<>0)
+  service.live=0
+  Require(AESSNAPSHOT.Publish()<>0 AND endpoint.holds=0)
+  Require(LAYERS.Delete(@desktop.scene,layer)=LAYERTYPES.OK)
+  EXEC.FreeMem(BYTE POINTER(window.view),AESTYPES.WINDOWVIEW_SIZE)
+  EXEC.FreeMem(BYTE POINTER(endpoint.input),AESTYPES.INPUTINBOX_SIZE)
+  EXEC.FreeMem(BYTE POINTER(endpoint),SIZEOF(AESTYPES.Endpoint))
+  EXEC.FreeMem(BYTE POINTER(registered.binding),AESTYPES.REQUEST_SIZE)
+  AESSTATE.Bind(NULL)
+  DESKSTATE.Bind(NULL)
+  EXEC.DeleteMsgPort(port)
+  EXEC.FreeMem(BYTE POINTER(desktop),SIZEOF(DESKTYPES.Service))
+  EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
+  Require(EXEC.AvailMem(0)=before)
+
+RETURN
+ENDMODULE

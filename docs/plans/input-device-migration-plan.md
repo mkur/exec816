@@ -5,7 +5,7 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM4 are recorded; IM5–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM5 are recorded; IM6–IM8 are pending.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
@@ -252,6 +252,13 @@ this check. Record the actual Task occupancy and text frontend stack peak.
 **Commit:** `Migrate Atari text console to independent input.device`.
 
 ## IM5 — extract the AES consumer and manager event boundary
+
+Status: implemented copied key/pointer entry points, guarded manager queues and
+a focused device-Task fixture. Keys and button edges reach an application while
+the manager sleeps on UPDATE; MCTRL routing and recipient withdrawal are covered.
+Evidence: [IM5 development record](../development/input-device-im5.json).
+Live GUI acquisition moves in IM6. Reserved bank-zero delta: fixed/root/kernel/
+idle/per-Task **0 bytes**; no additional production Task or reserved upper arena.
 
 Use the copied-state portions of DESKINPUT/AESKEYS and AESSNAPSHOT rather than
 calling DESKINPUT.Service/Present wholesale. The handler translates GEM input,

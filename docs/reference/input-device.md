@@ -38,7 +38,11 @@ calls bounded handlers without a driver guard. It never calls AES or draws.
 Stop refuses live opens. This slice starts the Task only in isolated service
 fixtures or selected standalone console startup. The standard console starts
 the shared input service before its display frontend and backend, then attaches
-its native consumer. GUI source migration remains pending.
+its native consumer. GUI source acquisition remains in the frontend until IM6. The extracted AES
+consumer resolves copied AESSNAPSHOT routes and publishes application inboxes
+without UPDATE or scene access. Native menu/drag interactions enter guarded
+copied queues for the manager; pointer normalization occurs once in the
+consumer and physical cursor drawing stays in the frontend.
 An asynchronous system stop closes new admission while allowing existing
 consumers to detach. The worker retires only after those bindings close.
 

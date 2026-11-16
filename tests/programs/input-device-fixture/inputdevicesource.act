@@ -10,6 +10,8 @@ PUBLIC CARD pending,opens,closes,failSource
 PUBLIC BYTE pauseOpen,pauseClose,entered
 PUBLIC EXEC.Task POINTER caller,lastOpen,lastClose
 PUBLIC LONGCARD wakeMask
+PUBLIC LONGCARD routeTag
+PUBLIC CARD keyCode
 
 PUBLIC PROC Inject(CARD count)
 
@@ -55,9 +57,9 @@ PUBLIC CARD FUNC Take(STATE.Source POINTER source)
     RETURN(INPUT.EMPTY)
   FI
   pending==-1
-  source.event.route=LONGCARD(pending)+1
+  source.event.route=IF routeTag<>0 THEN routeTag ELSE LONGCARD(pending)+1 FI
   source.event.kind=INPUT.EVENT_KEY
-  source.event.code=$21
+  source.event.code=IF keyCode<>0 THEN keyCode ELSE CARD($21) FI
 
 RETURN(INPUT.OK)
 

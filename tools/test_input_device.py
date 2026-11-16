@@ -164,20 +164,20 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--from-build', type=Path)
     parser.add_argument('--mode', choices=('raw', 'opt'), default='opt')
-    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client', 'frontend', 'text'), default='abi')
+    parser.add_argument('--suite', choices=('abi', 'service', 'keyboard', 'pointer', 'client', 'frontend', 'text', 'delivery'), default='abi')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     (output/'program').mkdir(exist_ok=True)
     capture_override=output/'program/inputdevicesource.act'
-    if args.suite == 'service':
+    if args.suite in ('service','delivery'):
         capture_override.write_text(
             (ROOT/'tests/programs/input-device-fixture/inputdevicesource.act').read_text())
     elif capture_override.exists():
         capture_override.unlink()
     layout = c_layout(output, args.mode == 'opt')
     options = {}
-    if args.suite in ('frontend', 'text'):
+    if args.suite in ('frontend', 'text', 'delivery'):
         profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text())
         profile['image_data_bytes']=8192
         profile_path=output/'memory-profile.json'
@@ -232,7 +232,8 @@ def main():
                             'Standard Atari console still links GUI routines')
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
             require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 25,
-                                        'pointer': 10, 'client': 13, 'frontend': 7, 'text': 15}[args.suite],
+                                        'pointer': 10, 'client': 13, 'frontend': 7, 'text': 15,
+                                        'delivery': 28}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

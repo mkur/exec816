@@ -123,6 +123,7 @@ RETURN(manager=TITLE OR nativePending=TITLE)
 
 PUBLIC PROC Retained()
 
+  EXEC.Forbid()
   IF manager<>0 THEN
     IF manager=TITLE OR nativePending=0 THEN
       IF nativePending<>manager THEN
@@ -131,6 +132,7 @@ PUBLIC PROC Retained()
       FI
     FI
   FI
+  EXEC.Permit()
 
 RETURN
 

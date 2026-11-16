@@ -40,14 +40,17 @@ BYTE keyHead,keyCount,keyLost
 PROC DeferKey(INPUT.Event POINTER captured)
   BYTE slot
 
+  EXEC.Forbid()
   IF keyCount=CONSOLETYPES.RAW_SLOTS THEN
     keyLost=1
+    EXEC.Permit()
     RETURN
   FI
   slot=(keyHead+keyCount) MOD CONSOLETYPES.RAW_SLOTS
   A816MEMORY.Move(BYTE POINTER(@deferredKeys(slot)),BYTE POINTER(captured),
       INPUT.EVENT_BYTES)
   keyCount==+1
+  EXEC.Permit()
 
 RETURN
 
@@ -69,9 +72,11 @@ BYTE FUNC SnapshotKey(INPUT.Event POINTER captured)
   IF target.endpoint<>NULL THEN
     keySample.window=target.handle
     keySample.windowEpoch=target.epoch
+    EXEC.Forbid()
     keySample.x=cursorX
     keySample.y=cursorY
     keySample.buttons=buttons
+    EXEC.Permit()
     AESKEYS.KeyEndpoint(target.endpoint,captured,@keySample)
     AESSNAPSHOT.Drop(target.endpoint)
   ELSE
@@ -79,6 +84,23 @@ BYTE FUNC SnapshotKey(INPUT.Event POINTER captured)
   FI
 
 RETURN(1)
+
+; Device delivery always follows copied routing. SystemOwned may describe a
+; different Task's scene scope and never authorizes this input callback.
+PUBLIC BYTE FUNC CaptureKey(INPUT.Event POINTER captured)
+  BYTE handled
+
+  handled=SnapshotKey(captured)
+  IF keyCount<>0 OR keyLost<>0 THEN
+    BEGIN
+      LET desktop=DESKSTATE.Get()
+      IF desktop<>NULL AND wakeMask<>0 THEN
+        EXEC.Signal(desktop.owner,wakeMask)
+      FI
+    END
+  FI
+
+RETURN(handled)
 
 PUBLIC LONGCARD FUNC Mask()
 
@@ -237,9 +259,11 @@ PUBLIC PROC ReplayKeys()
   FI
   IF keyLost<>0 THEN
     ; Consume the old loss before callbacks can capture a new stream.
+    EXEC.Forbid()
     keyHead=0
     keyCount=0
     keyLost=0
+    EXEC.Permit()
     DESKMENU.Cancel()
 
     DESKDRAG.Cancel()
@@ -247,14 +271,20 @@ PUBLIC PROC ReplayKeys()
 
   FI
   WHILE keyCount<>0 AND keyLost=0 AND DESKMENU.InputBlocked()=0 DO
+    EXEC.Forbid()
     A816MEMORY.Move(BYTE POINTER(@captured),
         BYTE POINTER(@deferredKeys(keyHead)),INPUT.EVENT_BYTES)
+    EXEC.Permit()
     handled=RouteKey(@captured)
     IF handled=DESKMENU.KEY_DEFERRED THEN
       EXIT
     FI
-    keyHead=(keyHead+1) MOD CONSOLETYPES.RAW_SLOTS
-    keyCount==-1
+    EXEC.Forbid()
+    IF keyLost=0 THEN
+      keyHead=(keyHead+1) MOD CONSOLETYPES.RAW_SLOTS
+      keyCount==-1
+    FI
+    EXEC.Permit()
   OD
 
 RETURN
@@ -319,14 +349,16 @@ BYTE FUNC MouseEnter()
 RETURN(0)
 
 ; Classify fresh absolute capture once, before any deferred native replay.
-PROC Fresh(INPUT.Event POINTER sample)
+PROC Fresh(INPUT.Event POINTER sample BYTE nativeAllowed)
   BYTE scope
 
   ; Observe the latest cursor separately from retained gesture events.
   IF sample.kind<>INPUT.EVENT_LOSS THEN
+    EXEC.Forbid()
     buttons=sample.buttons
     cursorX=sample.x
     cursorY=sample.y
+    EXEC.Permit()
     BEGIN
       LET service=AESSTATE.Get()
       IF service<>NULL THEN
@@ -345,7 +377,7 @@ PROC Fresh(INPUT.Event POINTER sample)
 
   IF AESMOUSE.Route(sample)=0 THEN
     scope=0
-    IF AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0 THEN
+    IF nativeAllowed<>0 AND AESGATE.SystemOwned()<>0 AND DESKMENU.InputBlocked()=0 THEN
       scope=MouseEnter()
     FI
     IF scope=0 THEN
@@ -357,6 +389,22 @@ PROC Fresh(INPUT.Event POINTER sample)
         AESLOCKS.SystemEnd()
       FI
     FI
+  FI
+
+RETURN
+
+; Physical device callback: normalize once, publish ordinary events and queue
+; manager interaction. It never claims a scene, UPDATE or a drawing grant.
+PUBLIC PROC CapturePointer(LONGCARD context INPUT.Event POINTER captured)
+  INPUT.Event sample
+
+  A816MEMORY.Move(BYTE POINTER(@sample),BYTE POINTER(captured),INPUT.EVENT_BYTES)
+  DESKMOUSE.Apply(@sample)
+  Fresh(@sample,0)
+  AESMOUSE.RefreshSnapshot()
+  LET desktop=DESKSTATE.Get()
+  IF desktop<>NULL AND wakeMask<>0 THEN
+    EXEC.Signal(desktop.owner,wakeMask)
   FI
 
 RETURN
@@ -409,7 +457,7 @@ PUBLIC PROC Service(LONGCARD bits)
 
       ; Transform fresh capture once; replayed AES input is already absolute.
       DESKMOUSE.Apply(@sample)
-      Fresh(@sample)
+      Fresh(@sample,1)
     FI
 
     count==+1

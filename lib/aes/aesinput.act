@@ -1,6 +1,7 @@
 ; Captured pointer events wait for native gesture ownership, while the cursor
 ; follows the latest sample. Overflow reports loss rather than inventing edges.
 MODULE AESINPUT
+USE EXEC
 USE INPUT
 USE AESSTATE
 USE A816MEMORY
@@ -15,7 +16,13 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
   BYTE slot
 
   LET service=AESSTATE.Get()
+  EXEC.Forbid()
+  IF service=NULL THEN
+    EXEC.Permit()
+    RETURN
+  FI
   IF service.pointerLost<>0 THEN
+    EXEC.Permit()
     RETURN
   FI
 
@@ -26,6 +33,7 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
       IF previous.kind=INPUT.EVENT_POINTER AND previous.buttons=event.buttons
           AND previous.route=event.route THEN
         A816MEMORY.Move(BYTE POINTER(previous),BYTE POINTER(event),INPUT.EVENT_BYTES)
+        EXEC.Permit()
         RETURN
       FI
     END
@@ -39,6 +47,7 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
         BYTE POINTER(event),INPUT.EVENT_BYTES)
     service.pointerEvents(0).kind=INPUT.EVENT_LOSS
     service.pointerEvents(0).code=INPUT.LOSS_NORMALIZED
+    EXEC.Permit()
     RETURN
   FI
 
@@ -46,13 +55,16 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
   A816MEMORY.Move(BYTE POINTER(@service.pointerEvents(slot)),
       BYTE POINTER(event),INPUT.EVENT_BYTES)
   service.pointerCount==+1
+  EXEC.Permit()
 
 RETURN
 
 PUBLIC BYTE FUNC Pop(INPUT.Event POINTER event)
 
   LET service=AESSTATE.Get()
+  EXEC.Forbid()
   IF service=NULL OR service.pointerCount=0 THEN
+    EXEC.Permit()
     RETURN(0)
   FI
 
@@ -63,6 +75,7 @@ PUBLIC BYTE FUNC Pop(INPUT.Event POINTER event)
   IF service.pointerCount=0 THEN
     service.pointerLost=0
   FI
+  EXEC.Permit()
 
 RETURN(1)
 ENDMODULE
