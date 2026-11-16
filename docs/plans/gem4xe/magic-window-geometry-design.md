@@ -10,6 +10,9 @@ Geometry must follow MagiC's structure and flow closely. The frame model and
 consumer changes below are proposals, not implemented behavior. The current
 [AES reference](../../reference/aes.md) remains the runtime contract.
 
+The proposed [WG0–WG6 implementation plan](magic-window-geometry-plan.md)
+specifies storage, metric mapping, consumer cutovers and focused acceptance.
+
 ## Direction and scope
 
 Port MagiC's geometry responsibilities into the existing caller AES/SCRENMGR

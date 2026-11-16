@@ -4,6 +4,8 @@
   proposed authoritative frame objects, full-layout/selected-axis separation,
   drawing and SCRENMGR hit-test consumers. MGVIEW is the sole application
   acceptance target; other apps may break during the refactor.
+  The [WG0–WG6 implementation plan](gem4xe/magic-window-geometry-plan.md)
+  defines the proposed allocation/metric choices and executable cutovers.
 
 - [Independent input.device design](input-device-design.md): rationale for a
   generic input Task independent of AES/SCRENMGR and display ownership. The
