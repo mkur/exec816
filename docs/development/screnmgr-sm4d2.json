@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "slice": "SM4d2",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "fa78b2a95f1fd33660c77199b2c528fd15c955f5",
+  "source_inputs": {
+    "c/calypsi/aes-menu.c": "a93c8127013521518e8898b584ccd0c1d0b9930311ecc81c830b3ed08ed14dec",
+    "c/calypsi/aes-private.h": "418f04209844c26bf2319594bea1d2906ab5b2234ad03b7dea87826559ea157c",
+    "c/calypsi/aes-windows.c": "fe44474004a81ad570e919c5b5e965b65d30c4b74972d7a1b9a7d5ce5b19da26",
+    "c/calypsi/aes.c": "4b841edcd251ce2b8ace3f70e576e288efb1ec372ce2ed824279c5b46e1e376b",
+    "lib/aes/aeslocal.act": "b2b9f97d0e868795cb4de234cdeb6738fd19f3bd71f1e3761f2a2e213e5421ef",
+    "lib/aes/aeswindowstate.act": "a2355458bd232d351a909fd595a08c138c6d6addc6df1ef1fdd2c18166acbbbf",
+    "lib/console/consolebitmap.act": "fe337bc8d65d15339c3b6625f76d4699253afb3423949f011f115c10bfabb971",
+    "lib/desktop/deskappmenu.act": "7283fae7c0498b9c003080a0a6aa2be069c7a319c9e50eaf7f0a50ee6c72f485",
+    "lib/desktop/deskcache.act": "760720ae1ca390b46335aca2c884f2e976c1f5ab64f105753386e5f635b6cad6",
+    "lib/desktop/deskmenu.act": "817d0367af0aa75b2bb5868ee5ba399e276cb8e30786e2fbac97c5cb11a0fd7b",
+    "lib/desktop/deskmenucache.act": "faa45ad54c989bf8b3cd04541fb0a5a39337de82cee5d86e4b1d39cd082f3330",
+    "lib/desktop/deskmenupaint.act": "959f974abc8bda0f53fcddcb0fc4fd7fd318860c88440d1d2bda038ea23ee476",
+    "lib/desktop/deskpaint.act": "d34d12f8135cac9a8b38065ff374a4c48b44173cc54613c04d3f7e6414faec63",
+    "ports/gem4xe/aes/menu-render.c": "5a8690014b3c6e26fb355be0bac78ad55399783dda72c3c78063a20c79146791",
+    "tests/programs/display_admission.c": "7bd830d2fd8940f2f34a409a90428ff7376cf756f30912d975582c77999cd590",
+    "tests/programs/menutitleprobe.act": "a74392dfba2a958a645f4d34a90fed1edfa8c8de934c37fde4c46ba5eb7b12e5",
+    "tests/programs/snapshotprobe.act": "1ae51b2f3fc87d5c41e9c8168087e1a797b75f3bd96f00e1478e6916afac3865",
+    "tools/test_display_admission.py": "5dfa2b1692bf30f3a012b3955d2cee780341458532fdc4ab544fc996647d72de"
+  },
+  "capture": "build/screnmgr/sm4d2-exposure-app-final",
+  "results_sha256": "77f057ab1bb8bd593b53d1e9edd0f54a19c3dc924cdaa47732963e954d0514fa",
+  "image_sha256": "af27263aa6cc464f01a5b8d064cf8c4e57bc333e4ad6c317bca5040cbacbe981",
+  "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "checks": 32,
+  "pixels": "exact 8x8 fill and offscreen round-trip while manager blocked",
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 176,
+        "untouched_above_floor": 1104
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 304,
+        "untouched_above_floor": 752
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 142,
+        "untouched_above_floor": 914
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 1027,
+        "untouched_above_floor": 29
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 334,
+        "untouched_above_floor": 722
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 438,
+        "untouched_above_floor": 1866
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 21,
+        "untouched_above_floor": 235
+      }
+    ],
+    "kernel_stack_observation": {
+      "reserved_bytes": 1536,
+      "touched_bytes": 287,
+      "untouched_from_base": 1249,
+      "interrupt_reserve_bytes_touched": 0
+    }
+  },
+  "host": {
+    "tests": 718,
+    "skipped": 5,
+    "status": "pass"
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "scope": [
+    "Optimized ordinary application Task; frontend blocked on its UPDATE while it opens its window, installs a menu, paints its frame/bar and opens VDI.",
+    "Exact fill/offscreen round-trip pixels, direct peer registration, native cleanup and interrupt-floor guards.",
+    "Private packet and bridge layouts unchanged. Cache maintenance and manager boundaries continue in SM4d3.",
+    "No QED, catalog, demo refresh, release matrix or performance qualification."
+  ]
+}

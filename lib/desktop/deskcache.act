@@ -386,10 +386,12 @@ RETURN(0)
 ; The painter already owns a paint token. It must retain that token until
 ; Restored releases this source pin; no fragment is widened for alignment.
 PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
-    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER outer,area)
+    DESKTYPES.Window POINTER window LAYERTYPES.Rect POINTER outer,area
+    CONSOLEBITMAP.Packet POINTER output)
   BYTE index
+  CONSOLEBITMAP.Packet POINTER packet
 
-  IF DISPLAY.Blocked()<>0 OR active<>0 OR CONSOLEBITMAP.Pending()<>0
+  IF (output=NULL AND DISPLAY.Blocked()<>0) OR active<>0 OR CONSOLEBITMAP.Pending()<>0
       OR (service.scene.activeKind<>LAYERTYPES.UPDATE_PAINT
           AND service.scene.activeKind<>LAYERTYPES.UPDATE_HANDOFF)
       OR service.scene.activeId<>window.layer OR service.scene.busy=0
@@ -405,7 +407,10 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   FI
 
   LET slot=@service.cache.slots(index)
-  LET packet=CONSOLEBITMAP.GetPacket()
+  packet=output
+  IF packet=NULL THEN
+    packet=CONSOLEBITMAP.GetPacket()
+  FI
   slot.pinned=1
   packet.copy.source.offset=SlotAddress(index)
   packet.copy.source.pitch=slot.width RSH 1
@@ -425,7 +430,7 @@ PUBLIC BYTE FUNC Restore(DESKTYPES.Service POINTER service
   service.cache.recent=index
   activeSlot=index
   active=ACTIVE_RESTORE
-  IF CONSOLEBITMAP.CopyStart(NULL)=0 AND DISPLAY.Blocked()=0 THEN
+  IF CONSOLEBITMAP.CopyStart(output)=0 AND (output<>NULL OR DISPLAY.Blocked()=0) THEN
     LAYERCACHE.Released(slot,0)
     active=0
     RETURN(DESKTYPES.CACHE_FAILED)
@@ -436,7 +441,7 @@ RETURN(DESKTYPES.CACHE_PENDING)
 PUBLIC BYTE FUNC Restored(DESKTYPES.Service POINTER service)
   BYTE okay
 
-  IF active<>ACTIVE_RESTORE OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+  IF active<>ACTIVE_RESTORE OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN(0)
   FI
 

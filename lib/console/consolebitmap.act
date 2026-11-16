@@ -146,10 +146,24 @@ Packet POINTER FUNC Select(Packet POINTER output)
 
 RETURN(output)
 
-BYTE FUNC Submit(Packet POINTER output CARD operation)
+PUBLIC BYTE FUNC Submit(Packet POINTER output CARD operation)
 
   IF output=NULL THEN
-    RETURN(Run(operation))
+    BEGIN
+      BYTE okay
+
+      LET packet=GetPacket()
+      DO
+        okay=Run(operation)
+        IF Failed()<>0 THEN
+          RETURN(0)
+        FI
+        IF packet.status<>DISPLAY.BUSY THEN
+          RETURN(okay)
+        FI
+        EXEC.Wait(completionMask)
+      OD
+    END
   FI
   output.operation=operation
   Apply(output)

@@ -660,6 +660,93 @@ PROC DamageRow(INT row)
 
 RETURN
 
+; Publish chrome after a protected window/menu mutation. This helper performs
+; no input interpretation and never obtains another Task's UPDATE level.
+PROC PublishChrome(BYTE chromeChanged)
+
+  LET service=DESKSTATE.Get()
+  IF chromeChanged<>0 THEN
+    IF contentRevision<>0 THEN
+      contentRevision==+1
+    FI
+    DESKSTATE.TopChrome()
+    activeWindow=service.focus
+    BEGIN
+      LET window=DESKCORE.Find(service,activeWindow)
+      IF window=NULL THEN
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
+      ELSEIF window.title(0)=0 THEN
+        Label(@title(0),BYTE POINTER(c"Exec816"),32)
+      ELSE
+        Label(@title(0),@window.title(0),32)
+      FI
+    END
+    dirty=1
+  FI
+
+  DESKAPPMENU.Snapshot(menu=GEM_MENU)
+  IF dirty<>0 OR paintMenu<>menu OR paintSelection<>selected THEN
+    ; Input may arrive between paint steps. Publish visual state only after
+    ; the current scene token retires, alongside its matching damage.
+    BEGIN
+      LET bar=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
+      LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
+      IF (dirty & 1)<>0 THEN
+        Check(LAYERS.Invalidate(@service.scene,DESKSTATE.barLayer,@bar.bounds))
+      ELSEIF paintMenu<>menu THEN
+        DamageTitle(paintMenu)
+        DamageTitle(menu)
+      FI
+      IF menu<>0 THEN
+        IF dirty<>0 THEN
+          Check(LAYERS.Invalidate(@service.scene,DESKSTATE.popupLayer,@popup.bounds))
+        ELSEIF menu<>GEM_MENU AND paintSelection<>selected THEN
+          DamageRow(paintSelection)
+          DamageRow(selected)
+        FI
+      FI
+    END
+    paintMenu=menu
+    paintSelection=selected
+    dirty=0
+  FI
+  focusSeen=service.focus
+  revision=service.scene.rebuilds
+  AESWINDOWSTATE.Sync()
+  PublishActive(Active())
+  AESMOUSE.Refresh()
+  IF menu=GEM_MENU THEN
+    BEGIN
+      LET owner=DESKAPPMENU.owner
+      LET aes=AESSTATE.Get()
+      DESKMENUCACHE.SelectPopup(menu,owner.id,owner.menu.generation,
+          aes.menuRevision,DESKAPPMENU.paintHeading,DESKAPPMENU.paintSelected,
+          DESKAPPMENU.paintSelected=-1)
+    END
+  ELSE
+    DESKMENUCACHE.SelectPopup(menu,activeWindow,1,contentRevision,0,
+        paintSelection,paintSelection=0)
+  FI
+  DESKMENUCACHE.Notify()
+
+RETURN
+
+PUBLIC PROC Reconcile()
+  BYTE changed,chromeChanged
+
+  LET service=DESKSTATE.Get()
+  IF DESKSTATE.barLayer=0 OR menu<>0 OR service.scene.busy<>0 THEN
+    RETURN
+  FI
+  changed=DESKAPPMENU.Refresh()
+  IF changed<>0 THEN
+    dirty=1
+  FI
+  chromeChanged=focusSeen<>service.focus OR revision<>service.scene.rebuilds
+  PublishChrome(chromeChanged)
+
+RETURN
+
 ; Paint and scene changes obey the same gates as existing native gestures.
 PROC AdvanceMenu()
   BYTE changed,chromeChanged,completed
@@ -766,69 +853,7 @@ PROC AdvanceMenu()
     Check(LAYERS.Show(@service.scene,DESKSTATE.popupLayer,0))
     DESKMENUCACHE.End()
   FI
-  IF chromeChanged<>0 THEN
-    IF contentRevision<>0 THEN
-      contentRevision==+1
-    FI
-    DESKSTATE.TopChrome()
-    activeWindow=service.focus
-    BEGIN
-      LET window=DESKCORE.Find(service,activeWindow)
-      IF window=NULL THEN
-        Label(@title(0),BYTE POINTER(c"Exec816"),32)
-      ELSEIF window.title(0)=0 THEN
-        Label(@title(0),BYTE POINTER(c"Exec816"),32)
-      ELSE
-        Label(@title(0),@window.title(0),32)
-      FI
-    END
-    dirty=1
-  FI
-
-  DESKAPPMENU.Snapshot(menu=GEM_MENU)
-  IF dirty<>0 OR paintMenu<>menu OR paintSelection<>selected THEN
-    ; Input may arrive between paint steps. Publish visual state only after
-    ; the current scene token retires, alongside its matching damage.
-    BEGIN
-      LET bar=LAYERS.Find(@service.scene,DESKSTATE.barLayer)
-      LET popup=LAYERS.Find(@service.scene,DESKSTATE.popupLayer)
-      IF (dirty & 1)<>0 THEN
-        Check(LAYERS.Invalidate(@service.scene,DESKSTATE.barLayer,@bar.bounds))
-      ELSEIF paintMenu<>menu THEN
-        DamageTitle(paintMenu)
-        DamageTitle(menu)
-      FI
-      IF menu<>0 THEN
-        IF dirty<>0 THEN
-          Check(LAYERS.Invalidate(@service.scene,DESKSTATE.popupLayer,@popup.bounds))
-        ELSEIF menu<>GEM_MENU AND paintSelection<>selected THEN
-          DamageRow(paintSelection)
-          DamageRow(selected)
-        FI
-      FI
-    END
-    paintMenu=menu
-    paintSelection=selected
-    dirty=0
-  FI
-  focusSeen=service.focus
-  revision=service.scene.rebuilds
-  AESWINDOWSTATE.Sync()
-  PublishActive(Active())
-  AESMOUSE.Refresh()
-  IF menu=GEM_MENU THEN
-    BEGIN
-      LET owner=DESKAPPMENU.owner
-      LET aes=AESSTATE.Get()
-      DESKMENUCACHE.SelectPopup(menu,owner.id,owner.menu.generation,
-          aes.menuRevision,DESKAPPMENU.paintHeading,DESKAPPMENU.paintSelected,
-          DESKAPPMENU.paintSelected=-1)
-    END
-  ELSE
-    DESKMENUCACHE.SelectPopup(menu,activeWindow,1,contentRevision,0,
-        paintSelection,paintSelection=0)
-  FI
-  DESKMENUCACHE.Notify()
+  PublishChrome(chromeChanged)
 
 RETURN
 

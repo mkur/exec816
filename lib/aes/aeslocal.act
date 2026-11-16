@@ -15,6 +15,9 @@ USE AESWINDOWSTATE
 USE AESCURSOR
 USE CALYPSICALL
 USE DESKMOUSE
+USE DESKPAINT
+USE DESKMENU
+USE CONSOLEBITMAP
 
 ADDRESS mouseApply
 
@@ -117,6 +120,21 @@ CARD FUNC Policy(LONGCARD value)
 
 RETURN(1)
 
+; The request and native packet belong to the current caller until its
+; exposure finishes. Ordinary client work remains a WM_REDRAW responsibility.
+CARD FUNC Exposure(AESTYPES.Request POINTER request)
+  CONSOLEBITMAP.Packet packet
+
+  IF request.displayGrant=NULL THEN
+    RETURN(AESTYPES.OK)
+  FI
+  DESKMENU.Reconcile()
+  IF DESKPAINT.Complete(@packet)=0 THEN
+    RETURN(AESTYPES.DISPLAY_ERROR)
+  FI
+
+RETURN(AESTYPES.OK)
+
 ; Private handler scopes use the same resource path without opening a user
 ; painting scope or changing the public C context's explicit nesting counts.
 CARD FUNC Scope(AESTYPES.Request POINTER request CARD code BYTE painting)
@@ -192,6 +210,10 @@ CARD FUNC Depart(AESTYPES.Request POINTER request)
     Publish(service,1)
     EXEC.Wait(mask)
   OD
+  status=Exposure(request)
+  IF status<>AESTYPES.OK THEN
+    RETURN(status)
+  FI
   WHILE service.updateHolds<>0 DO
     status=Scope(request,AESTYPES.END_UPDATE,1)
   OD
@@ -307,6 +329,12 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     handled=Policy(value)
     status=request.status
     result=CARD(request.intout(0))
+    IF status=AESTYPES.OK THEN
+      status=Exposure(request)
+      IF status<>AESTYPES.OK THEN
+        result=0
+      FI
+    FI
     BEGIN
       LET released=Scope(request,AESTYPES.END_UPDATE,0)
       IF released<>AESTYPES.OK THEN

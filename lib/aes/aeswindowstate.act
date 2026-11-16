@@ -451,6 +451,7 @@ PUBLIC PROC Handoff(DESKTYPES.Window POINTER window)
           area.left,area.top,area.right-area.left,area.bottom-area.top)
     END
     client.paintDirty=0
+    AESGUI.Publish(AESSTATE.Get(),Find(window.id))
   FI
 
 RETURN

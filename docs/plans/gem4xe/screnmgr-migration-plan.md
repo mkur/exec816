@@ -330,7 +330,9 @@ Continue in executable commits:
    preserve current pixels, pins, cached moves and failure retention.
    SM4d1 supplies caller packets in the shared renderer; see its
    [record](../../history/screnmgr-migration.md#sm4d1-caller-packets-in-the-shared-renderer).
-   Operation-owned painting and maintenance remain in progress.
+   [SM4d2](../../history/screnmgr-migration.md#sm4d2-synchronous-caller-exposure)
+   completes caller exposure and restores. Cache maintenance and manager-effect
+   boundaries remain in progress.
 5. **SM4e — manager interaction and lifecycle cutover.** Account for menu
    save/restore, native console controls, cursor/device completion and shutdown;
    remove GEM's no-op console-render callbacks while preserving the standalone

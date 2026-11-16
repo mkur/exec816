@@ -196,6 +196,11 @@ static WORD exit_application(struct ExecAESContext *c)
     }
     c->busy = 0;
     if (!c->identity) { c->diagnostic=AES_IDENTITY; return 0; }
+    {
+        UWORD i,painting=c->menuTree!=0;
+        for (i=0;i<AES_WINDOWS;++i) if (c->views[i] && c->views[i]->shown) painting=1;
+        if (painting && !ExecAESDisplayEnsure(c)) return 0;
+    }
     ExecAESLocal(c,AES_OP_EXIT);
     c->diagnostic=c->request.status;
     if (c->diagnostic!=AES_OK) return 0;

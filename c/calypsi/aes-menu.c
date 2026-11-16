@@ -8,6 +8,7 @@ static WORD menu_request(struct ExecAESContext *c,OBJECT *tree,WORD operation,WO
     if (!c) return 0;
     if (c->busy) { c->diagnostic=AES_BUSY; return 0; }
     if (!c->identity) { c->diagnostic=AES_IDENTITY; return 0; }
+    if (!ExecAESDisplayEnsure(c)) return 0;
     c->request.intin[0]=operation;
     c->request.intin[1]=(WORD)((ULONG)tree>>16);
     c->request.intin[2]=(WORD)(ULONG)tree;

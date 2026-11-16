@@ -647,3 +647,39 @@ Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per publ
 Task**, including guards, alignment and spare capacity. Task pools, signals,
 heap reservations, VRAM and physical scratch are unchanged. No QED, catalog,
 demo refresh, release matrix or timing claim is included.
+
+
+## SM4d2: synchronous caller exposure
+
+Window open/close, geometry/stacking, frame and menu operations now finish their
+frame, desktop-paper, menu-bar and cache-restore exposure before returning their
+UPDATE level. Owner exit uses the same completion boundary. The painter drains
+its existing bounded raster steps inside the operation; no paint token or
+restored-image pin survives for a later frontend turn. Client work remains a
+WM_REDRAW handoff, with available GUI delivery published by that operation.
+
+Shared chrome reconciliation is separate from queued interaction commands.
+Caller operations select and paint their current bar without interpreting
+manager input. Cold exposure operations establish the existing display grant
+before native mutation. Owner raster admission waits on its existing queued
+owner wake when needed; borrowed rendering uses the normal DisplayEnter path.
+Normal Task preemption and independent input remain enabled.
+
+The focused optimized fixture opens a window, installs a menu, changes its
+title, opens VDI and draws with the actual frontend asleep on that caller's
+UPDATE. It executes in an ordinary 1,312-byte application pool and checks 32 C
+assertions, exact 8x8 pixels and an offscreen copy round-trip, then cleans up.
+The application touches 1,027 stack bytes, leaving 29 bytes above the existing
+256-byte interrupt floor; this is an observed watermark, not a universal app
+stack bound. The initial fixture kept VDI setup arrays and a copy descriptor
+live across unrelated operations and touched the reserve. Separate setup/copy
+helpers bound those fixture lifetimes, consistent with Counter's application
+storage; no production stack reservation or compiler workaround was added.
+[Inputs and results](../development/screnmgr-sm4d2.json) retain the scope.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and spare capacity. Record layouts, Task
+pools, signals, VRAM and physical scratch are unchanged. SM4d still needs cache
+maintenance and manager-effect boundaries; SM4e's blocking loop is not installed.
+Host checks pass: 718 tests, five existing skips. No QED, catalog, demo refresh,
+release matrix or timing qualification is included.

@@ -476,15 +476,21 @@ RETURN
 
 ; The source tree and geometry are frozen by the scene token. Native and
 ; application renderers have distinct GSX scratch; the former also draws menus.
-PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
+PUBLIC BYTE FUNC Paint(CONSOLEBITMAP.Packet POINTER output
+    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
     BYTE first,opened)
   INT scope
+  MENURENDERTYPES.Packet localPacket
+  MENURENDERTYPES.Packet POINTER packet
 
   IF Current()=0 THEN
     RETURN(1)
   FI
   LET menu=owner.menu
-  LET packet=DESKMENURENDER.GetPacket()
+  packet=@localPacket
+  IF output=NULL THEN
+    packet=DESKMENURENDER.GetPacket()
+  FI
   IF first<>0 THEN paintIndex=0 FI
   packet.context=LONGCARD(ADDRESS(menu.tree))
   packet.payload=LONGCARD(ADDRESS(@menu.parent(0)))
@@ -515,7 +521,16 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF packet.left>=packet.right THEN RETURN(1) FI
   packet.object=scope
   packet.index=paintIndex
-  DESKMENURENDER.Run(MENURENDERTYPES.OP_DRAW)
+  IF output=NULL THEN
+    DESKMENURENDER.Run(MENURENDERTYPES.OP_DRAW)
+  ELSE
+    BEGIN
+      BYTE drawn
+
+      output.text=LONGCARD(ADDRESS(packet))
+      drawn=CONSOLEBITMAP.Submit(output,CONSOLEBITMAP.OP_GEM_MENU)
+    END
+  FI
   paintIndex=packet.index
   IF packet.status<>MENURENDERTYPES.OK THEN RETURN(0) FI
   IF packet.changed<>0 THEN RETURN(2) FI

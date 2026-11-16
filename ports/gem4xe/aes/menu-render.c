@@ -115,6 +115,7 @@ UWORD MenuPaintBorrow(struct DisplayGrant *grant,struct MenuRenderPacket *p)
 {
     UWORD status=GemDrawingFrameBorrow(grant,p->left,p->top,p->right,p->bottom,quantum,p);
     p->changed=0;
+    p->status=status;
     paint=0;
     return status;
 }

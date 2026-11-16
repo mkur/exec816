@@ -47,7 +47,7 @@ PUBLIC CARD FUNC Run(CARD command)
   calls=0
   result=2
   WHILE result=2 DO
-    result=DESKMENUPAINT.Paint(layer,@area,@phase)
+    result=DESKMENUPAINT.Paint(NULL,layer,@area,@phase)
     calls==+1
     Require(calls<8)
   OD

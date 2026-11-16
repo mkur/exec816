@@ -10,7 +10,8 @@ USE CONSOLEBITMAP
 
 CARD menuGlyph
 
-BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
+BYTE FUNC Fill(CONSOLEBITMAP.Packet POINTER output
+    LAYERTYPES.Rect POINTER bounds,clip CARD pen)
   LAYERTYPES.Rect area
 
   REGIONS.Intersect(bounds,clip,@area)
@@ -18,10 +19,10 @@ BYTE FUNC Fill(LAYERTYPES.Rect POINTER bounds,clip CARD pen)
     RETURN(1)
   FI
 
-RETURN(CONSOLEBITMAP.RawFill(NULL,CARD(area.left),CARD(area.top),
+RETURN(CONSOLEBITMAP.RawFill(output,CARD(area.left),CARD(area.top),
     CARD(area.right-area.left),CARD(area.bottom-area.top),pen))
 
-BYTE FUNC Text(CARD x,y BYTE POINTER value CARD foreground,background
+BYTE FUNC Text(CONSOLEBITMAP.Packet POINTER output CARD x,y BYTE POINTER value CARD foreground,background
     LAYERTYPES.Rect POINTER clip BYTE limit)
   CARD length
 
@@ -30,9 +31,10 @@ BYTE FUNC Text(CARD x,y BYTE POINTER value CARD foreground,background
     length==+1
   OD
 
-RETURN(CONSOLEBITMAP.ClippedText(NULL,x,y,value,length,foreground,background,clip))
+RETURN(CONSOLEBITMAP.ClippedText(output,x,y,value,length,foreground,background,clip))
 
-PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
+PUBLIC BYTE FUNC Paint(CONSOLEBITMAP.Packet POINTER output
+    LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER clip
     BYTE POINTER phase)
   LAYERTYPES.Rect bounds,area
   CARD foreground,background
@@ -41,7 +43,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
   IF DESKAPPMENU.Current()<>0 AND (layer.id=DESKSTATE.barLayer
       OR DESKMENU.paintMenu=DESKMENU.GEM_MENU) THEN
     IF layer.id<>DESKSTATE.barLayer OR phase^<2 THEN
-      okay=DESKAPPMENU.Paint(layer,clip,phase^=0,
+      okay=DESKAPPMENU.Paint(output,layer,clip,phase^=0,
           DESKMENU.paintMenu=DESKMENU.GEM_MENU)
       phase^=1
       IF okay=0 OR okay=2 THEN
@@ -67,12 +69,12 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     okay=1
     IF REGIONS.Empty(@area)=0 THEN
       IF row<DESKMENU.count THEN
-        okay=CONSOLEBITMAP.MenuRow(NULL,@layer.bounds,@area,
+        okay=CONSOLEBITMAP.MenuRow(output,@layer.bounds,@area,
             @DESKMENU.items(row).label(0),CARD(bounds.top),
             DESKMENU.items(row).enabled,INT(row)=DESKMENU.paintSelection,
             @menuGlyph)
       ELSE
-        okay=CONSOLEBITMAP.MenuRow(NULL,@layer.bounds,@area,BYTE POINTER(c""),
+        okay=CONSOLEBITMAP.MenuRow(output,@layer.bounds,@area,BYTE POINTER(c""),
             CARD(bounds.top),1,0,@menuGlyph)
       FI
     FI
@@ -88,7 +90,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
 
   IF phase^=0 THEN
     phase^=1
-    RETURN(IF Fill(clip,clip,0)<>0 THEN 2 ELSE 0 FI)
+    RETURN(IF Fill(output,clip,clip,0)<>0 THEN 2 ELSE 0 FI)
   FI
 
   IF layer.id=DESKSTATE.barLayer THEN
@@ -102,9 +104,9 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
           background=1
           foreground=0
         FI
-        okay=Fill(@bounds,clip,background)
+        okay=Fill(output,@bounds,clip,background)
         IF okay<>0 THEN
-          okay=Text(8,DESKTYPES.MENU_TEXT_Y,@DESKMENU.title(0),
+          okay=Text(output,8,DESKTYPES.MENU_TEXT_Y,@DESKMENU.title(0),
               foreground,background,clip,14)
         FI
         RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
@@ -119,9 +121,9 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
           background=1
           foreground=0
         FI
-        okay=Fill(@bounds,clip,background)
+        okay=Fill(output,@bounds,clip,background)
         IF okay<>0 THEN
-          okay=Text(DESKMENU.WINDOWS_LEFT+8,DESKTYPES.MENU_TEXT_Y,
+          okay=Text(output,DESKMENU.WINDOWS_LEFT+8,DESKTYPES.MENU_TEXT_Y,
               BYTE POINTER(c"Windows"),foreground,background,clip,7)
         FI
         RETURN(IF okay<>0 THEN 2 ELSE 0 FI)
@@ -129,7 +131,7 @@ PUBLIC BYTE FUNC Paint(LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER cl
     FI
 
     REGIONS.Assign(@bounds,0,DESKMENU.BAR_HEIGHT-1,640,DESKMENU.BAR_HEIGHT)
-    RETURN(Fill(@bounds,clip,1))
+    RETURN(Fill(output,@bounds,clip,1))
   FI
 
 RETURN(1)

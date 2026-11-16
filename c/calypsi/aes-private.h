@@ -8,6 +8,7 @@ UWORD ExecAESLocal(struct ExecAESContext *, UWORD);
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *, WORD);
 BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
 void ExecAESChanged(struct ExecAESContext *,LONG,LONG,LONG,LONG);
+BOOL ExecAESDisplayEnsure(struct ExecAESContext *c);
 BOOL ExecAESDisplayClose(struct ExecAESContext *);
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);

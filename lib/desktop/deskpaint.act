@@ -1,4 +1,5 @@
-; Retained scene painter, called only by the existing console worker.
+; Shared exposure painter. UPDATE serializes scratch; each operation finishes
+; its paint tokens and physical work before returning.
 MODULE DESKPAINT
 USE DISPLAY
 USE EXEC
@@ -48,7 +49,8 @@ RETURN(NULL)
 ; Each fragment is disjoint from the client. Its complete frame pixels are
 ; composed in shared scratch before publication. The two narrow side fragments
 ; share a step; title and bottom fragments retain their own input boundary.
-BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
+BYTE FUNC FrameStep(CONSOLEBITMAP.Packet POINTER output
+    DESKTYPES.Window POINTER window
     LAYERTYPES.Layer POINTER layer LAYERTYPES.Rect POINTER client)
   LAYERTYPES.Rect area
   BYTE result
@@ -79,7 +81,7 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
 
     REGIONS.Intersect(@area,@strip,@area)
     IF REGIONS.Empty(@area)=0 THEN
-      result=CONSOLEBITMAP.Frame(NULL,@layer.bounds,@area,@window.title(0),
+      result=CONSOLEBITMAP.Frame(output,@layer.bounds,@area,@window.title(0),
           window.id=service.focus,1,
           window.frameKind,window.sliderTop,window.sliderHeight,
           window.sliderLeft,window.sliderWidth,@glyphOffset)
@@ -100,7 +102,8 @@ BYTE FUNC FrameStep(DESKTYPES.Window POINTER window
 
 RETURN(1)
 
-BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
+BYTE FUNC PaintStrip(CONSOLEBITMAP.Packet POINTER output
+    DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER layer)
   LAYERTYPES.Rect client,area
   BYTE okay,cached
 
@@ -110,13 +113,13 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
       RETURN(DESKMENUCACHE.PopupRestored())
     FI
     IF layer.id<>0 AND (layer.id=DESKSTATE.barLayer OR layer.id=DESKSTATE.popupLayer) THEN
-      RETURN(DESKMENUPAINT.Paint(layer,@strip,@started))
+      RETURN(DESKMENUPAINT.Paint(output,layer,@strip,@started))
     FI
-    RETURN(CONSOLEBITMAP.Background(NULL,@strip))
+    RETURN(CONSOLEBITMAP.Background(output,@strip))
   FI
 
   IF window.iconified<>0 THEN
-    RETURN(CONSOLEBITMAP.Frame(NULL,@layer.bounds,@strip,@window.title(0),
+    RETURN(CONSOLEBITMAP.Frame(output,@layer.bounds,@strip,@window.title(0),
         0,0,DESKTYPES.FRAME_ICONIFIED,0,0,0,0,@glyphOffset))
   FI
 
@@ -134,7 +137,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
     ; Restore frame and client together, but never replay a stored title.
     IF (window.frameKind=DESKTYPES.FRAME_BORDERLESS
           OR strip.top>=layer.bounds.top+DESKTYPES.TITLE_HEIGHT) THEN
-      cached=DESKCACHE.Restore(service,window,@layer.bounds,@strip)
+      cached=DESKCACHE.Restore(service,window,@layer.bounds,@strip,output)
       IF cached=DESKTYPES.CACHE_PENDING THEN
         IF AESWINDOWSTATE.Preserves(window)=0 THEN
           REGIONS.Intersect(@client,@strip,@area)
@@ -156,7 +159,7 @@ BYTE FUNC PaintStrip(DESKTYPES.Window POINTER window LAYERTYPES.Layer POINTER la
   FI
 
   IF started=PAINT_FRAME THEN
-    okay=FrameStep(window,layer,@client)
+    okay=FrameStep(output,window,layer,@client)
     IF okay<>1 THEN
       RETURN(okay)
     FI
@@ -347,13 +350,13 @@ RETURN(0)
 ; One strip step. Return 2 for an unfinished strip, 1 for completed-strip
 ; progress, or 0 for no work. The worker services input between ready steps.
 ; The update token and model gate survive worker turns.
-BYTE FUNC Paint()
+BYTE FUNC Paint(CONSOLEBITMAP.Packet POINTER output)
   BYTE count,slot,status,done
   DESKTYPES.Window POINTER window
   LAYERTYPES.Layer POINTER candidate
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 OR DISPLAY.Blocked()<>0 THEN
+  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0 THEN
     RETURN(0)
   FI
 
@@ -362,8 +365,7 @@ BYTE FUNC Paint()
       RETURN(0)
     FI
     ; An active token still needs continuation/retirement with no new damage.
-    IF service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0
-        OR AESLOCKS.PaintBlocked()<>0 THEN
+    IF service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0 THEN
       RETURN(0)
     FI
 
@@ -412,7 +414,7 @@ BYTE FUNC Paint()
         started=0
         IF candidate.id=DESKSTATE.popupLayer AND service.scene.work.count=1
             AND REGIONS.Equal(@service.scene.work.rects(0),@candidate.bounds)<>0 THEN
-          status=DESKMENUCACHE.RestorePopup(candidate)
+          status=DESKMENUCACHE.RestorePopup(candidate,output)
           IF status=DESKTYPES.CACHE_PENDING THEN
             started=PAINT_POPUP_CACHE
             RETURN(2)
@@ -431,7 +433,7 @@ BYTE FUNC Paint()
   window=ByLayer(paintLayer)
   done=1
   IF SelectStrip(window,layer,@region.rects(regionIndex))<>0 THEN
-    done=PaintStrip(window,layer)
+    done=PaintStrip(output,window,layer)
   FI
   IF done=2 THEN
     RETURN(2)
@@ -481,27 +483,29 @@ BYTE FUNC Paint()
 
 RETURN(1)
 
-; A ready strip owns UPDATE through its physical/scene continuation. Empty
-; paint probes do not acquire it, and retirement releases it at this boundary.
-BYTE FUNC InspectPump()
+; The originating operation already owns UPDATE. Scratch never survives this
+; call; accepted owner DMA is fenced before the next step or token retirement.
+PUBLIC BYTE FUNC Complete(CONSOLEBITMAP.Packet POINTER output)
   BYTE progress
 
   LET service=DESKSTATE.Get()
-  IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Pending()<>0
-      OR DISPLAY.Blocked()<>0 THEN
-    RETURN(0)
+  IF service=NULL OR service.live=0 THEN
+    RETURN(1)
   FI
-  IF paintToken=0 AND (service.scene.busy<>0
-      OR service.scene.visibleDamage=0 OR CONSOLEBITMAP.Failed()<>0) THEN
-    RETURN(0)
-  FI
-  IF AESLOCKS.SystemBegin()=0 THEN
-    RETURN(0)
-  FI
-  progress=Paint()
-  AESLOCKS.SystemEnd()
+  DO
+    IF output=NULL THEN
+      CONSOLEBITMAP.Finish()
+    FI
+    progress=Paint(output)
+    IF CONSOLEBITMAP.Failed()<>0 THEN
+      RETURN(0)
+    FI
+    IF progress=0 THEN
+      RETURN(service.scene.busy=0 AND service.scene.visibleDamage=0)
+    FI
+  OD
 
-RETURN(progress)
+RETURN(1)
 
 PUBLIC BYTE FUNC PaintPending()
   BYTE result
@@ -553,7 +557,11 @@ PUBLIC BYTE FUNC Pump()
   IF AESLOCKS.SystemBegin()=0 THEN
     RETURN(0)
   FI
-  result=InspectPump()
+  LET service=DESKSTATE.Get()
+  result=0
+  IF service<>NULL AND (service.scene.visibleDamage<>0 OR paintToken<>0) THEN
+    result=Complete(NULL)
+  FI
   AESLOCKS.SystemEnd()
 
 RETURN(result)

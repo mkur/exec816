@@ -22,7 +22,7 @@ BOOL ExecAESDisplayClose(struct ExecAESContext *c)
     return TRUE;
 }
 
-static BOOL display_ensure(struct ExecAESContext *c)
+BOOL ExecAESDisplayEnsure(struct ExecAESContext *c)
 {
     struct DisplayGrant *grant;
     UWORD status;
@@ -243,6 +243,9 @@ WORD ExecAESWindowCall(struct ExecAESContext *c,UWORD op, WORD a, WORD b, WORD d
         view=ExecAESFindView(c,a);
         if (!view) { c->diagnostic=AES_IDENTITY; return fail; }
     }
+    if ((op==AES_OP_OPEN || op==AES_OP_CLOSE ||
+         (op==AES_OP_SET && (b==WF_TOP || b==WF_CXYWH))) && !ExecAESDisplayEnsure(c))
+        return fail;
     Forbid();
     c->request.view=view;
     Permit();
@@ -260,7 +263,7 @@ prepare:
             (b==WF_NAME || b==WF_INFO || b==WF_VSLIDE || b==WF_VSLSIZE ||
              b==WF_HSLIDE || b==WF_HSLSIZE || b==WF_CXYWH) &&
             !c->request.displayGrant) {
-            if (display_ensure(c)) goto prepare;
+            if (ExecAESDisplayEnsure(c)) goto prepare;
             result=fail;
         } else result=c->diagnostic==AES_OK ? c->request.intout[0] : fail;
     } else { c->diagnostic=AES_UNSUPPORTED; result=fail; }
