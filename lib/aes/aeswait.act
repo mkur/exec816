@@ -1,4 +1,4 @@
-; Retained window/exit continuations, protected by the scene gate.
+; Caller-owned continuations; copied waiter transitions use short Task guards.
 ; Resource arbitration belongs entirely to the native semaphore.
 MODULE AESWAIT
 USE EXEC

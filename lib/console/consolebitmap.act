@@ -2,7 +2,6 @@
 MODULE CONSOLEBITMAP
 USE EXEC
 USE CONSOLEBACKEND
-USE CONSOLEUI
 USE DISPLAY
 USE CONSOLETYPES
 USE HEAPCORE
@@ -79,7 +78,6 @@ PUBLIC BYTE FUNC Run(CARD operation)
   LET packet=GetPacket()
   packet.operation=operation
   packet.status=DISPLAY.BAD_ARGUMENT
-  LET held=CONSOLEUI.Suspend()
   Call(state.entry)
   status=packet.status
   IF operation=OP_FILL OR operation=OP_TEXT OR operation=OP_TEXT_FILL
@@ -107,10 +105,6 @@ PUBLIC BYTE FUNC Run(CARD operation)
       physicalCompleted=1
     FI
   FI
-  ; Fence retirement may run while the scene continuation is deferred. Save
-  ; this call's result before that dispatcher uses the shared POLL packet.
-  CONSOLEUI.Resume(held)
-  packet.status=status
 
 RETURN(result)
 

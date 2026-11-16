@@ -140,7 +140,7 @@ Layers and cache identities and publishes views. END consumes the caller's
 invalidation and paint journal synchronously, updates pixel readiness and marks
 cache candidates. C-side `wind_get` uses the published view and directory.
 [Worker](../../lib/console/consoledriver.act) ·
-[Current gate](../../lib/aes/aesgate.act) ·
+[Current gate](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover) ·
 [View publication and UPDATE](../../lib/aes/aeswindowstate.act) ·
 [C binding](../../c/calypsi/aes-windows.c)
 

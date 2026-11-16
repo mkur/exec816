@@ -149,5 +149,5 @@ publication semantics.
 Move the input dispatcher only after its chosen storage and Task lifetimes are
 explicit. Exercise delivery while an application holds UPDATE, cursor/display
 contention, console I/O and capture loss/retirement. SM3 must move retained
-caller effects and scene readers before removing AESGATE; SM4 then replaces the
-combined loop. The placement decision does not authorize bypassing those steps.
+caller effects and scene readers before removing AESGATE. SM3a–d now complete
+that cutover; SM4 replaces the combined loop. The placement decision does not authorize bypassing those steps.

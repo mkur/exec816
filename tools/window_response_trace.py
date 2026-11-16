@@ -23,8 +23,8 @@ def setup(out, bookkeeping=False):
     program = read_build(out)
     foreign = json.loads((out/'bitmap-console/c-image.json').read_text())
     spans = native_markers(program, [(n, n) for n in NATIVE])
-    optional = ('AESLOCAL_CALL AESGATE_CLAIM AESGATE_RELEASE AESGATE_OWNERENTER '
-                'AESGATE_OFFER AESLOCKS_NATIVEREADY AESLOCKS_ATTEMPT AESLOCKS_ELIGIBLE').split()
+    optional = ('AESLOCAL_CALL AESLOCAL_PUBLISH AESHOST_PUBLISH '
+                'AESLOCKS_NATIVEREADY AESLOCKS_CALL AESLOCKS_SYSTEMBEGIN').split()
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
     spans.update(native_markers(program, [(n,n) for n in present]))

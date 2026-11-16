@@ -101,7 +101,7 @@ Useful existing implementation seams include
 [`aes-local.c`](../../c/calypsi/aes-local.c) / [`aeslocal.act`](../../lib/aes/aeslocal.act),
 [`aes-events.c`](../../c/calypsi/aes-events.c),
 [`aes-messages.c`](../../c/calypsi/aes-messages.c),
-[`aesgate.act`](../../lib/aes/aesgate.act),
+[`aesgate.act`](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover),
 [`aeslocks.act`](../../lib/aes/aeslocks.act),
 [`aessystem.act`](../../lib/aes/aessystem.act),
 [`display-access.inc`](../../lib/display/display-access.inc) and
@@ -151,9 +151,9 @@ different architecture in the port.
 
 | Area | MagiC baseline | Current Exec difference | Review required |
 | --- | --- | --- | --- |
-| Scene admission | `_wind_set` enters UPDATE and dispatches its handler. | `AESGATE` adds another admission stage; the presenter claims the scene across much of its turn. | Account for every reader/mutator and retained effect. A separate broad gate needs a demonstrated reason; normal preemption alone does not establish that reason. |
-| Input and screen manager | Scheduler-side deferred key delivery is separate from `SCRENMGR` UI work. | One presenter combines input delivery, UI, console work, cache maintenance and device retirement. | The user selected replacement with SCRENMGR. Resolve the independent delivery/device execution map and costs; do not preserve the combined loop or add Tasks/queues by default. |
-| Simple frame setters | A changed slider updates and calls `wind_draw` before releasing UPDATE. | All four slider fields now paint synchronously in the caller; text fields still invalidate regions for presenter painting. | Continue the [SCRENMGR migration](../plans/gem4xe/screnmgr-migration-plan.md) with the remaining frame fields; retaining deferred completion needs a specific reason and a user decision. |
+| Scene admission | `_wind_set` enters UPDATE and dispatches its handler. | SM3a–d assign copied reads/lifetimes and live scene operations, then remove AESGATE and the turn-wide claim. UPDATE is the sole live UI resource. | Preserve the complete owner inventory; a second gate requires a new justified decision. |
+| Input and screen manager | Scheduler-side deferred key delivery is separate from `SCRENMGR` UI work. | Independent input.device capture and copied application delivery are installed. The selected frontend still combines UI, console paint, cache maintenance and device retirement. | SM4 must replace the combined frontend loop using the selected execution map; do not add Tasks/queues by default. |
+| Simple frame setters | A changed slider updates and calls `wind_draw` before releasing UPDATE. | All four slider fields and title/info text now paint synchronously in the caller. | Continue the [SCRENMGR migration](../plans/gem4xe/screnmgr-migration-plan.md) with the manager event loop; reintroducing deferred caller completion needs a specific reason and a user decision. |
 | Paint and cache protocols | Ordinary GEM drawing/UPDATE paths define the application contract. | Additional journals and optional completion/preservation hooks support cached images. | Identify which responsibilities can live under standard GEM calls and which extensions, if any, need to remain. |
 | Modal forms | The inspected modal loop retains MCTRL routing across event waits. | Current forms use an ordinary window and UPDATE for painting; desktop-wide modal ownership is unsupported. | Treat this as a semantic gap to port or an explicitly agreed limitation, rather than assuming current behavior is the target. |
 | Drawing boundaries | Tree/object/primitive/device boundaries define operations; capacity drains need not transfer ownership. | Existing strip/turn budgets, continuation checks and cache work add boundaries. | Inspect MagiC and GEM4XE first. Justify any different boundary with actual device limits, measured coordination cost and peer progress. |
@@ -162,7 +162,7 @@ Source baselines are in the [standalone MagiC model](magic.md), especially its
 [drawing sequence](magic.md#drawing-sequence) and
 [input/event path](magic.md#input-events-and-application-messages), and the
 [operation-boundary analysis](../history/magic-operation-boundaries.md).
-Current implementations include [`AESGATE`](../../lib/aes/aesgate.act),
+Current implementations include [`AESLOCKS`](../../lib/aes/aeslocks.act),
 [`AESSYSTEM`](../../lib/aes/aessystem.act),
 [`AESWINDOW`](../../lib/aes/aeswindow.act),
 [`AESWINDOWSTATE`](../../lib/aes/aeswindowstate.act) and

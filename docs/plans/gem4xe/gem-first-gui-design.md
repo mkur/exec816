@@ -119,7 +119,7 @@ ordinary occupied pool relative to the former combined two-service arrangement;
 reserved bank-zero bytes are unchanged. A workstation belongs to its application,
 not one window. Rendering intersects damage, work and visible rectangles.
 
-The current shared caller operations retain the scene gate during staging.
+SM3d removes the interim scene gate after the SM3a–c ownership prerequisites.
 SM1e completes `WF_NAME`/`WF_INFO` using MagiC AESWIN 2417–2461: reject a missing
 component, update text/frame state, draw an open linked object, then release
 UPDATE. Hidden/unlinked objects need no physical access. An iconified title is
@@ -146,11 +146,12 @@ geometry across drawing; MCTRL selects input ownership. A physical grant protect
 renderer scratch and hardware, including completion, without granting UI authority.
 Neither scope disables normal Task preemption.
 
-AESGATE is the interim mechanism for live scene readers/writers and continuation
-handoff. It must disappear as one complete ownership cutover, not become a second
-permanent UI semaphore. Before removing it, SM3 assigns queries, registration,
-publication, input-window binding, journals/cache and retained effects as well as
-setters. MagiC queries do not simply Obtain UPDATE: preserve `wind_get`'s copied
+SM3d removes AESGATE, its stack waiter queue and the turn-wide claim together.
+SM3a–c assign queries, registration, publication, input-window binding,
+journals/cache and retained effects as well as setters to their existing owners.
+UPDATE remains owned across physical drawing and input-route calls. Device
+completion does not re-enter a second GUI gate; the former AESDEFER pump and
+console suspend/resume hooks are removed. MagiC queries do not simply Obtain UPDATE: preserve `wind_get`'s copied
 views and explicitly resolve `wind_find` coherence without importing pointer
 routing's focus/menu/MCTRL filtering. Changed read semantics or architectural
 departures require the user's decision under the governing guidance.
@@ -168,7 +169,7 @@ transition and retires them together after publishers have drained. Snapshot
 construction first pins copied registrations, using the existing prepared
 rows; closing endpoints are rejected before publication, and an invalidation
 arriving during construction remains pending. Window geometry still requires
-UPDATE and the interim scene gate. Console input-window association uses that
+UPDATE. Console input-window association uses that
 same UPDATE resource, without opening a paint journal. Copied GUI event queues
 and endpoint transitions use their short Task guards; no scene lookup or drawing
 is moved into input.device.
@@ -189,9 +190,9 @@ input and lifetime wakeups keep progressing. Console shutdown idle checks can
 also run in the controller; they use a short caller-owned native borrow and
 never inherit the manager's retained scope state. A failed borrow reports busy. Native captures and open menus
 retain their manager operation until its source-defined end. Startup/teardown
-remain exclusive lifecycle boundaries. The existing scene gate remains until
-SM3d performs the whole-inventory cutover; these scopes do not remove its second
-admission wait yet.
+remain exclusive lifecycle boundaries. SM3d completes the whole-inventory
+cutover: these scopes now supply the sole live UI authority. The combined loop
+still runs in the existing frontend Task; SM4 changes its event-loop flow.
 
 Input.device classifies global shortcuts and keys for a published active menu
 into copied manager events, rather than delivering them to the focused AES inbox.
@@ -223,7 +224,8 @@ SM3a preserves native/chrome occlusion and separates raw window identity from
 work-area input eligibility, including endpoint close. Iconified windows return
 their handle, following MagiC's unfiltered stack walk. The previous Exec tile
 exclusion is removed; the existing zero result outside AES windows remains. Readiness and scene construction still need
-the rest of SM3's ownership inventory; either choice alone cannot remove AESGATE.
+the rest of SM3's ownership inventory; SM3d removes the gate after those owners
+are installed.
 The selected contract permits the previous complete publication during an
 overlapping mutation. Completed operations must publish before return. It adds
 no buffer, Task or bank-zero reservation and does not acquire UPDATE in queries.

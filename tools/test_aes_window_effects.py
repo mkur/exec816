@@ -21,20 +21,15 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 def build(out,reuse_c=False):
     probe = '''MODULE WINDOWEFFECTPROBE
 USE EXEC
-USE AESGATE
 USE AESTYPES
 PUBLIC BYTE stage,release
 PUBLIC LONGCARD guiEpochAddress,tokenAddress,windowAddress,requestAddress
-PUBLIC PROC Pause(BYTE value AESTYPES.Request POINTER request)
+PUBLIC PROC Pause(BYTE value)
 
-  LET held=IF value<3 THEN AESGATE.Leave() ELSE BYTE(0) FI
   stage=value
   WHILE release<value DO
     EXEC.Yield()
   OD
-  IF value<3 THEN
-    AESGATE.Reenter(held,request)
-  FI
 
 RETURN
 ENDMODULE
@@ -42,19 +37,19 @@ ENDMODULE
     (out/'windoweffectprobe.act').write_text(probe)
     move = read_source(ROOT/'lib/desktop/deskmove.act')
     move = move.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
-    needle='      AESFRAME.Apply(@packet,request)'
+    needle='      AESFRAME.Apply(@packet)'
     require(move.count(needle)==1,'Caller copied-move fence boundary changed')
     move=move.replace(needle,"""      WINDOWEFFECTPROBE.tokenAddress=LONGCARD(ADDRESS(@token))
       WINDOWEFFECTPROBE.windowAddress=LONGCARD(ADDRESS(window))
       WINDOWEFFECTPROBE.requestAddress=LONGCARD(ADDRESS(request))
-      WINDOWEFFECTPROBE.Pause(1,request)
-"""+needle+'\n      WINDOWEFFECTPROBE.Pause(2,request)',1)
+      WINDOWEFFECTPROBE.Pause(1)
+"""+needle+'\n      WINDOWEFFECTPROBE.Pause(2)',1)
     (out/'deskmove.act').write_text(move)
     routes = read_source(ROOT/'lib/aes/aesroutes.act')
     routes = routes.replace('USE AESTYPES\n', 'USE AESTYPES\nUSE WINDOWEFFECTPROBE\n', 1)
-    drain = '  LET held=AESGATE.Leave()'
+    drain = '  LET result=INPUTCLIENT.RetireRoute'
     require(routes.count(drain) == 1, 'Close route retirement boundary changed')
-    routes = routes.replace(drain, drain+'\n  WINDOWEFFECTPROBE.Pause(3,request)')
+    routes = routes.replace(drain, '  WINDOWEFFECTPROBE.Pause(3)\n'+drain)
     (out/'aesroutes.act').write_text(routes)
     source = out/'window-effects.act'
     source.write_text('''MODULE WINDOWEFFECTS
@@ -62,7 +57,6 @@ USE EXEC
 USE AESBOOT
 USE AESSTATE
 USE AESCORE
-USE AESGATE
 USE AESLOCKS
 USE DESKSTATE
 USE CONSOLEBITMAP
@@ -84,23 +78,19 @@ PROC Main()
   BEGIN
     BYTE pending
 
-    LET bit=EXEC.AllocSignal(-1)
     LET desktop=DESKSTATE.Get()
     DO
       AESLOCKS.ObtainUI()
-      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=(desktop.scene.visibleDamage<>0 AND CONSOLEBITMAP.Failed()=0)
           OR CONSOLEBITMAP.Pending()<>0
-          OR desktop.scene.busy<>0 OR service.policyEffects<>0
+          OR desktop.scene.busy<>0
           OR AESCORE.Runnable(service)<>0
-      AESGATE.Release(0)
       AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI
       EXEC.Yield()
     OD
-    EXEC.FreeSignal(bit)
   END
 
 RETURN

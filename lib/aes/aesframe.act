@@ -2,7 +2,6 @@
 MODULE AESFRAME
 USE AESTYPES
 USE AESSTATE
-USE AESGATE
 USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKSTATE
@@ -23,18 +22,15 @@ PUBLIC PROC Configure(ADDRESS entry)
 RETURN
 
 ; A caller-owned packet survives physical admission and its synchronous fence.
-; UPDATE stays with the operation while only the interim scene gate is dropped.
-PUBLIC PROC Apply(CONSOLEBITMAP.Packet POINTER packet
-    AESTYPES.Request POINTER request)
+; UPDATE stays with the operation throughout physical access.
+PUBLIC PROC Apply(CONSOLEBITMAP.Packet POINTER packet)
 
-  LET held=AESGATE.Leave()
   LET ignored=CALYPSICALL.Invoke(frameApply,LONGCARD(ADDRESS(packet)))
-  AESGATE.Reenter(held,request)
 
 RETURN
 
 ; UPDATE pins the native window, title and visible geometry across physical
-; access. Only the scene gate is dropped. No presenter packet is borrowed.
+; access. No presenter packet is borrowed.
 PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
     AESTYPES.Request POINTER request)
   CONSOLEBITMAP.Packet packet
@@ -98,7 +94,7 @@ PUBLIC CARD FUNC Paint(AESSTATE.Client POINTER client
         packet.clipRight=CARD(clip.right)
         packet.clipBottom=CARD(clip.bottom)
         packet.fillX=0
-        Apply(@packet,request)
+        Apply(@packet)
         IF packet.status<>DISPLAY.OK OR packet.fillX<>0 THEN
           request.intout(0)=0
           RETURN(AESTYPES.DISPLAY_ERROR)

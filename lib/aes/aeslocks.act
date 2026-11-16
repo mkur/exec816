@@ -6,7 +6,7 @@ USE AESTYPES
 USE AESSTATE
 USE AESMOUSE
 USE AESWINDOWSTATE
-USE AESGATE
+USE AESSNAPSHOT
 USE AESWAIT
 USE DESKSTATE
 USE CONSOLEBITMAP
@@ -117,10 +117,8 @@ PUBLIC BYTE FUNC NativeReady()
 
   LET desktop=DESKSTATE.Get()
   LET batch=CONSOLEBATCH.Get()
-  LET service=AESSTATE.Get()
 
 RETURN(DISPLAY.Blocked()=0 AND desktop<>NULL AND desktop.scene.busy=0
-    AND (service=NULL OR service.policyEffects=0)
     AND CONSOLEBITMAP.Pending()=0 AND DESKSTATE.menuReplacing=0
     AND batch.phase=CONSOLETYPES.BATCH_IDLE
     AND DESKSTATE.outlineVisible=0)
@@ -289,7 +287,7 @@ RETURN(AESTYPES.OK)
 ; One acquisition path for public UPDATE/MCTRL and temporary handler scopes.
 ; Native Attempt handles the common uncontended/recursive case. Only a real
 ; miss needs a presenter quiescence hint followed by native blocking Obtain.
-; Never obtain while owning the scene or a physical backend grant.
+; Never obtain while owning a physical backend grant.
 PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
   CARD code,status
   BYTE guarded
@@ -321,10 +319,8 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
     code=code & $ff
     guarded=(code=AESTYPES.BEG_MCTRL)
     IF guarded<>0 THEN
-      AESGATE.EnterTask(request.owner,mask)
       IF (CARD(request.intin(0)) & AESTYPES.TRY)<>0
           AND AESMOUSE.LockReady(client.id)=0 THEN
-        AESGATE.Release(0)
         ReturnResource(service,service.updates=0)
         RETURN(AESTYPES.OK)
       FI
@@ -333,9 +329,9 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
       WHILE AESMOUSE.LockReady(client.id)=0 DO
         AESWAIT.Window(service,client,request)
         client.waitMode=AESWAIT.CALLER
-        AESGATE.Release(1)
+        AESSNAPSHOT.Publish()
+        EXEC.Signal(service.owner,service.mask)
         EXEC.Wait(mask)
-        AESGATE.EnterTask(request.owner,mask)
       OD
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
@@ -345,7 +341,7 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
         IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
           request.intin(1) ELSE INT(0) FI,painting)
     IF guarded<>0 THEN
-      AESGATE.Release(0)
+      AESSNAPSHOT.Publish()
     FI
     IF status<>AESTYPES.OK THEN
       ReturnResource(service,service.updates=0)
@@ -358,12 +354,9 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
     FI
     guarded=(code=AESTYPES.END_MCTRL OR
         (painting<>0 AND service.updateHolds+service.mouseHolds=1))
-    IF guarded<>0 THEN
-      AESGATE.EnterTask(request.owner,mask)
-    FI
     status=Release(service,client,code,painting)
     IF guarded<>0 THEN
-      AESGATE.Release(0)
+      AESSNAPSHOT.Publish()
     FI
     IF status=AESTYPES.OK THEN
       ReturnResource(service,service.updates=0)

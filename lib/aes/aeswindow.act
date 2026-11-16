@@ -4,7 +4,6 @@ USE EXEC
 USE AESWAIT
 USE A816MEMORY
 USE AESSTATE
-USE AESGATE
 USE AESSNAPSHOT
 USE AESTYPES
 USE AESGUI
@@ -170,14 +169,10 @@ PROC CommitOpen(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
 
 RETURN
 
-PROC DiscardRoute(AESTYPES.Request POINTER request LONGCARD route)
+PROC DiscardRoute(LONGCARD route)
 
   IF route<>0 THEN
-    BEGIN
-      LET held=AESGATE.Leave()
-      AESROUTES.Discard(route)
-      AESGATE.Reenter(held,request)
-    END
+    AESROUTES.Discard(route)
   FI
 
 RETURN
@@ -200,14 +195,12 @@ CARD FUNC Open(AESSTATE.Service POINTER service AESSTATE.Client POINTER client
     RETURN(AESTYPES.MALFORMED)
   FI
 
-  LET held=AESGATE.Leave()
   LET status=AESROUTES.Prepare(window,@route)
-  AESGATE.Reenter(held,request)
   IF status<>AESTYPES.OK THEN
     RETURN(status)
   FI
   IF service.nextGuiEpoch=0 THEN
-    DiscardRoute(request,route)
+    DiscardRoute(route)
     RETURN(AESTYPES.OVERFLOW)
   FI
   CommitOpen(service,client,item,@bounds,route)
@@ -252,7 +245,7 @@ CARD FUNC Close(DESKTYPES.Window POINTER item AESTYPES.Request POINTER request)
     END
   FI
 
-  IF AESROUTES.Retire(window,request)=0 THEN
+  IF AESROUTES.Retire(window)=0 THEN
     RETURN(AESTYPES.PENDING)
   FI
 
@@ -515,7 +508,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     ; Text has the same pre-mutation admission as the slider operation.
     IF request.displayGrant=NULL AND layer.shown<>0
         AND (window.iconified=0 OR request.intin(1)=AESTYPES.WF_NAME)
-        AND layer.visible.count<>0 AND AESGATE.SystemOwned()=0 THEN
+        AND layer.visible.count<>0 THEN
       RETURN(AESTYPES.DISPLAY_ERROR)
     FI
     REGIONS.Copy(@layer.bounds,@bounds)
@@ -572,7 +565,7 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       ; outside this handler and retries without an intermediate state change.
       IF request.displayGrant=NULL
           AND layer.shown<>0 AND window.iconified=0
-          AND layer.visible.count<>0 AND AESGATE.SystemOwned()=0 THEN
+          AND layer.visible.count<>0 THEN
         RETURN(AESTYPES.DISPLAY_ERROR)
       FI
       DESKCACHE.Changed(desktop,window)

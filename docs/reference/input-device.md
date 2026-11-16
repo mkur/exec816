@@ -49,7 +49,7 @@ consumers to detach. The worker retires only after those bindings close.
 
 Handlers run synchronously in the input Task with no driver guard. They may
 copy/translate input, publish inboxes and signal readiness. They must not Wait,
-obtain UPDATE/MCTRL/AESGATE, draw, enter a physical grant or call application
+obtain UPDATE/MCTRL, draw, enter a physical grant or call application
 callbacks. Short consumer publication guards remain necessary. Callback state
 must be initialized before ATTACH: delivery can begin before its caller resumes.
 

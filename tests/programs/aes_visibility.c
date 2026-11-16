@@ -5,7 +5,7 @@
 #include <clib/alib_protos.h>
 
 ULONG AESService,VisNative,VisBusy,VisFail,VisHold,VisHeld,VisRelease;
-ULONG VisEpoch,VisWaiting,VisOwner,VisReady,VisPeerTask;
+ULONG VisEpoch,VisWaiting,VisReady,VisPeerTask;
 ULONG VisRetireBusy,VisEndpoint;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD VisPhase,VisGo,VisPoint,VisPeerHeld,VisPeerRelease,VisWake;

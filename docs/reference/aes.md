@@ -305,15 +305,15 @@ pending notices with the window epoch. These report accepted focus changes;
 
 One native semaphore owns UPDATE for public painting, MCTRL and temporary
 window/menu handlers. Ordinary and recursive UPDATE entry changes journal/depth
-facts without taking the scene or sweeping geometry/caches. Routing transitions
-and final journal reconciliation use the short scene gate. Temporary handler
+facts without sweeping geometry/caches. Routing transitions and final journal
+reconciliation use that same UPDATE ownership. Temporary handler
 levels do not start a public journal or change explicit binding depth.
 
 An uncontended native Attempt completes directly. A normal miss publishes a
-presenter quiescence hint, then blocks in native Obtain before taking the scene.
+manager quiescence hint, then blocks in native Obtain.
 The kernel installs the FIFO recipient and count before making it ready. The
 resumed caller owns UPDATE; it does not re-enter an AES eligibility contest.
-No scene gate, display grant or Layers token is held across that Obtain.
+No display grant or Layers token is held across that Obtain.
 The busy C context and registration pin its descriptor/frame. Unrelated input,
 message and timer signals remain pending; native resource waits consume none.
 
@@ -325,15 +325,18 @@ reply-signal hints after ownership has been established; those hints never grant
 UPDATE. No Task, signal or kernel ABI extension is added.
 
 Final local END consumes the binding's paint journal before returning and
-signals the existing AES wake bit. While a caller owns scene metadata, the
-presenter continues captured keyboard/pointer delivery through published routing
-snapshots and can retire a physical drawing fence. Window/control interpretation,
-cache work and scene commits resume after admission. Message and timer waits
-remain independent. Physical completion preserves the logical drawing transaction
-until the presenter can commit its result; it does not publish new geometry.
-The scene gate is released before physical drawing calls, route resource calls
-and widget callbacks. Gate transitions and snapshot publication use short
-scheduling guards; scene metadata work remains preemptible.
+signals the existing AES wake bit. Input.device continues captured keyboard and
+pointer delivery through copied routing while another Task owns UPDATE. Manager
+window/control interpretation, cache work and scene commits try UPDATE at their
+operation boundary. RPC, message/timer waits and device completion remain
+independent. Caller drawing keeps UPDATE, its packet and any Layers token through
+physical completion; geometry commits only after terminal completion.
+
+There is no separate scene gate, scene waiter queue or turn-wide scene claim.
+Snapshot construction uses UPDATE; copied registration/event/capture publication
+uses short Task guards. Physical calls do not release and re-enter UI ownership.
+All scene metadata work remains preemptible. The combined frontend loop remains
+until the separate SCRENMGR event-loop migration.
 
 `ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
 tracking, repaint obligations and cache holds to one caller-owned window. End
@@ -412,7 +415,7 @@ permits dimensions of at least 64 by 48; vertical gadgets require height 80.
 Off-screen bounds fail without mutation.
 
 Hidden creation and ordinary closed-window deletion execute in the caller under
-the common UPDATE scope and short scene gate. Ordinary/PB calls use the same
+the common UPDATE scope. Ordinary/PB calls use the same
 helpers and preserve transport sequence. View storage is allocated before entry
 and freed after release. Copied moves retain their Layers token and packet on
 the caller's stack through the delegated blitter fence. A manager never obtains
@@ -421,10 +424,10 @@ or releases a caller's UPDATE to complete a window request.
 Eligible `WF_NAME`, `WF_INFO`, vertical and horizontal slider setters use the same
 caller entry and ordering as hidden lifecycle operations. They commit copied
 text or bounded slider values, cache/menu changes, derived geometry, damage and
-view publication under scene ownership. Changed title/info and vertical/horizontal
+view publication under UPDATE ownership. Changed title/info and vertical/horizontal
 slider setters paint their visible frame component synchronously in the calling Task
-before returning or releasing their handler UPDATE. The scene gate is dropped around physical drawing;
-UPDATE pins the window and frame-visible geometry. This uses a caller-owned
+before returning or releasing their handler UPDATE. UPDATE pins the window and
+frame-visible geometry throughout physical drawing. This uses a caller-owned
 console-format packet and the shared GEM4XE frame raster under delegated display
 access. Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
@@ -463,8 +466,8 @@ failure retires the token without publishing speculative bounds. Ordinary copy
 refusal retains the damage/redraw fallback. The manager paints exposure and
 handles interaction, using the same bounds/top policy.
 
-Ordinary/PB opens retain UPDATE while preparing an unpublished keyboard route
-outside the interim scene gate. Re-entry does not re-arbitrate UPDATE. Exhausted
+Ordinary/PB opens retain UPDATE while preparing an unpublished keyboard route.
+Input.device manages route capture independently; no UI re-admission follows. Exhausted
 routes/GUI epochs leave the hidden window and tag pool intact; failed preparation
 retires an unused route before return.
 

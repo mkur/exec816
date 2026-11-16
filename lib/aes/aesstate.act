@@ -72,9 +72,6 @@ PUBLIC TYPE Service=[
   LONGCARD cursorHides
   LONGCARD cursorOwner
   INT updateWindow
-  BYTE policyGate,policyWaiting,policyEffects
-  EXEC.Task POINTER sceneOwner
-  BYTE POINTER sceneWaiters
   INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
   PointerTarget ARRAY pointerTargets(POINTER_EVENTS)
   BYTE pointerHead,pointerCount,pointerLost

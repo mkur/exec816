@@ -15,8 +15,8 @@ from sio_transaction_trace import BASE_HZ, read_events
 
 
 NAMES = set(BOOKKEEPING) | set('''
-AESGATE_RECLAIM AESGATE_TRYOWNER AESGATE_RELEASE AESGATE_ENTERTASK
-AESGATE_WAKECALLERS AESSNAPSHOT_PUBLISH DESKINPUT_REPLAYKEYS
+AESLOCAL_PUBLISH AESHOST_PUBLISH AESLOCKS_CALL
+AESLOCKS_SYSTEMBEGIN AESLOCKS_SYSTEMEND AESSNAPSHOT_PUBLISH DESKINPUT_REPLAYKEYS
 CONSOLEDISPLAY_POLL DESKHOST_MENUCONTINUATION DESKHOST_CONTROLS
 DESKHOST_READY DESKHOST_AFTERPAINT DESKHOST_EVENTS AESHOST_SETTLE
 DESKPAINT_PUMP AESHOST_RUNNABLE AESHOST_PUMP AESHOST_WAKE
@@ -29,8 +29,8 @@ CONSOLEDRIVER_SYSTEMRUNNABLE CONSOLEDRIVER_SYSTEMTURN
 CONSOLEDRIVER_BACKENDTURN CONSOLECONTROL_PROCESS
 '''.split())
 DETAILED = set('''AESSYSTEM_RUN AESSYSTEM_COLLECT DISPLAY_BLOCKED
-DISPLAY_LEAVE DISPLAY_NEXT AESGATE_RELEASE AESGATE_ENTERTASK
-AESGATE_RECLAIM AESCORE_RUNNABLE'''.split())
+DISPLAY_LEAVE DISPLAY_NEXT AESLOCAL_PUBLISH AESLOCKS_CALL
+DESKINPUT_REPLAYKEYS AESCORE_RUNNABLE'''.split())
 
 
 def definition(program):
@@ -97,7 +97,6 @@ def definition(program):
 
 
 PHASES = {
-    'scene_admission': 'AESGATE_RECLAIM',
     'signals': 'AESSYSTEM_COLLECT',
     'input': 'DESKINPUT_REPLAYKEYS DESKINPUT_SERVICE DESKINPUT_ADVANCE DESKINPUT_PRESENT CONSOLEDRIVER_SYSTEMINPUT',
     'completion_poll': 'CONSOLEDISPLAY_POLL',
@@ -109,7 +108,7 @@ PHASES = {
     'settlement': 'AESHOST_SETTLE',
     'readiness': 'DESKHOST_READY AESHOST_SETTLED DESKHOST_RUNNABLE CONSOLEDRIVER_SYSTEMRUNNABLE DESKPAINT_READY AESLOCKS_NATIVEREADY',
     'cache': 'DESKHOST_CACHE',
-    'scene_publication': 'AESGATE_OFFER',
+    'snapshot_publication': 'AESHOST_PUBLISH',
     'stop_check': 'CONSOLEDRIVER_SYSTEMSTOPPING',
 }
 
@@ -224,7 +223,7 @@ def analyze(out, definition, base_audit, foreign, directory):
                                 arguments=signal_arguments(nearby)))
 
     turn_pc = next(pc for pc, site in d['sites'].items()
-                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'AESGATE_RECLAIM')
+                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKINPUT_REPLAYKEYS')
     turn_ticks = [t for t, e in worker_events if int(e[4], 16) == turn_pc]
     quiet_pc = min(pc for pc, site in d['sites'].items()
                    if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKHOST_CACHE')
@@ -253,7 +252,7 @@ def analyze(out, definition, base_audit, foreign, directory):
                             for w in waits if w['start'] < end and start < w['end']]
             posted = [s for s in signals if start <= s['tick'] < end]
             presenter_tasks = {s['arguments']['task'] for s in signals
-                               if s['caller'] == 'AESGATE_RELEASE' and s['arguments']}
+                               if s['caller'] == 'AESLOCAL_PUBLISH' and s['arguments']}
             require(len(presenter_tasks) == 1, 'No unique presenter signal target')
             presenter_task = next(iter(presenter_tasks))
             presenter_posts = [s for s in posted if s['arguments']

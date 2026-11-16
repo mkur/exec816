@@ -27,7 +27,6 @@ def instrument(out):
     (out/'frameprobe.act').write_text('''MODULE FRAMEPROBE
 USE EXEC
 USE AESSTATE
-USE AESGATE
 USE HEAPCORE
 USE AESTYPES
 USE AESWINDOWSTATE
@@ -42,7 +41,8 @@ PUBLIC LAYERTYPES.Rect iconBounds
 PUBLIC PROC Observe(AESSTATE.Client POINTER client AESTYPES.Request POINTER request)
 
   LET service=AESSTATE.Get()
-  IF service.sceneOwner<>EXEC.FindTask(NULL) THEN
+  LET owner=ADDRESS POINTER(@service.updateResource)
+  IF owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
     HEAPCORE.Abort($fc62)
   FI
   IF icon<>0 THEN
@@ -63,7 +63,7 @@ PUBLIC PROC Observe(AESSTATE.Client POINTER client AESTYPES.Request POINTER requ
       icon=0
     END
   FI
-  stats(IF AESGATE.SystemOwned()<>0 THEN BYTE(1) ELSE BYTE(0) FI)==+1
+  stats(IF EXEC.FindTask(NULL)=service.owner THEN BYTE(1) ELSE BYTE(0) FI)==+1
 
 RETURN
 ENDMODULE

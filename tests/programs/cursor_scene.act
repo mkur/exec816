@@ -2,7 +2,7 @@ MODULE CURSORSCENETEST
 USE EXEC
 USE AESSTATE
 USE AESTYPES
-USE AESGATE
+USE AESLOCKS
 USE AESLOCAL
 USE AESCURSOR
 USE HEAPCORE
@@ -23,20 +23,16 @@ PROC Require(BYTE okay)
 
 RETURN
 
-; A competing scene owner computes until normal preemption resumes the caller.
+; A competing UPDATE owner computes until normal preemption resumes the caller.
 PROC HoldScene()
 
-  LET self=EXEC.FindTask(NULL)
-  LET bit=EXEC.AllocSignal(-1)
-  Require(bit<>$ff)
-  AESGATE.EnterTask(self,LONGCARD(1) LSH bit)
+  AESLOCKS.ObtainUI()
   held=1
   EXEC.Signal(parent,wake)
   WHILE stop=0 DO
     progress==+1
   OD
-  AESGATE.Release(0)
-  EXEC.FreeSignal(bit)
+  AESLOCKS.ReleaseUI()
   EXEC.Forbid()
   done=1
   EXEC.Signal(parent,wake)
@@ -44,11 +40,11 @@ PROC HoldScene()
 
 RETURN
 
-; Call the real local dispatcher while the other Task retains scene ownership.
+; Call the real local dispatcher while the other Task retains UPDATE ownership.
 PROC CursorCall(INT mode,raw,reset)
 
   LET service=AESSTATE.Get()
-  LET owner=service.sceneOwner
+  LET depth=service.updateResource.ss_Private(2)
   LET count=parent.tc_TDNestCnt
   request.operation=AESTYPES.OP_GRAF_MOUSE
   request.intin(0)=mode
@@ -56,8 +52,8 @@ PROC CursorCall(INT mode,raw,reset)
   request.intin(2)=reset
   Require(AESLOCAL.Call(LONGCARD(ADDRESS(@request)))=1)
   Require(parent.tc_TDNestCnt=count)
-  Require(service.policyGate=AESGATE.CALLER AND service.sceneOwner=owner)
-  Require(service.sceneWaiters=NULL)
+  Require(EXEC.AttemptSemaphore(@service.updateResource)=0)
+  Require(service.updateResource.ss_Private(2)=depth)
 
 RETURN
 
@@ -77,7 +73,7 @@ PROC Main()
   service.owner=parent
   service.mask=wake
   service.live=1
-  service.policyGate=AESGATE.AVAILABLE
+  AESLOCKS.Init(service)
   LET client=@service.clients(0)
   client.id=1
   client.binding=@request
@@ -91,14 +87,14 @@ PROC Main()
   LET caller=LONGCARD POINTER($CursorSceneCaller)
   caller^=LONGCARD(ADDRESS(parent))
   AESLOCAL.ConfigureMouse(ADDRESS($CursorSceneApply))
-  LET peer=EXEC.CreateTask(c"cursor scene owner",0,@HoldScene,1312)
+  LET peer=EXEC.CreateTask(c"cursor UPDATE owner",0,@HoldScene,1312)
   Require(peer<>NULL)
   WHILE held=0 DO
     EXEC.Wait(wake)
   OD
   ; The computing peer never yields, so returning here requires preemption.
   EXEC.Yield()
-  Require(service.sceneOwner=peer AND progress<>0)
+  Require(EXEC.AttemptSemaphore(@service.updateResource)=0 AND progress<>0)
 
   CursorCall(AESTYPES.M_OFF,0,0)
   Require(request.status=AESTYPES.OK AND mouse.visible=0 AND mouse.depth=1)
@@ -133,8 +129,8 @@ PROC Main()
   WHILE done=0 DO
     EXEC.Wait(wake)
   OD
-  Require(service.policyGate=AESGATE.AVAILABLE AND service.sceneOwner=NULL)
-  Require(service.sceneWaiters=NULL AND progress<>0)
+  Require(service.updateResource.ss_Private(2)=0)
+  Require(progress<>0)
   client.binding=NULL
   service.live=0
   AESSTATE.Bind(NULL)

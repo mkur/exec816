@@ -1,4 +1,4 @@
-; Raw committed hits remain callable while another Task owns UPDATE and scene.
+; Raw committed hits remain callable while another Task owns UPDATE.
 MODULE AESFINDTEST
 USE EXEC
 USE EXECLISTS
@@ -8,7 +8,6 @@ USE AESSTATE
 USE AESTYPES
 USE AESLOCAL
 USE AESLOCKS
-USE AESGATE
 USE AESSNAPSHOT
 USE DESKSTATE
 USE DESKTYPES
@@ -56,10 +55,8 @@ PROC Manager()
   managerSignal=BYTE(bit)
   managerMask=LONGCARD(1) LSH managerSignal
   EXEC.ObtainSemaphore(@service.updateResource)
-  Require(AESGATE.TryOwner()<>0)
   entered=1
   EXEC.Wait(managerMask)
-  AESGATE.Offer()
   EXEC.ReleaseSemaphore(@service.updateResource)
   EXEC.FreeSignal(INT(managerSignal))
   finished=1
@@ -160,12 +157,12 @@ PROC Main()
   WHILE entered=0 OR managerTask.tc_State<>EXEC.TS_WAIT DO
     EXEC.Yield()
   OD
-  Require(service.sceneOwner=@managerTask AND service.policyGate=AESGATE.CLOSED)
+  Require(managerTask.tc_State=EXEC.TS_WAIT)
   Require(EXEC.AttemptSemaphore(@service.updateResource)=0)
   Hit(370,50,2)
   Hit(310,210,3)
-  Require(service.sceneOwner=@managerTask AND service.policyGate=AESGATE.CLOSED
-      AND service.sceneWaiters=NULL AND service.policyWaiting=0)
+  Require(managerTask.tc_State=EXEC.TS_WAIT
+      AND EXEC.AttemptSemaphore(@service.updateResource)=0)
   EXEC.Signal(@managerTask,managerMask)
   WHILE finished=0 OR managerTask.tc_State<>EXEC.TS_REMOVED DO
     EXEC.Yield()

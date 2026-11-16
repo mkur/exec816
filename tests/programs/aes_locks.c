@@ -5,7 +5,7 @@
 #include <exec816/runtime.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService, AESUpdates, AESMouseHolds, AESNativeBusy, AESPolicyGate, AESNativeReady;
+ULONG AESService, AESUpdates, AESMouseHolds, AESNativeBusy, AESNativeReady;
 volatile UWORD AESChecks, AESFailures, AESFirstFailure, AESReady, AESDone;
 static struct Task *controller, *workers[3];
 static ULONG wake, starts[3], hints[3];
@@ -22,7 +22,6 @@ static void check(BOOL okay)
 #define MOUSE (*(volatile UWORD *)AESMouseHolds)
 #define QUEUED queued()
 #define NATIVE_BUSY (*(volatile UBYTE *)AESNativeBusy)
-#define GATE (*(volatile UBYTE *)AESPolicyGate)
 #define NATIVE_READY (*(volatile UBYTE *)AESNativeReady)
 
 static UWORD queued(void)
@@ -32,13 +31,13 @@ static UWORD queued(void)
     return count;
 }
 
-/* Test coordination only: the presenter has published its whole-turn boundary.
+/* Test coordination only: the manager reported quiescent UPDATE scopes.
  * Keep inherited Forbid until the controlled caller operation has completed. */
-static void await_gate(void)
+static void await_ready(void)
 {
     for (;;) {
         Forbid();
-        if (GATE==1 && NATIVE_READY) return;
+        if (NATIVE_READY) return;
         Permit(); ExecYield();
     }
 }
@@ -58,7 +57,7 @@ static void local_pairs(void)
         CHECK(windows[i]>0);
         CHECK(wind_open(windows[i],32+i*16,32+i*8,128,64));
     }
-    await_gate(); sequence=c->sequence;
+    await_ready(); sequence=c->sequence;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
     CHECK(wind_update(END_UPDATE));
@@ -66,27 +65,27 @@ static void local_pairs(void)
     CHECK(c->sequence==sequence && c->updateDepth==0 && UPDATES==0);
     CHECK(self->tc_TDNestCnt==0);
     Permit();
-    /* A closed scene gate sleeps and resumes the local END without RPC. */
-    await_gate(); sequence=c->sequence;
+    /* A readiness hint cannot block the owning caller's local END. */
+    await_ready(); sequence=c->sequence;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(c->sequence==sequence);
-    GATE=0;
+    NATIVE_BUSY=1;
     CHECK(wind_update(END_UPDATE));
     CHECK(c->sequence==sequence && c->updateDepth==0);
     CHECK(self->tc_TDNestCnt==0);
-    Permit();
-    /* The same wait preserves local BEGIN/END and the caller's Forbid. */
-    await_gate(); sequence=c->sequence; GATE=0;
+    NATIVE_BUSY=0; Permit();
+    /* Local recursion preserves the caller's inherited Forbid. */
+    await_ready(); sequence=c->sequence; NATIVE_BUSY=1;
     CHECK(wind_update(BEG_UPDATE));
     CHECK(c->sequence==sequence);
-    GATE=1;Permit(); await_gate();
+    NATIVE_BUSY=0;Permit(); await_ready();
     CHECK(wind_update(END_UPDATE));
     CHECK(c->sequence==sequence && c->updateDepth==0);
     Permit();
     /* FIFO starts at native acquisition, independently of port arrival. */
     older.message.mn_Length=sizeof(older);
     older.message.mn_ReplyPort=reply;
-    await_gate(); sequence=c->sequence;
+    await_ready(); sequence=c->sequence;
     PutMsg(c->service,&older.message);
     CHECK(wind_update(BEG_CHECK|BEG_UPDATE));
     CHECK(wind_update(END_UPDATE));

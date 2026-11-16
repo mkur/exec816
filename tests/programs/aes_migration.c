@@ -3,7 +3,7 @@
 #include <clib/alib_protos.h>
 #include <exec816/runtime.h>
 
-ULONG AESService,AESUpdates,AESMouseHolds,AESPolicyGate;
+ULONG AESService,AESUpdates,AESMouseHolds;
 UWORD AESOwnedOffset;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,progress,phase,stopCounter;
 volatile UWORD callbackReady,callbackX,callbackY;
@@ -24,7 +24,6 @@ static struct TaskLease peerLease,counterLease;
 #define OTHER 0x80000UL
 #define UPDATES (*(volatile UWORD *)AESUpdates)
 #define MOUSE (*(volatile UWORD *)AESMouseHolds)
-#define GATE (*(volatile UBYTE *)AESPolicyGate)
 
 static UWORD owned(void)
 {
@@ -78,10 +77,9 @@ static void nested(struct ExecAESContext *c)
 {
     WORD control[5]={107,1,1,0,0},in[1],out[1],global[15]={0};
     AESPB pb={control,global,in,out,0,0};
-    UWORD previous,depth=UPDATES;
+    UWORD depth=UPDATES;
     ULONG sequence=c->sequence;
     Forbid();
-    previous=GATE;GATE=0;
     Check(wind_update(BEG_CHECK|BEG_UPDATE));
     in[0]=BEG_UPDATE;aes_call(&pb);Check(out[0]==1);
     Check(UPDATES==depth+2 && c->view->updates==depth+2);
@@ -89,7 +87,7 @@ static void nested(struct ExecAESContext *c)
     in[0]=END_UPDATE;aes_call(&pb);Check(out[0]==1);
     Check(UPDATES==depth && c->view->updates==depth);
     Check(c->sequence==sequence && FindTask(NULL)->tc_TDNestCnt==0);
-    GATE=previous;Permit();
+    Permit();
 }
 
 WORD AESRun(void)

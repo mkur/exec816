@@ -2,7 +2,6 @@
 MODULE DESKINPUT
 USE DISPLAY
 USE EXEC
-USE AESGATE
 USE AESSNAPSHOT
 USE AESLOCKS
 USE AESTYPES
@@ -205,9 +204,6 @@ BYTE FUNC RouteKey(INPUT.Event POINTER captured)
   AESTYPES.InputRecord keySample
   BYTE slot,handled
 
-  IF AESGATE.SystemOwned()=0 THEN
-    RETURN(SnapshotKey(captured))
-  FI
   LET service=DESKSTATE.Get()
   IF service=NULL OR acquired=0 THEN
     RETURN(0)
@@ -249,9 +245,6 @@ PROC Replay()
   INPUT.Event captured
   BYTE handled
 
-  IF AESGATE.SystemOwned()=0 THEN
-    RETURN
-  FI
   IF keyLost<>0 THEN
     ; Consume the old loss before callbacks can capture a new stream.
     EXEC.Forbid()
@@ -286,7 +279,7 @@ RETURN
 
 PUBLIC PROC ReplayKeys()
 
-  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
+  IF AESLOCKS.SystemBegin()<>0 THEN
     Replay()
     AESLOCKS.SystemEnd()
   FI
@@ -433,13 +426,12 @@ PUBLIC PROC Service()
   IF acquired=0 THEN
     RETURN
   FI
-  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
+  IF AESLOCKS.SystemBegin()<>0 THEN
     AESSNAPSHOT.Publish()
     AESLOCKS.SystemEnd()
   FI
   count=0
-  WHILE count<16 AND AESGATE.SystemOwned()<>0
-      AND AESINPUT.Pending()<>0 DO
+  WHILE count<16 AND AESINPUT.Pending()<>0 DO
     scope=MouseEnter()
     IF scope=0 THEN
       EXIT
@@ -463,7 +455,7 @@ PUBLIC PROC Service()
     FI
     count==+1
   OD
-  IF AESGATE.SystemOwned()<>0 AND AESLOCKS.SystemBegin()<>0 THEN
+  IF AESLOCKS.SystemBegin()<>0 THEN
     AESMOUSE.Refresh()
     AESLOCKS.SystemEnd()
   FI
@@ -523,7 +515,7 @@ PUBLIC PROC Present()
     FI
 
     IF dirty<>0 OR CONSOLEBITMAP.Changed()<>0 OR AESCURSOR.Pending()<>0 THEN
-      ; Deferred capture can run inside the physical call's Resume. Consume
+      ; Input.device can publish capture during the physical call. Consume
       ; only the old hint; retain/rearm an arrival after these coordinates.
       dirty=0
       BEGIN

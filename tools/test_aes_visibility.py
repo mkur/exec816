@@ -9,7 +9,7 @@ from generate_tasks import ABI as TASKS
 import adapter_state as adapter
 
 ROOTS=['VisNative','VisBusy','VisFail','VisHold','VisHeld','VisRelease',
-       'VisEpoch','VisWaiting','VisPeerTask','VisOwner','VisPhase','VisGo','VisPoint',
+       'VisEpoch','VisWaiting','VisPeerTask','VisPhase','VisGo','VisPoint',
        'VisOperation','VisResult','VisStatus','VisSequence','VisView',
        'VisPeerHeld','VisPeerRelease','VisWake','VisReady','VisRetireBusy',
        'VisEndpoint','VisPublisherHeld','VisPublisherGo','VisExitPending','VisQueue']
@@ -27,11 +27,12 @@ USE HEAPCORE
 PUBLIC CARD ARRAY stats(8)
 PUBLIC BYTE busy,failRoute,hold,held,release,ready,retireBusy
 
-PUBLIC PROC Outside()
+PUBLIC PROC Owned()
 
   LET service=AESSTATE.Get()
   EXEC.Forbid()
-  IF service.sceneOwner=EXEC.FindTask(NULL) THEN
+  LET owner=ADDRESS POINTER(@service.updateResource)
+  IF owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
     HEAPCORE.Abort($fc68)
   FI
   EXEC.Permit()
@@ -42,11 +43,12 @@ PUBLIC PROC Observe(AESSTATE.Client POINTER client CARD operation)
   BYTE slot
 
   LET service=AESSTATE.Get()
-  IF service.sceneOwner<>EXEC.FindTask(NULL) THEN
+  LET owner=ADDRESS POINTER(@service.updateResource)
+  IF owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
     HEAPCORE.Abort($fc69)
   FI
   IF client.id=1 THEN
-    slot=2*BYTE(operation=AESTYPES.OP_CLOSE)+BYTE(service.sceneOwner=service.owner)
+    slot=2*BYTE(operation=AESTYPES.OP_CLOSE)+BYTE(EXEC.FindTask(NULL)=service.owner)
     stats(slot)==+1
     stats(6)=SIZEOF(AESSTATE.Client)
     stats(7)=SIZEOF(AESSTATE.Service)
@@ -59,7 +61,7 @@ PUBLIC CARD FUNC Create(BYTE POINTER lease CARD flags LONGCARD POINTER tag)
   BYTE count,index
   CARD status
 
-  Outside()
+  Owned()
   stats(4)==+1
   count=0
   IF failRoute<>0 THEN
@@ -90,7 +92,7 @@ RETURN(status)
 
 PUBLIC PROC Rollback()
 
-  Outside()
+  Owned()
   stats(5)==+1
 
 RETURN
@@ -98,7 +100,7 @@ RETURN
 PUBLIC CARD FUNC Retire(BYTE POINTER lease LONGCARD tag BYTE mode)
   CARD status
 
-  Outside()
+  Owned()
   IF mode=2 AND retireBusy<>0 THEN
     BEGIN
       retireBusy=0
@@ -144,14 +146,15 @@ ENDMODULE
     routes=routes[:at]+'  VISPROBE.Rollback()\n'+routes[at:]
     needle='LET result=INPUTCLIENT.RetireRoute(desktop.keyboard,INPUT.SOURCE_KEYBOARD,\n      window.keyRoute)'
     if needle in routes:
-        routes=routes.replace(needle,'LET result=VISPROBE.Retire(desktop.keyboard,\n      window.keyRoute,held)',1)
+        routes=routes.replace(needle,'LET result=VISPROBE.Retire(desktop.keyboard,\n      window.keyRoute,2)',1)
     (out/'aesroutes.act').write_text(routes)
     driver=read_source(ROOT/'lib/aes/aessystem.act').replace(
-        'USE AESGATE\n','USE AESGATE\nUSE VISPROBE\n',1)
-    require(driver.count('    AESGATE.Offer()')==1,'Presenter offer boundary changed')
-    driver=driver.replace('    AESGATE.Offer()',
-        '    VISPROBE.ready=policyReady AND DESKPAINT.Runnable()=0\n'
-        '        AND CONSOLEBITMAP.Pending()=0\n    AESGATE.Offer()')
+        'USE AESLOCKS\n','USE AESLOCKS\nUSE VISPROBE\n',1)
+    point='    ; Ownership scopes are complete; schedule the next turn.'
+    require(driver.count(point)==1,'Manager UPDATE release boundary changed')
+    driver=driver.replace(point,
+        '    VISPROBE.ready=AESLOCKS.Quiescent() AND DESKPAINT.Runnable()=0\n'
+        '        AND CONSOLEBITMAP.Pending()=0\n'+point)
     (out/'aessystem.act').write_text(driver)
 
 
@@ -161,8 +164,7 @@ def setup(symbols):
             'VisHold':'@VISPROBE.hold','VisHeld':'@VISPROBE.held',
             'VisRelease':'@VISPROBE.release','VisReady':'@VISPROBE.ready',
             'VisRetireBusy':'@VISPROBE.retireBusy',
-            'VisEpoch':'@service.nextGuiEpoch','VisWaiting':'@service.windowPending',
-            'VisOwner':'@service.sceneOwner'}
+            'VisEpoch':'@service.nextGuiEpoch','VisWaiting':'@service.windowPending'}
     text=''
     for name,field in fields.items():
         text+=f'  BEGIN\n    LET target=LONGCARD POINTER(${symbols[name]:x})\n    target^=LONGCARD(ADDRESS({field}))\n  END\n'

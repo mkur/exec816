@@ -13,8 +13,8 @@
 - [Replace the presenter with SCRENMGR](gem4xe/screnmgr-migration-plan.md): adopted
   MagiC manager role, caller-context drawing, independent input/device progress
   and shared UPDATE ownership. SM0 records the direction and responsibility
-  map; SM1a delivers caller cursor policy without scene admission. Frame drawing,
-  the remaining execution map and migration are pending. Input service Task
+  map; SM1a–e, independent input and SM3a–d deliver caller drawing, coherent
+  publication and one UPDATE resource. SM4's manager event loop is next. Input service Task
   reuse is selected in the independent input.device design above.
 
 - [MagiC-led AES migration](gem4xe/aes-semaphore-migration-plan.md): reassessed

@@ -4,8 +4,6 @@
 MODULE AESSYSTEM
 USE EXEC
 USE AESHOST
-USE AESGATE
-USE AESDEFER
 USE AESLOCKS
 USE CONSOLEBATCH
 USE CONSOLETYPES
@@ -46,8 +44,6 @@ PUBLIC BYTE FUNC Start()
   IF DESKHOST.Start()=0 THEN
     RETURN(0)
   FI
-  AESGATE.Configure(ADDRESS(@AESDEFER.Pump),
-      DESKINPUT.Mask() OR CONSOLEBITMAP.Mask())
 
 RETURN(1)
 
@@ -79,7 +75,6 @@ PUBLIC PROC Run()
   handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
-    AESGATE.Reclaim()
     DESKINPUT.ReplayKeys()
     IF consoleStopping()<>0 AND CONSOLEBITMAP.Pending()=0
         AND batch.phase=CONSOLETYPES.BATCH_IDLE THEN
@@ -93,7 +88,7 @@ PUBLIC PROC Run()
     ; A local outer END can be the only reason an otherwise idle presenter
     ; woke. No input, control, model or retained drawing work needs a full
     ; turn in that case. Settled excludes waiters, messages and publication
-    ; work. Maintain caches with policy closed; new signals survive to Wait.
+    ; work. Cache access uses its own UPDATE scope; signals survive to Wait.
     IF bits=aesMask AND aesMask<>0 AND stopping=0 AND consoleStopping()=0
         AND AESHOST.Settled()<>0 AND AESLOCKS.Quiescent()<>0
         AND consoleRunnable()=0 AND DESKHOST.Runnable()=0 THEN
@@ -213,15 +208,13 @@ PUBLIC PROC Run()
         FI
       FI
 
-      policyReady=stopping=0 AND consoleStopping()=0 AND AESLOCKS.Quiescent()<>0
     FI
     IF AESLOCKS.ControllerLoan()<>0 THEN
       DESKDRAG.Loan()
     FI
     AESHOST.Publish()
     AESLOCKS.SystemRelease()
-    AESGATE.Offer()
-    ; No shared-state hints after publication: schedule or reclaim next turn.
+    ; Ownership scopes are complete; schedule the next turn.
     IF schedule=1 THEN
       EXEC.Yield()
     ELSEIF schedule=2 THEN

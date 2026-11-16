@@ -27,7 +27,7 @@ paths with their last caller. This plan does not implement a second GUI mode.
 | Current code | Work to retain or change |
 | --- | --- |
 | [AES window dispatcher](../../../lib/aes/aeswindow.act) | Shared caller window policy; the system retains explicit physical continuations for route draining, focus and copied moves. |
-| [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../../lib/aes/aesgate.act) | Existing window views, UPDATE journals and eligible-waiter rules; GF8 makes contended UPDATE/MCTRL and window waits caller-local with shared ordering. |
+| [Window publication](../../../lib/aes/aeswindowstate.act), [locks](../../../lib/aes/aeslocks.act), [policy gate](../../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover) | Existing window views, UPDATE journals and eligible-waiter rules; GF8 makes contended UPDATE/MCTRL and window waits caller-local with shared ordering. |
 | [Window route resources](../../../lib/aes/aesroutes.act) | GF7 separates unpublished route preparation/rollback and hidden-window retirement from scene publication. Callers use the same open/close policy; the presenter retains input consumption and busy retirement continuations. |
 | [C window binding](../../../c/calypsi/aes-windows.c), [local native entry](../../../lib/aes/aeslocal.act) | Per-Task context and caller-owned views; suitable locations for direct entry without repeated admission checks. |
 | [Desktop core](../../../lib/desktop/deskcore.act), [state](../../../lib/desktop/deskstate.act) | Existing common scene, focus and geometry machinery. Consolidate policy and records into AES rather than creating another scene. |
@@ -569,7 +569,7 @@ instead of duplicating their implementation in host assertions:
 
 | Behavior | Existing starting checks |
 | --- | --- |
-| Scene gate, wake and context | [Gate fixture](../../../tools/test_aes_gate.py), [Caller bridge](../../../tools/test_aes_local_bridge.py) |
+| Scene gate, wake and context | [Current private-layout fixture](../../../tools/test_aes_wait_queue.py), [Caller bridge](../../../tools/test_aes_local_bridge.py) |
 | Windows, messages, locks, events, multiple windows | [AES service runner](../../../tools/test_aes_server.py), selecting `windows`, `multiwindow`, `gui`, `locks`, `events`, `timers` or `inbox` as affected |
 | Physical interaction and loaded GUI progress | [Desktop proof](https://github.com/mkur/exec816/blob/39e93a28/tools/test_aes_desktop.py), [drag checks](https://github.com/mkur/exec816/blob/39e93a28/tools/test_desktop_drag.py), GF0 combined runner |
 | Shared drawing and cache behavior | [Matched AES corpus](../../../tools/measure_magic_aes.py), [drawing observer](../../../tools/measure_aes_drawing.py), [UPDATE observer](../../../tools/measure_aes_update.py) |

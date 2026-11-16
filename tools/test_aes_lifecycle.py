@@ -3,14 +3,13 @@ from pathlib import Path
 from library_paths import read_source
 from native_program import ROOT, require
 
-ROOTS = ['LifeNative','LifeGate','LifeOwner','LifeWaiting','LifeNext','LifeBusy','LifePhase']
+ROOTS = ['LifeNative','LifeResource','LifeWaiting','LifeNext','LifeBusy','LifePhase']
 
 
 def instrument(out):
     (out/'lifecycleprobe.act').write_text('''MODULE LIFECYCLEPROBE
 USE EXEC
 USE AESSTATE
-USE AESGATE
 USE HEAPCORE
 PUBLIC CARD ARRAY stats(8)
 PUBLIC BYTE busy
@@ -18,11 +17,12 @@ PUBLIC PROC Observe(BYTE deleting)
   BYTE slot
 
   LET service=AESSTATE.Get()
-  IF service.sceneOwner<>EXEC.FindTask(NULL) THEN
+  LET owner=ADDRESS POINTER(@service.updateResource)
+  IF owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
     HEAPCORE.Abort($fc60)
   FI
   slot=2*deleting
-  IF service.policyGate=AESGATE.CLOSED THEN
+  IF EXEC.FindTask(NULL)=service.owner THEN
     slot==+1
   FI
   stats(slot)==+1
@@ -61,7 +61,7 @@ def emitter(original, out):
 
 def setup(symbols):
     fields={'LifeNative':'@LIFECYCLEPROBE.stats(0)','LifeBusy':'@LIFECYCLEPROBE.busy',
-        'LifeGate':'@service.policyGate','LifeOwner':'@service.sceneOwner',
+        'LifeResource':'@service.updateResource',
         'LifeWaiting':'@service.windowPending','LifeNext':'@service.nextWindow'}
     text=''
     for name,field in fields.items():

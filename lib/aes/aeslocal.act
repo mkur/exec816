@@ -4,7 +4,7 @@ USE EXEC
 USE AESTYPES
 USE AESSTATE
 USE AESWAIT
-USE AESGATE
+USE AESSNAPSHOT
 USE AESLOCKS
 USE AESCORE
 USE AESMENU
@@ -24,8 +24,19 @@ PUBLIC PROC ConfigureMouse(ADDRESS entry)
 
 RETURN
 
+; Commit copied input/window reads before notifying the independent manager.
+PROC Publish(AESSTATE.Service POINTER service BYTE wake)
+
+  AESSNAPSHOT.Publish()
+  IF wake<>0 THEN
+    EXEC.Signal(service.owner,service.mask)
+  FI
+
+RETURN
+
 ; One busy C context pins its descriptor, registration and native stack until
-; return. Waiter publication precedes scene release; signals are only hints.
+; return. UPDATE stays owned while waiting for an older retained effect;
+; signals are only hints.
 CARD FUNC Policy(LONGCARD value)
   BYTE wake,waiting
   CARD status
@@ -48,11 +59,12 @@ CARD FUNC Policy(LONGCARD value)
   LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
   waiting=0
   DO
-    AESGATE.EnterTask(request.owner,mask)
     IF request.operation=AESTYPES.OP_DRAG_OUTLINE THEN
       request.status=DESKDRAG.Outline(service,
           AESSTATE.Find(service,request.client),request)
-      AESGATE.Release(1)
+      ; Outline admission/cancel changes guarded copied capture state only.
+      ; Even a rejected call can arrive without owning UPDATE.
+      EXEC.Signal(service.owner,service.mask)
       RETURN(1)
     FI
     BEGIN
@@ -93,10 +105,10 @@ CARD FUNC Policy(LONGCARD value)
         client.waitMode=AESWAIT.RPC
         request.status=status
         ; Removing a failed waiter also unblocks deferred paint and peers.
-        AESGATE.Release(waiting<>0 OR (wake AND status=AESTYPES.OK))
+        Publish(service,waiting<>0 OR (wake AND status=AESTYPES.OK))
         RETURN(1)
       FI
-      AESGATE.Release(waiting=0)
+      Publish(service,waiting=0)
       waiting=1
       EXEC.Wait(mask)
     END
@@ -134,17 +146,16 @@ PROC DrawingReady(AESTYPES.Request POINTER request)
   LET client=AESSTATE.Find(service,request.client)
   LET mask=LONGCARD(1) LSH request.message.mn_ReplyPort.mp_SigBit
   DO
-    AESGATE.EnterTask(request.owner,mask)
     IF DESKDRAG.DrawReady()<>0 THEN
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
       client.waitMode=AESWAIT.RPC
-      AESGATE.Release(0)
+      Publish(service,0)
       RETURN
     FI
     AESWAIT.Window(service,client,request)
     client.waitMode=AESWAIT.CALLER
-    AESGATE.Release(1)
+    Publish(service,1)
     EXEC.Wait(mask)
   OD
 
@@ -167,18 +178,17 @@ CARD FUNC Depart(AESTYPES.Request POINTER request)
     status=Scope(request,AESTYPES.END_MCTRL,1)
   OD
   DO
-    AESGATE.EnterTask(request.owner,mask)
     ready=AESCORE.PrepareExit(service,client,request)
     IF ready<>0 THEN
       client.pending=NULL
       AESWAIT.RemoveWindow(service,client)
       client.waitMode=AESWAIT.RPC
-      AESGATE.Release(0)
+      Publish(service,0)
       EXIT
     FI
     AESWAIT.Window(service,client,request)
     client.waitMode=AESWAIT.CALLER
-    AESGATE.Release(1)
+    Publish(service,1)
     EXEC.Wait(mask)
   OD
   WHILE service.updateHolds<>0 DO

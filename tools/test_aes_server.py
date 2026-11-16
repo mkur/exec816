@@ -240,19 +240,12 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             policy = read_source(ROOT/'lib/aes/aeslocks.act').replace('USE AESTYPES', 'USE AESTYPES\nUSE AESLOCKPROBE')
             policy = policy.replace('PUBLIC BYTE FUNC NativeReady()\n', 'PUBLIC BYTE FUNC NativeReady()\n\n  IF AESLOCKPROBE.busy<>0 THEN\n    RETURN(0)\n  FI\n')
             (out/'aeslocks.act').write_text(policy)
-            gate = read_source(ROOT/'lib/aes/aesgate.act').replace('USE AESSTATE\n',
-                'USE AESSTATE\nUSE AESLOCKPROBE\n', 1)
-            require(gate.count('  service.policyEffects==+1') == 1,
-                    'Scene effect release boundary changed')
-            gate = gate.replace('  service.policyEffects==+1',
-                '  AESLOCKPROBE.ready=0\n  service.policyEffects==+1', 1)
-            (out/'aesgate.act').write_text(gate)
-            worker = read_source(ROOT/'lib/aes/aessystem.act').replace('USE AESGATE\n',
-                'USE AESGATE\nUSE AESLOCKPROBE\n', 1)
-            require(worker.count('    AESGATE.Offer()') == 1,
-                    'Presenter scene offer boundary changed')
-            worker = worker.replace('    AESGATE.Offer()',
-                '    AESLOCKPROBE.ready=policyReady\n    AESGATE.Offer()', 1)
+            worker = read_source(ROOT/'lib/aes/aessystem.act').replace('USE AESLOCKS\n',
+                'USE AESLOCKS\nUSE AESLOCKPROBE\n', 1)
+            point = '    ; Ownership scopes are complete; schedule the next turn.'
+            require(worker.count(point) == 1, 'Manager UPDATE release boundary changed')
+            worker = worker.replace(point,
+                '    AESLOCKPROBE.ready=AESLOCKS.Quiescent()\n'+point, 1)
             (out/'aessystem.act').write_text(worker)
         if input_events:
             from test_aes_input_events import caller
@@ -396,8 +389,7 @@ def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=N
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESPark"]:x})\n    item^=LONGCARD(ADDRESS(@AESHYBRIDPROBE.park))\n  END\n'
         if locks:
             setup += ''
-            for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds'),
-                    ('AESPolicyGate', 'policyGate')):
+            for name, field in (('AESUpdates', 'updates'), ('AESMouseHolds', 'mouseHolds')):
                 setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy[name]:x})\n    item^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         if locks:
             setup += f'  BEGIN\n    LET item=LONGCARD POINTER(${sy["AESNativeReady"]:x})\n    item^=LONGCARD(ADDRESS(@AESLOCKPROBE.ready))\n  END\n'
@@ -407,7 +399,7 @@ USE AESBOOT
 USE AESSTATE
 USE AESCORE
 USE HEAPCORE
-{'USE DESKPAINT'+chr(10)+'USE AESLOCKS'+chr(10)+'USE AESGATE'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
+{'USE DESKPAINT'+chr(10)+'USE AESLOCKS'+chr(10)+'USE CONSOLEBITMAP'+chr(10)+'USE DESKSTATE' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
 {'USE AESHYBRIDPROBE'+chr(10)+'USE TIMERMETA' if events or timers or suite == 'messages' else 'USE AESLOCKPROBE' if locks else 'USE LIFECYCLEPROBE' if suite=='lifecycle' else 'USE FRAMEPROBE' if suite=='frame' else 'USE GEOPROBE' if suite=='geometry' else 'USE VISPROBE' if suite=='visibility' else ''}
 CARD checks
 CARD FUNC POINTER run()
@@ -435,22 +427,17 @@ PROC Main()
     BYTE pending
 
     LET desktop=DESKSTATE.Get()
-    LET bit=EXEC.AllocSignal(-1)
-    Require(bit>=0)
     DO
       AESLOCKS.ObtainUI()
-      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=desktop.scene.visibleDamage<>0 OR CONSOLEBITMAP.Pending()<>0
-          OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+          OR AESCORE.Runnable(service)<>0
           OR desktop.scene.busy<>0
-      AESGATE.Release(0)
       AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI
       EXEC.Yield()
     OD
-    EXEC.FreeSignal(bit)
   END
 ''' if suite=='cursor' else ''}
   Require(run()=0)
@@ -460,22 +447,17 @@ PROC Main()
     BYTE pending
 
     LET desktop=DESKSTATE.Get()
-    LET bit=EXEC.AllocSignal(-1)
-    Require(bit>=0)
     DO
       AESLOCKS.ObtainUI()
-      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
       pending=desktop.scene.visibleDamage<>0 OR CONSOLEBITMAP.Pending()<>0
-          OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+          OR AESCORE.Runnable(service)<>0
           OR desktop.scene.busy<>0
-      AESGATE.Release(0)
       AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI
       EXEC.Yield()
     OD
-    EXEC.FreeSignal(bit)
   END
 ''' if suite in ('frame','geometry','windows','visibility','forms','resources','pointer','vdi','input_events','cursor','lifecycle','cache','locks') else ''}
   Require(AESCORE.Idle(service)<>0)
@@ -634,7 +616,7 @@ ENDMODULE
                     report['lifecycle_phase']=int.from_bytes(bridge.memdump(foreign['symbols']['LifePhase'],2),'little')
                     report['lifecycle_admission']={name:int.from_bytes(bridge.memdump(
                         int.from_bytes(bridge.memdump(foreign['symbols'][name],4),'little'),1),'little')
-                        for name in ('LifeGate','LifeWaiting','LifeBusy')}
+                        for name in ('LifeWaiting','LifeBusy')}
             ownership(bridge, program, program['output'])
             if borrowed: bridge.profile_stop()
             from stack_budget import stack_usage
@@ -650,7 +632,7 @@ ENDMODULE
             if suite=='lifecycle':
                 require(report['lifecycle_phase']==10 and report['AESChecks']>=265,
                         'Incomplete hidden lifecycle scenarios')
-                require(report['lifecycle_stats'][6:]==[374,2328],
+                require(report['lifecycle_stats'][6:]==[374,2510],
                         'Unexpected private waiter record layout')
                 require(all(s['remaining_above_floor']>=0 for s in report['stack_usage'].values()),
                         'Caller lifecycle exceeded its interrupt floor')

@@ -84,14 +84,14 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
         points[name] = program['labels'][name]
     native = native_markers(program, [(n,n) for n in (
         'DISPLAY_OWNERENTER','DISPLAY_OWNERDROP','DISPLAY_OWNEREND','DISPLAY_NEXT',
-        'AESMOUSE_REFRESH','AESINBOX_SNAPSHOT','AESLOCKS_REQUEST','AESLOCKS_ACQUIRE',
-        'AESLOCKS_WAKE','AESWINDOWSTATE_SYNC','AESWINDOWSTATE_PUBLISH',
-        'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH','AESLOCKS_ELIGIBLE',
+        'AESMOUSE_REFRESH','AESINBOX_SNAPSHOT','AESLOCKS_CALL','AESLOCKS_ACQUIRE',
+        'AESLOCKS_NOTIFY','AESWINDOWSTATE_SYNC','AESWINDOWSTATE_PUBLISH',
+        'AESCORE_PUMP','AESCORE_SETTLE','AESCORE_DISPATCH',
         'AESWINDOWSTATE_BEGINUPDATE','AESWINDOWSTATE_ENDUPDATE','AESWINDOWSTATE_UPDATES',
         'AESSTATE_REPLY','DESKCACHE_BEGINCHANGE','DESKCACHE_ENDCHANGE')])
-    optional = ('AESLOCAL_CALL', 'AESGATE_CLAIM', 'AESGATE_RELEASE',
-                'AESGATE_OWNERENTER', 'AESGATE_OFFER', 'AESLOCKS_NATIVEREADY',
-                'AESLOCKS_ATTEMPT', 'AESLOCKS_RELEASE', 'AESHOST_SETTLED')
+    optional = ('AESLOCAL_CALL', 'AESLOCAL_PUBLISH', 'AESHOST_PUBLISH',
+                'AESLOCKS_NATIVEREADY', 'AESLOCKS_SYSTEMBEGIN',
+                'AESLOCKS_RELEASE', 'AESHOST_SETTLED')
     present = [n for n in optional if any(r['name'].startswith('M_'+n+'_')
                for r in program['image']['routines'])]
     native.update(native_markers(program, [(n,n) for n in present]))
@@ -289,31 +289,17 @@ def update_summary(calls_, native, timeline, dp, start, end):
     counts = defaultdict(int); pairs=[]; stack=[]; rows=[]
     native = sorted(native,key=lambda s:s['start'])
     starts = [s['start'] for s in native]
-    offers = [s for s in native if s['kind']=='AESGATE_OFFER']
-    owner_turns = [s for s in native if s['kind']=='AESGATE_OWNERENTER']
-    ready = [s for s in native if s['kind']=='AESLOCKS_NATIVEREADY']
     for call in updates:
         code = 1 if call['kind']=='ExecAESBeginUpdate' else call['argument']
-        if code&2: continue  # MCTRL has no local path.
+        if code&2: continue  # Report UPDATE pairs separately from MCTRL.
         nested = [s for s in native[bisect_left(starts,call['start']):
                                     bisect_left(starts,call['end'])]
                   if s['dp']==dp and s['end']<=call['end']]
         local = next((s for s in nested if s['kind']=='AESLOCAL_CALL'),None)
         handled = bool(local and local['return_a'])
-        reason = None
-        claim = next((s for s in nested if s['kind']=='AESGATE_CLAIM'),None)
-        attempt = next((s for s in nested if s['kind']=='AESLOCKS_ATTEMPT'),None)
-        if claim and not claim['return_a']:
-            offer = next((s for s in reversed(offers) if s['start']<claim['start']),None)
-            turn = next((s for s in reversed(owner_turns) if s['start']<claim['start']),None)
-            if not offer or (turn and turn['start']>offer['start']):
-                reason='presenter_turn'
-            else:
-                last_ready=next((s for s in reversed(ready) if s['end']<offer['start']),None)
-                reason='retained_native_work' if last_ready and not last_ready['return_a'] else 'handoff_transition_or_other_caller'
-        elif attempt and (attempt['return_a']==8 or not call['return_a']):
-            eligible=next((s for s in nested if s['kind']=='AESLOCKS_ELIGIBLE'),None)
-            reason='earlier_request' if eligible and eligible['return_a'] else 'ownership_gesture_or_window'
+        # A failed local TRY reports native resource contention. Do not infer
+        # a manager turn or FIFO predecessor from a copied scheduling hint.
+        reason = 'update_busy' if handled and code&0x100 and not call['return_a'] else None
         counts['calls']+=1
         counts['local' if handled else 'rpc']+=1
         if reason: counts[('rejected_try_' if handled else 'miss_')+reason]+=1

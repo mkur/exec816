@@ -1,16 +1,15 @@
 ; Window route resources stay separate from scene and GUI publication.
-; Preparation/rollback run outside the scene; the input Task drains capture.
+; UPDATE pins window records; the independent input Task drains capture.
 MODULE AESROUTES
 USE INPUT
 USE INPUTCLIENT
 USE AESSTATE
 USE AESTYPES
-USE AESGATE
 USE DESKTYPES
 USE DESKSTATE
 USE HEAPCORE
 
-; The operation keeps this unpublished tag across scene re-admission.
+; The operation keeps this unpublished tag until its UPDATE-owned commit.
 PUBLIC CARD FUNC Prepare(DESKTYPES.Window POINTER window LONGCARD POINTER route)
   CARD status
 
@@ -42,18 +41,15 @@ RETURN
 ; Retain the hidden window and tag across a busy input retirement retry.
 ; Callers use the shared device control handle; BUSY keeps its existing
 ; RPC drain continuation, including the retained window/view lifetime.
-PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window
-    AESTYPES.Request POINTER request)
+PUBLIC BYTE FUNC Retire(DESKTYPES.Window POINTER window)
 
   IF window.keyRoute=0 THEN
     RETURN(1)
   FI
 
   LET desktop=DESKSTATE.Get()
-  LET held=AESGATE.Leave()
   LET result=INPUTCLIENT.RetireRoute(desktop.keyboard,INPUT.SOURCE_KEYBOARD,
       window.keyRoute)
-  AESGATE.Reenter(held,request)
   IF result=INPUT.BUSY THEN
     RETURN(0)
   FI

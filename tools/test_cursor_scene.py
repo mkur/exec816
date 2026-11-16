@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cursor calls complete while another preemptible Task owns the AES scene."""
+"""Cursor calls complete while another preemptible Task owns UPDATE."""
 import argparse
 import json
 from pathlib import Path
@@ -42,8 +42,8 @@ def run(out):
             report['progress'] = int.from_bytes(bytes(
                 data(bridge, program['image'], 'progress')), 'little')
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])
-            require(report['checks'] == 65, 'Incomplete cursor scene checks: '+str(report['checks']))
-            require(report['progress'] > 0, 'Scene-owner counter made no progress')
+            require(report['checks'] == 64, 'Incomplete cursor scene checks: '+str(report['checks']))
+            require(report['progress'] > 0, 'UPDATE-owner counter made no progress')
             ownership(bridge, program, program['output'])
         report['status'] = 'pass'
     except Exception as error:

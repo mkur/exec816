@@ -144,7 +144,6 @@ PROC Main()
   service.live=1
   service.count=2
   service.owner=EXEC.FindTask(NULL)
-  service.policyGate=1
   service.paintPrepared=1
   AESLOCKS.Init(service)
   service.mask=LONGCARD(1) LSH port.mp_SigBit

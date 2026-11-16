@@ -60,7 +60,7 @@ PUBLIC CARD FUNC Application(DESKTYPES.Service POINTER service
           -service.scene.copySource.left)
       packet.copy.height=CARD(service.scene.copySource.bottom
           -service.scene.copySource.top)
-      AESFRAME.Apply(@packet,request)
+      AESFRAME.Apply(@packet)
       completed=(packet.status=DISPLAY.OK)
       IF LAYERS.Finish(@service.scene,token,completed)<>LAYERTYPES.OK THEN
         HEAPCORE.Abort($faed)

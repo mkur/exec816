@@ -422,3 +422,64 @@ manager-capture flag is one upper-image byte; removing copied-move continuation
 state releases twelve upper-image bytes. The 82-byte typed packet is stack-owned
 by the corresponding frame/move operation. Actual stack peaks are retained in
 the evidence, within the existing reservations.
+
+
+## SM3d: single UPDATE ownership cutover
+
+SM3d removes AESGATE, its stack-allocated scene waiter queue and the combined
+frontend's turn-wide Claim/Offer together. UPDATE now supplies the live window,
+menu, Layers, journal and cache authority installed by SM3a–c. Committed hit and
+window views remain nonblocking copied reads; registration, endpoint, event and
+retained capture transitions keep their short Task guards. Input.device keeps
+its independent copied application delivery.
+
+Caller frame/copy operations retain UPDATE, their own packet and any Layers
+token through physical admission, completion and geometry commit. Open/close
+route work retains the same caller UPDATE while input.device drains its capture
+references. Physical calls no longer suspend/reclaim UI ownership; the obsolete
+AESDEFER reentrant pump and console suspend/resume hooks disappear with the gate.
+The driver already provides nonblocking display delegation and independent
+completion, so no new platform service, semaphore, scheduler rule or Task is
+needed. Pending effects use the existing registered caller descriptor and reply
+signal. Snapshot publication and manager notification remain explicit before
+resource release or retained-effect waits. Rejected outline calls can arrive
+without UPDATE, so their copied capture notification does not build a snapshot.
+
+Private layout/ownership fixtures now inspect the native UPDATE object and
+actual executing Task. The gate-only probe and former combined scene/deferred
+pump probe are retired; their historical evidence remains pinned in Git. Current
+contention, input and effect tests exercise the installed boundaries. Trace tools
+observe UPDATE scopes, caller publication and the real frontend loop head; they
+no longer classify a wait as scene admission. The combined frontend loop remains
+in place for SM4; this slice does not install its final SCRENMGR blocking loop.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, counting guards, alignment and unused reserved capacity. The private
+upper-heap AES service shrinks from 2520 to 2510 bytes (nine removed payload
+bytes plus one alignment byte); Client remains 374 bytes, public Request 418,
+and the native semaphore 12. The console's private hook record loses two
+three-byte entries. Task pools, signals, public ABI, scratch and VRAM reservations
+are unchanged.
+
+Development checks pass on the pinned compiler revision
+`05c01f39ff3beef97af0e65b0a16666f5a1bd805` and dedicated AltirraOS PAL/VBXE
+configuration. [Machine settings, hashes and results](../development/screnmgr-sm3d.json)
+record the actual execution scope:
+
+- Small raw and optimized pending-descriptor/layout probe: 19 checks each.
+- Optimized committed-query/foreign-UPDATE probe: 126 main plus 10 publication
+  lifetime checks; manager scene/readiness attempts decline under a foreign owner.
+- Optimized Counter/input fixture: 68 checks, competing setter, copied keyboard
+  and pointer callbacks, input-window binding and cooperative nested cleanup.
+- Optimized cursor/CPU-owner fixture: 64 checks; the competing UPDATE owner never
+  yields and still permits caller progress through normal Task preemption.
+- Optimized copied-move effect: success, quiescent failure and unsafe park, with
+  30/25/18 C checks. The first two restore ownership; unsafe hardware deliberately
+  parks reset-required while retaining the operation's storage.
+- Optimized locks: 237 C plus 4 native checks, FIFO/resource waits, console input
+  under UPDATE and clean shutdown. The fixture no longer forces old gate bytes.
+- Host suite: 718 tests, five existing skips. Changed documentation links and
+  current emitted trace-marker construction pass.
+
+No QED, full catalog, demo refresh, raw system matrix, release qualification or
+scroll-performance claim is included.

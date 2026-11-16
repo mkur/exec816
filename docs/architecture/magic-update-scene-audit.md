@@ -146,10 +146,10 @@ uninspected GEM extensions or arbitrary application callbacks.
 | Physical calls in CONSOLEBITMAP / DESKMENURENDER; input resource calls in DESKROUTES / AESWINDOW / AESROUTES | Suspend/leave the gate; retain effect identity; resume/reenter afterwards | Physical display arbitration and INPUT lifetimes are existing platform responsibilities. Eliminate gate reacquisition only after the surrounding scene continuation is assigned an owner. |
 
 Relevant source: [presenter loop](../../lib/aes/aessystem.act),
-[scene gate](../../lib/aes/aesgate.act),
+[scene gate](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover),
 [window state](../../lib/aes/aeswindowstate.act),
 [input publication](../../lib/aes/aessnapshot.act),
-[deferred delivery](../../lib/aes/aesdefer.act),
+[deferred delivery](../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover),
 [desktop input](../../lib/desktop/deskinput.act),
 [request completion](../../lib/aes/aescore.act),
 [console association](../../lib/console/consoleview.act),

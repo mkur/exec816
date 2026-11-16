@@ -6,7 +6,7 @@
 #include <exec816/console-view.h>
 #include <clib/alib_protos.h>
 
-ULONG AESService,LifeNative,LifeGate,LifeOwner,LifeWaiting,LifeNext,LifeBusy;
+ULONG AESService,LifeNative,LifeResource,LifeWaiting,LifeNext,LifeBusy;
 volatile UWORD AESChecks,AESFailures,AESFirstFailure,AESReady,AESDone;
 volatile UWORD LifeFailAlloc;
 volatile UWORD LifePhase;
@@ -16,7 +16,7 @@ static volatile UWORD command,done,entered;
 static WORD peerWindows[3];
 static struct AESRequest *rootRequest;
 #define NATIVE(i) (((volatile UWORD *)LifeNative)[i])
-#define GATE (*(volatile UBYTE *)LifeGate)
+#define RESOURCE_FREE (!((volatile UWORD *)LifeResource)[2])
 #define WAITING (*(volatile UBYTE *)LifeWaiting)
 
 static void check(BOOL okay,UWORD line)
@@ -27,24 +27,13 @@ static void check(BOOL okay,UWORD line)
 }
 #define CHECK(t) check((t)!=0,__LINE__)
 
-static void outside_scene(void)
-{
-    ULONG owner;
-    Forbid();
-    owner=((volatile UBYTE *)LifeOwner)[0] |
-        ((ULONG)((volatile UBYTE *)LifeOwner)[1]<<8) |
-        ((ULONG)((volatile UBYTE *)LifeOwner)[2]<<16);
-    CHECK(GATE!=2 || owner!=(ULONG)FindTask(NULL));
-    Permit();
-}
 APTR LifeAllocView(ULONG bytes,ULONG flags)
 {
-    outside_scene();
     if (LifeFailAlloc) { LifeFailAlloc=0;return NULL; }
     return AllocMem(bytes,flags);
 }
 void LifeFreeView(APTR view,ULONG bytes)
-{ outside_scene();FreeMem(view,bytes); }
+{ FreeMem(view,bytes); }
 
 static WORD create(WORD index)
 {
@@ -209,7 +198,7 @@ UWORD AESRun(void)
      * preventing that predecessor from acquiring and releasing UPDATE. */
     LifePhase=5;stable();done=entered=0;command=6;Signal(peer,peerWake);
     while (!entered || peer->tc_State!=TS_WAIT) ExecYield();
-    for (;;) { Forbid();if (GATE==1) break;Permit();ExecYield(); }
+    for (;;) { Forbid();if (RESOURCE_FREE) break;Permit();ExecYield(); }
     release();sequence=c->sequence;system=NATIVE(1);
     last=wind_create(AES_WINDOW_KIND,32,24,128,64);
     CHECK(last>reused && c->sequence==sequence && NATIVE(1)==system);
@@ -232,7 +221,7 @@ UWORD AESRun(void)
         struct Message *older=AllocMem(sizeof(*older),MEMF_PUBLIC|MEMF_CLEAR);
         struct Message *returned;
         CHECK(older!=NULL);older->mn_ReplyPort=reply;
-        for (;;) { Forbid();if (GATE==1) break;Permit();ExecYield(); }
+        for (;;) { Forbid();if (RESOURCE_FREE) break;Permit();ExecYield(); }
         PutMsg(c->service,older);
         sequence=c->sequence;system=NATIVE(1);
         last=wind_create(AES_WINDOW_KIND,32,24,128,64);

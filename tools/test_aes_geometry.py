@@ -17,14 +17,14 @@ def instrument(out):
     (out/'geoprobe.act').write_text('''MODULE GEOPROBE
 USE EXEC
 USE AESSTATE
-USE AESGATE
 USE HEAPCORE
 PUBLIC CARD ARRAY stats(4)
 PUBLIC BYTE busy
 PUBLIC PROC Observe(BYTE mutation)
 
   LET service=AESSTATE.Get()
-  IF mutation<>0 AND service.sceneOwner<>EXEC.FindTask(NULL) THEN
+  LET owner=ADDRESS POINTER(@service.updateResource)
+  IF mutation<>0 AND owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
     HEAPCORE.Abort($fc64)
   FI
   LET slot=2*mutation+BYTE(EXEC.FindTask(NULL)=service.owner)

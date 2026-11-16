@@ -51,8 +51,8 @@ GEM4XE remains the primary graphics implementation donor.
 | --- | --- | --- |
 | AESSYSTEM.Run, DESKMENU and DESKDRAG | SCRENMGR menu/frame interaction | Separate interaction events from ordinary recipient delivery; retain source-defined capture and MCTRL lifetimes. |
 | AESLOCAL / AESWINDOW plus deferred DESKPAINT | Caller-context window operation and synchronous frame draw | Adapt frame renderer state and use existing delegated display access. The shared console packet cannot simply be called by another Task. |
-| AESGATE and turn-wide scene ownership | UPDATE for shared UI operations; short guards for copied publication | Cover every reader/mutator from the audit, including queries, registration, input-window bindings and caller-owned continuations, before removing the old gate. |
-| input.device, DESKINPUT and CONSOLEINPUT | Independent capture and copied application delivery | Implemented by IM0–IM8. Keep capture out of the manager; AESDEFER now retains only manager/fence work during the interim scene wait. |
+| Retired AESGATE and turn-wide scene ownership | UPDATE for shared UI operations; short guards for copied publication | SM3a–c assign readers, mutation and lifetime owners; SM3d removes the gate and stack waiter queue together. |
+| input.device, DESKINPUT and CONSOLEINPUT | Independent capture and copied application delivery | Implemented by IM0–IM8. Keep capture out of the manager. SM3d removes the obsolete AESDEFER scene-wait pump. |
 | CONSOLEBACKEND and CONSOLEDRIVER.BackendTurn | Existing console stream/model backend | This Task already exists and has no scene or display lease. Preserve that separation; do not move console model work into SCRENMGR. |
 | CONSOLEFRONT / loaded Terminal | Standalone console painting where applicable; normal GEM Terminal application in GUI mode | CONSOLEFRONT already declines GUI-mode painting. Preserve text/standalone startup and shutdown while removing graphical-loop coupling. |
 | CONSOLEBITMAP / DISPLAY / VBXE completions | Physical operations, grants and completion owned by their resource users | Retire or independently service hardware work before a manager wait can block its owner. Preserve fault retention and device shutdown. |
@@ -63,7 +63,7 @@ Current source seams: [system loop](../../../lib/aes/aessystem.act),
 [console backend](../../../lib/console/consolebackend.act),
 [keyboard consumer](../../../lib/console/consoleinput.act),
 [pointer consumer](../../../lib/desktop/deskinput.act),
-[deferred pump](../../../lib/aes/aesdefer.act),
+[UPDATE scopes](../../../lib/aes/aeslocks.act),
 [frame renderer](../../../lib/desktop/desktop-frame.c) and
 [drawing interfaces](../../../ports/gem4xe/adapter/gem-drawing.h).
 
@@ -223,6 +223,7 @@ service. Commit executable prerequisites separately.
    have owners. Retain the one current implementation and update private-layout
    fixtures/references. Check competing setter/query, one retained effect,
    independent input, normal preemption and clean shutdown.
+   Status: implemented; see the [SM3d record](../../history/screnmgr-migration.md#sm3d-single-update-ownership-cutover).
 
 No replacement scene semaphore, long Forbid, GUI-specific deferred-work service
 or scheduler change is implied. Report a missing general Exec service at its

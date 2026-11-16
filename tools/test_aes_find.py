@@ -45,7 +45,7 @@ def run(out,publication=False,from_build=None,ownership_check=False):
   Require(DESKHOST.Idle()=0)
   Require(AESHOST.Settled()=0)
   Require(AESLOCKS.Quiescent()=0)
-  Require(service.sceneOwner=@managerTask AND service.sceneWaiters=NULL)
+  Require(managerTask.tc_State=EXEC.TS_WAIT)
   BEGIN
     LET reply=EXEC.CreateMsgPort()
     Require(reply<>NULL)
@@ -83,11 +83,9 @@ def run(out,publication=False,from_build=None,ownership_check=False):
     Require(DESKHOST.Idle()=0)
     Require(service.updateResource.ss_Private(2)=0)
     service.updateHint=service.updateHint OR AESSTATE.UPDATE_REQUESTED
-    Require(AESGATE.TryOwner()<>0)
     AESHOST.Settle()
     Require(batch.phase=CONSOLETYPES.BATCH_IDLE)
     Require(service.updateResource.ss_Private(2)=0)
-    AESGATE.Offer()
   END
 """+probe[at:]
         source=out/'probe.act';source.write_text(probe)
@@ -100,7 +98,7 @@ def run(out,publication=False,from_build=None,ownership_check=False):
         runtime,_=execute(bridge,program,frame_limit=600,timeout=60)
         ownership(bridge,program,program['output'])
         checks=data(bridge,program['image'],'AESFINDTEST_CHECKS',True)[0]
-        require(checks==110+18*ownership_check,'Incomplete committed hit checks: '+str(checks))
+        require(checks==109+17*ownership_check,'Incomplete committed hit checks: '+str(checks))
         publication_checks=data(bridge,program['image'],'PUBLICATIONPROBE_CHECKS',True)[0] if publication else 0
         if publication:require(publication_checks==10,'Incomplete publication lifetime checks: '+str(publication_checks))
     report=dict(status='pass',tier='development',qualification=False,mode='opt',

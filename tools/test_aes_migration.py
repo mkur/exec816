@@ -42,8 +42,7 @@ def run(out,reuse=False,reuse_c=False):
             client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout())])
         sy=foreign['symbols']
         bindings=''
-        for name,field in [('AESUpdates','updates'),('AESMouseHolds','mouseHolds'),
-                           ('AESPolicyGate','policyGate')]:
+        for name,field in [('AESUpdates','updates'),('AESMouseHolds','mouseHolds')]:
             bindings+=f'  BEGIN\n    LET cell=LONGCARD POINTER(${sy[name]:x})\n    cell^=LONGCARD(ADDRESS(@service.{field}))\n  END\n'
         source=out/'migration.act'
         offset=next(o for n,k,o in TASKS['context']['fields'] if n=='semaphoreOwned')
@@ -52,8 +51,7 @@ USE EXEC
 USE AESBOOT
 USE AESSTATE
 USE AESCORE
-USE AESGATE
-USE DESKPAINT
+USE AESLOCKS
 USE CONSOLEBITMAP
 USE DESKSTATE
 USE HEAPCORE
@@ -83,20 +81,17 @@ PROC Main()
     BYTE pending
 
     LET desktop=DESKSTATE.Get()
-    LET bit=EXEC.AllocSignal(-1)
-    Require(bit>=0)
     DO
-      AESGATE.EnterTask(EXEC.FindTask(NULL),LONGCARD(1) LSH bit)
-      pending=DESKPAINT.Runnable() OR CONSOLEBITMAP.Pending()<>0
-          OR service.policyEffects<>0 OR AESCORE.Runnable(service)<>0
+      AESLOCKS.ObtainUI()
+      pending=desktop.scene.visibleDamage<>0 OR CONSOLEBITMAP.Pending()<>0
+          OR AESCORE.Runnable(service)<>0
           OR desktop.scene.busy<>0
-      AESGATE.Release(0)
+      AESLOCKS.ReleaseUI()
       IF pending=0 THEN
         EXIT
       FI
       EXEC.Yield()
     OD
-    EXEC.FreeSignal(bit)
   END
   Require(service.count=0 AND AESCORE.Idle(service)<>0)
 

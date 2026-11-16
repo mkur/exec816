@@ -2,7 +2,6 @@
 MODULE AESCORE
 USE DISPLAY
 USE EXEC
-USE AESGATE
 USE AESSNAPSHOT
 USE EXECLISTS
 USE AESTYPES
@@ -378,11 +377,7 @@ PROC Dispatch(AESSTATE.Service POINTER service AESTYPES.Request POINTER request)
       IF grant.task<>request.owner THEN
         status=AESTYPES.IDENTITY
       ELSE
-        BEGIN
-          LET held=AESGATE.Suspend()
-          status=DISPLAY.Delegate(grant)
-          AESGATE.Resume(held)
-        END
+        status=DISPLAY.Delegate(grant)
         status=IF status=DISPLAY.OK THEN AESTYPES.OK
             ELSEIF status=DISPLAY.NO_MEMORY THEN AESTYPES.RESOURCE
             ELSE AESTYPES.DISPLAY_ERROR FI

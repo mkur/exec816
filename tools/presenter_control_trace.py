@@ -75,7 +75,7 @@ DESKHOST_RUNNABLE DESKHOST_CACHE DESKINPUT_RUNNABLE DESKINPUT_BOUNDARY
 DESKINPUT_SERVICE DESKINPUT_PRESENT DESKINPUT_ADVANCE DESKMENU_RUNNABLE
 DESKWIDGETINPUT_RUNNABLE DESKDRAG_RUNNABLE DESKPAINT_READY DESKPAINT_RUNNABLE
 DESKPAINT_PAINTPENDING DESKPAINT_DAMAGEPENDING AESLOCKS_NATIVEREADY
-AESGATE_OWNERENTER AESGATE_OFFER AESHOST_SETTLED INPUT_TAKE
+DESKINPUT_REPLAYKEYS AESHOST_PUBLISH AESLOCKS_SYSTEMBEGIN AESLOCKS_SYSTEMEND AESHOST_SETTLED INPUT_TAKE
 DESKCACHE_PATCH DESKCACHE_CAPTURE DESKMENUCACHE_CAPTUREPOPUP
 DESKCACHE_CANDIDATES DESKCACHE_TAKECANDIDATE DESKCACHE_CONSIDERSLOT
 LAYERS_DAMAGED LAYERS_UPDATEDAMAGE LAYERS_MARK LAYERS_FINDSLOT
@@ -157,12 +157,12 @@ def bookkeeping_report(events, native, cspans, timeline, worker_dp, samples, tra
         a=min(end+round(.6*BASE_HZ),trace['end']);b=trace['end']
         row['settled_idle_turns']=sum(a<=t<b and int(e[4],16)==turn_pc for t,e in events)
         actions.append(row)
-    offers=sorted((s for s in worker if s['kind']=='AESGATE_OFFER'),key=lambda s:s['start'])
+    offers=sorted((s for s in worker if s['kind']=='AESHOST_PUBLISH'),key=lambda s:s['start'])
     offer_ticks=[s['start'] for s in offers]
     quiet_ticks=[t for t,e in events if int(e[4],16)==quiet_pc]
     quiet=[];active=[]
     for s in worker:
-        if s['kind']!='AESGATE_OWNERENTER':continue
+        if s['kind']!='DESKINPUT_REPLAYKEYS':continue
         if not any(t['start']<=s['start']<t['end'] for t in traces):continue
         index=bisect_right(offer_ticks,s['start'])
         if index==len(offers):continue
