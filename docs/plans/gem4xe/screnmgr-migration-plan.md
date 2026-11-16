@@ -200,7 +200,9 @@ service. Commit executable prerequisites separately.
    publishers. Specify coherent nonblocking reads and serialization of snapshot
    construction. Pointer routing cannot stand in for `wind_find`: it applies
    focus/menu/MCTRL policy. Bring any changed query semantics or architectural
-   departure to the user before implementation; no automatic UPDATE Obtain.
+   departure to the user before implementation; no automatic UPDATE Obtain. The
+   [design note](gem-first-gui-design.md#sm3a-read-boundary-requiring-a-decision)
+   records the committed-snapshot and live-commit alternatives and their costs.
 2. **SM3b: registration and retirement.** Give client-table publication, event
    settlement, input-window association and endpoint close a complete owner and
    lifetime boundary. Preserve input callback/queued-manager holds. Use short

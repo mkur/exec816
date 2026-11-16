@@ -161,6 +161,30 @@ manager must not Obtain a caller's semaphore to complete that caller's retained
 effect. Cache/physical continuations require owners and retirement before the
 final SCRENMGR wait loop; no new GUI-specific platform service is assumed.
 
+### SM3a read boundary requiring a decision
+
+MagiC AESWIN `wind_find` (2812–2838) walks `whdlx` and current window rectangles
+without UPDATE, focus, menu or MCTRL routing. MagiC's supervisor execution
+boundary prevents arbitrary timer-driven dispatch inside that walk; Exec keeps
+normal Task preemption. A Forbid around the reader alone cannot repair a writer
+already paused between related geometry/stacking stores. Adding UPDATE to the
+query would change the source flow.
+
+Two concrete nonblocking implementations remain possible before scene-gate
+removal. **No selection is made here.**
+
+| Choice | Read and publication contract | Cost/dependency |
+| --- | --- | --- |
+| Committed raw hit snapshot (recommended) | Query the last complete published scene. A query overlapping mutation may return the previous stack; after operation completion it sees the new publication. Use a separate raw-hit read over AESSNAPSHOT rows, with no pointer-routing focus/menu/MCTRL filtering. | Reuse existing bounds/order/window/handle rows: zero additional buffer, Task or bank-zero reservation. All scene operation return/retirement boundaries must publish before releasing their authority. |
+| Live geometry with guarded commits | Query current scene bounds/order while holding a short Task guard. Every corresponding writer must commit the hit-test fields and window-handle association atomically before a query can run. | Refactor and audit all lifecycle, move, stacking, iconification and native-layer publication boundaries. Heavy visibility calculations and drawing must remain outside Forbid. No second scene lock. |
+
+Preserve native/chrome occlusion and distinguish query results from work-area
+input eligibility. Check iconified hits against MagiC rather than inheriting
+Exec's current exclusion silently. Readiness and scene construction still need
+the rest of SM3's ownership inventory; either choice alone cannot remove AESGATE.
+The choice changes concurrent-read visibility and requires the user decision
+specified by the governing guidance before query implementation.
+
 Contention sleeps through ordinary Exec signals/ports. Publish waiters before
 release can wake them, recheck after waking, and treat signals as hints. Use
 short `Forbid` sections only for Task-side owner/waiter transitions, never for
