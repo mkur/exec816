@@ -71,6 +71,8 @@ enum { GEM_GADGET_CLOSE,GEM_GADGET_FULL,GEM_GADGET_ICONIFY,GEM_GADGET_TILE,
 /* Fixed opaque interior image. Caller owns the current frame batch/clip. */
 void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
                     UWORD right,UWORD bottom);
+void GemFrameGadgetCentered(UWORD image,WORD x,WORD y,WORD width,WORD height,
+    UWORD left,UWORD top,UWORD right,UWORD bottom);
 /* One admitted synchronous unit, at most 32 rows. The callback is linked
  * renderer code, never a borrowed application function pointer. Ownership
  * survives Task preemption. No callback Wait or RPC. */

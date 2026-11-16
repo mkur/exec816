@@ -72,3 +72,35 @@ and complete heap recovery. It reuses the current C provider and the established
 12 KiB upper GUI data arena; it starts no application or display session. Guards
 passed, with zero implementation bank-zero reservation growth. Physical subtree
 and FIRST/NEXT application checks follow with WG4's renderer cutover.
+
+WG4 replaces scalar frame packets with the canonical tree, start object, depth
+and clip. Both native exposure and caller setters use the same producer; the
+owner and borrower C wrappers select the same GEM4XE traversal/prepared-object
+renderer. Trusted frame glyphs retain the platform atlas. The draw request is
+20 upper bytes and the shared bitmap packet shrinks from 82 to 78 bytes. The
+C renderer adds one 170-byte prepared object and a four-byte bound pointer,
+protected by the existing display grant. No ordinary Task packet grows.
+
+Both raw/optimized layout/argument probes pass, including the changed bitmap
+packet. The current AES/C application ABI versions are 27/47. Only MGVIEW was
+rebuilt as an application. The focused emitted frame fixture passes 33 binding
+checks and **293,020 exact pixels** across five checkpoints: full frame and
+client preservation, vertical/horizontal subtrees, one obscuring rectangle,
+title/info, plus close/reopen/delete. FIRST/NEXT remains valid across nested
+slider changes. Passive callback observations are exactly `[9,10,9,10]` for two
+vertical setters and `[13,14,13,14]` for two horizontal setters; no generic
+frame walk supplies these draws.
+
+The obscured track exposed an existing stipple adapter assumption: screen pitch
+was used inside compact scratch. It could overwrite one frame pixel. Stipple
+now uses the actual scratch origin and doubled scratch pitch; the same focused
+pixel case passes. The native worker stack audit also needed instruction-aware
+decoding instead of byte scanning (`b8105e17`); its bound stays 750/1,024 bytes.
+No guard or limit was relaxed.
+
+The frame fixture discovers its AES client and retains the original internal
+console client. Its three C test bridges reuse compiled provider objects and
+the ordinary `__simple_call LONG(ULONG)` boundary. All guards pass; the minimum
+observed ordinary floor margin is 231 bytes. Generated bank-zero budgets and
+Task pools match WG2 exactly: zero fixed, root, kernel, idle and per-public-Task
+reserved-byte changes. These are development checks, not hosted qualification.

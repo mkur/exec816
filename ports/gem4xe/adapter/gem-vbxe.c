@@ -283,6 +283,15 @@ void GemFrameGadget(UWORD image,WORD x,WORD y,UWORD left,UWORD top,
     }
 }
 
+void GemFrameGadgetCentered(UWORD image,WORD x,WORD y,WORD width,WORD height,
+    UWORD left,UWORD top,UWORD right,UWORD bottom)
+{
+    const struct GemFrameImage *g=&GemFrameImages[image];
+    GemFrameGadget(image,x+(width-g->width)/2,y+(height-g->height)/2,
+                   left,top,right,bottom);
+}
+
+
 UWORD GemSolidRows(UWORD left,UWORD right)
 {
     UWORD bytes=(right>>1)-((left+1)>>1);
@@ -1071,19 +1080,21 @@ static UWORD draw_WidgetBatch(UWORD left,UWORD top,UWORD right,UWORD bottom,
  * preserving partial packed bytes. Phase is anchored to screen coordinates. */
 void GemWidgetStipple(UWORD left,UWORD top,UWORD right,UWORD bottom)
 {
-    UWORD y,lo,hi,rows;
+    UWORD y,lo,hi,rows,pitch=stripRedirect ? stripPitch*2:640;
     UBYTE mask;
     ULONG base;
     for (y=top;y<top+2 && y<bottom;y++) {
         rows=(bottom-y+1)/2;lo=left/2;hi=right/2;
-        base=((ULONG)(y*20))<<4;
+        if (stripRedirect && stripCompact)
+            base=WIDGET_STRIP_BASE+((y-stripTop)<<stripCompact)-(stripLeft>>1);
+        else base=GemScreenRows[y];
         mask=(y&1) ? 0xf0 : 0x0f;
         if (left&1) {
-            if (y&1) blit_and(base+lo,640,1,rows,0xf0);
+            if (y&1) blit_and(base+lo,pitch,1,rows,0xf0);
             lo++;
         }
-        if ((right&1) && !(y&1)) blit_and(base+hi,640,1,rows,0x0f);
-        if (hi>lo) blit_and(base+lo,640,hi-lo,rows,mask);
+        if ((right&1) && !(y&1)) blit_and(base+hi,pitch,1,rows,0x0f);
+        if (hi>lo) blit_and(base+lo,pitch,hi-lo,rows,mask);
     }
 }
 

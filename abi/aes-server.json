@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 26,
+  "version": 27,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,

@@ -4,6 +4,7 @@
 #include <hardware/console-bitmap.h>
 #include <exec816/desktop-geometry.h>
 #include "gem-drawing.h"
+#include "application-hosted.h"
 
 extern void GemWidgetFill(UWORD,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
 extern void GemWidgetText(WORD,WORD,const WORD *,UWORD,UWORD,UWORD,UWORD,UWORD,UWORD);
@@ -38,182 +39,85 @@ static void gadget(UWORD image,WORD x,WORD y)
                    paint->clipRight,paint->clipBottom);
 }
 
-/* Cached thumb coordinates come from the admitted window mutation. Each
- * strip draws only its intersection; no divide or tree traversal is needed. */
-static void gadgets(WORD l,WORD t,WORD r,WORD b)
-{
-    struct ConsoleBitmapPacket *p=paint;
-    WORD k=p->fillY,gw=DESKTOP_FRAME_GADGET_WIDTH,gh=DESKTOP_FRAME_GADGET_HEIGHT,left=r-gw;
-    WORD top=t+DESKTOP_TITLE_HEIGHT+(k&DESKTOP_FRAME_INFO ? DESKTOP_FRAME_INFO_HEIGHT:0),bottom=b-(k&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_HORIZONTAL) ? gh:DESKTOP_WORK_BOTTOM);
-    WORD mid=left+gw/2,center;
-    if ((k&DESKTOP_FRAME_VERTICAL) && paint->clipTop<bottom && paint->clipBottom>top &&
-        paint->clipRight>left && paint->clipLeft<r) {
-        /* The window supplies the outer edge; the track and sizer supply
-         * shared horizontal separators for the unboxed arrow cells. */
-        fill(left+1,top,r-1,bottom,8);
-        fill(left,top,left+1,bottom,1);
-        if (k&DESKTOP_FRAME_UPARROW) {
-            fill(left+1,top,r-1,top+gh,0);
-            center=top+(gh-5)/2;
-            gadget(GEM_GADGET_UP,mid-5,center);
-            top+=gh;
-        }
-        if (k&DESKTOP_FRAME_DNARROW) {
-            fill(left+1,bottom-gh,r-1,bottom,0);
-            center=bottom-1-(gh-5)/2;
-            gadget(GEM_GADGET_DOWN,mid-5,center-4);
-            bottom-=gh;
-        }
-        box(left,top,r,bottom);
-        if (k&DESKTOP_FRAME_VSLIDE) {
-            top=t+p->fillWidth;bottom=top+p->fillHeight;
-            fill(left+1,top,r-1,bottom,0);box(left,top,r,bottom);
-        }
-    }
-    if ((k&DESKTOP_FRAME_HORIZONTAL) && paint->clipBottom>b-gh) {
-        WORD hl=l,hr=r-(k&(DESKTOP_FRAME_VERTICAL|DESKTOP_FRAME_SIZER) ? gw:0),ht=b-gh;
-        fill(hl+1,ht,hr-1,b-1,8);
-        fill(hl,ht,hr,ht+1,1);
-        if (k&DESKTOP_FRAME_LFARROW) {
-            fill(hl+1,ht+1,hl+gw,b-1,0);
-            gadget(GEM_GADGET_LEFT,hl+(gw-5)/2,ht+(gh-9)/2);
-            hl+=gw;
-        }
-        if (k&DESKTOP_FRAME_RTARROW) {
-            fill(hr-gw,ht+1,hr-1,b-1,0);
-            gadget(GEM_GADGET_RIGHT,hr-gw+(gw-5)/2,ht+(gh-9)/2);
-            hr-=gw;
-        }
-        box(hl,ht,hr,b);
-        if (k&DESKTOP_FRAME_HSLIDE) {
-            hl=l+p->frameHorizontalLeft;hr=hl+p->frameHorizontalWidth;
-            fill(hl+1,ht+1,hr-1,b-1,0);box(hl,ht,hr,b);
-        }
-        if ((k&DESKTOP_FRAME_VERTICAL) && !(k&DESKTOP_FRAME_SIZER))
-            box(r-gw,b-gh,r,b);
-    }
-    if ((k&DESKTOP_FRAME_SIZER) && paint->clipBottom>b-gh) {
-        box(left,b-gh,r,b);
-        gadget(GEM_GADGET_SIZE,r-14,b-8);
-    }
-    (void)l;
-}
+/* The current physical borrower owns GSX scratch and this prepared object.
+ * UPDATE pins the tree and strings through every callback and fence. */
+static GEMFRAMEDRAW *framePaint;
+static struct ObjectPrepared frameObject;
 
-static UWORD fragment_draw(void *context)
+static void frame_object(OBJECT *tree,WORD object,WORD x,WORD y)
 {
-    struct ConsoleBitmapPacket *p=context;
-    paint=p;
-    const UBYTE *title=(const UBYTE *)p->text;
-    WORD l=p->x,t=p->y,r=l+p->width,b=t+p->height;
-    WORD nameLeft=l+(p->background ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
-    WORD iconRight=r-(p->fillY&DESKTOP_FRAME_FULLER ? DESKTOP_FRAME_GADGET_WIDTH:0);
-    WORD hasIcon=iconRight-nameLeft>=DESKTOP_FRAME_GADGET_WIDTH+8+2*DESKTOP_TITLE_PAD;
-    WORD nameRight=iconRight-(hasIcon ? DESKTOP_FRAME_GADGET_WIDTH:DESKTOP_FRAME_EDGE);
-    WORD x,y=t+DESKTOP_TITLE_TEXT_Y;
-    WORD pl,pt,pr,pb;
-    UWORD span=nameRight-nameLeft;
-    UWORD length=0,limit=nameRight>nameLeft+2*DESKTOP_TITLE_PAD ? (span-2*DESKTOP_TITLE_PAD)>>3:0;
-    UWORD first,n;
-    if (p->fillY&DESKTOP_FRAME_ICONIFIED) {
-        fill(l,t,r,b,0);box(l,t,r,b);
-        gadget(GEM_GADGET_TILE,l+3,t+2);
-        for (n=0;n<8 && title[n];++n) glyphs[n]=title[n];
-        text(l+20,y,n,1);
-        p->fillX=0;
-        return 1;
+    WORD image=-1;
+    WORD right=x+tree[object].ob_width,bottom=y+tree[object].ob_height;
+    if (tree[object].ob_flags&HIDETREE) return;
+    if (object==GEM_O_FRAME) { right+=GEM_SHADOW;bottom+=GEM_SHADOW; }
+    if (x>=paint->clipRight || y>=paint->clipBottom ||
+        right<=paint->clipLeft || bottom<=paint->clipTop) return;
+    prepare_draw(&frameObject,tree,object,x,y);
+    if (object==GEM_O_NAME)
+        frameObject.ink=framePaint->flags&1 ? 12:1;
+    draw_prepared(&frameObject);
+    /* Fixed platform artwork replaces the donor BOXCHAR character glyph;
+     * its enclosing OBJECT still supplies position, size, colour and border. */
+    switch (object) {
+    case GEM_O_CLOSER:image=GEM_GADGET_CLOSE;break;
+    case GEM_O_FULLER:image=GEM_GADGET_FULL;break;
+    case GEM_O_ICONIFIER:image=GEM_GADGET_ICONIFY;break;
+    case GEM_O_SIZER:
+        if (tree[object].ob_spec>>24) image=GEM_GADGET_SIZE;
+        break;
+    case GEM_O_UP:image=GEM_GADGET_UP;break;
+    case GEM_O_DOWN:image=GEM_GADGET_DOWN;break;
+    case GEM_O_LEFT:image=GEM_GADGET_LEFT;break;
+    case GEM_O_RIGHT:image=GEM_GADGET_RIGHT;break;
     }
-    /* Side/bottom fragments are admitted inside the outer bounds. They need
-     * only paper and the intersecting outline, never a title scan or glyphs. */
-    if (p->clipTop>=t+DESKTOP_TITLE_HEIGHT) {
-        if (!p->fillX) {
-            fill(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,0);
-            box(l,t,r,b);
-            if (p->fillY&(DESKTOP_FRAME_SIZER|DESKTOP_FRAME_VERTICAL|DESKTOP_FRAME_HORIZONTAL)) gadgets(l,t,r,b);
-            if (p->fillY&DESKTOP_FRAME_INFO)
-                fill(l,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT-1,
-                     r,t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT,1);
-        }
-        if (!(p->fillY&DESKTOP_FRAME_INFO) ||
-            p->clipTop>=t+DESKTOP_TITLE_HEIGHT+DESKTOP_FRAME_INFO_HEIGHT) return 1;
-        title+=DESKTOP_TITLE_BYTES;
-        x=l+8;y=t+DESKTOP_TITLE_HEIGHT+1;
-        span=r-x-8;
-        limit=span>>3;
-        while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
-    } else {
-        while (length<DESKTOP_TITLE_BYTES-1 && length<limit && title[length]) ++length;
-    x=nameLeft+((nameRight-nameLeft-(length<<3))>>1);
-    if (!p->fillX) {
-        fill(l,t,r,b,0);
-        box(l,t,r,b);
-        fill(l+1,t+DESKTOP_TITLE_HEIGHT-1,r-1,t+DESKTOP_TITLE_HEIGHT,p->foreground ? 12:1);
-        if (p->foreground) {
-            pl=nameLeft>p->clipLeft ? nameLeft:p->clipLeft;
-            pt=t+1>p->clipTop ? t+1:p->clipTop;
-            pr=nameRight<p->clipRight ? nameRight:p->clipRight;
-            pb=t+DESKTOP_TITLE_HEIGHT-1<p->clipBottom ?
-               t+DESKTOP_TITLE_HEIGHT-1:p->clipBottom;
-            if (pl<pr && pt<pb) GemFramePattern(pl,pt,pr,pb,l,t);
-        }
-        if (length) fill(x-DESKTOP_TITLE_PAD,t+1,x+(length<<3)+DESKTOP_TITLE_PAD,
-                         t+DESKTOP_TITLE_HEIGHT-1,0);
-        if (hasIcon) {
-            fill(iconRight-DESKTOP_FRAME_GADGET_WIDTH,t+1,
-                 iconRight-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            gadget(GEM_GADGET_ICONIFY,iconRight-13,t+2);
-        }
-        if (p->fillY&DESKTOP_FRAME_FULLER) {
-            fill(r-DESKTOP_FRAME_GADGET_WIDTH,t+1,
-                 r-DESKTOP_FRAME_GADGET_WIDTH+1,t+DESKTOP_TITLE_HEIGHT-1,1);
-            gadget(GEM_GADGET_FULL,r-13,t+2);
-        }
-        if (p->background) {
-            /* At minimum width, the fuller already supplies this divider. */
-            if (nameLeft<iconRight)
-                fill(nameLeft-1,t+1,nameLeft,t+DESKTOP_TITLE_HEIGHT-1,1);
-            gadget(GEM_GADGET_CLOSE,l+DESKTOP_CLOSE_TEXT_X,t+2);
-        }
+    if (image>=0) GemFrameGadgetCentered(image,x,y,tree[object].ob_width,
+        tree[object].ob_height,paint->clipLeft,paint->clipTop,
+        paint->clipRight,paint->clipBottom);
+    if (object==GEM_O_FRAME && (tree[object].ob_state&32)) {
+        right=x+tree[object].ob_width;bottom=y+tree[object].ob_height;
+        fill(right,y+GEM_SHADOW,right+GEM_SHADOW,bottom+GEM_SHADOW,1);
+        fill(x+GEM_SHADOW,bottom,right,bottom+GEM_SHADOW,1);
     }
-    }
-    first=p->fillX;
-    if (p->clipLeft>x && first<((p->clipLeft-x)>>3)) first=(p->clipLeft-x)>>3;
-    if (y>=p->clipBottom || y+8<=p->clipTop || x+(first<<3)>=p->clipRight)
-        first=length;
-    n=length>first ? length-first:0;
-    if (n>16) n=16;
-    if (n) {
-        UWORD i;
-        for (i=0;i<n;++i) glyphs[i]=title[first+i];
-        text(x+(first<<3),y,n,p->foreground && y==t+DESKTOP_TITLE_TEXT_Y ? 12:1);
-    }
-    first+=n;
-    p->fillX=first<length && x+(first<<3)<p->clipRight ? first:0;
-    return !p->fillX;
 }
 
 static UWORD fragment(void *context)
 {
-    UWORD done=fragment_draw(context);
-    paint=0;
-    return done;
+    struct ConsoleBitmapPacket *p=context;
+    OBJECT *tree;
+    WORD x,y,start;
+    paint=p;
+    framePaint=(GEMFRAMEDRAW *)p->text;
+    gl_clip=framePaint->clip;
+    p->clipLeft=gl_clip.g_x;p->clipTop=gl_clip.g_y;
+    p->clipRight=gl_clip.g_x+gl_clip.g_w;
+    p->clipBottom=gl_clip.g_y+gl_clip.g_h;
+    /* The native producer clips full frames to disjoint frame-only pieces;
+     * selected scrollbar subtrees are opaque and wholly outside client work. */
+    fill(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,0);
+    tree=(OBJECT *)framePaint->tree;start=framePaint->start;
+    ob_offset(tree,start,&x,&y);
+    x-=tree[start].ob_x;y-=tree[start].ob_y;
+    everyobj(tree,start,tree[start].ob_next,frame_object,x,y,framePaint->depth);
+    framePaint=0;paint=0;
+    p->fillX=0;
+    return 1;
 }
 
 UWORD DesktopFrame(struct ConsoleBitmapPacket *p)
 {
-    UWORD status;
-    if (p->clipBottom-p->clipTop>16)
-        status=GemDrawingFrameBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,fragment,p);
-    else
-        status=GemDrawingWidgetBatch(p->clipLeft,p->clipTop,p->clipRight,p->clipBottom,
-                                    !p->fillX,fragment,p);
-    return status;
+    GEMFRAMEDRAW *frame=(GEMFRAMEDRAW *)p->text;
+    WORD l=frame->clip.g_x,t=frame->clip.g_y;
+    WORD r=l+frame->clip.g_w,b=t+frame->clip.g_h;
+    if (b-t>16) return GemDrawingFrameBatch(l,t,r,b,fragment,p);
+    return GemDrawingWidgetBatch(l,t,r,b,1,fragment,p);
 }
 
-/* The same raster and bounded strips, using the caller's existing grant. */
 UWORD DesktopFrameBorrow(struct DisplayGrant *grant,struct ConsoleBitmapPacket *p)
 {
-    return GemDrawingFrameBorrow(grant,p->clipLeft,p->clipTop,p->clipRight,
-                                 p->clipBottom,fragment,p);
+    GEMFRAMEDRAW *frame=(GEMFRAMEDRAW *)p->text;
+    WORD l=frame->clip.g_x,t=frame->clip.g_y;
+    return GemDrawingFrameBorrow(grant,l,t,l+frame->clip.g_w,
+                                 t+frame->clip.g_h,fragment,p);
 }
 
 /* Native popup rows use the same strip, font and disabled stipple as GEM

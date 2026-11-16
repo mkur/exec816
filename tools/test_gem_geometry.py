@@ -6,6 +6,7 @@ from pathlib import Path
 
 from calypsi_build import emit
 from generate_gem_objects import ABI, layout
+from generate_console_bitmap import ABI as BITMAP
 from native_program import ROOT, build, compiler, require, verify_machine
 from os_boundary import emulator
 from test_mouse_observe import BRIDGE, ROM, PIN
@@ -51,9 +52,14 @@ def run(out, optimize):
         for field, kind, cfield, *counts in record['fields']:
             expressions.append('offsetof('+record['c_type']+', '+cfield+')')
             values.append(layout()[name]['fields'][field])
+    expressions += ['sizeof(struct ConsoleBitmapPacket)']
+    values += [BITMAP['packet_bytes']]
+    expressions += ['offsetof(struct ConsoleBitmapPacket, '+n+')' for n in BITMAP['fields']]
+    values += list(BITMAP['fields'].values())
     c = out/'probe.c'
     c.write_text('''#include <stddef.h>
 #include <gem/geometry.h>
+#include <hardware/console-bitmap.h>
 UWORD GeometryObserved;
 const UWORD GeometryLayout[] = { %s };
 LONG GeometryProbe(ULONG address) {
@@ -83,6 +89,8 @@ USE EXEC
 USE HEAPCORE
 USE CALYPSICALL
 USE GEMOBJECTS
+USE DISPLAY
+INCLUDE "%s"
 
 CARD checks
 
@@ -97,6 +105,7 @@ RETURN
 
 PROC Main()
 
+  Require(SIZEOF(Packet)=PACKET_BYTES)
   LET words=CARD POINTER($%x)
 %s
   LET frame=GEMOBJECTS.Frame POINTER(EXEC.AllocMem(
@@ -119,7 +128,7 @@ PROC Main()
 
 RETURN
 ENDMODULE
-''' % (sy['GeometryLayout'], '\n'.join(statements), sy['GeometryProbe']))
+''' % (ROOT/'lib/console/console-bitmap-types.inc', sy['GeometryLayout'], '\n'.join(statements), sy['GeometryProbe']))
     program = build(compiler(ROOT/'build/actionc', release=True), source,
                     out/'program', tasks=True, task_capacity=8,
                     optimize=optimize, foreign_image=foreign)

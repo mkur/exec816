@@ -5259,6 +5259,131 @@
           }
         }
       }
+    },
+    "WG4": {
+      "status": "pass",
+      "capture": "build/window-geometry/wg4-frame/results.json",
+      "binding_checks": 33,
+      "verified_pixels": 293020,
+      "visits": {
+        "2": [
+          9,
+          10,
+          9,
+          10
+        ],
+        "3": [
+          13,
+          14,
+          13,
+          14
+        ],
+        "4": [
+          0,
+          1,
+          4,
+          2,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          6,
+          9,
+          10,
+          9,
+          10
+        ],
+        "5": [
+          2,
+          5
+        ]
+      },
+      "runtime": {
+        "status": 0,
+        "native_nmi_count": 262,
+        "native_irq_count": 10361,
+        "guards": "intact",
+        "stack_observations": [
+          {
+            "slot": 0,
+            "reserved_bytes": 1536,
+            "touched_bytes": 1049,
+            "untouched_above_floor": 231
+          },
+          {
+            "slot": 1,
+            "reserved_bytes": 1312,
+            "touched_bytes": 304,
+            "untouched_above_floor": 752
+          },
+          {
+            "slot": 2,
+            "reserved_bytes": 1312,
+            "touched_bytes": 128,
+            "untouched_above_floor": 928
+          },
+          {
+            "slot": 3,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 4,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 5,
+            "reserved_bytes": 1312,
+            "touched_bytes": 18,
+            "untouched_above_floor": 1038
+          },
+          {
+            "slot": 6,
+            "reserved_bytes": 2560,
+            "touched_bytes": 713,
+            "untouched_above_floor": 1591
+          },
+          {
+            "slot": 7,
+            "reserved_bytes": 2560,
+            "touched_bytes": 18,
+            "untouched_above_floor": 2286
+          },
+          {
+            "slot": 8,
+            "reserved_bytes": 512,
+            "touched_bytes": 21,
+            "untouched_above_floor": 235
+          }
+        ],
+        "kernel_stack_observation": {
+          "reserved_bytes": 1536,
+          "touched_bytes": 281,
+          "untouched_from_base": 1255,
+          "interrupt_reserve_bytes_touched": 0
+        }
+      },
+      "abi_probe": {
+        "raw": {
+          "capture": "build/window-geometry/wg4-abi/raw/results.json",
+          "status": "pass"
+        },
+        "opt": {
+          "capture": "build/window-geometry/wg4-abi/opt/results.json",
+          "status": "pass"
+        }
+      },
+      "bank_zero_and_task_pools_equal_to_WG2": true,
+      "aes_abi": 27,
+      "application_abi": 47
     }
   }
 }

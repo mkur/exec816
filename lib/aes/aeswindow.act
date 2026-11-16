@@ -15,6 +15,7 @@ USE AESWINDOWSTATE
 USE DESKTYPES
 USE DESKWINDOW
 USE GEMFRAME
+USE GEMOBJECTS
 USE DESKSTATE
 USE DESKCORE
 USE DESKGEOMETRY
@@ -532,12 +533,11 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
     IF request.intin(1)=AESTYPES.WF_NAME THEN
       A816MEMORY.Move(@window.title(0),title,length+1)
       DESKMENU.Renamed(window.id)
-      bounds.bottom=bounds.top+DESKTYPES.TITLE_HEIGHT
+      DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_NAME,@bounds)
     ELSE
       DESKCACHE.Changed(desktop,window)
       A816MEMORY.Move(@window.info(0),title,length+1)
-      bounds.top==+DESKTYPES.TITLE_HEIGHT
-      bounds.bottom=bounds.top+DESKTYPES.FRAME_INFO_HEIGHT
+      DESKGEOMETRY.ObjectRect(window,GEMOBJECTS.O_INFO,@bounds)
     FI
     ; The iconified frame has no linked info object. Store the value for
     ; restoration without scheduling a physical frame repaint.
@@ -596,10 +596,8 @@ PUBLIC CARD FUNC Frame(AESSTATE.Service POINTER service
       IF window.iconified=0 THEN
         IF horizontal<>0 THEN
           DESKGEOMETRY.HScrollTrack(window,@layer.bounds,@bounds)
-          bounds.bottom=layer.bounds.bottom
         ELSE
           DESKGEOMETRY.ScrollTrack(window,@layer.bounds,@bounds)
-          bounds.right=layer.bounds.right
         FI
         status=LAYERS.Invalidate(@desktop.scene,window.layer,@bounds)
       FI

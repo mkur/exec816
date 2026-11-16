@@ -18,6 +18,8 @@ USE REGIONS
 USE CONSOLEBITMAP
 USE HEAPCORE
 USE AESWINDOWSTATE
+USE AESFRAME
+USE GEMOBJECTS
 
 LONGCARD paintToken,paintLayer
 CARD regionIndex,commandIndex,glyphOffset
@@ -79,10 +81,7 @@ BYTE FUNC FrameStep(CONSOLEBITMAP.Packet POINTER output
 
     REGIONS.Intersect(@area,@strip,@area)
     IF REGIONS.Empty(@area)=0 THEN
-      result=CONSOLEBITMAP.Frame(output,@layer.bounds,@area,@window.title(0),
-          window.id=service.focus,1,
-          window.frameKind,window.sliderTop,window.sliderHeight,
-          window.sliderLeft,window.sliderWidth,@glyphOffset)
+      result=AESFRAME.Draw(output,window,GEMOBJECTS.O_FRAME,@area)
       IF result<>1 THEN
         RETURN(result)
       FI
@@ -117,8 +116,7 @@ BYTE FUNC PaintStrip(CONSOLEBITMAP.Packet POINTER output
   FI
 
   IF window.iconified<>0 THEN
-    RETURN(CONSOLEBITMAP.Frame(output,@layer.bounds,@strip,@window.title(0),
-        0,0,DESKTYPES.FRAME_ICONIFIED,0,0,0,0,@glyphOffset))
+    RETURN(AESFRAME.Draw(output,window,GEMOBJECTS.O_FRAME,@strip))
   FI
 
   DESKGEOMETRY.Work(window,@client)

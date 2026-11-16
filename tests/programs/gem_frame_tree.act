@@ -1,0 +1,233 @@
+; Focused shared-binding/frame test. No disk application is loaded.
+MODULE GEMFRAMETREETEST
+USE EXEC
+USE AESBOOT
+USE AESSTATE
+USE AESWINDOWSTATE
+USE AESDRAWSTATE
+USE AESFRAME
+USE AESTYPES
+USE DESKTYPES
+USE LAYERTYPES
+USE DESKSTATE
+USE DESKGEOMETRY
+USE CALYPSICALL
+USE CONSOLEBITMAP
+USE HEAPCORE
+INCLUDE "frame-symbols.inc"
+
+TYPE ParameterBlock=[
+  LONGCARD control,global,intin,intout,addrin,addrout
+  INT ARRAY controls(5)
+  INT ARRAY globals(15)
+  INT ARRAY inputs(16)
+  INT ARRAY outputs(7)
+  LONGCARD ARRAY addresses(1)
+]
+ParameterBlock pb
+CARD checks,phase,go,initialClients
+INT first,second
+LONGCARD identity,clientId
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fa00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Rendezvous(CARD stage)
+
+  phase=stage
+  WHILE go<>stage DO
+    EXEC.Yield()
+  OD
+
+RETURN
+
+PROC Call(INT operation,inputs,outputs)
+
+  pb.controls(0)=operation
+  pb.controls(1)=inputs
+  pb.controls(2)=outputs
+  pb.controls(3)=IF operation=78 THEN INT(1) ELSE INT(0) FI
+  pb.controls(4)=0
+  BEGIN
+    LET ignored=CALYPSICALL.Invoke(ADDRESS(C_AES_CALL),LONGCARD(ADDRESS(@pb)))
+  END
+
+RETURN
+
+PROC SetField(INT window,field,value)
+
+  pb.inputs(0)=window
+  pb.inputs(1)=field
+  pb.inputs(2)=value
+  pb.inputs(3)=0
+  pb.inputs(4)=0
+  pb.inputs(5)=0
+  Call(105,6,1)
+  Require(pb.outputs(0)=1)
+
+RETURN
+
+PROC SetText(INT window,field CSTRING text)
+
+  LET address=LONGCARD(ADDRESS(text))
+  pb.inputs(0)=window
+  pb.inputs(1)=field
+  pb.inputs(2)=INT(address RSH 16)
+  pb.inputs(3)=INT(address & $ffff)
+  Call(105,6,1)
+  Require(pb.outputs(0)=1)
+
+RETURN
+
+INT FUNC Create(INT kind,x,y,width,height)
+
+  pb.inputs(0)=kind
+  pb.inputs(1)=x
+  pb.inputs(2)=y
+  pb.inputs(3)=width
+  pb.inputs(4)=height
+  Call(100,5,1)
+  Require(pb.outputs(0)>0)
+
+RETURN(pb.outputs(0))
+
+PROC Open(INT window,x,y,width,height)
+
+  pb.inputs(0)=window
+  pb.inputs(1)=x
+  pb.inputs(2)=y
+  pb.inputs(3)=width
+  pb.inputs(4)=height
+  Call(101,5,1)
+  Require(pb.outputs(0)=1)
+
+RETURN
+
+PROC Close(INT window BYTE destroy)
+
+  pb.inputs(0)=window
+  Call(102,1,1)
+  Require(pb.outputs(0)=1)
+  IF destroy<>0 THEN
+    pb.inputs(0)=window
+    Call(103,1,1)
+    Require(pb.outputs(0)=1)
+  FI
+
+RETURN
+
+; Mark client work with a known colour; frame setters must preserve it.
+PROC Fill(INT handle CARD pen)
+  LAYERTYPES.Rect work
+
+  LET service=AESSTATE.Get()
+  LET client=AESSTATE.Find(service,clientId)
+  LET window=AESWINDOWSTATE.Handle(client,handle)
+  LET packet=AESDRAWSTATE.Packet()
+  DESKGEOMETRY.Work(window,@work)
+  packet.operation=CONSOLEBITMAP.OP_FILL
+  packet.x=CARD(work.left)
+  packet.y=CARD(work.top)
+  packet.width=CARD(work.right-work.left)
+  packet.height=CARD(work.bottom-work.top)
+  packet.background=pen
+  AESFRAME.Apply(packet)
+  Require(packet.status=0)
+
+RETURN
+
+PROC Main()
+  BYTE slot
+
+  pb.control=LONGCARD(ADDRESS(@pb.controls(0)))
+  pb.global=LONGCARD(ADDRESS(@pb.globals(0)))
+  pb.intin=LONGCARD(ADDRESS(@pb.inputs(0)))
+  pb.intout=LONGCARD(ADDRESS(@pb.outputs(0)))
+  pb.addrin=LONGCARD(ADDRESS(@pb.addresses(0)))
+  pb.addrout=pb.addrin
+  BEGIN
+    LET service=AESSTATE.Get()
+    initialClients=service.count
+  END
+  Require(CARD(CALYPSICALL.Invoke(ADDRESS(C_AES_ATTACH),
+      LONGCARD(ADDRESS(AESBOOT.Port()))))<>0)
+  Call(10,0,1)
+  Require(pb.outputs(0)>0)
+  BEGIN
+    LET service=AESSTATE.Get()
+    FOR slot=0 TO AESTYPES.CLIENTS-1 DO
+      IF service.clients(slot).id<>0
+          AND service.clients(slot).gemId=pb.outputs(0) THEN
+        clientId=service.clients(slot).id
+        EXIT
+      FI
+    OD
+  END
+  Require(clientId<>0)
+  first=Create(4095,13,17,320,180)
+  SetText(first,AESTYPES.WF_NAME,c"Geometry")
+  SetText(first,AESTYPES.WF_INFO,c"Stored objects")
+  Open(first,13,17,320,180)
+  pb.inputs(0)=256
+  Call(78,1,1)
+  Require(pb.outputs(0)=1)
+  pb.inputs(0)=1
+  Call(107,1,1)
+  Require(pb.outputs(0)=1)
+  Fill(first,6)
+  BEGIN
+    LET service=AESSTATE.Get()
+    LET window=AESWINDOWSTATE.Handle(AESSTATE.Find(service,clientId),first)
+    identity=window.id
+  END
+  Rendezvous(1)
+  pb.inputs(0)=first
+  pb.inputs(1)=AESTYPES.WF_FIRSTXYWH
+  Call(104,2,5)
+  Require(pb.outputs(0)=1 AND pb.outputs(3)>0)
+  SetField(first,AESTYPES.WF_VSLSIZE,500)
+  SetField(first,AESTYPES.WF_VSLIDE,500)
+  pb.inputs(0)=first
+  pb.inputs(1)=AESTYPES.WF_NEXTXYWH
+  Call(104,2,5)
+  Require(pb.outputs(0)=1)
+  Rendezvous(2)
+  SetField(first,AESTYPES.WF_HSLSIZE,500)
+  SetField(first,AESTYPES.WF_HSLIDE,500)
+  Rendezvous(3)
+  second=Create(0,300,60,48,40)
+  Open(second,300,60,48,40)
+  Fill(second,3)
+  SetField(first,AESTYPES.WF_VSLIDE,650)
+  Rendezvous(4)
+  SetText(first,AESTYPES.WF_NAME,c"Tree title")
+  SetText(first,AESTYPES.WF_INFO,c"Info shares the tree")
+  Rendezvous(5)
+  Close(second,1)
+  Close(first,0)
+  BEGIN
+    LET service=AESSTATE.Get()
+    LET window=AESWINDOWSTATE.Handle(AESSTATE.Find(service,clientId),first)
+    Require(window<>NULL AND window.id=identity)
+  END
+  Open(first,13,17,320,180)
+  Close(first,1)
+  pb.inputs(0)=0
+  Call(107,1,1)
+  Require(pb.outputs(0)=1)
+  Call(19,0,1)
+  Require(pb.outputs(0)=1)
+  Require(CARD(CALYPSICALL.Invoke(ADDRESS(C_AES_DETACH),0))<>0)
+  BEGIN
+    LET service=AESSTATE.Get()
+    Require(service.count=initialClients)
+  END
+
+RETURN
+ENDMODULE

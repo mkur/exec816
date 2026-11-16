@@ -7,6 +7,7 @@ USE CONSOLETYPES
 USE HEAPCORE
 USE LAYERTYPES
 USE REGIONS
+USE GEMOBJECTS
 USE CALYPSIMETA
 USE CALYPSICALL
 INCLUDE "console-storage-action.inc"
@@ -246,36 +247,15 @@ PUBLIC BYTE FUNC Background(Packet POINTER output LAYERTYPES.Rect POINTER clip)
 
 RETURN(Submit(output,OP_DESKTOP))
 
-PUBLIC BYTE FUNC Frame(Packet POINTER output LAYERTYPES.Rect POINTER bounds,clip
-    BYTE POINTER title BYTE focused,closer
-    CARD kind INT sliderTop,sliderHeight,sliderLeft,sliderWidth
-    CARD POINTER progress)
+PUBLIC BYTE FUNC Frame(Packet POINTER output
+    GEMOBJECTS.DrawRequest POINTER request)
 
   LET packet=Select(output)
-  packet.x=CARD(bounds.left)
-  packet.y=CARD(bounds.top)
-  packet.width=CARD(bounds.right-bounds.left)
-  packet.height=CARD(bounds.bottom-bounds.top)
-  packet.text=LONGCARD(ADDRESS(title))
-  packet.foreground=CARD(focused)
-  packet.background=CARD(closer)
-  packet.clipLeft=CARD(clip.left)
-  packet.clipTop=CARD(clip.top)
-  packet.clipRight=CARD(clip.right)
-  packet.clipBottom=CARD(clip.bottom)
-  packet.fillX=progress^
-  packet.fillY=kind
-  packet.fillWidth=CARD(sliderTop)
-  packet.fillHeight=CARD(sliderHeight)
-  packet.frameHorizontalLeft=CARD(sliderLeft)
-  packet.frameHorizontalWidth=CARD(sliderWidth)
-  IF Submit(output,OP_FRAME)=0 THEN
-    RETURN(0)
-  FI
+  packet.text=LONGCARD(ADDRESS(request))
+  LET okay=Submit(output,OP_FRAME)
+  request.status=packet.status
 
-  progress^=packet.fillX
-
-RETURN(IF progress^=0 THEN 1 ELSE 2 FI)
+RETURN(okay)
 
 PUBLIC BYTE FUNC MenuRow(Packet POINTER output LAYERTYPES.Rect POINTER bounds,clip
     BYTE POINTER title CARD rowTop BYTE enabled,selected CARD POINTER progress)

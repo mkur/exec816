@@ -1,8 +1,10 @@
 ; One GUI packet borrowed by the current UPDATE owner, never by cursor work.
 MODULE AESDRAWSTATE
 USE CONSOLEBITMAP
+USE GEMOBJECTS
 
 CONSOLEBITMAP.Packet workspace
+GEMOBJECTS.DrawRequest frameWorkspace
 
 ; Caller window/frame/cache operations retain UPDATE through physical return.
 ; Trusted renderer callbacks do not reenter AES. The manager's cursor packet
@@ -10,5 +12,9 @@ CONSOLEBITMAP.Packet workspace
 PUBLIC CONSOLEBITMAP.Packet POINTER FUNC Packet()
 
 RETURN(@workspace)
+
+PUBLIC GEMOBJECTS.DrawRequest POINTER FUNC FrameRequest()
+
+RETURN(@frameWorkspace)
 
 ENDMODULE
