@@ -12,34 +12,46 @@ from os_boundary import run_to
 def instrument(out):
     from library_paths import read_source
     from native_program import ROOT
+    old=out/'deskhost.act'
+    if old.exists() and 'USE CACHECOMPLETIONPROBE' in old.read_text():
+        old.unlink()
     (out/'cachecompletionprobe.act').write_text(
         'MODULE CACHECOMPLETIONPROBE\nPUBLIC BYTE finishing\nENDMODULE\n')
-    host=read_source(ROOT/'lib/desktop/deskhost.act')
-    host=host.replace('USE AESLOCKS\n','USE AESLOCKS\nUSE CACHECOMPLETIONPROBE\n',1)
-    start=host.index('BYTE FUNC Capture()')
+    host=read_source(ROOT/'lib/desktop/deskcachework.act')
+    host=host.replace('USE EXEC\n','USE EXEC\nUSE AESSTATE\nUSE CACHECOMPLETIONPROBE\n',1)
+    start=host.index('BYTE FUNC Capture(CONSOLEBITMAP.Packet POINTER output)')
     needle='          LET layer=LAYERS.Find(@service.scene,window.layer)'
     require(host[start:].count(needle)==1,'Window candidate inspection boundary changed')
     host=host[:start]+'PUBLIC LONGCARD candidateInspections,cacheCompletions\n'+host[start:].replace(
         needle,'          candidateInspections==+1\n'+needle)
-    needle='    CONSOLEBITMAP.Finish()\n    DESKMENUCACHE.Pump()\n    DESKCACHE.Pump(service)\n  FI\n  AESLOCKS.SystemEnd()'
-    require(host.count(needle)==1,'Background cache completion boundary changed')
-    host=host.replace(needle,'''    CONSOLEBITMAP.Finish()
-    CACHECOMPLETIONPROBE.finishing=1
-    DESKMENUCACHE.Pump()
-    DESKCACHE.Pump(service)
-    CACHECOMPLETIONPROBE.finishing=0
-    BEGIN
-      LET aes=AESSTATE.Get()
-      LET owner=ADDRESS POINTER(@aes.updateResource)
-      IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
-          OR owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
-        HEAPCORE.Abort($fcee)
-      FI
-      cacheCompletions==+1
-    END
+    needle='      DESKCACHE.Pump(service)'
+    require(host.count(needle)==1,'Cache operation completion boundary changed')
+    host=host.replace(needle,'''      CACHECOMPLETIONPROBE.finishing=1
+      DESKCACHE.Pump(service)
+      CACHECOMPLETIONPROBE.finishing=0
+      BEGIN
+        LET aes=AESSTATE.Get()
+        LET owner=ADDRESS POINTER(@aes.updateResource)
+        IF service.scene.busy<>0 OR CONSOLEBITMAP.Pending()<>0
+            OR owner^<>ADDRESS(EXEC.FindTask(NULL)) THEN
+          HEAPCORE.Abort($fcee)
+        FI
+        cacheCompletions==+1
+      END''',1)
+    (out/'deskcachework.act').write_text(host)
+    # Shared caller rendering must never borrow the frontend's retained-scope
+    # bookkeeping. This catches a nested manager helper even when its extra
+    # native semaphore level happens to retire before the caller returns.
+    locks=read_source(ROOT/'lib/aes/aeslocks.act').replace(
+        'USE EXEC\n','USE EXEC\nUSE HEAPCORE\n',1)
+    needle='PUBLIC BYTE FUNC SystemBegin()\n\n'
+    require(locks.count(needle)==1,'Manager UPDATE scope boundary changed')
+    locks=locks.replace(needle,needle+'''  LET service=AESSTATE.Get()
+  IF service<>NULL AND service.owner<>EXEC.FindTask(NULL) THEN
+    HEAPCORE.Abort($fcef)
   FI
-  AESLOCKS.SystemEnd()''',1)
-    (out/'deskhost.act').write_text(host)
+''',1)
+    (out/'aeslocks.act').write_text(locks)
     # A terminal copy must release its logical pin even if a different unit
     # has become physically busy. Inject only that readiness observation;
     # accepted copies and their pixel/fence behavior remain production code.
@@ -62,6 +74,7 @@ def instrument(out):
 
 
 def physical(b,p,foreign,report):
+    report['manager_scope_task_assertion']=True
     sy=foreign['symbols'];out=p['output'].parent
     at=lambda mod,n:next(d['address'] for d in p['image']['data']
                         if '_'+mod+'_'+n.upper()+'_' in d['name'])
@@ -69,7 +82,17 @@ def physical(b,p,foreign,report):
     def reach(condition):
         b.bp_clear_all();b.bp_set(p['labels']['native_irq'],condition=condition)
         b.bp_set(p['labels']['done'],condition=adapter.STOPPED)
-        run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
+        original=b.regs
+        def regs():
+            row=original()
+            if int(row['PC'].lstrip('$'),16)==p['labels']['done'] and b.peek16(adapter.STATUS)!=65535:
+                report['cache_guest_stop']=dict(condition=condition,status=b.peek16(adapter.STATUS),
+                    state=b.memdump(adapter.STATE,64).hex(),boot_cause=b.peek16(adapter.BOOT_CAUSE))
+                raise RuntimeError('Guest stopped before cache checkpoint: '+str(report['cache_guest_stop']))
+            return row
+        b.regs=regs
+        try:run_to(b,p['labels']['native_irq'],condition=condition,timeout=120,frame_limit=6000)
+        finally:b.regs=original
     slot=layers_layout()['CacheSlot'];cache=layout()['Service']['fields']['cache']
     previous=None;report['aes_cache']=[]
     for phase in range(1,33):
@@ -123,11 +146,11 @@ def physical(b,p,foreign,report):
                 status=get(packet+2,2))
         require(not any(s['pinned'] for s in slots),'Settled AES cache is pinned')
         if phase in (5,13,20,23):
-            before=get(at('DESKHOST','candidateInspections'))
+            before=get(at('DESKCACHEWORK','candidateInspections'))
             b.poke16(sy['AESCacheWake'],12)
             reach('dw($%x)=0'%sy['AESCacheWake'])
             reach('@frame>=%d'%(b.eval_expr('@frame')+20))
-            require(get(at('DESKHOST','candidateInspections'))==before,
+            require(get(at('DESKCACHEWORK','candidateInspections'))==before,
                     'Unchanged rejected/evicted window was inspected again')
             row['unchanged_wakes']=12
             row['repeated_candidate_inspections']=0
@@ -209,6 +232,6 @@ def physical(b,p,foreign,report):
         report['aes_cache'].append(row);previous=row
         b.poke16(sy['AESCacheGo'],phase)
     # The emitted fixture checks genuine exposure after the final phase.
-    report['cache_completion_checks']=get(at('DESKHOST','cacheCompletions'))
+    report['cache_completion_checks']=get(at('DESKCACHEWORK','cacheCompletions'))
     require(report['cache_completion_checks']>0,'No owner-completed cache operations')
     b.bp_clear_all()

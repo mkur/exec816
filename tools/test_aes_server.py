@@ -490,6 +490,23 @@ ENDMODULE
         memory = out/'fixture-memory.json'
         memory.write_text(json.dumps(profile, indent=2)+'\n')
         launcher = prepare(source, out, foreign, desktop=True, aes=True)
+        # Read-only frontend scopes can transiently make Stop report BUSY.
+        # All application assertions/retirement precede these bounded retries.
+        text=launcher.read_text()
+        point='  IF CONSOLEDRIVER.Stop()=0 THEN\n    HEAPCORE.Abort($f732)\n  FI'
+        require(text.count(point)==1,'Console stop boundary changed')
+        launcher.write_text(text.replace(point,'''  BEGIN
+    CARD attempts
+
+    attempts=0
+    WHILE CONSOLEDRIVER.Stop()=0 DO
+      attempts==+1
+      IF attempts=64 THEN
+        HEAPCORE.Abort($f732)
+      FI
+      EXEC.Yield()
+    OD
+  END''',1))
         import generate_tasks
         task_entries=generate_tasks.task_entries
         def fixture_entries(image):

@@ -41,7 +41,7 @@ def run(out,publication=False,from_build=None,ownership_check=False):
   Require(DESKPAINT.Runnable()=0 AND DESKPAINT.PaintPending()=0)
   Require(DESKPAINT.Pump()=0)
   Require(DESKHOST.Ready()=0 AND DESKHOST.PaintReady()=0)
-  Require(DESKHOST.ControlPending()=0 AND DESKHOST.Cache()=0)
+  Require(DESKHOST.ControlPending()=0)
   Require(DESKHOST.Idle()=0)
   Require(AESHOST.Settled()=0)
   Require(AESLOCKS.Quiescent()=0)

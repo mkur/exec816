@@ -17,6 +17,7 @@ USE CALYPSICALL
 USE DESKMOUSE
 USE DESKPAINT
 USE DESKMENU
+USE DESKCACHEWORK
 USE CONSOLEBITMAP
 
 ADDRESS mouseApply
@@ -128,9 +129,28 @@ CARD FUNC Exposure(AESTYPES.Request POINTER request)
   IF request.displayGrant=NULL THEN
     RETURN(AESTYPES.OK)
   FI
+  ; Quiescent device failure still permits logical withdrawal and cleanup.
+  ; Unsafe hardware parks in the driver before this boundary can return.
+  IF CONSOLEBITMAP.Failed()<>0 THEN
+    IF request.operation=AESTYPES.OP_CLOSE OR request.operation=AESTYPES.OP_DELETE
+        OR request.operation=AESTYPES.OP_EXIT THEN
+      RETURN(AESTYPES.OK)
+    FI
+    RETURN(AESTYPES.DISPLAY_ERROR)
+  FI
   DESKMENU.Reconcile()
   IF DESKPAINT.Complete(@packet)=0 THEN
+    IF CONSOLEBITMAP.Failed()<>0 AND (request.operation=AESTYPES.OP_CLOSE
+        OR request.operation=AESTYPES.OP_DELETE OR request.operation=AESTYPES.OP_EXIT) THEN
+      RETURN(AESTYPES.OK)
+    FI
     RETURN(AESTYPES.DISPLAY_ERROR)
+  FI
+  LET service=AESSTATE.Get()
+  IF service.updateHolds=0 AND service.mouseHolds=0 THEN
+    BEGIN
+      LET maintained=DESKCACHEWORK.Maintain(@packet)
+    END
   FI
 
 RETURN(AESTYPES.OK)

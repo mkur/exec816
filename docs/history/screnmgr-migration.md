@@ -683,3 +683,50 @@ pools, signals, VRAM and physical scratch are unchanged. SM4d still needs cache
 maintenance and manager-effect boundaries; SM4e's blocking loop is not installed.
 Host checks pass: 718 tests, five existing skips. No QED, catalog, demo refresh,
 release matrix or timing qualification is included.
+
+
+## SM4d3: operation-owned cache and manager effects
+
+Window snapshot capture and acknowledged patch copies now finish at the owning
+operation boundary. Outer END reconciles the application's journal and completes
+eligible cache work before clearing its painting marker or releasing UPDATE.
+Other window operations maintain the cache after exposure when no outer public
+scope remains. The candidate/revision rules, optional-image validity and existing
+VRAM layout are unchanged. Cache policy lives below AES publication, allowing
+caller and manager operations to use the same implementation without a module
+cycle or an idle cache executor.
+
+Manager input and gesture operations drain their started hardware, saved-menu
+state, exposure, cache work and popup capture before leaving their existing
+UPDATE scope. Owner copy admission now consumes its existing FIFO reservation
+and waits on the display signal when BUSY. Terminal logical cache retirement
+releases tokens and pins independently of another unit's physical readiness.
+The existing combined scheduling loop remains until SM4e; no new Task, platform
+service or scheduler policy is introduced.
+
+Shared menu reconciliation reads active state directly under the operation's
+UPDATE. It must not enter the manager's retained-scope bookkeeping from an
+application Task: a recursive caller acquisition could otherwise leave a native
+level recorded as manager ownership. The cache fixture now asserts that every
+manager scope runs in its owning Task. Shared GEM menu scratch is also cleared
+inside physical access, before another renderer can receive the grant.
+
+Quiescent device failure still allows logical close/delete/exit and allocation
+cleanup. Unsafe hardware retains the existing reset-required state and its live
+scene token and caller storage. These paths use the existing display driver
+contract rather than a new GUI failure service.
+
+Development evidence is recorded in [SM4d3 results](../development/screnmgr-sm4d3.json).
+Optimized emitted checks pass: 32 blocked-manager caller assertions; 224 C and
+four native cache assertions across 32 checkpoints, including 18 terminal cache
+boundaries under UPDATE; 25 quiescent-failure and 18 unsafe-retention assertions.
+Window/cache and saved-menu pixels match exactly. The ordinary application
+pool touches 1,022 of its 1,312 stack bytes, leaving 34 above the existing
+256-byte interrupt floor; this is an observed watermark, not a universal bound.
+Host checks pass 718 tests with five existing skips; affected generated
+definitions and documentation links also pass. No QED, application catalog,
+demo refresh, release matrix or performance qualification is included.
+
+Reserved bank-zero deltas are **0 fixed, 0 root, 0 kernel, 0 idle and 0 per public
+Task**, including guards, alignment and unused capacity. Task stack/DP pools,
+signals, record layouts, VRAM and physical scratch reservations are unchanged.

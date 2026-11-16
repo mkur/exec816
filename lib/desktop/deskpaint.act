@@ -6,6 +6,7 @@ USE EXEC
 USE DESKSTATE
 USE DESKTYPES
 USE DESKCORE
+USE DESKCACHEWORK
 USE DESKGEOMETRY
 USE DESKCACHE
 USE DESKMENU
@@ -18,7 +19,6 @@ USE REGIONS
 USE CONSOLEBITMAP
 USE HEAPCORE
 USE AESLOCKS
-USE AESHOST
 USE AESWINDOWSTATE
 
 LONGCARD paintToken,paintLayer
@@ -222,10 +222,6 @@ BYTE FUNC InspectRunnable()
   LET service=DESKSTATE.Get()
   IF service=NULL OR service.live=0 OR CONSOLEBITMAP.Failed()<>0 OR DISPLAY.Blocked()<>0 THEN
     RETURN(0)
-  FI
-
-  IF AESHOST.Runnable()<>0 THEN
-    RETURN(1)
   FI
 
   IF CONSOLEBITMAP.Pending()<>0 THEN
@@ -561,6 +557,11 @@ PUBLIC BYTE FUNC Pump()
   result=0
   IF service<>NULL AND (service.scene.visibleDamage<>0 OR paintToken<>0) THEN
     result=Complete(NULL)
+    IF result<>0 THEN
+      BEGIN
+        LET maintained=DESKCACHEWORK.Maintain(NULL)
+      END
+    FI
   FI
   AESLOCKS.SystemEnd()
 

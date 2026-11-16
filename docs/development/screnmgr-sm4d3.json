@@ -1,0 +1,505 @@
+{
+  "schema_version": 1,
+  "slice": "SM4d3",
+  "status": "implemented",
+  "tier": "development",
+  "qualification": false,
+  "exec_basis": "ff02db905c1438046eeb1b0a3ce3bb11342bf11e",
+  "source_inputs": {
+    "lib/aes/aeslocal.act": "a682a8462703644b759ec4c28da0bc9f697ab3c3afcbfa92987aa1c3259faccf",
+    "lib/aes/aessystem.act": "f30e6828c862ec744a1671137725d2ae43138a975283256485b633606c729451",
+    "lib/aes/aeswindowstate.act": "44558188c618cd835525495a8f493236453751da2e41fba4c7931af97f122883",
+    "lib/console/consolebitmap.act": "8409f6a4ebbe59de617db815e7d734f2cfc69335b8adb05e02da900dd461b6af",
+    "lib/desktop/deskcache.act": "cb9b55e9f0566260aaaf97929532d91917f48544591d757056cf881bec23901f",
+    "lib/desktop/deskcachework.act": "e6a1857da6040173f8cfb24df9f80af70d46f79a9f9b59b1d351a2be2112d16a",
+    "lib/desktop/deskdrag.act": "f7833c95f146c10ced342aeb58d27dce28a827c5ac7d4cab353225836b43e9f3",
+    "lib/desktop/deskfinish.act": "b19120843542f45be7bbe04859105c9c03738643c534b8a43b23383ff8f572f9",
+    "lib/desktop/deskhost.act": "2beadd14acf4eb0da64d04ed5f5b4b79f1e4833d40617c2e86235f09f1892f41",
+    "lib/desktop/deskinput.act": "52d92b9e4f739afd76a6910b62cbd9597213367ce2fc918834a85421c9d1f0e2",
+    "lib/desktop/deskmenu.act": "1882ec05f4d2f071d859e365cfd947804edacfbad6f3ec90d2c2750dc245ce0f",
+    "lib/desktop/deskmenucache.act": "7a099bb51ebab5767e290992fc198f6f1ece77b734a0031243de4dfded75f3ab",
+    "lib/desktop/deskpaint.act": "b028c8bce6125690ed603a48adfbc425624ba3aa4e9a6a188f6b76236b3db2c1",
+    "ports/gem4xe/aes/menu-render.c": "005d0acb728bdea4b682b96b7225e7ccbc7cd16f812d9a7b0f9e7a3d007c8e33",
+    "tests/programs/popupprobe.act": "84906c786de45fe7b1176bc5bdbe0fab4be8ed37e98ab73513fcbc5dfd652137",
+    "tests/programs/snapshotprobe.act": "deee264bff8924c8c02afb230556e3c1dd7a1859cf83edc6da0e0a389e7e0744",
+    "tools/g4bench_trace.py": "4ae219fd14ac03f7e390db688c0feef7d2e2ac4c78597382d9e13b00768a106b",
+    "tools/mgview_presenter_trace.py": "20729e8418cc4fe0cdce3d4380abbd6128e9be98e034b941fc52f05f489fda74",
+    "tools/presenter_control_trace.py": "e444de7f76e38910bbd1d07b2630274bd8e8aab0406d9e110fb463b75ade9b3b",
+    "tools/test_aes_cache.py": "cb17cde1be383564a4dbfefd8a1ea6f9a26eb08063e65b0e8f36791db649a9bb",
+    "tools/test_aes_find.py": "3f8e292fbef7ff699fea65fd27aa0d3ea49c46afc749693f58e0665c9619eda0",
+    "tools/test_aes_server.py": "92ae7832e246dd29d8ebb843011d58ffe865c786cf7bbd8708a0756033c8da7e",
+    "tools/window_response_trace.py": "a25830e9b1e5e9c0bf483de94b5bb2090ab455eafa0d9f712f94222ab3626285"
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "blocked_manager": {
+    "capture": "build/screnmgr/sm4d3-final-render",
+    "results_sha256": "64ae2b373ec9b090b232bdd77f8d542b957b9601d5cbd366956b8ef3d4708977",
+    "image_sha256": "3cd9f2bd298e96abc67017e1ce3d0b9cd6fa9c4e72eac0a6f82fe6959267c4e2",
+    "xex_sha256": "d137c1032cc5516c6f4b7858342a72cf2f932a05e1327b6b0fd5fe3c1bf3f03a",
+    "build_sha256": "0681f9d249342dee02ab3d4c408ce4f9b77197b1979d2f863e86b249fa79b4a8",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "checks": 32,
+    "failures": 0,
+    "caller_pixels": "exact 8x8 fill and offscreen round-trip while manager blocked",
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "fault_required": 0,
+      "fault_s": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 192,
+          "untouched_above_floor": 1088
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 304,
+          "untouched_above_floor": 752
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 128,
+          "untouched_above_floor": 928
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 1022,
+          "untouched_above_floor": 34
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 334,
+          "untouched_above_floor": 722
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 864,
+          "untouched_above_floor": 1440
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    }
+  },
+  "cache": {
+    "capture": "build/screnmgr/sm4d3-cache",
+    "results_sha256": "4b019ba79efb316ad6c3bec888277145246ce3f63b99de34249ad81e1cab4e41",
+    "image_sha256": "993d18462565e050c15b06ccba08fde8b884da009d21a164c386c5a4630194f4",
+    "xex_sha256": "a767201b39fcb45f69e418cd0fead71f0ed942091d3cc747a56319efcadae5ba",
+    "build_sha256": "381aa4dd3eec5c7293729d1f234c72c13431482ca4cea16b463a99b05250bd75",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "AESChecks": 224,
+    "AESFailures": 0,
+    "native_checks": 4,
+    "cache_completion_checks": 18,
+    "manager_scope_task_assertion": true,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "fault_required": 0,
+      "fault_s": 0,
+      "stack_observations": [
+        {
+          "slot": 0,
+          "reserved_bytes": 1536,
+          "touched_bytes": 1104,
+          "untouched_above_floor": 176
+        },
+        {
+          "slot": 1,
+          "reserved_bytes": 1312,
+          "touched_bytes": 290,
+          "untouched_above_floor": 766
+        },
+        {
+          "slot": 2,
+          "reserved_bytes": 1312,
+          "touched_bytes": 128,
+          "untouched_above_floor": 928
+        },
+        {
+          "slot": 3,
+          "reserved_bytes": 1312,
+          "touched_bytes": 344,
+          "untouched_above_floor": 712
+        },
+        {
+          "slot": 4,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 5,
+          "reserved_bytes": 1312,
+          "touched_bytes": 18,
+          "untouched_above_floor": 1038
+        },
+        {
+          "slot": 6,
+          "reserved_bytes": 2560,
+          "touched_bytes": 864,
+          "untouched_above_floor": 1440
+        },
+        {
+          "slot": 7,
+          "reserved_bytes": 2560,
+          "touched_bytes": 18,
+          "untouched_above_floor": 2286
+        },
+        {
+          "slot": 8,
+          "reserved_bytes": 512,
+          "touched_bytes": 24,
+          "untouched_above_floor": 232
+        }
+      ],
+      "kernel_stack_observation": {
+        "reserved_bytes": 1536,
+        "touched_bytes": 287,
+        "untouched_from_base": 1249,
+        "interrupt_reserve_bytes_touched": 0
+      }
+    },
+    "checkpoints": 32,
+    "pixel_checks": {
+      "1": {
+        "work_pixels": "exact"
+      },
+      "2": {
+        "work_pixels": "exact"
+      },
+      "3": {
+        "work_pixels": "exact"
+      },
+      "4": {
+        "work_pixels": "exact"
+      },
+      "6": {
+        "work_pixels": "exact"
+      },
+      "9": {
+        "work_pixels": "exact"
+      },
+      "10": {
+        "work_pixels": "exact"
+      },
+      "11": {
+        "work_pixels": "exact"
+      },
+      "12": {
+        "work_pixels": "exact"
+      },
+      "14": {
+        "work_pixels": "exact"
+      },
+      "25": {
+        "mixed_policy_menu_restore": true
+      },
+      "26": {
+        "work_pixels": "exact"
+      },
+      "27": {
+        "frame_pixels": "exact"
+      },
+      "29": {
+        "frame_pixels": "exact"
+      },
+      "31": {
+        "frame_pixels": "exact"
+      }
+    }
+  },
+  "device_failure": {
+    "capture": "build/screnmgr/sm4d3-effects-final",
+    "results_sha256": "7a71ce215e03c36bc71db0ad7a74444a3b5c3cc4f95b0ea469c3e8b61e68b803",
+    "image_sha256": "7d932b85a32660aaa58669b5a513962357bc7c2bc26a9785110a4b3039d16668",
+    "xex_sha256": "c0d0eadfa13ca5ed734428e6c0e68c8750ee8378c0564d63b609b5c03a0b724c",
+    "build_sha256": "6d6bd7f286943f3dc52a3e61a2b5cec1f9c93f83214fba4bb7c7c77770d64694",
+    "compiler_revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "cases": [
+      {
+        "variant": 3,
+        "boundaries": [
+          {
+            "stage": 1,
+            "frames": 4,
+            "peer_before": 425065,
+            "peer_after": 439003,
+            "scene_token": 6,
+            "committed_lookup": 1,
+            "copy_chunks": 0
+          },
+          {
+            "stage": 2,
+            "frames": 4,
+            "peer_before": 477427,
+            "peer_after": 489961,
+            "scene_token": 6,
+            "committed_lookup": 1,
+            "copy_chunks": 1
+          }
+        ],
+        "close_before_drain": {
+          "shown": 0,
+          "epoch": 0,
+          "retained_route": true,
+          "committed_lookup": 0,
+          "query_completed": true
+        },
+        "checks": 25,
+        "failures": 0,
+        "first_failure": 0,
+        "copy_chunks": 1,
+        "stop_count": 1,
+        "move_copy_chunks": 1,
+        "runtime": {
+          "status": 0,
+          "guards": "intact",
+          "fault_required": 0,
+          "fault_s": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 1070,
+              "untouched_above_floor": 210
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 290,
+              "untouched_above_floor": 766
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 136,
+              "untouched_above_floor": 920
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 323,
+              "untouched_above_floor": 733
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 886,
+              "untouched_above_floor": 1418
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 24,
+              "untouched_above_floor": 232
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 285,
+            "untouched_from_base": 1251,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        }
+      },
+      {
+        "variant": 4,
+        "boundaries": [
+          {
+            "stage": 1,
+            "frames": 4,
+            "peer_before": 425065,
+            "peer_after": 439003,
+            "scene_token": 6,
+            "committed_lookup": 1,
+            "copy_chunks": 0
+          }
+        ],
+        "checks": 18,
+        "failures": 0,
+        "first_failure": 0,
+        "copy_chunks": 1,
+        "stop_count": 1,
+        "move_copy_chunks": 1,
+        "runtime": {
+          "status": 65427,
+          "guards": "intact",
+          "fault_required": 0,
+          "fault_s": 0,
+          "stack_observations": [
+            {
+              "slot": 0,
+              "reserved_bytes": 1536,
+              "touched_bytes": 1070,
+              "untouched_above_floor": 210
+            },
+            {
+              "slot": 1,
+              "reserved_bytes": 1312,
+              "touched_bytes": 290,
+              "untouched_above_floor": 766
+            },
+            {
+              "slot": 2,
+              "reserved_bytes": 1312,
+              "touched_bytes": 136,
+              "untouched_above_floor": 920
+            },
+            {
+              "slot": 3,
+              "reserved_bytes": 1312,
+              "touched_bytes": 323,
+              "untouched_above_floor": 733
+            },
+            {
+              "slot": 4,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 5,
+              "reserved_bytes": 1312,
+              "touched_bytes": 18,
+              "untouched_above_floor": 1038
+            },
+            {
+              "slot": 6,
+              "reserved_bytes": 2560,
+              "touched_bytes": 886,
+              "untouched_above_floor": 1418
+            },
+            {
+              "slot": 7,
+              "reserved_bytes": 2560,
+              "touched_bytes": 18,
+              "untouched_above_floor": 2286
+            },
+            {
+              "slot": 8,
+              "reserved_bytes": 512,
+              "touched_bytes": 18,
+              "untouched_above_floor": 238
+            }
+          ],
+          "kernel_stack_observation": {
+            "reserved_bytes": 1536,
+            "touched_bytes": 283,
+            "untouched_from_base": 1253,
+            "interrupt_reserve_bytes_touched": 0
+          }
+        },
+        "live_operation_storage_at_reset_park": "asserted"
+      }
+    ]
+  },
+  "host": {
+    "status": "pass",
+    "tests": 718,
+    "skipped": 5
+  },
+  "generated_checks": [
+    "generate_console_bitmap.py --check",
+    "generate_aes_server.py --check",
+    "generate_menu_render.py --check"
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "reservation_comparison": "All three final emitted fixtures retain the preceding SM4d2 bank_zero_budget and task_pools, including guards, alignment and spare capacity.",
+  "scope": [
+    "Optimized blocked-manager drawing in an ordinary 1312-byte application pool; exact pixels and offscreen round trip. Stack measurements are observed watermarks, not universal application bounds.",
+    "32 cache checkpoints with native assertions for terminal token/pin retirement while UPDATE remains owned, including a forced unrelated physical-busy observation. Every manager scope asserts its actual Task identity.",
+    "Selected quiescent copy-failure cleanup and unsafe reset-required retention variants only.",
+    "Private ABI layouts and the C/native bridge are unchanged; no duplicate raw system matrix.",
+    "No QED, application catalog, demo refresh, release qualification or performance claim."
+  ]
+}

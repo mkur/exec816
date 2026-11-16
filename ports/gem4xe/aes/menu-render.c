@@ -41,7 +41,7 @@ static void checkmark(WORD x,WORD y,UWORD pen)
     }
 }
 
-static UWORD quantum(void *context)
+static UWORD menu_quantum(void *context)
 {
     paint=context;
     r_set(&gl_clip,paint->left,paint->top,paint->right-paint->left,paint->bottom-paint->top);
@@ -99,14 +99,20 @@ static UWORD quantum(void *context)
     }
     return 0;
 }
+/* Bind and clear shared GSX state inside the physical callback, before its
+ * grant can pass to another Task. Only packet-local progress survives. */
+static UWORD quantum(void *context)
+{
+    UWORD done=menu_quantum(context);
+    paint=0;
+    return done;
+}
+
 uint16_t MenuPaint(struct MenuRenderPacket *p)
 {
     UWORD status;
-    paint=p;
-    r_set(&gl_clip,p->left,p->top,p->right-p->left,p->bottom-p->top);
     status=GemDrawingWidgetBatch(p->left,p->top,p->right,p->bottom,!p->index,quantum,p);
     p->changed=p->index!=0;
-    paint=0;
     return status;
 }
 
@@ -116,7 +122,6 @@ UWORD MenuPaintBorrow(struct DisplayGrant *grant,struct MenuRenderPacket *p)
     UWORD status=GemDrawingFrameBorrow(grant,p->left,p->top,p->right,p->bottom,quantum,p);
     p->changed=0;
     p->status=status;
-    paint=0;
     return status;
 }
 

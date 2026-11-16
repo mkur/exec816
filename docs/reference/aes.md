@@ -6,8 +6,9 @@
 The optional AES endpoint and graphical system loop run in the existing desktop
 frontend Task ([system module](../../lib/aes/aessystem.act)). Registration,
 final detach, mouse preferences, window/menu operations, UPDATE/MCTRL, copied
-messaging and event/timer waits use caller library entries. Window mutations and synchronous frame/copy completion run in
-their caller under UPDATE. A pending operation keeps its pinned descriptor and
+messaging and event/timer waits use caller library entries. Window mutations,
+frame/background/menu-bar exposure and synchronous copy completion run in their
+caller under UPDATE. A pending operation keeps its pinned descriptor and
 retries in that caller; the manager publishes wake hints without executing it.
 This adds no Task or kernel gateway.
 The desktop, Control Panel, Files and terminal are ordinary GEM clients of
@@ -432,17 +433,24 @@ console-format packet and the shared GEM4XE frame raster under delegated display
 access. Successful clips retire only manager frame damage; failed or unpainted
 coverage and client-work obligations remain outstanding.
 
-An open public VDI workstation supplies its existing grant. Otherwise the first
-visible, changed frame setter establishes a standalone 32-byte
-upper-heap grant through the existing display-delegation request, using the
-context's reply signal. The native handler checks actual visibility under UPDATE
-before mutation. If access is missing, it returns to the library for cold
-admission and a fresh handler attempt; no partially changed slider is published.
-This avoids relying on a C view that could change before acquisition. Warm calls
-need no RPC. Opening a public workstation
-closes that standalone grant first; application exit closes either form before
-retiring the context. Failed grant close retains the live storage and identity.
-No application source or public wire layout changes are needed.
+An open public VDI workstation supplies its existing grant. Exposure-producing
+open/close, geometry/stacking and menu calls otherwise establish a standalone
+32-byte upper-heap grant through direct display delegation before native entry.
+Changed frame setters can still request cold admission after checking actual
+visibility under UPDATE, then retry before mutation. The context's existing
+private wake signal is reused. Opening a public workstation closes the
+standalone grant first; exit closes either form before retiring the context.
+Failed grant close retains its storage and identity. No application source or
+public wire layout changes are needed.
+
+The originating window/menu operation finishes exposed frame and desktop paper,
+menu-bar reconciliation and available cached restores before releasing UPDATE.
+The same shared renderer executes manager effects inside their interaction
+operation. Bounded raster steps keep their existing device limits; a paint token
+or cache pin does not wait for a later frontend painting turn. Client content
+still belongs to the application through `WM_REDRAW`. Quiescent display failure
+permits logical close/delete/exit and cleanup even when exposure cannot be drawn;
+unsafe hardware retains the driver's reset-required state.
 
 Completed frame components need no deferred setter paint. Equal
 setters retain their existing publication and do not request painting, acquire
@@ -613,29 +621,24 @@ client opens fit within the device's eight-open limit; competing users can still
 exhaust capacity. The presenter has no timer binding. Setup failure releases every
 acquired resource and leaves message-only calls usable.
 
-The frontend handles registration, prepared detach, waiter wake hints and
-pending copied GUI delivery. Caller window continuations stay in their caller. Pending publishers retain an exit wake path; lock settlement and
-native input/drawing gates remain active. Application message matching and
-timer waits stay caller-local. There is no presenter application-message FIFO,
-event-wait scan, timer alarm or periodic AES wake.
-The AES endpoint admits at most four requests per turn. When painting or a frame
-gesture can advance, at most three requests precede the paint quantum, with one
-reserved admission after it. Both phases share the four-request limit.
-Caller-owned messages and timer completions do not use that intake budget.
-The presenter services captured input before controls when signalled, after
-each AES admission, after a cache/move token
-retires, after actual paint work, and after releasing a borrowed console view.
-These boundaries collect input and present the pointer when drawing is
-quiescent; they add no Yield or periodic wake. Frame changes respect the existing
-scene/AES ownership gates.
-Each turn gives GUI painting its bounded quantum before new console
-output. Frame/menu painting can drain up to four ready steps, with captured input
-and pointer presentation between them. These steps share
-the same control/output budgets and scene token. Ready paint may continue without a voluntary Yield; VBI preemption
-provides Task fairness, and blocked work retains the ordinary signal wait path.
-When painting releases the scene with an AES control already pending, one new
-console-output quantum may be deferred to admit that control. An eligible output
-quantum must run before another such deferral, preserving writer progress.
+The frontend still handles waiter wake hints and pending copied GUI delivery;
+registration, prepared detach and ordinary window continuations execute in
+their callers. There is no AES request admission queue or per-turn request
+budget. Application message matching and timer waits remain caller-local.
+
+Window snapshot capture and acknowledged patch maintenance run at the owning
+operation's completion. Outer END consumes the journal and completes eligible
+cache work while its painting marker and UPDATE are still held. Manager
+interactions finish their saved-menu hardware, exposure and cache work before
+leaving that operation. A BUSY owner render attempt keeps its existing FIFO
+position and waits on the display wake until that admission retires; no abandoned
+reservation needs a future manager turn. No idle cache sweep or periodic AES
+wake is required. Normal Task preemption and independent input.device delivery
+continue during these operations.
+
+The existing combined frontend loop remains for console controls, cursor work
+and lifecycle integration until the SM4e cutover. This is not yet the blocking
+SCRENMGR event loop; see the [migration plan](../plans/gem4xe/screnmgr-migration-plan.md).
 
 `wind_find(x,y)` (AES opcode 106, counts 2/1/0/0) reads the latest complete
 published hit stack under a short Task guard. It acquires neither UPDATE nor
@@ -1293,9 +1296,11 @@ claims from pending external repaint; neither ending UPDATE nor exhausting
 `WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper
 and continue receiving ordinary exposure redraws. Files, desktop,
 Text, Panel, Calculator and shared dialogs use it in complete redraw paths.
-It adds no per-draw RPC or kernel call. An UPDATE without drawing reports
-leaves a full client repaint obligation, preventing idle recapture of old pixels
-after an unreported model change.
+It adds no per-draw RPC or kernel call. An UPDATE without drawing reports leaves
+a full client repaint obligation, preventing recapture of old pixels after an
+unreported model change. Eligible
+snapshot captures and acknowledged patches finish at outer END, before UPDATE
+is released; image validity still depends on complete current pixels.
 
 ## Opt-in window preservation
 

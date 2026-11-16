@@ -88,13 +88,13 @@ PUBLIC PROC Run()
     ; A local outer END can be the only reason an otherwise idle presenter
     ; woke. No input, control, model or retained drawing work needs a full
     ; turn in that case. Settled excludes waiters, messages and publication
-    ; work. Cache access uses its own UPDATE scope; signals survive to Wait.
+    ; work. Cache maintenance finished in its operation; signals survive to Wait.
     IF bits=aesMask AND aesMask<>0 AND stopping=0 AND consoleStopping()=0
         AND AESHOST.Settled()<>0 AND AESLOCKS.Quiescent()<>0
         AND consoleRunnable()=0 AND DESKHOST.Runnable()=0 THEN
-      workPending=DESKHOST.Cache()
+      workPending=0
       policyReady=AESLOCKS.Quiescent()
-      ; A started cache continuation needs the normal turn and completion wait.
+      ; An existing physical continuation needs the normal completion wait.
       schedule=IF policyReady<>0 THEN 2 ELSE 0 FI
       bits=0
     ELSE
@@ -149,9 +149,6 @@ PUBLIC PROC Run()
           deferOutput=1
         FI
 
-        IF paintProgress=1 THEN
-          DESKMENU.Advance()
-        FI
         IF (paintProgress<>2 AND DESKPAINT.MenuReady()=0)
             OR paintSteps=PAINT_STEPS OR deferOutput<>0
             OR DESKINPUT.Runnable()<>0 OR CONSOLEBITMAP.Pending()<>0 THEN
@@ -175,12 +172,6 @@ PUBLIC PROC Run()
         workPending=IF consoleRunnable()<>0 THEN 1
             ELSE DESKHOST.Runnable() FI
         workChecked=1
-        IF workPending=0 THEN
-          IF DESKHOST.Cache()<>0 THEN
-            ; Only transfer startup changes the settled scheduling decision.
-            workChecked=0
-          FI
-        FI
       FI
 
       schedule=0

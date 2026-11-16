@@ -185,14 +185,25 @@ blitter fence, publishing geometry only on terminal completion. No new service,
 renderer, copy scratch, Task or public ABI is introduced.
 
 Manager scene/readiness/cache/paint/menu inspection takes the same native UPDATE
-resource with Try. Failure leaves live scene state untouched while RPC, copied
-input and lifetime wakeups keep progressing. Console shutdown idle checks can
-also run in the controller; they use a short caller-owned native borrow and
+resource with Try. Failure leaves live scene state untouched while caller
+registration, copied input and lifetime wakeups keep progressing. Console
+shutdown idle checks can also run in the controller; they use a short
+caller-owned native borrow and
 never inherit the manager's retained scope state. A failed borrow reports busy. Native captures and open menus
 retain their manager operation until its source-defined end. Startup/teardown
 remain exclusive lifecycle boundaries. SM3d completes the whole-inventory
 cutover: these scopes now supply the sole live UI authority. The combined loop
 still runs in the existing frontend Task; SM4 changes its event-loop flow.
+
+SM4d completes exposure inside the originating operation under that UPDATE.
+Shared raster steps use caller packets and existing grants; scratch binds only
+inside physical access. Cache restores retire their pins before the operation
+returns, while capture/patch policy runs at window-operation completion and
+outer END after journal reconciliation. Manager interaction completes its menu
+save/restore, painting and popup capture before leaving its operation. No idle
+cache executor, new Task or platform service is introduced. A quiescent display
+fault permits logical withdrawal and cleanup; unsafe hardware retains the
+existing reset-required state. SM4e still owns the combined-loop replacement.
 
 Input.device classifies global shortcuts and keys for a published active menu
 into copied manager events, rather than delivering them to the focused AES inbox.

@@ -98,7 +98,7 @@ def definition(program, foreign, app, directory, app_names=APP_NAMES, app_direct
     from presenter_control_trace import bookkeeping_markers
     extra, quiet_pc = bookkeeping_markers(program)
     native.update(extra)
-    points['quiet_cache']=quiet_pc
+    if quiet_pc is not None: points['quiet_cache']=quiet_pc
     for name, span in native.items():
         points[name+'_entry']=span['entry']
         for i, pc in enumerate(span['returns']): points[name+'_return_'+str(i)]=pc
@@ -440,7 +440,7 @@ def analyze(events, d, live, benchmark):
                    for m in ('charged_cpu_ms','elapsed_ms','off_cpu_ms','interrupt_ms')})
                 for k in kinds}))
     bookkeeping = None
-    if d.get('quiet_pc') is not None:
+    if d.get('quiet_pc') is not None or 'DESKCACHEWORK_MAINTAIN' in d['native']:
         from presenter_control_trace import bookkeeping_report
         measured=[dict(action=r['name'],start=s['start'],end=s['end'],updates=[])
                   for r in rows for s in r['samples']]

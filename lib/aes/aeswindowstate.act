@@ -12,6 +12,8 @@ USE LAYERS
 USE REGIONS
 USE DESKGEOMETRY
 USE DESKCACHE
+USE DESKCACHEWORK
+USE CONSOLEBITMAP
 USE A816MEMORY
 USE HEAPCORE
 
@@ -205,6 +207,7 @@ RETURN
 ; synchronously under exclusive policy ownership, without a drawing scene token.
 PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   BYTE index,report,same,accepted,complete,painted
+  CONSOLEBITMAP.Packet packet
 
   PrepareUpdate(client)
   LET service=AESSTATE.Get()
@@ -285,6 +288,11 @@ PUBLIC PROC EndUpdate(AESSTATE.Client POINTER client)
   OD
   request.paintCount=0
   request.invalidationCount=0
+  IF request.displayGrant<>NULL THEN
+    BEGIN
+      LET maintained=DESKCACHEWORK.Maintain(@packet)
+    END
+  FI
 
 RETURN
 

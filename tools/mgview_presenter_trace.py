@@ -107,7 +107,7 @@ PHASES = {
     'events': 'DESKHOST_EVENTS',
     'settlement': 'AESHOST_SETTLE',
     'readiness': 'DESKHOST_READY AESHOST_SETTLED DESKHOST_RUNNABLE CONSOLEDRIVER_SYSTEMRUNNABLE DESKPAINT_READY AESLOCKS_NATIVEREADY',
-    'cache': 'DESKHOST_CACHE',
+    'cache': 'DESKHOST_CACHE DESKCACHEWORK_MAINTAIN',
     'snapshot_publication': 'AESHOST_PUBLISH',
     'stop_check': 'CONSOLEDRIVER_SYSTEMSTOPPING',
 }
@@ -225,8 +225,8 @@ def analyze(out, definition, base_audit, foreign, directory):
     turn_pc = next(pc for pc, site in d['sites'].items()
                    if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKINPUT_REPLAYKEYS')
     turn_ticks = [t for t, e in worker_events if int(e[4], 16) == turn_pc]
-    quiet_pc = min(pc for pc, site in d['sites'].items()
-                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKHOST_CACHE')
+    quiet_pc = min((pc for pc, site in d['sites'].items()
+                   if site['caller'] == 'AESSYSTEM_RUN' and site['target'] == 'DESKHOST_CACHE'), default=None)
     quiet_ticks = [t for t, e in worker_events if int(e[4], 16) == quiet_pc]
     result = []
     for sample in base_audit['samples']:

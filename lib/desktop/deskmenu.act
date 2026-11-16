@@ -713,7 +713,9 @@ PROC PublishChrome(BYTE chromeChanged)
   focusSeen=service.focus
   revision=service.scene.rebuilds
   AESWINDOWSTATE.Sync()
-  PublishActive(Active())
+  ; Both callers and manager already own UPDATE here. Do not enter the
+  ; manager's retained-scope bookkeeping from a caller-owned operation.
+  PublishActive(InspectActive())
   AESMOUSE.Refresh()
   IF menu=GEM_MENU THEN
     BEGIN

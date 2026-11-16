@@ -20,6 +20,7 @@ USE A816MEMORY
 USE DESKTYPES
 USE DESKSTATE
 USE DESKCORE
+USE DESKFINISH
 USE DESKDRAG
 USE DESKMENU
 USE LAYERS
@@ -279,8 +280,12 @@ RETURN
 
 PUBLIC PROC ReplayKeys()
 
+  IF keyCount=0 AND keyLost=0 THEN
+    RETURN
+  FI
   IF AESLOCKS.SystemBegin()<>0 THEN
     Replay()
+    DESKFINISH.Finish()
     AESLOCKS.SystemEnd()
   FI
 
@@ -448,6 +453,7 @@ PUBLIC PROC Service()
         DESKDRAG.Cancel()
       FI
       AESSNAPSHOT.Drop(target.endpoint)
+      DESKFINISH.Finish()
     FI
     IF scope=2 THEN
       DESKSTATE.managerCapture=DESKDRAG.Continuing()
@@ -492,7 +498,10 @@ PUBLIC PROC Advance()
 
 
   DESKDRAG.Advance()
-  DESKMENU.Advance()
+  IF AESLOCKS.SystemBegin()<>0 THEN
+    DESKFINISH.Finish()
+    AESLOCKS.SystemEnd()
+  FI
 
 RETURN
 

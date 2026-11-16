@@ -71,7 +71,7 @@ def summarize(rows):
 # Selected bookkeeping boundaries, rather than every native routine. These
 # observations add no target counters, calls, reservations or timing hooks.
 BOOKKEEPING = '''AESSYSTEM_COLLECT CONSOLEDRIVER_RUNNABLE
-DESKHOST_RUNNABLE DESKHOST_CACHE DESKINPUT_RUNNABLE DESKINPUT_BOUNDARY
+DESKHOST_RUNNABLE DESKHOST_CACHE DESKCACHEWORK_MAINTAIN DESKFINISH_FINISH DESKINPUT_RUNNABLE DESKINPUT_BOUNDARY
 DESKINPUT_SERVICE DESKINPUT_PRESENT DESKINPUT_ADVANCE DESKMENU_RUNNABLE
 DESKWIDGETINPUT_RUNNABLE DESKDRAG_RUNNABLE DESKPAINT_READY DESKPAINT_RUNNABLE
 DESKPAINT_PAINTPENDING DESKPAINT_DAMAGEPENDING AESLOCKS_NATIVEREADY
@@ -87,7 +87,7 @@ BOOKKEEPING_GROUPS = dict(
         DESKPAINT_DAMAGEPENDING DESKINPUT_RUNNABLE DESKMENU_RUNNABLE
         DESKWIDGETINPUT_RUNNABLE DESKDRAG_RUNNABLE AESLOCKS_NATIVEREADY'''.split()),
     input_boundaries={'DESKINPUT_SERVICE','DESKINPUT_PRESENT','DESKINPUT_ADVANCE'},
-    cache_maintenance={'DESKHOST_CACHE'},
+    cache_maintenance={'DESKHOST_CACHE','DESKCACHEWORK_MAINTAIN'},
     pixel_dispatch={'CONSOLEBITMAP_RUN','GemDrawingWidgetBatch'},
     visibility_rebuild={'LAYERS_REBUILD'},
     find_task={'tasks_find_task'})
@@ -103,6 +103,8 @@ def bookkeeping_markers(program):
                         returns=[program['labels'][n+'_end']-1])
     # The first Cache call is the quiet notification branch; the other is the
     # normal turn tail. Pin the actual emitted call sites, not source offsets.
+    if 'DESKHOST_CACHE' not in spans:
+        return spans, None
     base, raw = routine(program, 'AESSYSTEM_RUN')
     call = b'\x22'+spans['DESKHOST_CACHE']['entry'].to_bytes(3,'little')
     sites = [base+m.start() for m in re.finditer(re.escape(call),raw)]

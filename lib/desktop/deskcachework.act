@@ -1,0 +1,125 @@
+; Operation-owned window snapshot/patch policy, below AES publication.
+MODULE DESKCACHEWORK
+USE DISPLAY
+USE EXEC
+USE DESKTYPES
+USE DESKSTATE
+USE DESKCACHE
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+USE CONSOLEBITMAP
+USE HEAPCORE
+
+DESKTYPES.Window POINTER FUNC Find(DESKTYPES.Service POINTER service LONGCARD id)
+  BYTE index
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    IF service.windows(index).id=id THEN
+      RETURN(@service.windows(index))
+    FI
+  OD
+
+RETURN(NULL)
+
+BYTE FUNC CachePending(DESKTYPES.Service POINTER service)
+
+  LET candidates=DESKCACHE.Candidates(service)
+  IF service.repairs(0).state=LAYERTYPES.CACHE_CHANGE_READY
+      OR service.repairs(1).state=LAYERTYPES.CACHE_CHANGE_READY THEN
+    RETURN(1)
+  FI
+RETURN(candidates<>0)
+
+; The owning operation has finished painting. An occluded candidate waits
+; for a later visibility change; it never schedules idle maintenance.
+; Return whether this pass started a transfer.
+BYTE FUNC Capture(CONSOLEBITMAP.Packet POINTER output)
+  BYTE index,visible,started
+  CARD rect
+  LAYERTYPES.Rect client
+
+  LET service=DESKSTATE.Get()
+  IF service=NULL OR service.live<>1 OR CachePending(service)=0 THEN
+    RETURN(0)
+  FI
+  IF service.scene.busy<>0
+      OR (output=NULL AND DISPLAY.Blocked()<>0) OR CONSOLEBITMAP.Pending()<>0
+      OR CONSOLEBITMAP.Failed()<>0 THEN
+    RETURN(0)
+  FI
+
+  ; Search for a window only when one of the two slots actually needs repair.
+  FOR index=0 TO 1 DO
+    IF service.repairs(index).state=LAYERTYPES.CACHE_CHANGE_READY THEN
+      BEGIN
+        LET window=Find(service,service.cache.slots(index).identity)
+        IF window<>NULL AND DESKCACHE.Patch(service,window,output)<>0 THEN
+          RETURN(1)
+        FI
+      END
+    FI
+  OD
+
+  FOR index=0 TO DESKTYPES.WINDOWS-1 DO
+    BEGIN
+      LET window=@service.windows(index)
+      IF DESKCACHE.TakeCandidate(index)<>0
+          AND window.id<>0
+          AND window.iconified=0
+          AND window.visualRevision<>0
+          AND window.captureAttempt<>window.visualRevision THEN
+        BEGIN
+          LET layer=LAYERS.Find(@service.scene,window.layer)
+          visible=0
+          IF layer.dirty=0 AND layer.shown<>0 AND layer.visible.count<>0 THEN
+            REGIONS.Copy(@layer.bounds,@client)
+            rect=0
+            WHILE rect<layer.visible.count DO
+              IF REGIONS.Contains(@layer.visible.rects(rect),@client)<>0 THEN
+                visible=1
+                EXIT
+              FI
+              rect==+1
+            OD
+
+            IF visible<>0 AND LAYERS.PixelsReady(layer,@client)<>0
+                AND (client.left & 1)=0
+                AND DESKCACHE.Fits(CARD(client.right-client.left),
+                    CARD(client.bottom-client.top))<>0 THEN
+              window.captureAttempt=window.visualRevision
+              started=DESKCACHE.Capture(service,window,output)
+              RETURN(started)
+            FI
+          FI
+        END
+      FI
+    END
+  OD
+
+RETURN(0)
+
+; UPDATE belongs to the caller. Every accepted snapshot/patch retires its
+; physical copy, read token and pin here; no idle frontend turn is required.
+PUBLIC BYTE FUNC Maintain(CONSOLEBITMAP.Packet POINTER output)
+  BYTE changed,started
+
+  changed=0
+  DO
+    started=Capture(output)
+    IF started=0 THEN
+      EXIT
+    FI
+    IF output=NULL THEN
+      CONSOLEBITMAP.Finish()
+    FI
+    BEGIN
+      LET service=DESKSTATE.Get()
+      DESKCACHE.Pump(service)
+    END
+    changed=1
+  OD
+
+RETURN(changed)
+
+ENDMODULE

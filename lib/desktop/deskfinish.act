@@ -1,0 +1,41 @@
+; Manager interaction completion using the shared renderer and cache policy.
+MODULE DESKFINISH
+USE CONSOLEBITMAP
+USE DESKMENUCACHE
+USE DESKMENU
+USE DESKSTATE
+USE DESKPAINT
+USE DESKCACHEWORK
+
+; The manager calls this while it owns UPDATE for an actual interaction.
+; Finish hardware before advancing the saved-menu state, then paint all exposure
+; under that same operation. Input/device Tasks continue independently.
+PUBLIC PROC Finish()
+  BYTE completed
+
+  LET service=DESKSTATE.Get()
+  DO
+    CONSOLEBITMAP.Finish()
+    DESKMENUCACHE.Pump()
+    DESKMENU.Advance()
+    IF CONSOLEBITMAP.Pending()=0 AND service.scene.busy=0 THEN
+      DESKMENU.Reconcile()
+      completed=DESKPAINT.Complete(NULL)
+      IF completed=0 OR CONSOLEBITMAP.Failed()<>0 THEN
+        RETURN
+      FI
+      DESKMENU.Advance()
+    FI
+    IF CONSOLEBITMAP.Pending()=0 AND service.scene.busy=0 THEN
+      completed=DESKCACHEWORK.Maintain(NULL)
+      IF DESKMENUCACHE.CapturePopup(NULL)<>0 THEN
+        CONSOLEBITMAP.Finish()
+        DESKMENUCACHE.Pump()
+      FI
+      RETURN
+    FI
+  OD
+
+RETURN
+
+ENDMODULE

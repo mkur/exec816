@@ -119,8 +119,8 @@ PUBLIC BYTE FUNC CapturePending()
 
 RETURN(Same(@current,@attempt)=0)
 
-; Idle-only: never capture every highlighted row or chase an evicted image.
-PUBLIC BYTE FUNC CapturePopup()
+; Capture settled popup contents, without chasing each highlight or eviction.
+PUBLIC BYTE FUNC CapturePopup(CONSOLEBITMAP.Packet POINTER output)
   PopupKey key
   BYTE index,status
   CARD width,height
@@ -156,7 +156,7 @@ PUBLIC BYTE FUNC CapturePopup()
   keys(index)=key
   LAYERCACHE.Prepare(@popups.slots(index),key.owner,key.revision,width,height)
   ; A refused copy owns no hardware; discard the optional image immediately.
-  IF PopupTransfer(@layer.bounds,0,NULL)=0 THEN
+  IF PopupTransfer(@layer.bounds,0,output)=0 THEN
     status=LAYERS.Finish(@service.scene,token,0)
     LAYERCACHE.Captured(@popups.slots(index),0)
     token=0
@@ -597,9 +597,6 @@ PUBLIC PROC Pump()
       popupOperation=0
       RETURN
     END
-  FI
-  IF DISPLAY.Blocked()<>0 THEN
-    RETURN
   FI
   IF DESKSTATE.menuReplacing<>0 THEN
     ReplacePump()

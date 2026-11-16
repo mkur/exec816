@@ -69,7 +69,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
     Require(width=640 AND height=240)
     ; Exercise the second slot across $70000, then the first across $60000.
     service.cache.slots(0).pinned=1
-    Require(DESKCACHE.Capture(service,window)<>0)
+    Require(DESKCACHE.Capture(service,window,NULL)<>0)
     Require(service.cache.slots(1).pinned<>0)
     service.cache.slots(0).pinned=0
     phase=1
@@ -129,7 +129,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
           window.visualRevision=$ffffffff
           DESKCACHE.Changed(service,window)
           Require(window.visualRevision=0)
-          Require(DESKCACHE.Capture(service,window)=0)
+          Require(DESKCACHE.Capture(service,window,NULL)=0)
         END
       FI
       IF command=8 THEN
@@ -166,7 +166,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
     DESKCACHE.BeginChange(service,window)
     REGIONS.Assign(@client,8,8,24,16)
     DESKCACHE.EndChange(service,window,@client,1)
-    Require(DESKCACHE.Patch(service,window)<>0)
+    Require(DESKCACHE.Patch(service,window,NULL)<>0)
     Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
     index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI
     Require(service.cache.slots(index).valid=0)
@@ -192,7 +192,7 @@ PUBLIC PROC Pump(DESKTYPES.Service POINTER service)
 
     Require(DESKCACHE.Fits(528,184)<>0 AND DESKCACHE.Fits(640,240)<>0)
     Require(DESKCACHE.Fits(529,184)=0 AND DESKCACHE.Fits(0,1)=0)
-    Require(DESKCACHE.Capture(service,window)<>0)
+    Require(DESKCACHE.Capture(service,window,NULL)<>0)
     Require(service.scene.activeKind=LAYERTYPES.UPDATE_READ)
     Require(LAYERS.Delete(@service.scene,layer.id)=LAYERTYPES.BUSY)
     index=IF service.cache.slots(0).pinned<>0 THEN 0 ELSE 1 FI

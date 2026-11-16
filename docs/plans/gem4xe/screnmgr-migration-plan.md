@@ -331,8 +331,10 @@ Continue in executable commits:
    SM4d1 supplies caller packets in the shared renderer; see its
    [record](../../history/screnmgr-migration.md#sm4d1-caller-packets-in-the-shared-renderer).
    [SM4d2](../../history/screnmgr-migration.md#sm4d2-synchronous-caller-exposure)
-   completes caller exposure and restores. Cache maintenance and manager-effect
-   boundaries remain in progress.
+   completes caller exposure and restores.
+   [SM4d3](../../history/screnmgr-migration.md#sm4d3-operation-owned-cache-and-manager-effects)
+   completes cache maintenance and manager-effect boundaries. SM4d is implemented;
+   the combined-loop replacement remains SM4e.
 5. **SM4e — manager interaction and lifecycle cutover.** Account for menu
    save/restore, native console controls, cursor/device completion and shutdown;
    remove GEM's no-op console-render callbacks while preserving the standalone

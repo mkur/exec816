@@ -97,7 +97,7 @@ PUBLIC PROC Pump()
     Require(LAYERS.Show(scene,DESKSTATE.popupLayer,1)=LAYERTYPES.OK)
     PaintPopup(5)
     DESKMENUCACHE.SelectPopup(3,1,1,aes.menuRevision,1,-1,1)
-    Require(DESKMENUCACHE.CapturePopup()=1)
+    Require(DESKMENUCACHE.CapturePopup(NULL)=1)
 
   WHEN 3 THEN
     DESKMENUCACHE.Pump()

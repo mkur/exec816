@@ -138,7 +138,7 @@ PUBLIC PROC Apply(Packet POINTER packet)
 
 RETURN
 
-Packet POINTER FUNC Select(Packet POINTER output)
+PUBLIC Packet POINTER FUNC Select(Packet POINTER output)
 
   IF output=NULL THEN
     RETURN(GetPacket())
@@ -401,15 +401,13 @@ PUBLIC BYTE FUNC CopyStart(Packet POINTER output)
     RETURN(0)
   FI
 
-  IF Run(OP_COPY_START)=0 THEN
+  ; A BUSY owner attempt reserves a FIFO position. Complete that admission
+  ; here so no abandoned reservation needs a later manager turn to retire.
+  IF Submit(NULL,OP_COPY_START)=0 THEN
     RETURN(0)
   FI
 
   LET packet=GetPacket()
-  IF packet.status=DISPLAY.BUSY THEN
-    RETURN(0)
-  FI
-
   IF packet.status<>DISPLAY.OK THEN
     RETURN(0)
   FI

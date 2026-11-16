@@ -9,7 +9,8 @@
   coherent registration publication, caller-owned completion and the SM3d
   cutover to one UPDATE resource, SM4a cache-operation completion and SM4b
   direct display admission, followed by SM4c caller registration and final detach,
-  and SM4d1 shared caller-packet rendering, with focused development checks.
+  and SM4d shared caller rendering, synchronous exposure and operation-owned
+  cache/manager completion, with focused development checks.
 
 - [MagiC-led AES migration](aes-magic-migration.md): caller cursor completion,
   UPDATE/MCTRL handler flow, native ownership and presenter operation scopes.

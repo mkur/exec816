@@ -107,7 +107,7 @@ def report(out, events, d, samples, name):
         completion='IRQ completion observation, not an independently sampled BUSY falling edge',
         cpu='Conservative Task CPU charge, excluding peer Tasks and native interrupts',samples=rows)
     (out/(name+'-trace.json')).write_text(json.dumps(result,indent=2)+'\n')
-    if d.get('quiet_pc') is not None:
+    if d.get('quiet_pc') is not None or 'DESKCACHEWORK_MAINTAIN' in d['timeline']['spans']:
         from presenter_control_trace import bookkeeping_report
         costs=bookkeeping_report(events,all_native,cspans,timeline,worker,samples,rows,
                                  d['quiet_pc'],d['timeline']['points']['turn'])
