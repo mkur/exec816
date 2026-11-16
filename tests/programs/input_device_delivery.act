@@ -11,6 +11,7 @@ USE AESTYPES
 USE AESSNAPSHOT
 USE AESLOCKS
 USE AESMOUSE
+USE AESINPUT
 USE DESKINPUT
 USE DESKMOUSE
 USE DESKMOUSECONFIG
@@ -24,7 +25,7 @@ USE EXECLISTS
 USE HEAPCORE
 USE A816MEMORY
 
-CARD checks
+CARD checks,managerTargetBytes
 BYTE delivered,managerEntered,managerAcquired
 AESSTATE.Service POINTER service
 DESKTYPES.Service POINTER desktop
@@ -70,9 +71,12 @@ RETURN
 
 PROC Main()
   BYTE index
+  INPUT.Event retained
+  AESSTATE.PointerTarget target,poppedTarget
   LAYERTYPES.Rect bounds
   LONGCARD layer
 
+  managerTargetBytes=SIZEOF(AESSTATE.PointerTarget)
   LET before=EXEC.AvailMem(0)
   service=AESSTATE.Service POINTER(EXEC.AllocMem(SIZEOF(AESSTATE.Service),
       EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
@@ -167,18 +171,57 @@ PROC Main()
     EXEC.Yield()
   OD
   Require(endpoint.input.keyTail=2 AND endpoint.input.buttonTail=4)
-  ; Withdraw the recipient before releasing its inbox storage.
-  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  ; A retained title press pins the captured endpoint, then withdrawal cancels
+  ; it before a replacement window or registration can reuse that storage.
+  service.mouseHolds=0
+  desktop.focus=101
+  window.frameKind=1
   AESSNAPSHOT.Invalidate()
-  Require(AESSNAPSHOT.Publish()<>0 AND endpoint.holds=0)
+  Require(AESSNAPSHOT.Publish()<>0)
+  DESKMOUSE.Start(60,44,DESKMOUSECONFIG.DEFAULT)
   SOURCE.Inject(1)
   WHILE delivered<3 DO
     EXEC.Yield()
   OD
-  Require(endpoint.input.keyTail=2 AND endpoint.input.buttonTail=4)
+  Require(endpoint.holds>1 AND AESINPUT.Pending()<>0)
+  AESMOUSE.CancelWindow(101)
+  Require(endpoint.holds=1)
+  AESINPUT.Clear()
+  A816MEMORY.Clear(BYTE POINTER(@retained),INPUT.EVENT_BYTES)
+  retained.kind=INPUT.EVENT_BUTTON
+  retained.buttons=INPUT.LEFT
+  target.window=101
+  target.epoch=101
+  target.endpoint=endpoint
+  FOR index=0 TO AESSTATE.POINTER_EVENTS-1 DO
+    AESINPUT.Push(@retained,@target)
+  OD
+  Require(endpoint.holds=1+AESSTATE.POINTER_EVENTS)
+  AESINPUT.Push(@retained,@target)
+  Require(endpoint.holds=1 AND service.pointerLost<>0)
+  Require(AESINPUT.Pop(@retained,@poppedTarget)<>0
+      AND retained.kind=INPUT.EVENT_LOSS AND poppedTarget.endpoint=NULL)
+  AESINPUT.Clear()
+  retained.kind=INPUT.EVENT_BUTTON
+  AESINPUT.Push(@retained,@target)
+  Require(endpoint.holds=2)
+  ; Withdraw the recipient before releasing its inbox storage.
+  endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESINPUT.CancelEndpoint(endpoint)
+  Require(endpoint.holds=1)
+  AESINPUT.Push(@retained,@target)
+  Require(endpoint.holds=1)
+  AESSNAPSHOT.Invalidate()
+  Require(AESSNAPSHOT.Publish()<>0 AND endpoint.holds=0)
+  SOURCE.Inject(1)
+  WHILE delivered<4 DO
+    EXEC.Yield()
+  OD
+  Require(endpoint.input.keyTail=3 AND endpoint.input.buttonTail=4)
   Require(managerAcquired=0)
   Require(INPUTCLIENT.Detach(client)=INPUT.OK)
   INPUTCLIENT.Close(client)
+  AESINPUT.Clear()
   EXEC.ReleaseSemaphore(@service.updateResource)
   WHILE managerTask.tc_State<>EXEC.TS_REMOVED DO
     EXEC.Yield()

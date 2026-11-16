@@ -393,7 +393,7 @@ PROC Arrival(CONSOLETYPES.Service POINTER service)
 RETURN
 
 ; Model-only runnable policy. Physical ownership never delays stream work.
-BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service BYTE inputPending)
+BYTE FUNC Runnable(CONSOLETYPES.Service POINTER service)
   BYTE index
 
   IF EXECLISTS.IsListEmpty(@service.port.mp_MsgList)=0 THEN

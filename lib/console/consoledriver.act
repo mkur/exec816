@@ -445,14 +445,9 @@ PROC SystemControls()
 
 RETURN
 
-BYTE FUNC SystemInput(LONGCARD bits BYTE pending)
+BYTE FUNC SystemRunnable()
 
-RETURN(0)
-
-BYTE FUNC SystemRunnable(BYTE pending)
-
-RETURN((pending<>0 AND CONSOLEUI.KeyReady()<>0)
-    OR CONSOLEDISPLAY.CompletionReady()<>0 OR CONSOLEFRONT.Runnable())
+RETURN(CONSOLEDISPLAY.CompletionReady()<>0 OR CONSOLEFRONT.Runnable())
 
 BYTE FUNC SystemStopping()
 
@@ -492,7 +487,7 @@ BYTE FUNC BackendTurn()
     FI
   OD
 
-RETURN(Runnable(service,0) OR CONSOLEINGRESS.Pending())
+RETURN(Runnable(service) OR CONSOLEINGRESS.Pending())
 
 BYTE FUNC SystemTurn(BYTE deferred BYTE POINTER again,writing,handoff)
 
@@ -522,23 +517,16 @@ PUBLIC PROC Worker()
 
   EXEC.Permit()
 
-  ; Reserve request, input and resident-stop bits before Open allocates
+  ; Reserve request and resident-stop bits before Open allocates
   ; the display completion signal. Every failure releases the acquired prefix.
   registered=0
   IF EXEC.AllocSignal(31)=31 THEN
-    IF EXEC.AllocSignal(30)=30 THEN
-      IF EXEC.AllocSignal(29)=29 THEN
-        registered=EXEC.RegisterResident(STOP_MASK)
-        IF registered=0 THEN
-          EXEC.FreeSignal(29)
-        FI
-      FI
-
+    IF EXEC.AllocSignal(29)=29 THEN
+      registered=EXEC.RegisterResident(STOP_MASK)
       IF registered=0 THEN
-        EXEC.FreeSignal(30)
+        EXEC.FreeSignal(29)
       FI
     FI
-
     IF registered=0 THEN
       EXEC.FreeSignal(31)
     FI
@@ -555,7 +543,7 @@ PUBLIC PROC Worker()
     BOOTDIAG.Report(BOOTDIAG.WORKER,0)
   FI
 
-  CONSOLESYSTEM.BindConsole(ADDRESS(@SystemInput),ADDRESS(@SystemRunnable),
+  CONSOLESYSTEM.BindConsole(ADDRESS(@SystemRunnable),
       ADDRESS(@SystemStopping),ADDRESS(@SystemStop),ADDRESS(@SystemTurn),
       ADDRESS(@SystemControls))
   CONSOLECAPTURE.BindReceiver(ADDRESS(@CONSOLEINPUT.Deliver),LONGCARD(ADDRESS(service)))
@@ -582,7 +570,6 @@ PUBLIC PROC Worker()
     FreeStorage(service,defaultInstance)
     registered=EXEC.UnregisterResident()
     EXEC.FreeSignal(29)
-    EXEC.FreeSignal(30)
     EXEC.FreeSignal(31)
     service.error=CARD(EXEC.IOERR_OPENFAIL)
     EXEC.Forbid()
@@ -610,7 +597,6 @@ PUBLIC PROC Worker()
   registered=EXEC.UnregisterResident()
   EXEC.FreeSignal(29)
   CONSOLECAPTURE.Release()
-  EXEC.FreeSignal(30)
   EXEC.FreeSignal(31)
   FreeStorage(service,defaultInstance)
   EXEC.Forbid()

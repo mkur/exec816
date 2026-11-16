@@ -17,7 +17,8 @@ from sio_transaction_trace import BASE_HZ, read_events
 
 def markers(program, foreign, output):
     routines = [('AESSYSTEM_COLLECT', 'collect'),
-                ('CONSOLEINPUT_SERVICE', 'input'),
+                ('CONSOLEINPUT_DELIVER' if any(r['name'].startswith('M_CONSOLEINPUT_DELIVER_')
+                    for r in program['image']['routines']) else 'CONSOLEINPUT_SERVICE', 'input'),
                 ('CONSOLECONTROL_PROCESS', 'control'),
                 ('CONSOLEDRIVER_ARRIVAL', 'arrival'),
                 ('CONSOLEWINDOWS_TAKE', 'take'),

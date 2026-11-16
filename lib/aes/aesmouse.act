@@ -8,6 +8,7 @@ USE AESSTATE
 USE AESSNAPSHOT
 USE AESINBOX
 USE AESKEYS
+USE AESINPUT
 USE DESKTYPES
 USE DESKGEOMETRY
 
@@ -108,6 +109,7 @@ RETURN
 PUBLIC PROC CancelWindow(LONGCARD epoch)
 
   EXEC.Forbid()
+  AESINPUT.CancelWindow(epoch)
   AESSTATE.mouseDirty=1
 
   IF epoch<>0 AND clickEpoch=epoch THEN
@@ -367,6 +369,16 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
   FI
 
 RETURN(0)
+
+; Borrowed result of the immediately preceding Route. The caller keeps its
+; Task guard through queue publication; Push takes the queued endpoint hold.
+PUBLIC PROC Target(AESSTATE.PointerTarget POINTER target)
+
+  target.window=capturedRoute.window
+  target.epoch=capturedRoute.epoch
+  target.endpoint=capturedRoute.endpoint
+
+RETURN
 
 PUBLIC BYTE FUNC Route(INPUT.Event POINTER sample)
 

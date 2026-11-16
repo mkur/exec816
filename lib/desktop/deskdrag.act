@@ -72,7 +72,7 @@ PUBLIC PROC Cancel()
   IF appVisual<>0 THEN
     BEGIN
       AESTYPES.InputRecord sampleCopy
-      AESMOUSE.CopySample(@sampleCopy)
+    AESMOUSE.CopySample(@sampleCopy)
       blocked=sampleCopy.buttons<>0
     END
   FI
@@ -201,7 +201,7 @@ PUBLIC CARD FUNC Outline(AESSTATE.Service POINTER service
   dirty=1
   BEGIN
     AESTYPES.InputRecord sampleCopy
-      AESMOUSE.CopySample(@sampleCopy)
+    AESMOUSE.CopySample(@sampleCopy)
     Position(sampleCopy.x,sampleCopy.y)
   END
   request.intout(0)=1

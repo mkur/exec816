@@ -42,6 +42,12 @@ PUBLIC TYPE Client=[
   BYTE guiNext,windowWaiting,closeRequested,waitMode
 ]
 
+; Retained manager events pin an endpoint and identify the captured window.
+PUBLIC TYPE PointerTarget=[
+  LONGCARD window,epoch
+  AESTYPES.Endpoint POINTER endpoint
+]
+
 PUBLIC TYPE Service=[
   EXEC.MsgPort port
   EXEC.Task POINTER controller
@@ -70,6 +76,7 @@ PUBLIC TYPE Service=[
   EXEC.Task POINTER sceneOwner
   BYTE POINTER sceneWaiters
   INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
+  PointerTarget ARRAY pointerTargets(POINTER_EVENTS)
   BYTE pointerHead,pointerCount,pointerLost
   CARD updateHolds
   BYTE paintPrepared

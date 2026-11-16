@@ -19,6 +19,8 @@ def instrument(out):
     (out/'visprobe.act').write_text('''MODULE VISPROBE
 USE EXEC
 USE INPUT
+USE INPUTCLIENT
+USE INPUTDEVICESTATE AS SOURCESTATE
 USE AESSTATE
 USE AESTYPES
 USE HEAPCORE
@@ -52,7 +54,7 @@ PUBLIC PROC Observe(AESSTATE.Client POINTER client CARD operation)
 
 RETURN
 
-PUBLIC CARD FUNC Create(INPUT.Lease POINTER lease CARD flags LONGCARD POINTER tag)
+PUBLIC CARD FUNC Create(BYTE POINTER lease CARD flags LONGCARD POINTER tag)
   LONGCARD ARRAY reserved(16)
   BYTE count,index
   CARD status
@@ -62,17 +64,17 @@ PUBLIC CARD FUNC Create(INPUT.Lease POINTER lease CARD flags LONGCARD POINTER ta
   count=0
   IF failRoute<>0 THEN
     WHILE count<16 DO
-      status=INPUT.CreateRoute(lease,flags,@reserved(count))
+      status=INPUTCLIENT.CreateRoute(lease,INPUT.SOURCE_KEYBOARD,flags,@reserved(count))
       IF status<>INPUT.OK THEN
         EXIT
       FI
       count==+1
     OD
   FI
-  status=INPUT.CreateRoute(lease,flags,tag)
+  status=INPUTCLIENT.CreateRoute(lease,INPUT.SOURCE_KEYBOARD,flags,tag)
   index=0
   WHILE index<count DO
-    IF INPUT.RetireRoute(lease,reserved(index))<>INPUT.OK THEN
+    IF INPUTCLIENT.RetireRoute(lease,INPUT.SOURCE_KEYBOARD,reserved(index))<>INPUT.OK THEN
       HEAPCORE.Abort($fc6a)
     FI
     index==+1
@@ -93,7 +95,7 @@ PUBLIC PROC Rollback()
 
 RETURN
 
-PUBLIC CARD FUNC Retire(INPUT.Lease POINTER lease LONGCARD tag BYTE mode)
+PUBLIC CARD FUNC Retire(BYTE POINTER lease LONGCARD tag BYTE mode)
   CARD status
 
   Outside()
@@ -101,18 +103,19 @@ PUBLIC CARD FUNC Retire(INPUT.Lease POINTER lease LONGCARD tag BYTE mode)
     BEGIN
       retireBusy=0
       EXEC.Forbid()
-      LET previous=lease.route
-      IF INPUT.PublishRoute(lease,tag)<>INPUT.OK THEN
+      LET source=SOURCESTATE.SourceAt(0)
+      LET previous=source.lease.route
+      IF INPUTCLIENT.PublishRoute(lease,INPUT.SOURCE_KEYBOARD,tag)<>INPUT.OK THEN
         HEAPCORE.Abort($fc6b)
       FI
-      status=INPUT.RetireRoute(lease,tag)
-      IF INPUT.PublishRoute(lease,previous)<>INPUT.OK THEN
+      status=INPUTCLIENT.RetireRoute(lease,INPUT.SOURCE_KEYBOARD,tag)
+      IF INPUTCLIENT.PublishRoute(lease,INPUT.SOURCE_KEYBOARD,previous)<>INPUT.OK THEN
         HEAPCORE.Abort($fc6b)
       FI
       EXEC.Permit()
     END
   ELSE
-    status=INPUT.RetireRoute(lease,tag)
+    status=INPUTCLIENT.RetireRoute(lease,INPUT.SOURCE_KEYBOARD,tag)
   FI
 
 RETURN(status)
@@ -134,14 +137,14 @@ ENDMODULE
     (out/'aeswindow.act').write_text(source)
     routes=read_source(ROOT/'lib/aes/aesroutes.act').replace(
         'USE INPUT\n','USE INPUT\nUSE VISPROBE\n',1)
-    needle='status=INPUT.CreateRoute(keyboard,INPUT.ROUTE_UNFILTERED,route)'
+    needle='status=INPUTCLIENT.CreateRoute(keyboard,INPUT.SOURCE_KEYBOARD,INPUT.ROUTE_UNFILTERED,route)'
     require(routes.count(needle)==1,'Route allocation boundary changed')
     routes=routes.replace(needle,'status=VISPROBE.Create(keyboard,INPUT.ROUTE_UNFILTERED,route)')
     start=routes.index('PUBLIC PROC Discard(');at=routes.index('\n\n',start)+2
     routes=routes[:at]+'  VISPROBE.Rollback()\n'+routes[at:]
-    needle='LET result=INPUT.RetireRoute(INPUT.Lease POINTER(desktop.keyboard),\n      window.keyRoute)'
+    needle='LET result=INPUTCLIENT.RetireRoute(desktop.keyboard,INPUT.SOURCE_KEYBOARD,\n      window.keyRoute)'
     if needle in routes:
-        routes=routes.replace(needle,'LET result=VISPROBE.Retire(INPUT.Lease POINTER(desktop.keyboard),\n      window.keyRoute,held)',1)
+        routes=routes.replace(needle,'LET result=VISPROBE.Retire(desktop.keyboard,\n      window.keyRoute,held)',1)
     (out/'aesroutes.act').write_text(routes)
     driver=read_source(ROOT/'lib/aes/aessystem.act').replace(
         'USE AESGATE\n','USE AESGATE\nUSE VISPROBE\n',1)

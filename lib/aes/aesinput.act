@@ -4,6 +4,8 @@ MODULE AESINPUT
 USE EXEC
 USE INPUT
 USE AESSTATE
+USE AESTYPES
+USE AESSNAPSHOT
 USE A816MEMORY
 
 PUBLIC BYTE FUNC Pending()
@@ -12,8 +14,71 @@ PUBLIC BYTE FUNC Pending()
 
 RETURN(service<>NULL AND service.pointerCount<>0)
 
-PUBLIC PROC Push(INPUT.Event POINTER event)
+PROC Drop(AESSTATE.PointerTarget POINTER target)
+
+  AESSNAPSHOT.Drop(target.endpoint)
+  target.endpoint=NULL
+  target.window=0
+  target.epoch=0
+
+RETURN
+
+PUBLIC PROC Clear()
   BYTE slot
+
+  EXEC.Forbid()
+  LET service=AESSTATE.Get()
+  FOR slot=0 TO AESSTATE.POINTER_EVENTS-1 DO
+    Drop(@service.pointerTargets(slot))
+  OD
+  service.pointerHead=0
+  service.pointerCount=0
+  service.pointerLost=0
+  EXEC.Permit()
+
+RETURN
+
+; Window withdrawal retires the queued hold before its caller can free storage.
+; Keep an ordered cancellation marker rather than replaying the old press.
+PUBLIC PROC CancelWindow(LONGCARD epoch)
+  BYTE slot
+
+  IF epoch=0 THEN
+    RETURN
+  FI
+  EXEC.Forbid()
+  LET service=AESSTATE.Get()
+  FOR slot=0 TO AESSTATE.POINTER_EVENTS-1 DO
+    IF service.pointerTargets(slot).epoch=epoch THEN
+      Drop(@service.pointerTargets(slot))
+      service.pointerTargets(slot).window=0
+      service.pointerTargets(slot).epoch=0
+      service.pointerEvents(slot).kind=INPUT.EVENT_LOSS
+      service.pointerEvents(slot).code=INPUT.LOSS_NORMALIZED
+    FI
+  OD
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC CancelEndpoint(AESTYPES.Endpoint POINTER endpoint)
+  BYTE slot
+
+  EXEC.Forbid()
+  LET service=AESSTATE.Get()
+  FOR slot=0 TO AESSTATE.POINTER_EVENTS-1 DO
+    IF service.pointerTargets(slot).endpoint=endpoint THEN
+      Drop(@service.pointerTargets(slot))
+      service.pointerEvents(slot).kind=INPUT.EVENT_LOSS
+      service.pointerEvents(slot).code=INPUT.LOSS_NORMALIZED
+    FI
+  OD
+  EXEC.Permit()
+
+RETURN
+
+PUBLIC PROC Push(INPUT.Event POINTER event AESSTATE.PointerTarget POINTER target)
+  BYTE slot,closing
 
   LET service=AESSTATE.Get()
   EXEC.Forbid()
@@ -26,12 +91,18 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
     RETURN
   FI
 
-  IF service.pointerCount<>0 AND event.kind=INPUT.EVENT_POINTER THEN
+  closing=0
+  IF target.endpoint<>NULL THEN
+    closing=(target.endpoint.state<>AESTYPES.ENDPOINT_ACCEPTING)
+  FI
+  IF closing=0 AND service.pointerCount<>0 AND event.kind=INPUT.EVENT_POINTER THEN
     slot=(service.pointerHead+service.pointerCount-1) MOD AESSTATE.POINTER_EVENTS
     BEGIN
       LET previous=@service.pointerEvents(slot)
       IF previous.kind=INPUT.EVENT_POINTER AND previous.buttons=event.buttons
-          AND previous.route=event.route THEN
+          AND previous.route=event.route
+          AND service.pointerTargets(slot).window=target.window
+          AND service.pointerTargets(slot).epoch=target.epoch THEN
         A816MEMORY.Move(BYTE POINTER(previous),BYTE POINTER(event),INPUT.EVENT_BYTES)
         EXEC.Permit()
         RETURN
@@ -40,6 +111,7 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
   FI
 
   IF service.pointerCount=AESSTATE.POINTER_EVENTS THEN
+    Clear()
     service.pointerHead=0
     service.pointerCount=1
     service.pointerLost=1
@@ -54,12 +126,23 @@ PUBLIC PROC Push(INPUT.Event POINTER event)
   slot=(service.pointerHead+service.pointerCount) MOD AESSTATE.POINTER_EVENTS
   A816MEMORY.Move(BYTE POINTER(@service.pointerEvents(slot)),
       BYTE POINTER(event),INPUT.EVENT_BYTES)
+  IF closing<>0 THEN
+    A816MEMORY.Clear(BYTE POINTER(@service.pointerTargets(slot)),SIZEOF(AESSTATE.PointerTarget))
+    service.pointerEvents(slot).kind=INPUT.EVENT_LOSS
+    service.pointerEvents(slot).code=INPUT.LOSS_NORMALIZED
+  ELSE
+    A816MEMORY.Move(BYTE POINTER(@service.pointerTargets(slot)),BYTE POINTER(target),
+        SIZEOF(AESSTATE.PointerTarget))
+    IF target.endpoint<>NULL THEN
+      target.endpoint.holds==+1
+    FI
+  FI
   service.pointerCount==+1
   EXEC.Permit()
 
 RETURN
 
-PUBLIC BYTE FUNC Pop(INPUT.Event POINTER event)
+PUBLIC BYTE FUNC Pop(INPUT.Event POINTER event AESSTATE.PointerTarget POINTER target)
 
   LET service=AESSTATE.Get()
   EXEC.Forbid()
@@ -70,6 +153,11 @@ PUBLIC BYTE FUNC Pop(INPUT.Event POINTER event)
 
   A816MEMORY.Move(BYTE POINTER(event),
       BYTE POINTER(@service.pointerEvents(service.pointerHead)),INPUT.EVENT_BYTES)
+  A816MEMORY.Move(BYTE POINTER(target),
+      BYTE POINTER(@service.pointerTargets(service.pointerHead)),SIZEOF(AESSTATE.PointerTarget))
+  service.pointerTargets(service.pointerHead).endpoint=NULL
+  service.pointerTargets(service.pointerHead).window=0
+  service.pointerTargets(service.pointerHead).epoch=0
   service.pointerHead=(service.pointerHead+1) MOD AESSTATE.POINTER_EVENTS
   service.pointerCount==-1
   IF service.pointerCount=0 THEN

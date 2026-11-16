@@ -1,15 +1,18 @@
 MODULE INPUTDEVICEKEYBOARD
 USE EXEC
 USE INPUT
+USE INPUTNATIVE
 USE INPUTDEVICE
 USE INPUTDRIVER
 USE A816MEMORY AS MEM
 USE HEAPCORE
 
-CARD checks,received
-BYTE stage,cleanGuard
+CARD checks,received,newCalls
+BYTE stage,cleanGuard,proceed
 INPUTDEVICE.Consumer consumer
 INPUT.Event ARRAY events(6)
+LONGCARD ARRAY tags(16)
+INCLUDE "input-storage.act.inc"
 EXEC.Task POINTER controller
 LONGCARD wakeMask,oldTag,oldAcquisition
 
@@ -36,6 +39,15 @@ PROC Handler(LONGCARD context INPUT.Event POINTER event)
 
 RETURN
 
+PROC NextHandler(LONGCARD context INPUT.Event POINTER event)
+
+  IF context=$f123 THEN
+    newCalls==+1
+  FI
+  Handler(context,event)
+
+RETURN
+
 PROC Await(CARD count)
 
   WHILE received<count DO
@@ -45,6 +57,7 @@ PROC Await(CARD count)
 RETURN
 
 PROC Main()
+  BYTE index
 
   LET before=EXEC.AvailMem(0)
   cleanGuard=1
@@ -100,21 +113,56 @@ PROC Main()
   Require(events(3).kind=INPUT.EVENT_KEY AND events(3).code=$92
       AND events(3).route=oldTag)
   Require(events(4).kind=INPUT.EVENT_CANCEL AND events(4).code=INPUT.CANCEL_BREAK)
+  ; Real hardware capture queues while this controller excludes Task dispatch.
+  ; DETACH is queued before the input Task can drain that older record.
+  LET idleWorker=INPUTDRIVER.Task()
+  WHILE idleWorker.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  EXEC.Forbid()
+  stage=3
+  LET capture=INPUTNATIVE.Capture POINTER(ADDRESS(IN_CAPTURE))
+  WHILE capture.head=capture.tail DO
+  OD
   io.io_Command=INPUTDEVICE.DETACH
-  Require(EXEC.DoIO(io)=0)
+  EXEC.SendIO(io)
+  EXEC.Permit()
+  Require(EXEC.WaitIO(io)=0 AND received=5)
+  LET sameWorker=INPUTDRIVER.Task()
+  EXEC.CloseDevice(io)
+  stage=4
+  WHILE proceed=0 DO
+    EXEC.Yield()
+  OD
+  Require(EXEC.OpenDevice(BYTE POINTER(c"input.device"),0,io,0)=0)
+  consumer.entry=LONGCARD(ADDRESS(@NextHandler))
+  consumer.context=$f123
   consumer.keyboard.filterCount=0
   consumer.keyboard.filter0Value=0
   consumer.keyboard.filter0Mask=0
   io.io_Command=INPUTDEVICE.ATTACH
-  Require(EXEC.DoIO(io)=0)
+  Require(EXEC.DoIO(io)=0 AND INPUTDRIVER.Task()=sameWorker)
   packet.routeFlags=0
-  io.io_Command=INPUTDEVICE.CREATE_ROUTE
-  Require(EXEC.DoIO(io)=0 AND packet.route<>oldTag)
+  FOR index=0 TO 15 DO
+    io.io_Command=INPUTDEVICE.CREATE_ROUTE
+    Require(EXEC.DoIO(io)=0 AND packet.route<>oldTag)
+    tags(index)=packet.route
+  OD
+  Require(EXEC.DoIO(io)=INPUT.BUSY)
+  packet.route=tags(0)
   io.io_Command=INPUTDEVICE.PUBLISH_ROUTE
   Require(EXEC.DoIO(io)=0)
-  stage=3
+  stage=5
   Await(6)
-  Require(events(5).kind=INPUT.EVENT_KEY AND events(5).acquisition<>oldAcquisition)
+  Require(newCalls=1 AND events(5).kind=INPUT.EVENT_KEY AND events(5).code=$15
+      AND events(5).route=tags(0) AND events(5).acquisition<>oldAcquisition)
+  packet.route=0
+  Require(EXEC.DoIO(io)=0)
+  FOR index=0 TO 15 DO
+    packet.route=tags(index)
+    io.io_Command=INPUTDEVICE.RETIRE_ROUTE
+    Require(EXEC.DoIO(io)=0)
+  OD
   io.io_Command=INPUTDEVICE.DETACH
   Require(EXEC.DoIO(io)=0)
   EXEC.CloseDevice(io)

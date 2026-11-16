@@ -1,0 +1,392 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-11-16",
+  "slice": "IM7",
+  "keyboard_handoff": {
+    "status": "pass",
+    "checks": 59,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 1,
+      "switches": 52,
+      "live_tasks": 0,
+      "native_nmi_count": 42,
+      "native_irq_count": 7,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0
+    },
+    "stack_observations": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 230,
+        "remaining_above_floor": 1050
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1536,
+        "peak": 206,
+        "remaining_above_floor": 1074
+      },
+      "2": {
+        "base": 14448,
+        "bytes": 1536,
+        "peak": 18,
+        "remaining_above_floor": 1262
+      },
+      "3": {
+        "base": 16016,
+        "bytes": 1536,
+        "peak": 18,
+        "remaining_above_floor": 1262
+      },
+      "4": {
+        "base": 17584,
+        "bytes": 1536,
+        "peak": 44,
+        "remaining_above_floor": 1236
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 258,
+        "remaining_above_floor": 1022
+      }
+    },
+    "xex_sha256": "5c2c9de00a4a6cbb3524806e3518f3c37e009ba229cf4828792c409294349564",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "override": false
+    }
+  },
+  "copied_console": {
+    "status": "pass",
+    "checks": 20,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 1,
+      "switches": 17,
+      "live_tasks": 0,
+      "native_nmi_count": 6,
+      "native_irq_count": 0,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0
+    },
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 321,
+        "untouched_above_floor": 959
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 206,
+        "untouched_above_floor": 850
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 21,
+        "untouched_above_floor": 235
+      }
+    ],
+    "xex_sha256": "d60570bc63d5d640e2f98eca091d8dca3b7a90c198eb8317e4eb493e96a8c889",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "override": false
+    }
+  },
+  "manager_targets": {
+    "status": "pass",
+    "checks": 37,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 2,
+      "switches": 29,
+      "live_tasks": 0,
+      "native_nmi_count": 10,
+      "native_irq_count": 0,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0
+    },
+    "stack_observations": {
+      "0": {
+        "base": 9744,
+        "bytes": 1536,
+        "peak": 262,
+        "remaining_above_floor": 1018
+      },
+      "1": {
+        "base": 12880,
+        "bytes": 1536,
+        "peak": 428,
+        "remaining_above_floor": 852
+      },
+      "2": {
+        "base": 14448,
+        "bytes": 1536,
+        "peak": 48,
+        "remaining_above_floor": 1232
+      },
+      "3": {
+        "base": 16016,
+        "bytes": 1536,
+        "peak": 18,
+        "remaining_above_floor": 1262
+      },
+      "4": {
+        "base": 17584,
+        "bytes": 1536,
+        "peak": 24,
+        "remaining_above_floor": 1256
+      },
+      "kernel": {
+        "base": 11312,
+        "bytes": 1536,
+        "peak": 258,
+        "remaining_above_floor": 1022
+      }
+    },
+    "xex_sha256": "24fe213fef60edce2c87bc0eb0f28edc21bbd5e7b85452f856ffe087d6cc51ba",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "override": false
+    }
+  },
+  "text_focus_relocation": {
+    "status": "pass",
+    "checks": [
+      50
+    ],
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 3,
+      "switches": 501,
+      "live_tasks": 0,
+      "native_nmi_count": 123,
+      "native_irq_count": 7,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0
+    },
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 386,
+        "untouched_above_floor": 894
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 244,
+        "untouched_above_floor": 812
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 410,
+        "untouched_above_floor": 646
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 348,
+        "untouched_above_floor": 708
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "xex_sha256": "a6c291d2799ab5ad78836e50e878349bce941c8d009def8593f1de3527e2215a",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "override": false
+    }
+  },
+  "gui_ownership": {
+    "status": "pass",
+    "checks": 19,
+    "runtime": {
+      "status": 0,
+      "guards": "intact",
+      "created": 7,
+      "switches": 5051,
+      "live_tasks": 0,
+      "native_nmi_count": 897,
+      "native_irq_count": 60486,
+      "return_s": 11278,
+      "return_d": 3328,
+      "return_p": 0,
+      "return_e": 0
+    },
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 564,
+        "untouched_above_floor": 716
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 410,
+        "untouched_above_floor": 646
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 161,
+        "untouched_above_floor": 895
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 622,
+        "untouched_above_floor": 434
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 621,
+        "untouched_above_floor": 435
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 800,
+        "untouched_above_floor": 1504
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 18,
+        "untouched_above_floor": 2286
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 24,
+        "untouched_above_floor": 232
+      }
+    ],
+    "xex_sha256": "a750acac33b90875018db3565f17fbf4d7a5e1b274b09006090df992d0a6ac63",
+    "compiler": {
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16",
+      "abi_sha256": "4df61146ccb15d221c5fcc8c43500f98b8a19a95dd4fd0b9308bd42f390337b1",
+      "override": false
+    }
+  },
+  "host": {
+    "status": "pass",
+    "cases": 718,
+    "skipped": 5
+  },
+  "resources": {
+    "fixed_bank_zero_delta": 0,
+    "root_bank_zero_delta": 0,
+    "kernel_bank_zero_delta": 0,
+    "idle_bank_zero_delta": 0,
+    "per_task_bank_zero_delta": 0,
+    "upper_reserved_delta": 0,
+    "gui_service_heap_delta": 192,
+    "manager_target_bytes": 12,
+    "manager_target_slots": 16,
+    "additional_tasks_this_slice": 0
+  },
+  "scope": "Queued keyboard detach and different-consumer reattach on the same service, route exhaustion, copied ingress loss, manager-target pin/cancel/overflow, 13 text focus/relocation stages with exact OS restoration, Counter input during UPDATE/display contention. The GUI image predates only the separately checked standalone Show fix, which is unavailable in GUI mode.",
+  "workspace_note": "Pre-existing frame-setter edits were present during development checks and were left untouched."
+}

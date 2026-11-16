@@ -10,6 +10,9 @@ USE INPUTCAPTURE
 USE INPUTNATIVE
 USE CONSOLECAPTURE
 USE CONSOLEINPUT
+USE CONSOLEINGRESS
+USE INPUTDRIVER
+USE INPUT
 USE CONSOLETYPES
 USE CONSOLEWINDOWS
 USE CONSOLEFOREGROUND
@@ -42,18 +45,32 @@ CONSOLETYPES.Instance POINTER instance
 CONSOLETYPES.Window POINTER window
 BYTE POINTER fifo
 BYTE ARRAY translated(64)
+CONSOLETYPES.Service inputService
+
+PROC Capture(LONGCARD context INPUT.Event POINTER event)
+
+  CONSOLEINPUT.Deliver(context,event)
+  EXEC.Signal(reader,$40000000)
+
+RETURN
 
 PROC Claim()
 
+  CONSOLECAPTURE.BindReceiver(ADDRESS(@Capture),LONGCARD(ADDRESS(@inputService)))
+  Require(INPUTDRIVER.Start()<>0)
   Require(CONSOLECAPTURE.Acquire()=1)
   Require(CONSOLECAPTURE.Acquire()=0)
 
 RETURN
 
 PROC CollectKeys()
-  CARD pumped,count,index
+  CARD count,index
 
-  pumped=CONSOLEINPUT.Pump(instance)
+  EXEC.Forbid()
+  WHILE CONSOLEINGRESS.Pending()<>0 DO
+    CONSOLEINGRESS.Pump()
+  OD
+  EXEC.Permit()
   count=CONSOLECOOKED.Read(instance,translated,64)
   IF count=$ffff THEN
     Require(mode=4 OR mode=5)
@@ -91,10 +108,12 @@ PROC ReaderEntry()
   windows.liveCount=1
   CONSOLECAPTURE.Publish(window.route)
   EXEC.Permit()
+  EXEC.Forbid()
   TranslationChecks()
   FifoChecks()
   LossChecks()
   RingChecks()
+  EXEC.Permit()
   EXEC.Signal(parent,$10000)
   IF mode=4 THEN
     bits=EXEC.Wait($40000)
@@ -250,6 +269,7 @@ PROC Cleanup()
     SIODRIVER.Stop()
   FI
 
+  Require(INPUTDRIVER.Stop()<>0)
   released=1
   WHILE retireGate=0 DO
     status=EXECTASKS.Sleep(1)

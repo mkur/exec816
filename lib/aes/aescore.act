@@ -18,6 +18,7 @@ USE AESGUI
 USE AESMENU
 USE AESWINDOW
 USE AESINBOX
+USE AESINPUT
 USE DESKMOUSE
 USE DESKDRAG
 
@@ -225,6 +226,7 @@ PUBLIC BYTE FUNC PrepareExit(AESSTATE.Service POINTER service AESSTATE.Client PO
   LET endpoint=client.endpoint
   EXEC.Forbid()
   endpoint.state=AESTYPES.ENDPOINT_CLOSING
+  AESINPUT.CancelEndpoint(endpoint)
   AESSNAPSHOT.Invalidate()
   AESINBOX.Close(client)
   endpoint.guiEpoch=0

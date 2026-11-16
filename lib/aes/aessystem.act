@@ -7,7 +7,6 @@ USE AESHOST
 USE AESGATE
 USE AESDEFER
 USE AESLOCKS
-USE CONSOLECAPTURE
 USE CONSOLEBATCH
 USE CONSOLETYPES
 USE CONSOLEDISPLAY
@@ -19,8 +18,7 @@ USE DESKINPUT
 USE DESKDRAG
 CONST STOP_MASK=$20000000
 CONST PAINT_STEPS=4
-BYTE FUNC POINTER consoleInput(LONGCARD bits BYTE pending)
-BYTE FUNC POINTER consoleRunnable(BYTE pending)
+BYTE FUNC POINTER consoleRunnable()
 BYTE FUNC POINTER consoleStopping()
 BYTE FUNC POINTER consoleStop()
 BYTE FUNC POINTER consoleTurn(BYTE deferred BYTE POINTER again,writing,handoff)
@@ -28,15 +26,13 @@ PROC POINTER consoleControls()
 
 ; The resident worker binds this interface before publishing readiness. It
 ; remains installed only while that same Task owns the backend and display.
-PUBLIC PROC BindConsole(ADDRESS input,runnable,stopping,stop,turn,controls)
+PUBLIC PROC BindConsole(ADDRESS runnable,stopping,stop,turn,controls)
 
-  LET inputEntry=ADDRESS POINTER(@consoleInput)
   LET runnableEntry=ADDRESS POINTER(@consoleRunnable)
   LET stoppingEntry=ADDRESS POINTER(@consoleStopping)
   LET stopEntry=ADDRESS POINTER(@consoleStop)
   LET turnEntry=ADDRESS POINTER(@consoleTurn)
   LET controlsEntry=ADDRESS POINTER(@consoleControls)
-  inputEntry^=input
   runnableEntry^=runnable
   stoppingEntry^=stopping
   stopEntry^=stop
@@ -51,7 +47,7 @@ PUBLIC BYTE FUNC Start()
     RETURN(0)
   FI
   AESGATE.Configure(ADDRESS(@AESDEFER.Pump),
-      CONSOLECAPTURE.WAKE_MASK OR DESKINPUT.Mask() OR CONSOLEBITMAP.Mask())
+      DESKINPUT.Mask() OR CONSOLEBITMAP.Mask())
 
 RETURN(1)
 
@@ -59,7 +55,7 @@ RETURN(1)
 ; survives for the next collection or Wait; preserve Wait's consumed bits too.
 LONGCARD FUNC Collect(EXEC.Task POINTER self LONGCARD bits,displayMask)
 
-  LET mask=STOP_MASK OR CONSOLECAPTURE.WAKE_MASK OR displayMask
+  LET mask=STOP_MASK OR displayMask
   IF (self.tc_SigRecvd & mask)=0 THEN
     RETURN(bits)
   FI
@@ -69,7 +65,7 @@ RETURN(bits OR EXEC.SetSignal(0,mask))
 ; AES input/menu/gesture and frame work run independently of console output.
 PUBLIC PROC Run()
   LONGCARD bits
-  BYTE again,writing,stopping,accepted,inputPending
+  BYTE again,writing,stopping,accepted
   BYTE handoff,deferOutput,paintSteps,paintProgress
   BYTE schedule,policyReady,workChecked,workPending
 
@@ -80,7 +76,6 @@ PUBLIC PROC Run()
   LET aesMask=AESHOST.Mask()
   bits=0
   stopping=0
-  inputPending=1
   handoff=0
   ; Stop may be requested after the final write reply but before DMA retires.
   DO
@@ -101,7 +96,7 @@ PUBLIC PROC Run()
     ; work. Maintain caches with policy closed; new signals survive to Wait.
     IF bits=aesMask AND aesMask<>0 AND stopping=0 AND consoleStopping()=0
         AND AESHOST.Settled()<>0 AND AESLOCKS.NativeReady()<>0
-        AND consoleRunnable(inputPending)=0 AND DESKHOST.Runnable()=0 THEN
+        AND consoleRunnable()=0 AND DESKHOST.Runnable()=0 THEN
       workPending=DESKHOST.Cache()
       policyReady=AESLOCKS.NativeReady()
       ; A started cache continuation needs the normal turn and completion wait.
@@ -122,7 +117,7 @@ PUBLIC PROC Run()
       FI
 
       IF (bits & DESKINPUT.Mask())<>0 THEN
-        DESKINPUT.Service(bits)
+        DESKINPUT.Service()
         DESKINPUT.Present()
       FI
 
@@ -132,9 +127,8 @@ PUBLIC PROC Run()
       FI
       ; Collect's pointer bit was consumed above. Continue retained work here
       ; without turning that same notification into another empty drain.
-      DESKINPUT.Service(0)
+      DESKINPUT.Service()
       DESKINPUT.Advance()
-      inputPending=consoleInput(bits,inputPending)
       ; Present newly consumed motion before spending another quantum on output.
       ; Intersecting draws erase it safely and the final pass restores it.
       DESKINPUT.Present()
@@ -184,7 +178,7 @@ PUBLIC PROC Run()
       AESHOST.Settle()
       workChecked=0
       IF stopping=0 AND writing=0 AND again=0 THEN
-        workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+        workPending=IF consoleRunnable()<>0 THEN 1
             ELSE DESKHOST.Runnable() FI
         workChecked=1
         IF workPending=0 THEN
@@ -198,7 +192,7 @@ PUBLIC PROC Run()
       schedule=0
       IF CONSOLEBITMAP.Pending()<>0 THEN
         IF workChecked=0 THEN
-          workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+          workPending=IF consoleRunnable()<>0 THEN 1
               ELSE DESKHOST.Runnable() FI
         FI
         schedule=IF workPending<>0 THEN 1 ELSE 2 FI
@@ -210,7 +204,7 @@ PUBLIC PROC Run()
           schedule=1
         ELSE
           IF workChecked=0 THEN
-            workPending=IF consoleRunnable(inputPending)<>0 THEN 1
+            workPending=IF consoleRunnable()<>0 THEN 1
                 ELSE DESKHOST.Runnable() FI
           FI
           ; This is a scheduling hint, never drawing authority. Producers can

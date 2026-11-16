@@ -70,6 +70,12 @@ def keyboard_stimulus(bridge, program, report):
             key(modifier, 'down')
         key(name, 'down')
         if index == 5:
+            checkpoint(f'db(${at("stage"):x})=4')
+            key('A','up')
+            checkpoint(f'@frame>={bridge.eval_expr("@frame")+4}')
+            bridge.poke(at('proceed'),1)
+            checkpoint(f'db(${at("stage"):x})=5')
+            key('B','down')
             break
         checkpoint(f'dw(${at("received"):x})>={index+1}')
         key(name, 'up')
@@ -183,8 +189,13 @@ def main():
         profile_path=output/'memory-profile.json'
         profile_path.write_text(json.dumps(profile)+'\n')
         options.update(memory_profile=profile_path, console_deferred=True)
+    source=ROOT/'tests/programs'/f'input_device_{args.suite}.act'
+    if args.suite == 'keyboard' and not args.from_build:
+        (output/'program').mkdir(exist_ok=True)
+        shutil.copyfile(source,output/'program'/source.name)
+        source=output/'program'/source.name
     program = read_build(args.from_build) if args.from_build else build(compiler(args.compiler_dir, release=True),
-                    ROOT/'tests/programs'/f'input_device_{args.suite}.act', output/'program',
+                    source, output/'program',
                     tasks=True, console=False, sio_enabled=False,
                     optimize=args.mode == 'opt', **options)
     report = dict(status='running', tier='development', qualification=False,
@@ -230,10 +241,12 @@ def main():
                             'Atari text screen was not restored')
                     require(not any(r['name'].startswith(('M_AES','M_DESK')) for r in program['image']['routines']),
                             'Standard Atari console still links GUI routines')
+            if args.suite=='delivery':
+                report['manager_target_bytes']=data(bridge,program['image'],'managerTargetBytes',True)[0]
             report['checks'] = data(bridge, program['image'], 'checks', True)[0]
-            require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 25,
-                                        'pointer': 10, 'client': 13, 'frontend': 7, 'text': 15,
-                                        'delivery': 28}[args.suite],
+            require(report['checks'] == {'abi': 17, 'service': 35, 'keyboard': 59,
+                                        'pointer': 10, 'client': 13, 'frontend': 7, 'text': 16,
+                                        'delivery': 37}[args.suite],
                     'Incomplete input.device fixture: '+str(report['checks']))
             clean_ownership(bridge, program, program['output'])
             report['stack_usage'] = stack_usage(bridge, program['build']['memory'])

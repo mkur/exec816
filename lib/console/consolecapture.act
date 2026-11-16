@@ -9,7 +9,6 @@ USE CONSOLETYPES
 USE HEAPCORE
 USE A816MEMORY AS MEM
 INCLUDE "console-storage-action.inc"
-PUBLIC CONST WAKE_MASK=$40000000
 INPUT.Config config
 INPUTDEVICE.Consumer receiver
 BYTE POINTER client
@@ -22,10 +21,6 @@ PUBLIC PROC BindReceiver(ADDRESS entry LONGCARD context)
   receiverContext=context
 
 RETURN
-
-PUBLIC BYTE FUNC Shared()
-
-RETURN(client<>NULL)
 
 PUBLIC BYTE FUNC Active()
 
@@ -44,7 +39,6 @@ PUBLIC BYTE FUNC Acquire()
   FI
   config.version=INPUT.VERSION
   config.source=INPUT.SOURCE_KEYBOARD
-  config.wakeMask=WAKE_MASK
   config.filter0Value=$92
   config.filter0Mask=$bf
   config.filterCount=1

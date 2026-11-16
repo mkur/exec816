@@ -100,3 +100,21 @@ void CounterUpdateBegin(void) { CounterMark=1; }
 void CounterUpdateOwned(void) { CounterMark=2; }
 void CounterPaintDone(void) { CounterMark=3; }
 void CounterUpdateEnd(void) { CounterMark=4; }
+
+/* The input ownership fixture borrows display access as an ordinary GEM client. */
+static WORD inputControllerVdi;
+UWORD CounterGrantOpen(void)
+{
+    WORD in[11],out[57],i,cw,ch,bw,bh;
+    for (i=0;i<11;++i) in[i]=1;
+    in[6]=1; in[9]=0; in[10]=2;
+    inputControllerVdi=graf_handle(&cw,&ch,&bw,&bh);
+    v_opnvwk(in,&inputControllerVdi,out);
+    return inputControllerVdi!=0;
+}
+UWORD CounterGrantClose(void)
+{
+    v_clsvwk(inputControllerVdi);
+    inputControllerVdi=0;
+    return 1;
+}

@@ -9,6 +9,7 @@ from build_aes_desktop import counter_image, counter_bindings
 from build_bitmap_console import prepare
 from desktop_mouse import schedule
 from generate_aes_server import expected_layout
+from generate_display import ABI as DISPLAY_ABI
 from generate_memory import PROFILE
 from generate_mouse_acceleration import metadata
 from native_program import ROOT, build, compiler, read_build, require, verify_machine, sha256
@@ -36,12 +37,15 @@ def build_fixture(out):
     return program
 
 
-def run(out,p):
+def run(out,p,trace=False):
     p['build'].setdefault('desktop_mouse',metadata(None))
     foreign=json.loads((p['output'].parent/'c-image.json').read_text())
     sy=foreign['symbols'];layout=dict(expected_layout())
     at=lambda module,name:next(d['address'] for d in p['image']['data']
         if '_'+module+'_'+name.upper()+'_' in d['name'])
+    from input_device_timing import setup,restore,result
+    timing=setup(p) if trace else None
+    idle=[]
     report=dict(status='running',tier='development',qualification=False,
         emulator_sha256=sha256(BRIDGE/'AltirraBridgeServer'),cases=[])
     try:
@@ -56,18 +60,32 @@ def run(out,p):
                     report['checkpoint']=condition
                     report['diagnostic']={'status':b.peek16(adapter.STATE),
                         'checks':get(at('INPUTDEVICEGUI','checks')),
-                        'failure':get(sy['GEMCountersFailure'])}
+                        'failure':get(sy['GEMCountersFailure']),
+                        'cursor':[get(at('DESKINPUT',name)) for name in ('cursorX','cursorY')],
+                        'inboxes':[dict(address=get(sy['CounterInputInbox']+i*4,4),
+                            tail=get(get(sy['CounterInputInbox']+i*4,4)+layout['InputInbox keyTail'],1))
+                            for i in range(2)]}
                     raise
             def frames(count=4):reach('@frame>='+str(b.eval_expr('@frame')+count))
             position=[320,120]
             def move(x,y):
                 nonlocal position
-                position=schedule(b,p,position,(x,y))
-                reach('(dw($%x)=%d)&(dw($%x)=%d)'%(at('DESKINPUT','cursorX'),x,at('DESKINPUT','cursorY'),y))
+                for attempt in range(12):
+                    current=[get(at('DESKINPUT',name)) for name in ('cursorX','cursorY')]
+                    if current==[x,y]:
+                        position=current
+                        return
+                    schedule(b,p,current,(x,y));frames(20)
+                raise RuntimeError('Pointer did not reach requested point')
             def before(b):
+                if timing:b.profile_start()
                 b._cmd_ok('MOUSE ST');b._cmd_ok('KEY ALL up')
                 reach('dw($%x)=1'%at('INPUTDEVICEGUI','ready'));frames(40)
                 require(get(sy['GEMCountersFailure'])==0,'Counter startup failed')
+                idle.append(b.eval_expr('@clk'));frames(20);idle.append(b.eval_expr('@clk'))
+                move(280,100)
+                b._cmd_ok('MOUSE AT 2000 0 0 1');frames()
+                b._cmd_ok('MOUSE AT 2000 0 0 0');frames(40)
                 # B stays in its normal native Task, paused before event consumption.
                 b.poke16(sy['CounterPause']+2,1)
                 reach('dw($%x)=1'%(sy['CounterHeld']+2))
@@ -97,16 +115,42 @@ def run(out,p):
                 reach('dw($%x)=0'%sy['CounterInputHeld'])
                 b.poke16(sy['CounterPause']+2,0);frames(30)
                 report['cases'].append('retained manager interaction resumes after UPDATE')
+                b.poke16(sy['CounterPause']+2,1)
+                reach('dw($%x)=1'%(sy['CounterHeld']+2))
+                b.poke16(at('INPUTDEVICEGUI','grantCommand'),1)
+                reach('dw($%x)=1'%at('INPUTDEVICEGUI','grantHeld'))
+                # The Action controller uses its own already-delegated public grant.
+                # Find A's admitted grant through the C context's Request prefix.
+                grant=0
+                for index in range(8):
+                    context=get(sy['contexts']+index*4,4)
+                    if context and get(context+layout['Request global']+4)==get(sy['GEMCounters']+4):
+                        grant=get(context+layout['Request displayGrant'],4)
+                        break
+                require(grant!=0,'Missing A display grant')
+                reach('dw($%x)=2'%(grant+DISPLAY_ABI['grant_fields']['state']))
+                key_before=get(key,1)
+                b._cmd_ok('KEY B down')
+                reach('db($%x)!=%d'%(key,key_before));b._cmd_ok('KEY B up')
+                require(get(at('INPUTDEVICEGUI','grantHeld'))==1,'Display holder escaped the wait case')
+                report['cases'].append('key inbox delivery while A sleeps for a display grant')
+                b.poke16(at('INPUTDEVICEGUI','grantCommand'),2)
+                reach('dw($%x)=0'%at('INPUTDEVICEGUI','grantHeld'))
+                b.poke16(sy['CounterPause']+2,0);frames(20)
                 b.poke16(at('INPUTDEVICEGUI','mode'),9);b.bp_clear_all()
             report['runtime'],_=execute(b,p,before_run=before,timeout=120,frame_limit=6000)
+            if timing:b.profile_stop()
             ownership(b,p,p['output'])
             report['native_checks']=get(at('INPUTDEVICEGUI','checks'))
-            require(report['native_checks']==14,'Incomplete GUI fixture')
+            require(report['native_checks']==19,'Incomplete GUI fixture')
             report['cases'][:0]=['pointer-busy GUI startup rollback and retry','two ordinary GEM Counters']
+            if timing:report['timing']=result(out,p,timing,idle)
             report['status']='pass'
     except Exception as error:
         report.update(status='fail',error=str(error));raise
-    finally:(out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
+    finally:
+        if timing:restore(timing)
+        (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     print('PASS input.device GUI:',report['native_checks'],'checks')
 
 
@@ -114,5 +158,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--from-build',type=Path)
+    parser.add_argument('--trace',action='store_true')
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    run(out,read_build(args.from_build) if args.from_build else build_fixture(out))
+    run(out,read_build(args.from_build) if args.from_build else build_fixture(out),args.trace)

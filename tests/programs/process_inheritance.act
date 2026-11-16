@@ -22,7 +22,6 @@ USE DOSINHERIT
 USE FSTYPES
 USE CONSOLEDRIVER
 USE CONSOLEFOREGROUND
-USE CONSOLEINPUT
 USE CONSOLETYPES
 USE HEAPCORE
 
@@ -506,7 +505,6 @@ RETURN
 ; Verify console BREAK handoff to the child and restoration to the parent.
 PROC Foreground(BYTE unused)
   BYTE ignored
-  CARD consumed
   LONGCARD identity
   PROCESS.Result result
 
@@ -555,7 +553,6 @@ PROC Foreground(BYTE unused)
   EXEC.Forbid()
   ignored=CONSOLEFOREGROUND.Deliver(childRoute)
   Require(parentScope.pending=0)
-  consumed=CONSOLEINPUT.Pump(instance)
   Require(instance.inputCount=0
       AND CONSOLEFOREGROUND.Resolve(childRoute)=CONSOLETYPES.Window POINTER(0))
   EXEC.Permit()

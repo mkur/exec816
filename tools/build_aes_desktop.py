@@ -38,7 +38,7 @@ def counter_image(out, instrument=False):
     sources.append(body)
     return drawing(out,True,desktop_style=True,client_sources=sources,
         client_entries=['GEMCounterOne','GEMCounterTwo']+(['CounterHold'] if instrument else []),
-        client_roots=['GEMCountersStart','GEMCountersStop','GEMCountersService','GEMCounters']+(['CounterPost','CounterCapacity'] if instrument else []),
+        client_roots=['GEMCountersStart','GEMCountersStop','GEMCountersService','GEMCounters']+(['CounterPost','CounterCapacity','CounterGrantOpen','CounterGrantClose'] if instrument else []),
         client_probes=[(ROOT/'c/calypsi/aes-layout.c',expected_layout()),
             (ROOT/'tests/programs/gem_counter_layout.c',[
                 ('Counter size',196),('Counter ready',12),('Counter count',14),
@@ -69,7 +69,7 @@ RETURN(counterCall()<>0)
 
 """
     if 'CounterPost' in sy:
-        for name in ('CounterPost','CounterCapacity'):
+        for name in ('CounterPost','CounterCapacity','CounterGrantOpen','CounterGrantClose'):
             stub+=f'BYTE FUNC {name}()\n\n  LET endpoint=LONGCARD POINTER(${sy["GEMCountersService"]:x})\n  endpoint^=LONGCARD(ADDRESS(AESBOOT.Port()))\n  LET entry=ADDRESS POINTER(@counterCall)\n  entry^=${sy[name]:x}\n\nRETURN(counterCall()<>0)\n\n'
     return source.replace('PROC Main()',stub+'PROC Main()',1)
 

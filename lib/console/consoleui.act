@@ -7,10 +7,10 @@ USE CONSOLEVIEWTYPES AS VIEW
 PUBLIC TYPE Hooks=[
   ADDRESS bindEntry,startEntry,runEntry,stopEntry,idleEntry,paintEntry
   ADDRESS beginEntry,endEntry,blockedEntry,suspendEntry,resumeEntry
-  ADDRESS keyEntry,keyReadyEntry,advanceEntry,ownedEntry,windowEntry
+  ADDRESS keyEntry,windowEntry
 ]
 BYTE configured
-PROC POINTER bindFn(ADDRESS input,runnable,stopping,stop,turn,controls)
+PROC POINTER bindFn(ADDRESS runnable,stopping,stop,turn,controls)
 BYTE FUNC POINTER startFn()
 PROC POINTER runFn()
 PROC POINTER stopFn()
@@ -22,9 +22,6 @@ BYTE FUNC POINTER blockedFn()
 BYTE FUNC POINTER suspendFn()
 PROC POINTER resumeFn(BYTE held)
 BYTE FUNC POINTER keyFn(INPUT.Event POINTER event)
-BYTE FUNC POINTER keyReadyFn()
-PROC POINTER advanceFn()
-BYTE FUNC POINTER ownedFn()
 CARD FUNC POINTER windowFn(LONGCARD handle INT window BYTE bound)
 
 PROC BindEntry(ADDRESS location,entry)
@@ -48,9 +45,6 @@ PUBLIC PROC Install(Hooks POINTER table)
   BindEntry(ADDRESS(@suspendFn),table.suspendEntry)
   BindEntry(ADDRESS(@resumeFn),table.resumeEntry)
   BindEntry(ADDRESS(@keyFn),table.keyEntry)
-  BindEntry(ADDRESS(@keyReadyFn),table.keyReadyEntry)
-  BindEntry(ADDRESS(@advanceFn),table.advanceEntry)
-  BindEntry(ADDRESS(@ownedFn),table.ownedEntry)
   BindEntry(ADDRESS(@windowFn),table.windowEntry)
   configured=1
 
@@ -66,10 +60,10 @@ PUBLIC BYTE FUNC Enabled()
 
 RETURN(configured)
 
-PUBLIC PROC BindConsole(ADDRESS input,runnable,stopping,stop,turn,controls)
+PUBLIC PROC BindConsole(ADDRESS runnable,stopping,stop,turn,controls)
 
   IF configured<>0 THEN
-    bindFn(input,runnable,stopping,stop,turn,controls)
+    bindFn(runnable,stopping,stop,turn,controls)
   FI
 
 RETURN
@@ -158,30 +152,6 @@ PUBLIC BYTE FUNC Key(INPUT.Event POINTER event)
 
   IF configured<>0 THEN
     RETURN(keyFn(event))
-  FI
-
-RETURN(0)
-
-PUBLIC BYTE FUNC KeyReady()
-
-  IF configured<>0 THEN
-    RETURN(keyReadyFn())
-  FI
-
-RETURN(1)
-
-PUBLIC PROC Advance()
-
-  IF configured<>0 THEN
-    advanceFn()
-  FI
-
-RETURN
-
-PUBLIC BYTE FUNC SystemOwned()
-
-  IF configured<>0 THEN
-    RETURN(ownedFn())
   FI
 
 RETURN(0)

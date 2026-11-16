@@ -5,15 +5,15 @@
 [SCRENMGR migration](gem4xe/screnmgr-migration-plan.md)
 
 Prepared 2026-11-15 from the independent input.device design. **Implementation
-started: IM0–IM6 are recorded; IM7–IM8 are pending.** The selected direction reuses the resident console/system
+started: IM0–IM7 are recorded; IM8 acceptance is being recorded.** The selected direction reuses the resident console/system
 Task for generic input and supports the standard Atari text console, future
 VBXE text-mode console and GEM. The design's bounded consumer handler is the
 proposed delivery interface. This plan specifies implementation slices and
 identifies the remaining execution-placement decision before live cutover.
 
 Commit each passing slice separately. Do not resume the unrelated, unfinished
-frame-setter work as part of this plan. No executable change, build or system
-qualification is delivered by this planning commit.
+frame-setter work as part of this plan. The original planning commit delivered no executable change or system
+qualification. Implementation evidence is linked under each completed slice.
 
 ## Boundaries and ordering
 
@@ -55,7 +55,7 @@ standalone rendering. DESKHOST also does not create a separate manager Task.
 | --- | --- | --- |
 | input.device | Repurpose the existing console/system Worker and its lifecycle storage. Own source leases, control requests and bounded handler dispatch. No display or scene work. | Selected by the user. |
 | Console backend | Retain the existing CONSOLEBACKEND Task for console requests, ingress queues, models and copied views. | Preserve existing separation. |
-| Active display frontend | Proposed separate context: standard text/standalone frontend for text startup; SCRENMGR/GUI display owner for GEM startup. Only the selected mode is resident. | Placement proposal requiring selection before IM4/IM6. |
+| Active display frontend | Proposed separate context: standard text/standalone frontend for text startup; SCRENMGR/GUI display owner for GEM startup. Only the selected mode is resident. | Selected by the implementation request; delivered through IM4/IM6. |
 | Applications | Keep ordinary AES/VDI calls and their drawing in callers; Terminal remains a GEM application. | Existing migration direction. |
 
 The separate frontend proposal consumes **one additional simultaneous Task
@@ -321,6 +321,23 @@ input/manager/backend stack peaks; use deeper ownership cases only as needed.
 **Commit:** `Migrate GEM input ownership to input.device`.
 
 ## IM7 — close lifecycle and consumer-handoff boundaries
+
+Status: implemented. A different handler reattaches to the same resident service
+without receiving an older queued key; sixteen routes exhaust and retire cleanly
+(59 keyboard assertions). The copied console consumer has 20 focused checks.
+Manager pointer records retain captured window/epoch and endpoint holds; window
+withdrawal, endpoint close and queue overflow cancel the stream and release holds
+(37 assertions). Their private target records use 12 bytes each, including
+alignment: **192 upper-heap bytes per GUI service**, no text allocation. No
+reserved upper arena growth and no fixed/root/kernel/idle/per-Task bank-zero
+reservation growth. Evidence: [IM7 development record](../development/input-device-im7.json).
+
+The frontend capture pump, fixed capture wake and input callback in its private
+console binding are removed. Display/manager completion callbacks remain for
+SM3/SM4. Existing adapter fixtures now use consumer ingress and manager replay.
+The text focus/relocation check also caught Show invalidating the source rather
+than the private frontend copy; the corrected path repaints unchanged cells
+when a hidden console moves. No additional Task, VRAM or platform service.
 
 Verify attach failure, detach with queued capture, abort racing normal control
 completion, route exhaustion, cooperative consumer exit and last console/AES close.

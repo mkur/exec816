@@ -2,6 +2,8 @@
 MODULE INPUTDEVICEGUI
 USE EXEC
 USE INPUT
+USE DISPLAY
+USE AESTYPES
 USE INPUTDRIVER
 USE CONSOLECAPTURE
 USE CONSOLEDRIVER
@@ -11,7 +13,8 @@ USE AESSTATE
 USE AESCORE
 USE HEAPCORE
 
-CARD checks,ready,mode,writeCommand
+CARD checks,ready,mode,writeCommand,grantCommand,grantHeld
+DISPLAY.Grant POINTER access
 INPUT.Lease blockedPointer
 INPUT.Config pointerConfig
 
@@ -47,9 +50,19 @@ PROC StartupProbe()
 RETURN
 
 PROC Main()
+  BYTE index
 
   LET available=EXEC.AvailMem(0)
   Require(CountersStart()<>0)
+  Require(CounterGrantOpen()<>0)
+  LET service=AESSTATE.Get()
+  LET self=EXEC.FindTask(NULL)
+  FOR index=0 TO AESTYPES.CLIENTS-1 DO
+    IF service.clients(index).id<>0 AND service.clients(index).lease.task=self THEN
+      access=DISPLAY.Grant POINTER(service.clients(index).binding.displayGrant)
+    FI
+  OD
+  Require(access<>NULL)
   ready=1
   WHILE mode<>9 DO
     IF writeCommand=1 THEN
@@ -62,11 +75,21 @@ PROC Main()
         writeCommand=2
       END
     FI
+    IF grantCommand=1 THEN
+      Require(DISPLAY.Enter(access)=DISPLAY.OK)
+      grantHeld=1
+      WHILE grantCommand=1 DO
+        EXEC.Yield()
+      OD
+      Require(DISPLAY.Leave(access)=DISPLAY.OK)
+      grantHeld=0
+      grantCommand=0
+    FI
     EXEC.Yield()
   OD
+  Require(CounterGrantClose()<>0)
   Require(CountersStop()<>0)
   Require(EXEC.AvailMem(0)=available)
-  LET service=AESSTATE.Get()
   Require(service.count=0 AND AESCORE.Idle(service)<>0)
 
 RETURN

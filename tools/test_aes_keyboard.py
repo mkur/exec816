@@ -40,7 +40,7 @@ PUBLIC PROC Pump()
     captured.kind=kind^
     captured.code=code^
     captured.qualifiers=(code^ RSH 6) & 3
-    handled=DESKINPUT.Key(@captured)
+    handled=DESKINPUT.CaptureKey(@captured)
   FI
 
   EXEC.Forbid()

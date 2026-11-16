@@ -18,20 +18,12 @@ def producer(out, symbols):
         'BYTE FUNC MouseEnter()\n\n'
         '  IF boundaryTesting<>0 AND boundaryBlocked<>0 THEN\n'
         '    RETURN(0)\n  FI\n',1)
-    start = desktop.index('PUBLIC PROC Service(')
-    end = desktop.index('; Commit retained gestures', start)
-    service = desktop[start:end]
-    for old, new in (
-        ('INPUT.Take(@lease,@sample)', 'BoundaryTake(@lease,@sample)'),
-        ('      Consume(@sample)', '      BoundaryConsume(@sample)'),
-        ('      Fresh(@sample)', '      BoundaryFresh(@sample)'),
-        ('DESKMOUSE.Apply(@sample)', 'BoundaryApply(@sample)'),
-        ('        pending=0', '        BoundaryHook(3)\n        pending=0'),
-        ('      ; Transform fresh', '      BoundaryHook(2)\n      ; Transform fresh'),
-        ('  Service(bits)', '  BoundaryHook(1)\n  Service(bits)')):
-        require(service.count(old) == 1, 'Input boundary changed: '+old)
-        service = service.replace(old, new)
-    desktop = desktop[:start]+service+desktop[end:]
+    for old,new in (
+        ('      Consume(@sample)','      BoundaryConsume(@sample)'),
+        ('  DESKMOUSE.Apply(@sample)','  BoundaryApply(@sample)'),
+        ('  Fresh(@sample)','  BoundaryFresh(@sample)')):
+        require(desktop.count(old)==1,'Input boundary changed: '+old)
+        desktop=desktop.replace(old,new)
     desktop = desktop[:-len('ENDMODULE\n')]+'''
 ; Fixture-only entry at the fresh normalized-capture boundary.
 PUBLIC PROC Inject(INPUT.Event POINTER captured)
@@ -89,7 +81,7 @@ PUBLIC PROC Pump()
     captured.route=item.keyRoute
     captured.kind=INPUT.EVENT_CANCEL
     captured.code=INPUT.CANCEL_BREAK
-    handled=DESKINPUT.Key(@captured)
+    handled=DESKINPUT.CaptureKey(@captured)
   ELSE
     DESKINPUT.Inject(@captured)
   FI

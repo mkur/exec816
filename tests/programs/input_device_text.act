@@ -8,7 +8,7 @@ USE HEAPCORE
 
 CARD checks
 BYTE stage
-BYTE ARRAY line(16)
+BYTE ARRAY line(16),scroll(32)
 
 PROC Require(BYTE okay)
 
@@ -20,6 +20,7 @@ PROC Require(BYTE okay)
 RETURN
 
 PROC Main()
+  BYTE index
 
   LET before=EXEC.AvailMem(0)
   Require(CONSOLEDRIVER.Start()<>0)
@@ -27,6 +28,10 @@ PROC Main()
   LET cooked=DOS.Open(BYTE POINTER(c"CON:"),DOS.MODE_READWRITE)
   Require(cooked<>NULL)
   Require(DOS.Write(cooked,BYTE POINTER(c"counter 1\n"),10)=10)
+  FOR index=0 TO 31 DO
+    scroll(index)=10
+  OD
+  Require(DOS.Write(cooked,scroll,32)=32)
   stage=1
   Require(DOS.Read(cooked,line,16)=2)
   Require(line(0)=97 AND line(1)=10)

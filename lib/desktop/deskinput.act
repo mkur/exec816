@@ -173,6 +173,7 @@ PUBLIC PROC Stop()
     FI
     INPUTCLIENT.Close(pointerClient)
     pointerClient=NULL
+    AESINPUT.Clear()
     DESKDRAG.Cancel()
     DESKDRAG.Present()
     drawn=CONSOLEBITMAP.Cursor(CARD(cursorX),CARD(cursorY),0)
@@ -187,11 +188,6 @@ PUBLIC PROC Stop()
 
 RETURN
 
-
-; Leave captured keys queued until the menu snapshot has been committed.
-PUBLIC BYTE FUNC KeyReady()
-
-RETURN(AESGATE.SystemOwned()=0 OR DESKMENU.InputBlocked()=0)
 
 ; Return handled for graphical routes, including events captured before focus
 ; moved. Console routes continue through the existing CON translation path.
@@ -238,19 +234,6 @@ BYTE FUNC RouteKey(INPUT.Event POINTER captured)
   OD
 
 RETURN(0)
-
-; Retain a native menu key when UPDATE is busy. GEM inbox delivery above
-; does not acquire UPDATE and does not wait for a screen-manager scope.
-PUBLIC BYTE FUNC Key(INPUT.Event POINTER captured)
-  BYTE handled
-
-  handled=RouteKey(captured)
-  IF handled=DESKMENU.KEY_DEFERRED THEN
-    DeferKey(captured)
-    RETURN(1)
-  FI
-
-RETURN(handled)
 
 PUBLIC PROC ReplayKeys()
   INPUT.Event captured
@@ -351,6 +334,7 @@ RETURN(0)
 
 ; Classify fresh absolute capture once, before any deferred native replay.
 PROC Fresh(INPUT.Event POINTER sample)
+  AESSTATE.PointerTarget target
 
   ; Observe the latest cursor separately from retained gesture events.
   IF sample.kind<>INPUT.EVENT_LOSS THEN
@@ -375,10 +359,13 @@ PROC Fresh(INPUT.Event POINTER sample)
     dirty=1
   FI
 
+  EXEC.Forbid()
   IF AESMOUSE.Route(sample)=0 THEN
+    AESMOUSE.Target(@target)
     AESMOUSE.Retained()
-    AESINPUT.Push(sample)
+    AESINPUT.Push(sample,@target)
   FI
+  EXEC.Permit()
 
 RETURN
 
@@ -398,10 +385,32 @@ PUBLIC PROC CapturePointer(LONGCARD context INPUT.Event POINTER captured)
 
 RETURN
 
+; UPDATE protects live interpretation. A retained press must still name the
+; same window epoch and hit its own layer; movement follows the active gesture.
+BYTE FUNC TargetLive(INPUT.Event POINTER sample AESSTATE.PointerTarget POINTER target)
+
+  IF sample.kind<>INPUT.EVENT_BUTTON OR (sample.buttons & INPUT.LEFT)=0
+      OR target.window=0 THEN
+    RETURN(1)
+  FI
+  LET service=DESKSTATE.Get()
+  LET window=DESKCORE.Find(service,target.window)
+  IF window=NULL THEN
+    RETURN(0)
+  FI
+  IF target.epoch<>0 THEN
+    IF window.view=NULL OR window.view.epoch<>target.epoch THEN
+      RETURN(0)
+    FI
+  FI
+
+RETURN(LAYERS.Hit(@service.scene,sample.x,sample.y)=window.layer)
+
 ; Only retained manager interactions run here. Physical capture and ordinary
 ; application inbox delivery continue independently in input.device.
-PUBLIC PROC Service(LONGCARD bits)
+PUBLIC PROC Service()
   INPUT.Event sample
+  AESSTATE.PointerTarget target
   CARD count
   BYTE scope
 
@@ -418,8 +427,14 @@ PUBLIC PROC Service(LONGCARD bits)
     IF scope=0 THEN
       EXIT
     FI
-    IF AESINPUT.Pop(@sample)<>0 THEN
-      Consume(@sample)
+    IF AESINPUT.Pop(@sample,@target)<>0 THEN
+      IF TargetLive(@sample,@target)<>0 THEN
+        Consume(@sample)
+      ELSE
+        DESKMENU.Cancel()
+        DESKDRAG.Cancel()
+      FI
+      AESSNAPSHOT.Drop(target.endpoint)
     FI
     IF scope=2 THEN
       AESLOCKS.SystemEnd()
@@ -449,7 +464,7 @@ PUBLIC PROC Boundary()
   IF (owner.tc_SigRecvd & wakeMask)<>0 THEN
     bits=EXEC.SetSignal(0,wakeMask)
   FI
-  Service(bits)
+  Service()
 
 RETURN
 
