@@ -8,8 +8,9 @@ Direction adopted by the user on 2026-11-15: replace the combined presenter
 with MagiC's `SCRENMGR` structure and flow. MagiC spells the name `SCRENMGR`;
 this plan uses that spelling. SM0 records the decision and current responsibility
 map. SM1a implements scene-independent caller cursor policy; SM1b paints changed
-vertical slider positions in the caller, and SM1c adds vertical slider sizes.
-Other frame fields and the remaining manager migration are pending. Independent
+vertical slider positions in the caller; SM1c adds vertical slider sizes and
+SM1d adds horizontal position/size. SM1e resumes title/info completion next.
+Other scene ownership and manager migration remain pending. Independent
 input delivery is implemented through input.device. The
 [execution record](../../history/screnmgr-migration.md) tracks delivered slices.
 Current reference contracts continue to describe supported behavior until each
@@ -50,7 +51,7 @@ GEM4XE remains the primary graphics implementation donor.
 | AESSYSTEM.Run, DESKMENU and DESKDRAG | SCRENMGR menu/frame interaction | Separate interaction events from ordinary recipient delivery; retain source-defined capture and MCTRL lifetimes. |
 | AESLOCAL / AESWINDOW plus deferred DESKPAINT | Caller-context window operation and synchronous frame draw | Adapt frame renderer state and use existing delegated display access. The shared console packet cannot simply be called by another Task. |
 | AESGATE and turn-wide scene ownership | UPDATE for shared UI operations; short guards for copied publication | Cover every reader/mutator from the audit, including queries, registration, input-window bindings and caller-owned continuations, before removing the old gate. |
-| DESKINPUT, CONSOLEINPUT and AESDEFER | Input capture consumption and application event delivery, independent of blocked SCRENMGR | Resolve the consuming execution context and lease lifetime. Keeping a helper in the same blocked Task does not provide independent progress. |
+| input.device, DESKINPUT and CONSOLEINPUT | Independent capture and copied application delivery | Implemented by IM0–IM8. Keep capture out of the manager; AESDEFER now retains only manager/fence work during the interim scene wait. |
 | CONSOLEBACKEND and CONSOLEDRIVER.BackendTurn | Existing console stream/model backend | This Task already exists and has no scene or display lease. Preserve that separation; do not move console model work into SCRENMGR. |
 | CONSOLEFRONT / loaded Terminal | Standalone console painting where applicable; normal GEM Terminal application in GUI mode | CONSOLEFRONT already declines GUI-mode painting. Preserve text/standalone startup and shutdown while removing graphical-loop coupling. |
 | CONSOLEBITMAP / DISPLAY / VBXE completions | Physical operations, grants and completion owned by their resource users | Retire or independently service hardware work before a manager wait can block its owner. Preserve fault retention and device shutdown. |
@@ -132,6 +133,29 @@ existing short-strip renderer under the delegated grant. Text setters remain
 for the next sub-slice. See the
 [development record](../../history/screnmgr-migration.md#sm1d-synchronous-horizontal-sliders).
 
+#### SM1e — synchronous title and info setters
+
+Resume the existing uncommitted frame changes; do not layer a second path over
+them. The pinned AESWIN `ws_name` / `ws_info` / `ws_naminf` (2417–2461) checks the
+matching NAME/INFO bit, updates stored text/frame state, draws an open linked
+frame object and returns through `ws_endsw` / `update_0`. This confirms failure
+for a missing component. An iconified title remains drawable; unlinked info
+changes retain metadata for later restoration. Keep Exec's existing bounded
+owned text buffers and equal-value/cold-admission conventions.
+
+Use the existing caller packet, delegated grant and shared GEM4XE frame raster.
+A changed visible component completes before UPDATE release; hidden/unlinked
+components require no physical admission. Preserve menu-title publication,
+cache/journal obligations, clipped completion and display-failure retention.
+Remove the corresponding deferred frame dependency once that boundary passes.
+
+Check the focused optimized frame fixture: ordinary/PB calls, equal values,
+missing components, hidden/iconified state, held UPDATE, clipping, cold/warm
+admission and teardown. Keep the caller parked while checking pixels so manager
+painting cannot satisfy completion. Run host checks, record stack/resource
+costs and commit before starting the next ownership family. No QED/catalog/demo
+or release matrix.
+
 Continue with the remaining frame fields in small sub-slices. Preserve explicit
 call state and the existing display grant: equal-value return; changed-value
 mutation, visible clipping and frame painting before handler UPDATE release and
@@ -165,24 +189,50 @@ must first be reported and discussed under the governing guidance.
 
 ### SM3 — shared UI state follows UPDATE ownership
 
-Use the audit's complete ownership inventory to move live scene operations
-under UPDATE and retain short copied-publication guards. Resolve the coherent
-query and registration contracts explicitly; blindly making `wind_find` block
-on UPDATE changes the inspected MagiC query path. Preserve the return and
-retirement of already admitted client-owned effects without a foreign Obtain.
+Start only after the SM1 frame operation boundary is complete; independent
+capture is already supplied by IM0–IM8. Keep the old scene gate until the final
+cutover, rather than removing it from selected callers while readers still rely
+on it. Use the audit as an inventory, updating entries for the installed input
+service. Commit executable prerequisites separately.
 
-Remove the old scene waiter queue and turn-wide scene claim only after every
-affected entry has an owner. Use a focused preemption/ownership case with a
-competing setter/query, one retained effect and normal shutdown. Update callers,
-private-layout fixtures and current references together.
+1. **SM3a: queries and publication contract.** Inspect MagiC `_wind_get` and
+   `_wind_find` alongside current `wind_get`, `wind_find`, routing and window-view
+   publishers. Specify coherent nonblocking reads and serialization of snapshot
+   construction. Pointer routing cannot stand in for `wind_find`: it applies
+   focus/menu/MCTRL policy. Bring any changed query semantics or architectural
+   departure to the user before implementation; no automatic UPDATE Obtain.
+2. **SM3b: registration and retirement.** Give client-table publication, event
+   settlement, input-window association and endpoint close a complete owner and
+   lifetime boundary. Preserve input callback/queued-manager holds. Use short
+   publication guards for copied state; never draw or wait under Forbid.
+3. **SM3c: UPDATE-owned mutation and completion.** Assign every live window,
+   menu, Layers, paint-journal and cache operation to UPDATE, including readiness
+   scans and END. A retained caller effect must complete under that operation's
+   authority or in its caller; the manager cannot Obtain a foreign owner's
+   semaphore to reply to it. Resolve this before adding blocking manager waits.
+4. **SM3d: whole-inventory cutover.** Remove the scene waiter queue and turn-wide
+   scene claim together only after all entry/read/continuation families above
+   have owners. Retain the one current implementation and update private-layout
+   fixtures/references. Check competing setter/query, one retained effect,
+   independent input, normal preemption and clean shutdown.
+
+No replacement scene semaphore, long Forbid, GUI-specific deferred-work service
+or scheduler change is implied. Report a missing general Exec service at its
+actual dependency rather than bypassing it.
 
 ### SM4 — install the SCRENMGR event loop and retire the combined loop
 
-Run the screen-manager role on the agreed execution context. Its main loop
+Run the screen-manager role in the selected GUI frontend context; retain its
+existing large pool and the separate input/backend Tasks. Its main loop
 waits for interaction events, acquires UPDATE for actual manager work, invokes
 the shared AES window/menu helpers, releases at the source-defined boundary
 and waits again. Application drawing and synchronous setter completion do not
 require a manager turn. Input/device progress uses the SM2 arrangement.
+
+First account for every remaining paint/cache/console/fence responsibility:
+caller-owned work stays with its operation, manager interaction stays with
+SCRENMGR, and physical completion stays with its resource owner. No active DMA
+or grant borrow may need an unavailable manager turn to retire.
 
 Remove AESSYSTEM's combined paint/cache/console scheduling loop and its obsolete
 callback interface once remaining responsibilities have their intended owners.

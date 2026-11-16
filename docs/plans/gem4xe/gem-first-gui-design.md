@@ -4,7 +4,8 @@
 [Current AES contract](../../reference/aes.md) ·
 [Filesystem execution](../../architecture/filesystems.md)
 
-Status: proposed design, 2026-11-10. This note records the agreed direction after
+Status: target design, originally 2026-11-10; migration boundary updated
+2026-11-16. This note records the agreed direction after
 the [two-Counter MagiC demo](../../guides/atari-st-reference.md#two-counter-applications).
 It describes a target architecture; the current reference contracts remain
 authoritative until executable migration slices replace their implementations.
@@ -27,9 +28,11 @@ The user has selected replacing the combined presenter with MagiC's SCRENMGR
 role. The [migration plan](screnmgr-migration-plan.md) narrows the manager to
 interaction work, moves ordinary frame painting into the calling AES operation,
 and requires independent input/device progress when the manager blocks on UPDATE.
-The original system-Task diagram and responsibilities below describe the earlier
-design; the combined loop is not the selected target. Execution placement and
-resource costs remain explicit migration work.
+The [input migration](../../history/input-device-migration.md) now provides
+independent capture and copied delivery. The selected GUI frontend becomes
+SCRENMGR; input, console backend and frontend occupy three service Tasks within
+the existing map. The combined AESSYSTEM loop remains only during the staged
+scene/caller-operation migration. Its turn-wide scene ownership is not the target.
 
 Make GEM the graphical application interface. AES owns every graphical window,
 including the desktop's and terminal's windows. Application bodies use ordinary
@@ -85,54 +88,49 @@ suitable window operations into one shared AES core.
 ```mermaid
 flowchart TD
     App[GEM application Task] --> Binding[AES and VDI binding]
-    Binding --> Core[Shared AES window core]
-    Input[Input capture] --> System[AES system Task]
-    System --> Core
-    System -->|Events| App
+    Binding -->|UPDATE for mutation and frame drawing| Core[Shared AES core]
+    Capture[input.device Task] --> Copied[Held snapshots and application inboxes]
+    Copied --> App
+    Capture --> Interaction[Copied manager interactions]
+    Interaction --> Manager[SCRENMGR in selected frontend]
+    Manager -->|Wait first, then UPDATE for interaction| Core
     Core --> Geometry[Layers geometry and visibility]
-    Binding --> Render[Serialized renderer]
-    System --> Render
-    Render --> Display[Display and VBXE driver]
+    Binding --> Render[Shared GEM4XE renderer]
+    Manager --> Render
+    Render --> Display[Display driver and delegated grants]
+    Backend[Console backend Task] --> Views[Copied session views]
+    Views --> App
     App --> DOS[DOS and C file services]
-    DOS --> FS[Filesystem Task]
-    FS --> SIO[SIO worker and native IRQ transfer]
+    DOS --> FS[Filesystem and device Tasks]
 ```
 
 | Owner | Responsibility |
 | --- | --- |
-| Application Task | Its AES parameter arrays, event queue, timer resources, object/resource data, application model and private VDI workstation state. |
-| Shared AES core | Authoritative window identities, ownership, geometry, stacking, focus, menu selection, redraw obligations and UPDATE/MCTRL policy. |
-| AES system Task | Input routing, active menus, interactive gestures, window-frame and pointer work, and deferred GUI work through the same core. It owns display lifetime. |
-| Layers | Derived geometry, visibility and damage operations under AES serialization; it supplies no independent window policy. |
-| Renderer and display driver | Exclusive use of shared GSX scratch, mapping, command/staging storage and hardware, including completion and fault retirement. |
-| Filesystem and device drivers | Existing request queues, active work, cancellation and completion; their policy stays outside AES. |
+| Application Task | AES parameters, event/timer resources, model, workstation and ordinary synchronous AES/VDI execution. A frame setter completes its visible painting before releasing its handler UPDATE. |
+| Shared AES core | Window identities, geometry, stacking, focus, menu policy, redraw obligations and UPDATE/MCTRL. Live scene mutations and their retained effects have explicit UPDATE authority. |
+| input.device Task | Source acquisition/consumption/release and bounded native delivery. Consumers publish inbox readiness from copied routing without UPDATE, live scene traversal or drawing. |
+| SCRENMGR / selected frontend | Wait for manager events, obtain UPDATE for menu/frame interaction and release at MagiC's operation boundary. The current frontend retains display lifetime until the remaining migration assigns every continuation. |
+| Console backend | Stream requests, input translation and retained models. It performs no GUI drawing and does not depend on UPDATE. Standard text/standalone bitmap selects its own frontend instead of GEM. |
+| Layers | Geometry, visibility and damage under the AES operation's authority; no separate window policy. |
+| Renderer/display | Delegated physical access, shared scratch, overlays, VRAM mapping and completion/fault lifetime. Ordinary Task preemption continues while a grant is held. |
 
-Use one AES system Task by evolving the presenter's role. Do not create a Task
-per window, dialog, timer or drawing request. An application may own multiple
-windows. A VDI workstation belongs to its application, rather than implicitly
-to one window; visible-rectangle iteration and clipping select the destination.
+Do not add a Task per window, dialog, timer or draw. IM0–IM8 consumes one extra
+ordinary occupied pool relative to the former combined two-service arrangement;
+reserved bank-zero bytes are unchanged. A workstation belongs to its application,
+not one window. Rendering intersects damage, work and visible rectangles.
 
-Ordinary window calls execute shared library code in the caller. They acquire
-the necessary logical ownership, commit coherent state and publish resulting
-events before returning. Preserve each GEM call's synchronous semantics; merely
-queueing a change is insufficient when the call promises completion. Existing
-linked/resident code is sufficient; a new dynamic library loader is unnecessary.
+The current shared caller operations retain the scene gate during staging.
+SM1e completes `WF_NAME`/`WF_INFO` using MagiC AESWIN 2417–2461: reject a missing
+component, update text/frame state, draw an open linked object, then release
+UPDATE. Hidden/unlinked objects need no physical access. An iconified title is
+still linked; iconified info is retained without drawing. Existing owned bounded
+text buffers, cold display delegation and equal-value returns remain.
 
-For mouse hide/show and eligible form changes, follow MagiC's inline execution
-structure: publish coherent cursor policy, release the scene gate, apply the
-cursor through the caller's admitted display access, and request presenter
-continuation only if work remains. Preserve required scene/policy wakes and
-normal Task preemption throughout. MagiC itself invokes its scheduler on the
-ordinary AES return path; inline execution does not imply scheduling exclusion.
-The adopted [mouse completion design](gem-mouse-plan.md#inline-cursor-completion)
-specifies revision/wake ordering and fallback. This is a shared-library change;
-ordinary application calls remain unchanged.
-
-The system Task uses the same core for gestures and frame work. If an application
-owns UPDATE or rendering, it defers conflicting work and arms a wake rather than
-blocking its entire input/event loop. Pointer painting can wait for renderer
-access while capture and event delivery continue. This does not promise visible
-pointer motion while another Task holds physical ownership.
+Independent input now proceeds while manager/display ownership waits. Capture
+does not paint the pointer; the display owner renders the copied cursor state.
+The final manager loop can block on UPDATE only after scene readers and retained
+physical/caller effects have their SM3 owners. Merely putting the old combined
+loop in the selected context does not complete this design.
 
 Shared code uses explicit application contexts, with no unprotected global
 current-client pointer. Audit donor/compiler scratch and the C/native bridge
@@ -142,21 +140,26 @@ errors, lifetime holds and synchronization without repeated defensive checks.
 
 ## Logical and physical ownership
 
-Keep three distinct scopes:
+The target has application UPDATE/MCTRL and physical access, with short copied
+publication guards between them. UPDATE serializes shared UI mutation and pins
+geometry across drawing; MCTRL selects input ownership. A physical grant protects
+renderer scratch and hardware, including completion, without granting UI authority.
+Neither scope disables normal Task preemption.
 
-| Scope | Lifetime and exclusion |
-| --- | --- |
-| UPDATE / MCTRL | Application-visible recursive ownership. UPDATE stabilizes window geometry and visibility across redraw calls; MCTRL controls mouse interaction according to its own contract. Neither grants hardware access. |
-| AES scene gate | Serializes bounded shared metadata and Layers operations. Release it before drawing, blocking, callbacks or external service calls. |
-| Physical drawing unit | Serializes shared renderer state, overlays and VBXE access through completion. It can survive Task preemption, but cannot span a GUI/event or file-I/O wait. |
+AESGATE is the interim mechanism for live scene readers/writers and continuation
+handoff. It must disappear as one complete ownership cutover, not become a second
+permanent UI semaphore. Before removing it, SM3 assigns queries, registration,
+publication, input-window binding, journals/cache and retained effects as well as
+setters. MagiC queries do not simply Obtain UPDATE: preserve `wind_get`'s copied
+views and explicitly resolve `wind_find` coherence without importing pointer
+routing's focus/menu/MCTRL filtering. Changed read semantics or architectural
+departures require the user's decision under the governing guidance.
 
-An application window mutation first obtains the necessary UPDATE ownership,
-then enters the scene gate. An existing owner may mutate its own windows under
-the defined GEM rules; affected visible-rectangle walks must be invalidated.
-Snapshot the required drawing inputs and release the scene gate before acquiring
-physical access. No physical drawing path may wait for the scene gate or an AES
-reply needed to release its own ownership. System work uses nonblocking admission
-and deferred continuation where a caller would sleep.
+A caller retains its operation/UPDATE across frame painting and delegated access.
+No renderer may wait for a scene/AES reply required to free its own grant. A
+manager must not Obtain a caller's semaphore to complete that caller's retained
+effect. Cache/physical continuations require owners and retirement before the
+final SCRENMGR wait loop; no new GUI-specific platform service is assumed.
 
 Contention sleeps through ordinary Exec signals/ports. Publish waiters before
 release can wake them, recheck after waking, and treat signals as hints. Use
