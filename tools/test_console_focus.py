@@ -4,7 +4,7 @@ import adapter_state as adapter
 import argparse,hashlib,json
 import generate_tasks
 from pathlib import Path
-from native_program import ROOT,build,compiler,require,verify_machine,sha256
+from native_program import ROOT,build,compiler,require,verify_machine,sha256,read_build
 from os_boundary import emulator,run_to
 from test_dos_stack import execute,ownership
 from test_cooperative import data
@@ -24,28 +24,29 @@ def expected(stage):
     if cursor is not None:result[cursor]^=128
     return bytes(result)
 
-def run(out,mode,bank,quota=False):
+def run(out,mode,bank,quota=False,from_build=None):
     out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'tests/programs/console_focus.act'
+    profile=json.loads((ROOT/'platform/altirraos/memory-4m.json').read_text());profile['image_data_bytes']=8192
+    memory=out/'fixture-memory.json';memory.write_text(json.dumps(profile)+'\n')
     original=generate_tasks.policy_modules
     def instrument(*args,**kwargs):
         directory=original(*args,**kwargs)
-        path=directory/'consoledriver.act'
-        text=path.read_text().replace('USE EXEC\n','USE EXEC\nUSE FOCUSPROBE\n',1)
-        needle='    inputPending=CONSOLEINPUT.Service(defaultInstance,bits,inputPending)'
-        require(text.count(needle)==1,'Missing worker input boundary')
-        replacement='    IF FOCUSPROBE.hold=0 THEN\n  '+needle+'\n'
+        path=directory/'inputdriver.act'
+        from library_paths import read_source
+        text=read_source(ROOT/'lib/input/inputdriver.act').replace('USE EXEC\n','USE EXEC\nUSE FOCUSPROBE\n',1)
+        needle='        WHILE count<DRAIN_BUDGET DO'
+        require(text.count(needle)==1,'Missing device input boundary')
+        text=text.replace(needle,'        WHILE count<DRAIN_BUDGET AND FOCUSPROBE.hold=0 DO')
         if quota:
-            text=text.replace('PUBLIC CONSOLETYPES.Service POINTER FUNC GetService()',
-                'BYTE quotaCount\nPUBLIC CONSOLETYPES.Service POINTER FUNC GetService()')
-            replacement+=('      IF inputPending<>0 THEN\n        quotaCount==+1\n'
-                '        bits=EXEC.SetSignal(0,$c0000000)\n      FI\n')
-        replacement+='    ELSE\n      inputPending=1\n    FI'
-        path.write_text(text.replace(needle,replacement))
+            text=text.replace('CONST DRAIN_BUDGET=8', 'CONST DRAIN_BUDGET=8\nBYTE quotaCount',1)
+            text=text.replace('        IF count=DRAIN_BUDGET THEN',
+                '        IF count=DRAIN_BUDGET THEN\n          quotaCount==+1')
+        path.write_text(text)
         return directory
     generate_tasks.policy_modules=instrument
     try:
-        p=build(compiler(ROOT/'build/actionc'),source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,dos_mounts=[])
+        p=read_build(from_build) if from_build else build(compiler(ROOT/'build/actionc',release=True),source,out,optimize=mode=='opt',tasks=True,task_capacity=8,console=True,kernel_bank=bank,dos_mounts=[],memory_profile=memory)
     finally:generate_tasks.policy_modules=original
     def at(name):return next(x['address'] for x in p['image']['data'] if '_CONSOLEFOCUSTEST_'+name.upper()+'_' in x['name'])
     saved={};observations=[];events=[]
@@ -78,8 +79,27 @@ def run(out,mode,bank,quota=False):
             saved['screen']=b.memdump(saved['at'],960);b._cmd_ok('KEY ALL up')
             for stage in range(1,14):
                 rendezvous(f'db(${at("phase"):x})={stage}')
+                if stage==1:
+                    from generate_console import constants
+                    c=constants()
+                    number=lambda address,n:int.from_bytes(b.memdump(address,n),'little')
+                    storage=p['build']['memory']['console_storage']
+                    snapshot=number(storage['BASE']+c['SERVICE_SNAPSHOT'],3)
+                    saved['screen']=b.memdump(snapshot,960)
+                    saved['at']=number(storage['PRESENTATION']+c['PRESENTATION_SCREEN'],3)
+                    saved['cursor']=b.memdump(storage['PRESENTATION']+c['PRESENTATION_SAVEDCURSOR'],1)
+                    windows=number(at('windows'),3)
+                    model=number(windows+c['WINDOWS_ITEMS']+c['WINDOW_INSTANCE'],3)
+                    cells=number(model+c['INSTANCE_CELLS'],3)
+                    permanent=bytearray(map(glyph,b.memdump(cells,960)))
+                    cursor=number(model+c['INSTANCE_ROW'],2)*40+number(model+c['INSTANCE_COLUMN'],2)
+                    permanent[cursor]^=128
                 if stage in (1,4,6,9,10,11,12,13):
-                    screen=b.memdump(saved['at'],960);oracle=expected(stage)
+                    oracle=bytes(permanent) if stage==13 else expected(stage)
+                    for attempt in range(64):
+                        screen=b.memdump(saved['at'],960)
+                        if screen==oracle:break
+                        frames(2)
                     (out/f'stage-{stage}.screen.bin').write_bytes(screen)
                     require(screen==oracle,f'Exact tiled screen/cursor mismatch at stage {stage}: '+str([i for i,(a,c) in enumerate(zip(screen,oracle)) if a!=c][:12]))
                     observations.append(dict(stage=stage,screen_sha256=hashlib.sha256(screen).hexdigest()))
@@ -98,18 +118,22 @@ def run(out,mode,bank,quota=False):
                 address=int.from_bytes(b.memdump(at(name),3),'little')
                 print(name,{f:int.from_bytes(b.memdump(address+fields['INSTANCE_'+f.upper()],n),'little') for f,n in [('inputCount',2),('inputLost',1),('lastTick',2),('lastKey',2)]},flush=True)
             print('Focus checks/phase/status',data(b,p['image'],'checks',True),data(b,p['image'],'phase'),hex(b.peek16(adapter.STATE)),flush=True);raise
-        require(b.memdump(saved['at'],960)==saved['screen'] and b.peek(16)==saved['mask'] and b.peek(752)==saved['cursor'],'OS screen/input restoration')
+        restored=b.memdump(saved['at'],960)
+        restoration=dict(screen_differences=[i for i,(a,e) in enumerate(zip(restored,saved['screen'])) if a!=e],
+            mask=b.peek(16),expected_mask=saved['mask'],cursor=b.peek(752),expected_cursor=saved['cursor'])
+        require(not restoration['screen_differences'] and restoration['mask']==restoration['expected_mask']
+            and restoration['cursor']==restoration['expected_cursor'],'OS screen/input restoration: '+str(restoration))
         require(runtime['kernel_stack_observation']['interrupt_reserve_bytes_touched']==0,'Kernel interrupt reserve touched')
         ownership(b,p,out)
         quota_drains=0
         if quota:
-            address=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_CONSOLEDRIVER_QUOTACOUNT_'))
+            address=next(d['address'] for d in p['image']['data'] if d['name'].startswith('M_INPUTDRIVER_QUOTACOUNT_'))
             quota_drains=b.memdump(address,1)[0]
             require(quota_drains>0,'Quota boundary was not exercised')
         return dict(quota_probe=quota,quota_drains=quota_drains,status='pass',tier='development',mode=mode,bank=bank,checks=data(b,p['image'],'checks',True),build=p['build'],pin=PIN,machine=machine,runtime=runtime,observations=observations,events=events,source_inputs={str(source.relative_to(ROOT)):sha256(source),'tools/test_console_focus.py':sha256(ROOT/'tools/test_console_focus.py')})
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(2,3),default=2);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quota',action='store_true');args=parser.parse_args()
-    result=run(args.output.resolve(),args.case,args.bank,args.quota)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--case',choices=('raw','opt'),required=True);parser.add_argument('--bank',type=int,choices=(2,3),default=2);parser.add_argument('--output',type=Path,required=True);parser.add_argument('--quota',action='store_true');parser.add_argument('--from-build',type=Path);args=parser.parse_args()
+    result=run(args.output.resolve(),args.case,args.bank,args.quota,args.from_build)
     (args.output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Console focus/presentation development checks passed',args.case,args.bank,flush=True)

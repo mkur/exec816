@@ -1,10 +1,14 @@
 MODULE CONSOLEFOCUSTEST
 USE FOCUSPROBE
+USE INPUTDRIVER
+USE INPUTDEVICE
 USE EXEC
 USE EXECLISTS
 USE HEAPCORE
 USE CONSOLE
 USE CONSOLEWINDOWS
+USE CONSOLEMIRROR
+USE CONSOLEFRONT
 USE CONSOLEDRIVER
 USE CONSOLEFOREGROUND
 USE CONSOLEINPUT
@@ -65,8 +69,8 @@ PROC Clean(CONSOLETYPES.Window POINTER entry)
   CONSOLETYPES.Instance POINTER instance
 
   view=CONSOLETYPES.Presentation POINTER(entry.view)
-  instance=CONSOLETYPES.Instance POINTER(entry.instance)
-  WHILE instance.dirtyRows<>0 OR view.index<>instance.lineStart+instance.column
+  instance=CONSOLEMIRROR.Model(entry)
+  WHILE CONSOLEFRONT.Runnable()<>0 OR instance.dirtyRows<>0 OR view.index<>instance.lineStart+instance.column
       OR entry.busy<>0 DO
     EXEC.Yield()
   OD
@@ -100,10 +104,9 @@ RETURN
 ; Resume pumping after capture identities have been tested across controls.
 PROC Unfreeze()
 
-  LET service=CONSOLEDRIVER.GetService()
   EXEC.Forbid()
   FOCUSPROBE.hold=0
-  EXEC.Signal(@service.task,$40000000)
+  EXEC.Signal(INPUTDRIVER.Task(),INPUTDEVICE.KEYBOARD_MASK)
   EXEC.Permit()
 
 RETURN
@@ -229,7 +232,9 @@ PROC Overflow()
     EXEC.Yield()
   OD
 
-  Require(a.inputCount=0 AND b.inputCount=64 AND b.inputLost=0)
+  ; A raw ring burst also saturates the bounded copied ingress queue. Both
+  ; recipients report their own loss instead of returning an invented prefix.
+  Require(a.inputCount=0 AND b.inputCount=0 AND b.inputLost<>0)
   ra.io_Command=EXEC.CMD_READ
   ra.io_Data=keys
   ra.io_Length=64
@@ -238,10 +243,8 @@ PROC Overflow()
   rb.io_Command=EXEC.CMD_READ
   rb.io_Data=keys
   rb.io_Length=64
-  Require(EXEC.DoIO(EXEC.IORequest POINTER(rb))=0 AND rb.io_Actual=64)
-  FOR index=0 TO 63 DO
-    Require(keys(index)=98)
-  OD
+  Require(EXEC.DoIO(EXEC.IORequest POINTER(rb))=CONSOLETYPES.CONERR_INPUTOVERFLOW
+      AND rb.io_Actual=0)
 
   Require(a.inputLost=0)
   Clean(wa)
@@ -261,7 +264,7 @@ PROC CloseCapture()
   EXEC.CloseDevice(EXEC.IORequest POINTER(ra))
   Require(EXEC.OpenDevice(device,first,EXEC.IORequest POINTER(ra),0)=0)
   Unfreeze()
-  WHILE capture.tail<>capture.head DO
+  WHILE capture.tail<>capture.head OR b.inputCount=0 DO
     EXEC.Yield()
   OD
 

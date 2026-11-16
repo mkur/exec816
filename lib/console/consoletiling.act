@@ -552,8 +552,10 @@ PUBLIC BYTE FUNC Show(LONGCARD unit CARD left,top)
   view.focused=0
   view.generation==+1
   view.presentedGeneration=0
-  instance.changeTick=DISPLAYADAPTER.Ticks()
-  CONSOLECORE.Dirty(instance,0,instance.count)
+  ; Relocation invalidates the frontend copy even when source cells match.
+  LET model=CONSOLETYPES.Instance POINTER(view.instance)
+  model.changeTick=DISPLAYADAPTER.Ticks()
+  CONSOLECORE.Dirty(model,0,model.count)
   IF windows.focusSlot=255 THEN
     Select(entry)
   FI
