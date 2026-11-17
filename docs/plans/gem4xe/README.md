@@ -79,6 +79,9 @@ selection. Changed/custom forms keep their paths. M_ON CPU falls from about
 5.30 to 4.28 ms in the loaded pair, with unchanged pixels, grants and commands;
 recipient selection and guard/wake work remain separate follow-ups.
 
+Conditional M_ON recipient selection is [backlogged as GEM-B1](#gem-b1-conditional-recipient-selection-on-m_on),
+deferred at the user's request. It is not the next active implementation slice.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:
@@ -1146,3 +1149,39 @@ choosing a kernel/service boundary does not itself establish a new license grant
 The [B0 development baseline](../../development/bitmap-console-b0.json) records
 26 graphical workloads and the current text-console timings, with observer/replay
 separation. It is not desktop or hardware qualification.
+
+## Backlog
+
+### GEM-B1: Conditional recipient selection on M_ON
+
+**Status: deferred by the user on 2026-11-17.** Return to this item when the user
+resumes it; no implementation or scheduled work is requested now.
+
+The [cached built-in show slice](../../history/gem-mouse-show.md) leaves ordinary
+AES `M_ON` calling `AESCURSOR.Select` every time. The latest passive trace charges
+about **0.56 ms CPU** to that inclusive selection path. MagiC's
+`gm_show` → `mouse_on` → `v_show_c` uses the retained form. Exec must still select
+the correct recipient after real routing changes while preserving Task
+preemption. How often the existing selection is unnecessary remains unmeasured;
+0.56 ms is not a promised saving.
+
+The bounded proposal is to use the existing `MOUSE_CURSOR_DIRTY` state to skip
+recipient selection on ordinary M_ON when routing is unchanged. Before changing
+the path:
+
+- Audit dirty-state producers and consumers for pointer motion/capture, focus,
+  window/visibility, MCTRL, endpoint retirement and input loss.
+- Establish that pending selection survives errors and changes while hidden;
+  specifically check the current clear-before-install behavior on failure.
+- Measure whether the flag is actually clear at M_ON in the MGVIEW fixture.
+
+Keep raw VDI and form-setting policy, custom-form handling, guards, display
+admission/fences and completion semantics intact. Guard consolidation and
+waiter-scan changes are separate work; do not combine them with this item.
+
+Completion requires focused native policy/routing checks for clean and dirty
+shows, relevant transitions while hidden and selection failure/retry, plus one
+loaded MGVIEW pair with unchanged APP and C provider where possible. Verify
+pixels, lifetime/guard behavior and normal public results; record skip frequency,
+actual CPU cost and reserved bank-zero delta. Follow the development tier, with
+no QED, catalog, demo refresh or release matrix. Commit the passing slice.
