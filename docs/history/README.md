@@ -1,5 +1,9 @@
 # Historical records
 
+- [Full-height GEM mask records](gem-mask-height.md): work-bounded record
+  heights replace the sixteen-row cap, with emitted boundary/pixel checks
+  and lower MGVIEW copy, scrollbar CPU and observed completion latency.
+
 - [Selected-scrollbar raster audit](gem-scrollbar-raster-audit.md): passive
   preparation/traversal/clear/publication costs, donor comparison and a proposed
   reduction of repeated row-advance work; drawing code remains unchanged.

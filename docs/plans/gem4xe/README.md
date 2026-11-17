@@ -17,9 +17,11 @@ separates one aligned interior copy from bounded edge preservation. Its
 application bytes fixed while measuring copy CPU and physical admissions.
 
 The [selected-scrollbar raster audit](../../history/gem-scrollbar-raster-audit.md)
-identifies repeated row-advance calculation in the mask producer as a concrete
-next reduction. The tracing and MagiC/GEM4XE comparison are complete; that
-optimization is not implemented.
+identified repeated mask-record construction and row advances. The completed
+[full-height mask slice](../../history/gem-mask-height.md) replaces its proposed
+hoisting-only optimization: narrow operations now use their complete height
+within the existing raw-list work budget, reducing scrollbar records from
+101 to 36 and measured paint CPU from 31–32 to about 14 ms.
 
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use

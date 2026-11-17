@@ -172,7 +172,17 @@ Caller-local AES objects whose complete extent, including outward borders, is
 at most 32 rows use one callback per visible intersection. Larger objects retain
 16-row strips, even for short exposed portions. Internal command lists retain
 their 64-record/8,192-access limits and may drain within a callback. Native
-presenter batches and the offscreen widget buffer remain limited to 16 rows.
+wide widget batches retain 16-row scratch strips. Narrow frame sides use a
+compact 8/16-byte pitch for up to 240 rows within the same 5,120-byte buffer.
+These scratch/callback limits are separate from command record heights.
+
+The private GEM mask producer emits the largest record allowed by the remaining
+height, VBXE's 256-row encoding and the 8,192-access budget. Copy mode costs
+two accesses per byte; other modes cost three. Each list still holds at most
+64 records and 8,192 accesses. Source/destination advances are calculated once
+only when the operation needs multiple records. This changes command encoding,
+not physical ownership or Task preemption. See the
+[full-height mask record](../history/gem-mask-height.md) for development evidence.
 
 The private `GemDrawingSolidBorrow` entry admits only a solid replacement fill,
 using the same grant, overlay, fence and release lifecycle. Its VDI caller bounds
@@ -189,8 +199,8 @@ overlap-safe BCB encoder, synchronous completion and ordinary timeout recovery.
 The maximum is one record and 153,600 source/destination bus accesses. It needs
 no staging. Same-parity masked-edge copies capture their source columns in one
 grant, then use a second grant for the full aligned interior and edge
-restoration. The mask producer retains sixteen-row records and the existing
-count/work bounds; those record boundaries no longer split the interior copy
+restoration. The mask producer uses the existing count/work bounds with heights
+up to 256 rows; those record boundaries do not split the interior copy
 or require a new admission. Its existing upper buffer preserves source edges
 across the first handoff, including horizontal/diagonal overlap.
 Other Tasks can preempt the drawing owner while its grant remains held.
@@ -240,10 +250,11 @@ the [mouse-call contract](aes.md) and [raw VDI contract](gem-vdi.md#mouse-device
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.
 The GEM adapter's `GemDrawingCopyBorrow` uses this driver under a delegated
 display grant. It stages all packed source edges before writes and divides
-the translation into overlap-safe strips of at most sixteen rows and the
-existing 8,192-work-unit limit. Each strip fences and restores overlays before
-releasing physical access. Its caller retains the descriptor and 480-byte
-upper edge buffer until completion or proven quiescence; reset-required faults
+the same-parity screen operation into source-edge capture and one retained
+interior/edge-restoration grant, as described above. Each grant restores
+intersecting overlays and fences before releasing physical access. Its caller
+retains the descriptor and 480-byte upper edge buffer until completion or proven
+quiescence; reset-required faults
 retain unsafe ownership through the existing display failure path. Scratch at
 `$36000` is borrowed only within physical access, with no new persistent VRAM.
 The generated [descriptor](../../abi/bitmap.json) contains two 10-byte surfaces
@@ -271,9 +282,9 @@ synchronous invocation. Public list records still receive complete validation
 before any of that list executes. A later public call validates again; lifecycle
 and fault transitions retain their own checks.
 
-Copies use opaque mode zero, including zero-valued source pixels. Each chunk
-is at most sixteen rows and 8,192 estimated bus accesses; errors may leave a
-completed prefix of chunks, so callers must invalidate presentation after a
+Copies use opaque mode zero, including zero-valued source pixels. Generic-surface
+driver chunks are at most sixteen rows and 8,192 estimated bus accesses; errors
+may leave a completed prefix of chunks, so callers must invalidate presentation after a
 fault. There is no new kernel selector or advertised VDI opcode. Signed list
 steps support X ±1 and Y −4096…4095; validation checks both address extremes
 and rejects VRAM wrap and command-arena overlap before submission.

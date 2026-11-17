@@ -13,20 +13,17 @@ class VbxeTables(unittest.TestCase):
         self.assertEqual(data['GemRecordOffsets'][1], list(range(0, 1345, 21)))
         for factor in (2, 3):
             limits = data[f'GemRowLimit{factor}'][1]
-            costs = data[f'GemWork{factor}'][1]
             self.assertEqual(len(limits), 512)
-            self.assertEqual(len(costs), 8192)
+            self.assertEqual(data[f'GemRowLimit{factor}'][0], 2)
             for width, limit in enumerate(limits, 1):
                 self.assertLessEqual(width*factor*limit, 8192)
-                self.assertTrue(limit == 16 or width*factor*(limit+1) > 8192)
-                for rows in range(1, 17):
-                    index = ((rows-1) << 9) | (width-1)
-                    self.assertEqual(costs[index], sum([width*factor]*rows))
-                    self.assertLessEqual(costs[index]+8192, 65535)
-        for stride in (320, 640, 1024, 1280):
-            offsets = data[f'GemStep{stride}'][1]
-            self.assertEqual(offsets[0], 0)
-            self.assertEqual([b-a for a, b in zip(offsets, offsets[1:])], [stride]*16)
+                self.assertTrue(limit == 256 or width*factor*(limit+1) > 8192)
+        costs = data['GemWork3'][1]
+        self.assertEqual(len(costs), 8192)
+        for rows in range(1, 17):
+            for width in range(1, 513):
+                index = ((rows-1) << 9) | (width-1)
+                self.assertEqual(costs[index], width*3*rows)
         for cost in (96, 120):
             for remaining in range(8193):
                 count=data[f'GemGlyphCapacity{cost}'][1][remaining>>3]
@@ -47,7 +44,7 @@ class VbxeTables(unittest.TestCase):
             p = Path(folder)/'tables.h'
             first = generate(p)
             self.assertEqual(generate(p), first)
-            self.assertEqual(first['payload_bytes'], 37457)
+            self.assertEqual(first['payload_bytes'], 21961)
             self.assertIn('static const ULONG GemScreenRows[256]', p.read_text())
 
 

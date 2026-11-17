@@ -17,13 +17,13 @@ def tables():
         raise ValueError('Revisit the bounded VBXE table layout for these limits')
     result = {'GemRecordOffsets': (2, [n*21 for n in range(count+1)])}
     for factor in (2, 3):
-        result[f'GemRowLimit{factor}'] = (1, [min(rows, work//(width*factor))
+        result[f'GemRowLimit{factor}'] = (2, [min(256, work//(width*factor))
                                             for width in range(1, 513)])
-        result[f'GemWork{factor}'] = (2, [width*height*factor
-                                        for height in range(1, rows+1)
-                                        for width in range(1, 513)])
-    for stride in (320, 640, 1024, 1280):
-        result[f'GemStep{stride}'] = (2, [n*stride for n in range(rows+1)])
+    # Glyph runs still use the small-height work table. Mask records calculate
+    # their bounded work directly and need no row/stride product tables.
+    result['GemWork3'] = (2, [width*height*3
+                            for height in range(1, rows+1)
+                            for width in range(1, 513)])
     for cost in (96, 120):
         result[f'GemGlyphCapacity{cost}'] = (1, [min(count, units*8//cost)
                                                 for units in range(work//8+1)])

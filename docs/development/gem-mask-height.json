@@ -1,0 +1,600 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Private GEM mask-record heights follow hardware/work bounds; no ownership, scratch or application-flow change",
+  "decision": "User approved removing the fixed sixteen-row mask ceiling while retaining 64 records and 8192 work per list",
+  "captures": {
+    "before": {
+      "path": "build/scrollbar-audit/results.json",
+      "sha256": "cffa0533e75d5603e2e4f494f293f175c10c38887efc87af8c68cc3e0e7addaa"
+    },
+    "after": {
+      "path": "build/gem-mask-height/scroll/results.json",
+      "sha256": "dd74b2e925e7f5d2fe602e3545b4c32f7234761efc13153c88fc937d112084a3"
+    }
+  },
+  "inputs": {
+    "native_sha256": "6e10a61da254a766c505e3e089cf9628313940ade26502b95f24dfc4a4b8ce1c",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "providers": {
+    "before": {
+      "path": "build/odd-edge-copy/viewer/c-image.json",
+      "sha256": "e1b2ee20ee6414a9de6c03cb5d9b7aab9e42ca9237b2d13af70333ffabbad014"
+    },
+    "after": {
+      "path": "build/gem-mask-height/viewer/c-image.json",
+      "sha256": "f721bf47244d30fc89a8007065f464860f0142284e4ca575f0b6cbdf0d1bf87c"
+    }
+  },
+  "emitted_probe": {
+    "path": "build/gem-mask-height/probe/results.json",
+    "sha256": "dd0b333e1758f57e5346232d9722066f207968d42e44be0e7aea426b61c5727e",
+    "case_count": 59,
+    "mask_case_count": 18,
+    "guards": "intact"
+  },
+  "table_probes": {
+    "raw": {
+      "path": "build/gem-mask-height/tables-raw/results.json",
+      "sha256": "313a5f178c69786b838e086181ae399f9c5e0b3d9f32e4644273e1c26b07c43e",
+      "status": "pass",
+      "guards": "intact"
+    },
+    "opt": {
+      "path": "build/gem-mask-height/tables-opt/results.json",
+      "sha256": "3a09aba16476ed31253ee1cb05b87fd15f411b3ea3111a4be1b558ec4ca716bf",
+      "status": "pass",
+      "guards": "intact"
+    }
+  },
+  "tables": {
+    "generator_sha256": "9ba05977243aa55879f04db1e448894d623f93587237672b385e26331a89d374",
+    "contract_sha256": "65f4af88738d1ce5801399138f5a8a5ef73fba57c12c4217de09e28dabc2a1b7",
+    "header_sha256": "25ac7b42128af00c9e1abf6723c0c2343980abcc122517a35a7158a91d0ceb06",
+    "tables": {
+      "GemRecordOffsets": {
+        "element_bytes": 2,
+        "entries": 65,
+        "bytes": 130
+      },
+      "GemRowLimit2": {
+        "element_bytes": 2,
+        "entries": 512,
+        "bytes": 1024
+      },
+      "GemRowLimit3": {
+        "element_bytes": 2,
+        "entries": 512,
+        "bytes": 1024
+      },
+      "GemWork3": {
+        "element_bytes": 2,
+        "entries": 8192,
+        "bytes": 16384
+      },
+      "GemGlyphCapacity96": {
+        "element_bytes": 1,
+        "entries": 1025,
+        "bytes": 1025
+      },
+      "GemGlyphCapacity120": {
+        "element_bytes": 1,
+        "entries": 1025,
+        "bytes": 1025
+      },
+      "GemScreenRows": {
+        "element_bytes": 4,
+        "entries": 256,
+        "bytes": 1024
+      },
+      "GemFillRows": {
+        "element_bytes": 1,
+        "entries": 325,
+        "bytes": 325
+      }
+    },
+    "payload_bytes": 21961
+  },
+  "table_payload_bytes": {
+    "before": 37457,
+    "after": 21961,
+    "delta": -15496
+  },
+  "readonly_upper_bank_reserved_bytes": 65536,
+  "samples": [
+    {
+      "action": "down",
+      "before": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 53.75004052840583,
+          "charged_cpu_ms": 42.333435300452926,
+          "off_cpu_ms": 2.099653358782823,
+          "interrupt_ms": 9.316951869170076
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 171.39117453434625,
+          "charged_cpu_ms": 128.53002414788145,
+          "off_cpu_ms": 14.827687315243333,
+          "interrupt_ms": 28.033463071221448
+        }
+      },
+      "after": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 34.44005249662028,
+          "charged_cpu_ms": 27.044710937312775,
+          "off_cpu_ms": 1.4192695301101386,
+          "interrupt_ms": 5.976072029197368
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 134.0190504652661,
+          "charged_cpu_ms": 96.92731248035254,
+          "off_cpu_ms": 15.81883591140984,
+          "interrupt_ms": 21.272902073503726
+        }
+      },
+      "completion_ms": {
+        "before": 180.84098909045798,
+        "after": 140.1118443032568,
+        "after_bracket": [
+          122.43271932211131,
+          140.1118443032568
+        ]
+      },
+      "frame": {
+        "before": {
+          "elapsed_ms": 39.777044429000576,
+          "charged_cpu_ms": 31.41233388639923,
+          "off_cpu_ms": 1.4684674905797888,
+          "interrupt_ms": 6.896243052021557
+        },
+        "after": {
+          "elapsed_ms": 18.27034631698993,
+          "charged_cpu_ms": 14.396183140465112,
+          "off_cpu_ms": 0.7331764825290853,
+          "interrupt_ms": 3.1409866939957345
+        },
+        "before_exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.6922956557778001,
+          "renderer": 0.9728227083124817,
+          "display_access": 0.9728931924965358,
+          "batch_control": 0.13793754819356085,
+          "callback_control": 0.15901231922568895,
+          "scratch_clear": 0.030660620063463956,
+          "fills": 0.07548856112176988,
+          "solid_encoding": 3.640085201281684,
+          "traversal": 0.5380762610677791,
+          "object_callback": 0.2723508871844247,
+          "object_preparation": 0.7051942614596711,
+          "object_raster": 0.6418289799951788,
+          "object_adapter": 0.5897411679793173,
+          "pattern_encoding": 0.09099508161363672,
+          "mask_encoding": 15.505886134210348,
+          "queue": 0.06308334472827642,
+          "submission": 0.004440503595398228,
+          "driver_submission": 0.41176860324311826,
+          "fence": 1.4638155344322288,
+          "upload": 4.119800557952801,
+          "overlays": 0.008105681166203116,
+          "damage": 0.3160510812978676
+        },
+        "after_exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.698145843054277,
+          "renderer": 0.9635187960173617,
+          "display_access": 0.3704648713875094,
+          "batch_control": 0.1376556114573451,
+          "callback_control": 0.14851017580165185,
+          "scratch_clear": 0.030660620063463956,
+          "fills": 0.0760524345942014,
+          "solid_encoding": 4.245262405568814,
+          "traversal": 0.5432216065037166,
+          "object_callback": 0.2718574978960471,
+          "object_preparation": 0.7042779670669699,
+          "object_raster": 0.6341462039332995,
+          "object_adapter": 0.6075736665449637,
+          "pattern_encoding": 0.08556779944148332,
+          "mask_encoding": 1.1682048665100038,
+          "queue": 0.06266043962395279,
+          "submission": 0.004440503595398228,
+          "driver_submission": 0.4068347103593425,
+          "fence": 1.4325205567122792,
+          "upload": 1.481295612077606,
+          "overlays": 0.014096836810788027,
+          "damage": 0.3092141154446354
+        },
+        "before_records": {
+          "solid": 29,
+          "mask_inferred": 72,
+          "submitted": 101,
+          "other": 0
+        },
+        "after_records": {
+          "solid": 29,
+          "mask_and_other": 7,
+          "submitted": 36
+        },
+        "before_lists": [
+          22,
+          43,
+          36
+        ],
+        "after_lists": [
+          19,
+          12,
+          5
+        ],
+        "mask_calls": 7,
+        "object_ids": [
+          9,
+          10
+        ]
+      },
+      "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+      "copy_display_grants": 2,
+      "typed_copy_units": 1,
+      "copy_owned_intervals": [
+        {
+          "start": 70484126.75,
+          "end": 70498382.25,
+          "elapsed_ms": 8.03829828624755,
+          "charged_cpu_ms": 6.6286850893528,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.409613196894749
+        },
+        {
+          "start": 70499205.5,
+          "end": 70540816.25,
+          "elapsed_ms": 23.463198092979916,
+          "charged_cpu_ms": 17.959933970416376,
+          "off_cpu_ms": 1.4192695301101386,
+          "interrupt_ms": 4.083994592453399
+        }
+      ]
+    },
+    {
+      "action": "up",
+      "before": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 53.860841665738626,
+          "charged_cpu_ms": 42.38065970376907,
+          "off_cpu_ms": 2.1529394019276014,
+          "interrupt_ms": 9.327242560041952
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 171.85256400316334,
+          "charged_cpu_ms": 128.88963445492465,
+          "off_cpu_ms": 14.822964874911719,
+          "interrupt_ms": 28.139964673326954
+        }
+      },
+      "after": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 35.69988680240041,
+          "charged_cpu_ms": 28.08287248424326,
+          "off_cpu_ms": 1.46938378497249,
+          "interrupt_ms": 6.1476305331846595
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 135.3289285417245,
+          "charged_cpu_ms": 98.0437114715829,
+          "off_cpu_ms": 15.723400326200805,
+          "interrupt_ms": 21.561816743940827
+        }
+      },
+      "completion_ms": {
+        "before": 200.90811822735097,
+        "after": 140.3390853126467,
+        "after_bracket": [
+          122.0047393565358,
+          140.3390853126467
+        ]
+      },
+      "frame": {
+        "before": {
+          "elapsed_ms": 40.323508307970776,
+          "charged_cpu_ms": 31.877529501155237,
+          "off_cpu_ms": 1.4664234492422246,
+          "interrupt_ms": 6.979555357573314
+        },
+        "after": {
+          "elapsed_ms": 18.11358949165397,
+          "charged_cpu_ms": 14.299831260863375,
+          "off_cpu_ms": 0.6832031960348417,
+          "interrupt_ms": 3.1305550347557514
+        },
+        "before_exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.697018096109414,
+          "renderer": 0.9728227083124817,
+          "display_access": 1.3719746426099446,
+          "batch_control": 0.13744415890518322,
+          "callback_control": 0.1538669737897513,
+          "scratch_clear": 0.031083525167787597,
+          "fills": 0.07626388714636324,
+          "solid_encoding": 3.6252835226303564,
+          "traversal": 0.5494242147004633,
+          "object_callback": 0.2719984662641549,
+          "object_preparation": 0.7051237772756171,
+          "object_raster": 0.635696855982486,
+          "object_adapter": 0.6010891216120013,
+          "pattern_encoding": 0.08563828362553726,
+          "mask_encoding": 15.52005345520519,
+          "queue": 0.06287189217611461,
+          "submission": 0.004510987779452169,
+          "driver_submission": 0.4037334062609691,
+          "fence": 1.529295341418339,
+          "upload": 4.125086871756847,
+          "overlays": 0.008387617902418876,
+          "damage": 0.3088616945243656
+        },
+        "after_exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.6977229379499533,
+          "renderer": 0.965351384802764,
+          "display_access": 0.3694076086267002,
+          "batch_control": 0.131875908364922,
+          "callback_control": 0.1536555212375895,
+          "scratch_clear": 0.03094255679967972,
+          "fills": 0.07591146622609352,
+          "solid_encoding": 3.630499352250348,
+          "traversal": 0.5552039177928865,
+          "object_callback": 0.2664302157238937,
+          "object_preparation": 0.7055466823799408,
+          "object_raster": 1.2728033956460512,
+          "object_adapter": 0.5782522459785248,
+          "pattern_encoding": 0.0853563468893215,
+          "mask_encoding": 1.1863193018118663,
+          "queue": 0.06935643710907709,
+          "submission": 0.004440503595398228,
+          "driver_submission": 0.3958391776469278,
+          "fence": 1.3327149520919,
+          "upload": 1.4750930038808592,
+          "overlays": 0.008035196982149176,
+          "damage": 0.3090731470765275
+        },
+        "before_records": {
+          "solid": 29,
+          "mask_inferred": 72,
+          "submitted": 101,
+          "other": 0
+        },
+        "after_records": {
+          "solid": 29,
+          "mask_and_other": 7,
+          "submitted": 36
+        },
+        "before_lists": [
+          22,
+          43,
+          36
+        ],
+        "after_lists": [
+          19,
+          12,
+          5
+        ],
+        "mask_calls": 7,
+        "object_ids": [
+          9,
+          10
+        ]
+      },
+      "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+      "copy_display_grants": 2,
+      "typed_copy_units": 1,
+      "copy_owned_intervals": [
+        {
+          "start": 70979696.25,
+          "end": 70993889.0,
+          "elapsed_ms": 8.00291522585247,
+          "charged_cpu_ms": 6.5949936493750165,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.4079215764774542
+        },
+        {
+          "start": 70994712.875,
+          "end": 71038618.25,
+          "elapsed_ms": 24.757076259658096,
+          "charged_cpu_ms": 19.031364052220322,
+          "off_cpu_ms": 1.46938378497249,
+          "interrupt_ms": 4.256328422465283
+        }
+      ]
+    }
+  ],
+  "full_window_comparison": {
+    "before_capture": {
+      "path": "build/scrollbar-audit/current.bgra",
+      "sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4"
+    },
+    "after_capture": {
+      "path": "build/gem-mask-height/scroll/current.bgra",
+      "sha256": "21d3437945658efeded22510fdcdc0d0422ba03c317d2ef22e02bace74f1cc48"
+    },
+    "rectangle": [
+      0,
+      11,
+      633,
+      222
+    ],
+    "pixels": 140526,
+    "scanout": [
+      672,
+      240
+    ],
+    "stride": 2688,
+    "horizontal_border": 16,
+    "exact": true,
+    "before_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c",
+    "after_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c"
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "process_lifetimes": 3,
+    "live_tasks_after": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 442,
+        "untouched_above_floor": 838
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 343,
+        "untouched_above_floor": 713
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 128,
+        "untouched_above_floor": 928
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 312,
+        "untouched_above_floor": 744
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 149,
+        "untouched_above_floor": 907
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 720,
+        "untouched_above_floor": 1584
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 1298,
+        "untouched_above_floor": 1006
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 70,
+        "untouched_above_floor": 186
+      }
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "includes_guards_alignment_unused": true,
+    "matched_budget_reservations_pools": true
+  },
+  "host": {
+    "status": "pass",
+    "tests": 724,
+    "skipped": 4,
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'"
+  },
+  "build_scope": {
+    "recompiled_provider_sources": [
+      "ports/gem4xe/adapter/gem-vbxe.c"
+    ],
+    "regenerated": "gem-vbxe-tables.h",
+    "reused_provider_objects": 56,
+    "reused_apps": [
+      "MGVIEW"
+    ],
+    "rebuilt_native_loader": true,
+    "small_emitted_probes": [
+      "screen-copy/masks optimized",
+      "table loads raw",
+      "table loads optimized"
+    ],
+    "qed": false,
+    "counter": false,
+    "catalog": false,
+    "demo": false
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "clean": true,
+    "local_override": false
+  },
+  "source_sha256": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "9d368b3e4120f70824efea5d640923be03ec1cbee87fc44353c34f5b69cdad32",
+    "tools/generate_vbxe_tables.py": "9ba05977243aa55879f04db1e448894d623f93587237672b385e26331a89d374",
+    "tools/test_screen_copy.py": "31cea704869cdbb69891e2b459d6136f1b975b59c0746f59cf239323697ee037",
+    "tests/programs/screen_copy.c": "413084dde4263a4789f1bfa25ef99cbb5c90447c7b041724afe284e8d7fef534",
+    "tests/programs/vbxe_tables.c": "c42f4b6d824b5b81a7fa4b877d36bd41d86ea209280b48af184a274eb0838df3",
+    "tools/mgview_frame_trace.py": "7e24044ada266ff8e761f5bc114b31d349f3270e19ec559b00ff49bdb5dc8825"
+  }
+}

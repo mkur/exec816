@@ -48,16 +48,15 @@ void BuilderProbe(void)
      * entries. Arithmetic here is an oracle, never production construction. */
     for (y=1;y<=16;y++) for (i=1;i<=512;i++) {
         j=((y-1)<<9)|(i-1);
-        builder_check(GemWork2[j]==(ULONG)y*i*2);
         builder_check(GemWork3[j]==(ULONG)y*i*3);
     }
     for (i=1;i<=512;i++) {
         limit=GemRowLimit2[i-1];
-        builder_check(limit<=16 && (ULONG)limit*i*2<=8192 &&
-            (limit==16 || (ULONG)(limit+1)*i*2>8192));
+        builder_check(limit<=256 && (ULONG)limit*i*2<=8192 &&
+            (limit==256 || (ULONG)(limit+1)*i*2>8192));
         limit=GemRowLimit3[i-1];
-        builder_check(limit<=16 && (ULONG)limit*i*3<=8192 &&
-            (limit==16 || (ULONG)(limit+1)*i*3>8192));
+        builder_check(limit<=256 && (ULONG)limit*i*3<=8192 &&
+            (limit==256 || (ULONG)(limit+1)*i*3>8192));
     }
     /* Full-height private geometry and exact row-limit transitions. Reads
      * check both the written rectangle and its untouched row suffix. */
@@ -78,7 +77,7 @@ void BuilderProbe(void)
         }
     }
     /* Record-capacity flush, exact work-capacity flush, then each supported
-     * stride with a tail chunk. A final drain also resets the write cursor. */
+     * stride across a tall record. A final drain also resets the write cursor. */
     for (i=0;i<65;i++) blit_fill(0x60000UL+i,128,1,1,(UBYTE)i);
     blit_run();
     builder_check(VbxeOwnerRead(&display,0x60000UL,builderReadback,65)==DISPLAY_OK);

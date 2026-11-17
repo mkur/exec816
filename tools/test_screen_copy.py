@@ -67,11 +67,82 @@ def corpus():
     for name,fail in [('edge-capture-submit',1),('edge-read',3),('edge-write',6),
                       ('interior-submit',7),('edge-restore-submit',8),('final-fence',9)]:
         add('fault-'+name,(1,22,1,30,616,192),fail=fail,status=5)
+    # Exercise the shared mask producer directly, including the height byte's
+    # 256-row encoding, compact frame pitches and multi-bank chunk advances.
+    def mask(name,bytes,rows,mode=0,ss=1280,ds=512,am=255,xm=0,repeats=1,fail=0):
+        add('mask-'+name,(0,0,0,0,0,0),direct=2,fail=fail,status=5 if fail else 0)
+        result[-1]['mask']=(0,0x60000,ss,ds,bytes,rows,repeats,am,xm,mode)
+    for mode in (0,3,4,5):
+        mask('height-256-mode-'+str(mode),1,256,mode)
+    mask('exact-work',16,256)
+    mask('tail-and-wide-steps',17,256)
+    mask('masked-tail-and-wide-steps',17,256,3)
+    mask('three-chunks',273,21,3)
+    mask('full-width',512,256,3)
+    mask('record-capacity',1,1,repeats=65)
+    mask('work-capacity',16,256,repeats=2)
+    mask('fault-second-list',512,11,3,fail=2)
+    mask('stipple',7,91,4,ss=0,ds=32,am=0,xm=0xf0)
+    mask('compact-copy',7,182,ss=16,ds=320)
+    mask('low-edge-and',1,182,4,ss=0,ds=320,am=0,xm=0xf0)
+    mask('low-edge-or',1,182,3,ss=16,ds=320,am=0x0f)
+    mask('high-edge-and',1,182,4,ss=0,ds=320,am=0,xm=0x0f)
+    mask('high-edge-or',1,182,3,ss=16,ds=320,am=0xf0)
     return result
+
+
+def replay_mask(case,raw):
+    status,enters,leaves,submits,unexpected,count,lists,reads,writes=struct.unpack_from('<9H',raw)
+    require(status==case['status'] and not unexpected,'Mask status/guards: '+case['name'])
+    require(enters==leaves==1 and not (submits or reads or writes),'Mask boundaries: '+case['name'])
+    source,dest,ss,ds,width,height,repeats,am,xm,mode=case['mask']
+    limit=min(256,8192//(width*(3 if mode else 2)))
+    records=[];work=0;pending=0;expected_lists=0
+    for repeat in range(repeats):
+        y=0
+        while y<height:
+            rows=min(limit,height-y);cost=width*rows*(3 if mode else 2)
+            if pending==64 or work+cost>8192:
+                expected_lists+=1;work=0;pending=0
+            records.append((source+y*ss,dest+y*ds,rows));work+=cost;y+=rows;pending+=1
+    expected_lists+=1
+    if not status:
+        require(lists==expected_lists,'Mask list count: '+case['name'])
+        require(count==len(records)+1,'Mask record count: '+case['name'])
+    else:require(lists==case['fail'],'Mask failure did not stop at requested list')
+    actual=bytearray((i*37+i//97)&255 for i in range(0x80000));wanted=actual.copy()
+    def apply(value,prior):
+        value=(value&am)^xm
+        return value if mode==0 else prior|value if mode==3 else prior&value if mode==4 else prior^value
+    for repeat in range(repeats):
+        for y in range(height):
+            for x in range(width):
+                at=dest+y*ds+x
+                wanted[at]=apply(wanted[source+y*ss+x],wanted[at])
+    index=0
+    for n in range(count):
+        kind=struct.unpack_from('<H',raw,18+n*26)[0]
+        if kind==5:continue
+        require(kind==1,'Unexpected mask event')
+        bcb=raw[20+n*26:41+n*26]
+        src=int.from_bytes(bcb[:3],'little');dst=int.from_bytes(bcb[6:9],'little')
+        rows=bcb[14]+1
+        require((src,dst,rows)==records[index],'Mask address/height: '+case['name'])
+        require(int.from_bytes(bcb[3:5],'little')==ss and int.from_bytes(bcb[9:11],'little')==ds and
+                int.from_bytes(bcb[12:14],'little')+1==width and bcb[5]==bcb[11]==1 and
+                (bcb[15],bcb[16],bcb[20])==(am,xm,mode) and not any(bcb[17:20]),'Mask BCB fields')
+        for y in range(rows):
+            for x in range(width):
+                at=dst+y*ds+x
+                actual[at]=apply(actual[src+y*ss+x],actual[at])
+        index+=1
+    if not status:require(actual==wanted,'Mask pixels/suffix: '+case['name'])
+    return dict(name=case['name'],status=status,raw_lists=lists,records=index)
 
 
 def replay(case, raw):
     """Interpret emitted byte-addressed BCBs, then compare to a whole snapshot."""
+    if 'mask' in case:return replay_mask(case,raw)
     status,enters,leaves,submits,unexpected,count,lists,reads,writes=struct.unpack_from('<9H',raw)
     require(status == case['status'] and not unexpected, 'Status/descriptor mutation: '+case['name'])
     sx,sy,dx,dy,width,height = case['xy']
@@ -123,7 +194,7 @@ def replay(case, raw):
         rows = bcb[14]+1
         mode=bcb[20]
         require(bcb[17:20]==bytes(3) and mode in (0,3,4),'Unexpected raster recipe')
-        if kind==1:require(rows<=16,'Raw record exceeds row bound')
+        if kind==1:require(columns*rows*(3 if mode else 2)<=8192,'Raw record exceeds work bound')
         else:require(bcb[15:]==bytes([255,0,0,0,0,0]),'Unexpected typed-copy recipe')
         for y in range(rows):
             for x in range(columns):
@@ -151,12 +222,14 @@ def run(out):
     (out/'screen-copy-renderer.inc').write_text(function(renderer.read_text(),'UWORD GemDrawingCopyBorrow('))
     text=renderer.read_text()
     (out/'screen-copy-mask.inc').write_text(''.join(function(text,s) for s in
-        ('static void drain(', 'static UWORD row_step(', 'void blit_mask(', 'void blit_and(')))
+        ('static void drain(', 'void blit_mask(', 'void blit_and(')))
     tables=generate_tables(out/'gem-vbxe-tables.h')
     cases=corpus()
-    header='#define SCREEN_COPY_CASES '+str(len(cases))+'\nstruct ScreenCase { UBYTE packet[32]; UWORD direct,entryAt,submitStatus,failAt; };\nstatic const struct ScreenCase screenCases[]={\n'
+    header='#define SCREEN_COPY_CASES '+str(len(cases))+'\nstruct MaskCase { ULONG source,dest; UWORD ss,ds,bytes,rows,repeats; UBYTE am,xm,mode; };\nstruct ScreenCase { UBYTE packet[32]; UWORD direct,entryAt,submitStatus,failAt; struct MaskCase mask; };\nstatic const struct ScreenCase screenCases[]={\n'
     for c in cases:
-        header+='{{'+','.join(map(str,c['packet']))+'},%d,%d,%d,%d},\n'%(c['direct'],c['entry'],c['submit'],c['fail'])
+        mask=c.get('mask',(0,)*10)
+        header+='{{'+','.join(map(str,c['packet']))+'},%d,%d,%d,%d,{'%(c['direct'],c['entry'],c['submit'],c['fail'])
+        header+=','.join(str(v)+('UL' if i<2 else '') for i,v in enumerate(mask))+'}},\n'
     (out/'screen-copy-cases.h').write_text(header+'};\n')
     foreign=emit(out,[ROOT/'tests/programs/screen_copy.c'],[ROOT/'c/calypsi/image-info.s'],(),True,
                  roots=['ScreenCopyProbe','ScreenCopyResults'])

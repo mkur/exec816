@@ -8,20 +8,15 @@ int main(void)
     UWORD width,rows,index;
     for (rows=1;rows<=16;rows++) for (width=1;width<=512;width++) {
         index=((rows-1)<<9)|(width-1);
-        check(GemWork2[index]==(ULONG)rows*width*2);
         check(GemWork3[index]==(ULONG)rows*width*3);
     }
     for (width=1;width<=512;width++) {
         rows=GemRowLimit2[width-1];
-        check(rows<=16 && (ULONG)rows*width*2<=8192);
+        check(rows<=256 && (ULONG)rows*width*2<=8192);
+        check(rows==256 || (ULONG)(rows+1)*width*2>8192);
         rows=GemRowLimit3[width-1];
-        check(rows<=16 && (ULONG)rows*width*3<=8192);
-    }
-    for (rows=0;rows<=16;rows++) {
-        check(GemStep320[rows]==rows*320);
-        check(GemStep640[rows]==rows*640);
-        check(GemStep1024[rows]==rows*1024);
-        check(GemStep1280[rows]==rows*1280);
+        check(rows<=256 && (ULONG)rows*width*3<=8192);
+        check(rows==256 || (ULONG)(rows+1)*width*3>8192);
     }
     for (rows=0;rows<256;rows++) check(GemScreenRows[rows]==(ULONG)rows*320);
     check(GemFillRows[0]==0);

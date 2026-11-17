@@ -16,7 +16,7 @@ GROUPS={
     'object_adapter':'App_WidgetFill App_bb_fill App_gsx_attr App_gsx_fcolor App_gsx_chkclip App_gr_inside',
     'solid_encoding':'GemSolidFill GemSolidRows solid_record',
     'pattern_encoding':'GemWidgetStipple',
-    'mask_encoding':'blit_mask blit_and blit_fill row_step',
+    'mask_encoding':'blit_mask blit_and blit_fill',
     'queue':'drain flush fence_owner',
     'upload':'_VbxeUpload',
     'driver_submission':'submit',
@@ -75,26 +75,14 @@ def analyze(rows,timeline):
         for stage in stages:stage.update(timeline.measure(stage['start'],stage['end']))
         routines={name:dict(calls=len(calls),**{key:sum(r[key] for r in calls)
             for key in ('elapsed_ms','charged_cpu_ms','off_cpu_ms','interrupt_ms')}) for name,calls in functions.items()}
-        increments=defaultdict(list)
-        for row in functions['row_step']:increments[row['argument']].append(row)
-        stride_work={str(stride):dict(calls=len(calls),charged_cpu_ms=sum(r['charged_cpu_ms'] for r in calls))
-                     for stride,calls in increments.items()}
-        masks=[]
-        for mask in functions['blit_mask']:
-            children=[r for r in functions['row_step'] if mask['start']<=r['start']<r['end']<=mask['end']]
-            require(len(children)%2==0,'Unpaired source/destination row increments')
-            masks.append(dict(charged_cpu_ms=mask['charged_cpu_ms'],row_step_calls=len(children),
-                strides=dict(Counter(r['argument'] for r in children)),
-                records_inferred=1+len(children)//2))
+        masks=[dict(charged_cpu_ms=mask['charged_cpu_ms']) for mask in functions['blit_mask']]
         submitted=sum(r['argument'] for r in functions['VbxeOwnerSubmit'])
-        solid=len(functions['solid_record']);mask_records=sum(r['records_inferred'] for r in masks)
+        solid=len(functions['solid_record'])
         result.append(dict(measured=timeline.measure(start,end),exclusive_cpu_ms=partition(selected,timeline,start,end,kinds),
             stages=stages,callbacks=callbacks,routines=routines,
             raw_submission_record_counts=[r['argument'] for r in functions['VbxeOwnerSubmit']],
-            row_steps_by_stride=stride_work,mask_calls=masks,
-            row_step_calls_if_hoisted=sum(2 for r in masks if r['row_step_calls']),
-            record_accounting=dict(solid=solid,mask_inferred=mask_records,submitted=submitted,
-                                   other=submitted-solid-mask_records),
+            mask_calls=masks,
+            record_accounting=dict(solid=solid,mask_and_other=submitted-solid,submitted=submitted),
             spans=selected))
     require(result,'No completed frame paint in slider scope')
     return result

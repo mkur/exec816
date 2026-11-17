@@ -42,7 +42,14 @@ transitions retain their separate mandatory ownership checks.
 
 The generic GEM producer drains at 64 records or 8,192 work units. General rectangles
 derive their extents from renderer clipping and fixed surface layouts before
-splitting; the private builder does not revalidate them. Atlas glyphs derive extents
+splitting; the private builder does not revalidate them. Mask records use up to
+256 rows, reduced by width and mode work rather than a fixed sixteen-row cap.
+Generated word tables select that height; bounded work is calculated directly,
+and multi-record operations calculate wide address advances once. The old
+mask work/stride tables are removed; the glyph work table remains. This keeps
+the same table-bank reservation, command arena, list budget and admission/fence
+protocol. See the [development record](../../docs/history/gem-mask-height.md).
+Atlas glyphs derive extents
 from the fixed atlas, admitted screen clip and widget-strip mapping. Pointer
 lists use clipped screen coordinates and fixed private storage, at most four
 records / 1,440 work units. Admitted XOR outlines use four records and at most

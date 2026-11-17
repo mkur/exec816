@@ -114,36 +114,28 @@ volatile uint8_t *vram_win(uint32_t address)
 void blit_start(void) { flush(); }
 void blit_run(void) { flush(); }
 uint8_t blit_pending(void) { return (uint8_t)(commandCount!=0 || dirty); }
-/* Producer strides are fixed screen/atlas pitches or a 0–320-byte raster
- * band. The work table also provides products for variable raster pitches. */
-static UWORD row_step(UWORD stride,UWORD rows)
-{
-    if (!rows) return 0;
-    switch (stride) {
-    case 0: return 0;
-    case 320: return GemStep320[rows];
-    case 640: return GemStep640[rows];
-    case 1024: return GemStep1024[rows];
-    case 1280: return GemStep1280[rows];
-    default: return GemWork2[((rows-1)<<9)|(stride-1)]>>1;
-    }
-}
 void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
                uint16_t bytes, uint16_t rows, uint8_t am, uint8_t xm, uint8_t mode)
 {
-    UWORD n,limit,work,column=bytes-1;
-    const UWORD *costs;
+    UWORD n,limit,work,rowWork=bytes<<1,column=bytes-1;
+    ULONG sourceStep=0,destStep=0;
     UBYTE *record;
     if (fault) return;
     if (stripRedirect && dest<VBXE_SCREEN_BYTES) dest+=stripOffset;
     /* Private renderer geometry is already clipped to screen/strip/atlas.
      * The producer supplies nonempty dimensions and a known hardware mode. */
     if (dirty) flush();
-    if (mode) { limit=GemRowLimit3[column]; costs=GemWork3; }
-    else { limit=GemRowLimit2[column]; costs=GemWork2; }
+    if (mode) { limit=GemRowLimit3[column]; rowWork+=bytes; }
+    else limit=GemRowLimit2[column];
+    /* The height byte admits 256 rows. Split only for the list work budget;
+     * narrow full-height operations need no address advances at all. Products
+     * for a repeated full chunk are computed once and retain VRAM carries. */
+    if (rows>limit) {
+        sourceStep=(ULONG)ss*limit;destStep=(ULONG)ds*limit;
+    }
     while (rows && !fault) {
         n=rows<limit ? rows : limit;
-        work=costs[((n-1)<<9)|column];
+        work=n*rowWork;
         if (commandCount==VBXE_LIST_RECORDS || commandWork+work>(UWORD)VBXE_LIST_WORK) drain();
         if (fault) return;
         record=commandNext;
@@ -158,7 +150,7 @@ void blit_mask(uint32_t source, uint16_t ss, uint32_t dest, uint16_t ds,
         commandNext=record+21;
         commandWork+=work;
         rows-=n;
-        if (rows) { source+=row_step(ss,n); dest+=row_step(ds,n); }
+        if (rows) { source+=sourceStep; dest+=destStep; }
     }
 }
 

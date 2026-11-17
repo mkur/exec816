@@ -81,7 +81,6 @@ UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *p,UWORD n)
         UWORD bytes=(p[i*21+12]|(UWORD)p[i*21+13]<<8)+1;
         UWORD rows=(UWORD)p[i*21+14]+1;
         struct Event *e;
-        if (rows>VBXE_CHUNK_ROWS) ++result->unexpected;
         work+=(ULONG)bytes*rows*(p[i*21+20] ? 3:2);
         e=capture(RAW);if (e) memcpy(e->bytes,p+i*21,21);
     }
@@ -113,7 +112,8 @@ static UWORD borrow_leave(struct DisplayGrant *g)
 
 LONG EXEC_CALL ScreenCopyProbe(ULONG value)
 {
-    UWORD i=(UWORD)value;
+    UWORD i=(UWORD)value,n;
+    const struct MaskCase *mask;
     if (i>=SCREEN_COPY_CASES) return -1;
     memset(result,0,sizeof(*result));memset(commands,0,sizeof(commands));
     memcpy(&request,screenCases[i].packet,sizeof(request));
@@ -122,8 +122,17 @@ LONG EXEC_CALL ScreenCopyProbe(ULONG value)
     failAt=screenCases[i].failAt;
     direct=screenCases[i].direct;
     edges[480]=0xab;edges[481]=0xcd;
-    result->status=screenCases[i].direct ? VbxeOwnerCopyRect(&display,&request)
-        : GemDrawingCopyBorrow(&grant,&request,edges);
+    if (direct==2) {
+        mask=&screenCases[i].mask;
+        result->status=DisplayEnter(&grant);
+        for (n=0;n<mask->repeats && !fault;n++)
+            blit_mask(mask->source,mask->ss,mask->dest,mask->ds,
+                      mask->bytes,mask->rows,mask->am,mask->xm,mask->mode);
+        result->status=borrow_leave(&grant);
+    } else {
+        result->status=direct ? VbxeOwnerCopyRect(&display,&request)
+            : GemDrawingCopyBorrow(&grant,&request,edges);
+    }
     if (memcmp(&request,screenCases[i].packet,sizeof(request)) || active ||
         edges[480]!=0xab || edges[481]!=0xcd) ++result->unexpected;
     return 0;
