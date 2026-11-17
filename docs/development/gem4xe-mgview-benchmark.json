@@ -1,0 +1,175 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "One-line MGVIEW viewport copy at odd X on native GEM4XE and Exec",
+  "gem4xe_revision": "2bf10f6788372dcfa94f6d9416e4b957eb4ce394",
+  "data_model": "large",
+  "calypsi": "5.18",
+  "command": "python3 tools/bench_gem4xe_mgview.py",
+  "captures": {
+    "gem4xe": {
+      "path": "build/gem4xe-mgview/matched/results.json",
+      "sha256": "8a32f0ccab0f41c08e4b50562789cfd9e4a5c8d75e25997bed8ad83542ef53fb"
+    },
+    "exec": {
+      "path": "build/gem-direct-scrollbar/scratch-scroll/results.json",
+      "sha256": "f104ecffc6b1c9ec1499516e7208407d1d49ee62cce838f47c83df3dc5fea0cd"
+    },
+    "media": {
+      "path": "build/gem4xe-mgview/mgview.atr",
+      "sha256": "220d023bb9ca7b712c511cf9805886f438a66b632536bd9c222ca5c0954f1294"
+    }
+  },
+  "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "base_clock_hz": 1773447.5,
+  "gem_sha256": "c9aea8c541a5c86ac845ca959029fdac43206af7cd7ef980c0f5dee9487118df",
+  "mgview_g4a_sha256": "00f2d9426b54f9d2c6b73a1cd0d121fbc2fabcd214d93c90c79d06bd806fc4bd",
+  "geometry": {
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "window_work": [
+      1,
+      22,
+      617,
+      200
+    ],
+    "cell": [
+      8,
+      8
+    ],
+    "pointer": [
+      639,
+      0
+    ]
+  },
+  "copy_dimensions": [
+    616,
+    192
+  ],
+  "app_near_bytes": 3840,
+  "app_stack_bytes": 1024,
+  "gem4xe": {
+    "cpu_edge_passes": 2,
+    "interior_blit_calls": 1,
+    "samples": [
+      {
+        "action": "down",
+        "pixel_sha256": "8bf97dad6980a31edb5469626b3a309f3870ec62dbcf21a17f7f0c46c2565277",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 28.9934,
+        "copy_to_row_ms": 148.4177,
+        "row_to_mouse_show_ms": 40.9753,
+        "first_edge_until_interior_ms": 65.7892
+      },
+      {
+        "action": "up",
+        "pixel_sha256": "0349a10d9583b7f7e92c020d5f023cc0b4877b8dd317022f0d261fa7c869e39b",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 26.8256,
+        "copy_to_row_ms": 146.2254,
+        "row_to_mouse_show_ms": 41.0751,
+        "first_edge_until_interior_ms": 65.9104
+      },
+      {
+        "action": "down",
+        "pixel_sha256": "8bf97dad6980a31edb5469626b3a309f3870ec62dbcf21a17f7f0c46c2565277",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 26.7653,
+        "copy_to_row_ms": 146.0312,
+        "row_to_mouse_show_ms": 40.9781,
+        "first_edge_until_interior_ms": 65.824
+      },
+      {
+        "action": "up",
+        "pixel_sha256": "0349a10d9583b7f7e92c020d5f023cc0b4877b8dd317022f0d261fa7c869e39b",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 26.7903,
+        "copy_to_row_ms": 146.6629,
+        "row_to_mouse_show_ms": 41.0688,
+        "first_edge_until_interior_ms": 65.9214
+      },
+      {
+        "action": "down",
+        "pixel_sha256": "8bf97dad6980a31edb5469626b3a309f3870ec62dbcf21a17f7f0c46c2565277",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 26.8088,
+        "copy_to_row_ms": 146.6367,
+        "row_to_mouse_show_ms": 40.9974,
+        "first_edge_until_interior_ms": 65.7994
+      },
+      {
+        "action": "up",
+        "pixel_sha256": "0349a10d9583b7f7e92c020d5f023cc0b4877b8dd317022f0d261fa7c869e39b",
+        "viewport_observation_ms": [
+          220.6144,
+          240.6702
+        ],
+        "slider_to_copy_ms": 26.875,
+        "copy_to_row_ms": 147.2606,
+        "row_to_mouse_show_ms": 41.0752,
+        "first_edge_until_interior_ms": 65.9337
+      }
+    ]
+  },
+  "exec": {
+    "image_sha256": "be7c2e60b20f706e5640e07be852dfe29eb97d57f18b8a2b5bd16a0d974cc232",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "samples": [
+      {
+        "action": "down",
+        "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+        "viewport_observation_ms": [
+          100.3937,
+          120.277
+        ],
+        "slider_to_copy_ms": 38.7637,
+        "copy_to_row_ms": 20.7827,
+        "row_to_mouse_show_ms": 23.1646
+      },
+      {
+        "action": "up",
+        "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+        "viewport_observation_ms": [
+          100.5618,
+          120.6193
+        ],
+        "slider_to_copy_ms": 38.8611,
+        "copy_to_row_ms": 18.8982,
+        "row_to_mouse_show_ms": 23.4766
+      }
+    ]
+  },
+  "host_checks": {
+    "total": 740,
+    "skipped": 4
+  },
+  "exec_bank_zero_delta": {
+    "fixed": 0,
+    "per_task": 0
+  }
+}

@@ -44,6 +44,9 @@
   2 ms less scrollbar CPU with the same observed MGVIEW completion frame and
   byte-identical settled scanouts.
 
+- [MGVIEW on standalone GEM4XE](gem4xe-mgview-benchmark.md) compares the same
+  odd-edge scroll on both native stacks and traces the packed-edge copy cost.
+
 - [Selected-scrollbar raster audit](gem-scrollbar-raster-audit.md): passive
   preparation/traversal/clear/publication costs, donor comparison and a proposed
   reduction of repeated row-advance work; drawing code remains unchanged.
