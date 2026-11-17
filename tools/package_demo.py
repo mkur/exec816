@@ -45,7 +45,7 @@ def ide_only_guide(bitmap=False):
     ).replace('@CONSOLE_NAME@', '80 by 30 VBXE bitmap shell' if bitmap else 'standard shell')
 
 
-def bootable_guide(bitmap=False,gemarc=False,gem_desktop=False):
+def bootable_guide(bitmap=False,gemarc=False,gem_desktop=False,mgview_only=False):
     guide=(ROOT/'docs/bootable-atr-distribution.txt').read_text().replace('@DISPLAY_REQUIREMENTS@',
         'Graphical builds require a VBXE FX core at $D600 with private 512K VRAM\n'
         'and an ST mouse on joystick port 2.'
@@ -89,6 +89,9 @@ more. For the separately supplied QED disk, mount it read-only in D2 and enter:
 Ctrl-Q closes QED. Cancel keeps unsaved edits; Discard closes without saving.
 '''
     if gemarc:guide+='\n'+(ROOT/'docs/gemarc-distribution.txt').read_text()
+    if mgview_only:
+        guide=guide.replace('QED is supplied separately from this package.\n','')
+        guide+='\n'+(ROOT/'docs/mgview-distribution.txt').read_text()
     return guide
 
 
@@ -183,7 +186,12 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
         if demo.get('qed'):
             from qed_demo import verify
             verify(demo,bitmap_shell)
-        for name in GEM_NOTICES + (CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES+MGVIEW_NOTICES if demo.get('gem_desktop') else ()):
+        notices=GEM_NOTICES
+        if demo.get('gem_desktop'):
+            notices+=CALCULATOR_NOTICES+G4BENCH_NOTICES+GEMARC_NOTICES
+        if demo.get('gem_desktop') or demo.get('mgview_only'):
+            notices+=MGVIEW_NOTICES
+        for name in notices:
             content = (bitmap_shell/name).read_bytes()
             if hashlib.sha256(content).hexdigest() != demo['artifacts'][name]:
                 raise ValueError(f'Changed bitmap shell notice: {name}')
@@ -197,7 +205,7 @@ def package(bundle, archive, graphics=None, bitmap=None, bitmap_shell=None, text
             guide = guide.replace('@POINTER_DESCRIPTION@', pointer_description(demo['kernel']['desktop_mouse']['profile']))
     if demo_manifest.get('bootable_atr'):
         guide=bootable_guide(demo_manifest.get('bitmap',False),bool(demo_manifest.get('gemarc')),
-            gem_desktop=demo_manifest.get('gem_desktop',False))
+            gem_desktop=demo_manifest.get('gem_desktop',False),mgview_only=demo_manifest.get('mgview_only',False))
         if demo_manifest.get('basic_workbench'):
             guide+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     elif record['boot_config']['system_drive'] not in (0,1):

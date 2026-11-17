@@ -57,7 +57,7 @@ def build_apps(out,basic_workbench=False,widget_sample=False):
     return applications
 
 
-def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,build_applications=True,widget_sample=False,**options):
+def build_desktop(out,source=None,program_output=None,files=False,basic_workbench=False,build_applications=True,widget_sample=False,mgview_only=False,**options):
     from library_paths import read_source
     from c_program import ABI,binding
     from build_c_program import build as application
@@ -65,8 +65,13 @@ def build_desktop(out,source=None,program_output=None,files=False,basic_workbenc
     options.pop('desktop',None)
     require(build_applications or (not files and 'dos_mounts' in options),
             'Provider-only fixtures must supply their own disk media')
-    applications=build_apps(out,basic_workbench,widget_sample) if build_applications else {}
-    if build_applications:
+    if mgview_only:
+        require(not files and 'dos_mounts' in options,'The MGVIEW demo supplies its own disk media')
+        from build_mgview import build as mgview
+        applications={'mgview':mgview(out/'apps/mgview')}
+    else:
+        applications=build_apps(out,basic_workbench,widget_sample) if build_applications else {}
+    if build_applications and not mgview_only:
         applications['terminal']=application(out/'apps/terminal',[ROOT/'examples/gem-terminal'/name for name in ('main.c','platform.c','paint.c')],minimum_stack=1312,
             probes=[(ROOT/'tests/programs/gem_terminal_layout.c',__import__('terminal_model').LAYOUT)])
     from build_gem_resource import resource

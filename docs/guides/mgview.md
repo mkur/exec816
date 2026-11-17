@@ -3,6 +3,19 @@
 [Guides](README.md) · [Port source](../../ports/magic/mgview/README.md) ·
 [Development evidence](../history/mgview-port.md)
 
+## MGVIEW-only demo
+
+```sh
+python3 tools/build_demo.py --mgview-only --release-compiler --output build/mgview-only/demo
+```
+
+Run `build/mgview-only/demo/launch-altirra.command` or use the boot disk and ROM
+in `build/mgview-only/demo/exec816-demo.zip`. MGVIEW opens the sample document
+after the OF816 countdown. Ctrl-Q restores the Atari text display. Cold-reset
+to run the demo again. The image uses the standard writable SYS/WORK disk.
+
+## Shared GEM desktop
+
 In Terminal, run:
 
 ```text

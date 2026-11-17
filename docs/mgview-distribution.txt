@@ -1,0 +1,12 @@
+MGVIEW text viewer
+------------------
+
+After the OF816 countdown, the startup script opens MGVIEW with the sample
+document. Use the arrow keys and scrollbar gadgets to scroll. On the Atari
+keyboard, Ctrl+= scrolls down and Ctrl+- scrolls up. Ctrl-Q restores the
+Atari text display. Cold-reset to run the demo again.
+
+MGVIEW reads ASCII text with LF, CR or CRLF line endings. Digits 0..9 change
+the tab width, Ctrl-W cycles documents and Ctrl-U closes one document.
+MGVIEW is the sole GEM application on this disk. Edit S:STARTUP on the
+writable disk to open a different document at boot.

@@ -8,8 +8,8 @@
 
 ## Running Exec816
 
-- [Original MagiC MGVIEW](mgview.md): run the source-ported text viewer, scroll
-  both axes and work beside Counter.
+- [Original MagiC MGVIEW](mgview.md): boot directly into the text viewer or run
+  it on the shared GEM desktop.
 
 - [GEM raster-copy sample](gem-raster.md): scroll visible pixels, shift one pixel and copy screen/memory forms alongside Counter.
 

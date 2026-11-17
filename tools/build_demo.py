@@ -36,7 +36,7 @@ def record_cartridge_capacity(output):
     return capacity
 
 
-def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720,mouse_profile=None,text_shell_only=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False,gem_widget=False):
+def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,bitmap_console=False,bitmap_shell_only=False,system_kib=720,mouse_profile=None,text_shell_only=False,gem_desktop=False,ideplus=False,release_compiler=False,ide_only=False,sdx=None,sdx_drive_a='RAM:',sdx_car_root='RAM:',fastbasic=False,basic_workbench=False,bootable_atr=None,system_drive=1,boot_sio='auto',qed=False,gem_widget=False,mgview_only=False):
     standalone_sio=not (ide_only or ideplus or gem_vdi or bitmap_console)
     if bootable_atr is None:
         bootable_atr=standalone_sio and filesystem=='sdfs' and sector_bytes==256 and system_drive==1
@@ -46,6 +46,8 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
         sdx_drive_a,sdx_car_root='WORK:','SYS:C/'
     if basic_workbench:
         fastbasic=gem_desktop=True
+    require(not mgview_only or (bootable_atr and not (gem_desktop or qed or fastbasic)),
+            '--mgview-only selects the combined SIO boot disk and MGVIEW as its sole GEM application')
     require(not gem_widget or gem_desktop,'--gem-widget requires --gem-desktop')
     if fastbasic:
         sdx,sdx_drive_a,sdx_car_root=True,'WORK:','SYS:C/'
@@ -53,7 +55,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             not (ide_only or ideplus or gem_vdi or bitmap_console or text_shell_only) and system_drive==1),
             'QED requires a D1 SDFS/256 GEM desktop; its optional application ATR uses D2')
     desktop=gem_desktop
-    if desktop:
+    if desktop or mgview_only:
         bitmap_shell_only=True
     require(not (bitmap_shell_only and (gem_vdi or bitmap_console)),
             'The shell-only bitmap demo is a standalone boot selection')
@@ -157,6 +159,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     workspace.mkdir(exist_ok=True)
     if gem_desktop:
         (media/'VIEW.TXT').write_bytes((ROOT/'examples/gem-text/VIEW.TXT').read_bytes())
+    if gem_desktop or mgview_only:
         (media/'MGVIEW.TXT').write_bytes((ROOT/'ports/magic/mgview/sample.txt').read_bytes())
         binary_names.add('MGVIEW.TXT')
     (workspace/'README.TXT').write_text('Disposable Exec816 WORK: disk.\n'
@@ -181,6 +184,9 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                             for p in workspace.rglob('*') if p.is_file())
         startup=media/'S/STARTUP'
         startup.write_text('ASSIGN WORK: SYS:WORK\n'+startup.read_text(encoding='ascii'),encoding='ascii')
+        if mgview_only:
+            with startup.open('a',encoding='ascii') as script:
+                script.write('C:MGVIEW.APP SYS:MGVIEW.TXT\nEXIT\n')
     else:
         make(output/'work.atr',workspace,binary_names=work_binaries,filesystem=filesystem,
              sector_bytes=WORK_SECTOR_BYTES,sectors=WORK_SECTORS,label='WORK')
@@ -218,10 +224,11 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if bitmap_shell_only:
         from build_bitmap_console import build_bitmap
         from build_bitmap_artifact import copy_notices
-        if gem_desktop:
+        if gem_desktop or mgview_only:
             from build_gem_desktop import build_desktop
             from functools import partial
-            builder=partial(build_desktop,files=True,basic_workbench=basic_workbench,widget_sample=gem_widget)
+            builder=partial(build_desktop,files=gem_desktop,basic_workbench=basic_workbench,
+                            widget_sample=gem_widget,mgview_only=mgview_only)
         else:builder=build_bitmap
         program=builder(source=source,out=output/'bitmap-console',program_output=output,
             compiler_dir=compiler_dir,desktop=desktop,stack_checks=True,dos_mounts=mounts,mouse_profile=mouse_profile,
@@ -240,7 +247,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
                       task_capacity=12,console=True,stack_checks=True,dos_mounts=mounts,
                       system_mount=mount_config.get('system_mount'),memory_profile=memory_profile,sio_enabled=not ide_only,
                       sdx=sdx,sdx_drive_a=sdx_drive_a,sdx_car_root=sdx_car_root)
-    if gem_desktop:
+    if gem_desktop or mgview_only:
         mgview=ROOT/'ports/magic/mgview'
         shutil.copyfile(mgview/'upstream/LICENSE',output/MGVIEW_NOTICES[0])
         selection=json.loads((mgview/'inputs.json').read_text())
@@ -257,6 +264,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             if name=='desktop':continue
             shutil.copyfile(output/'bitmap-console/apps'/name/'program.app',command_dir/(name.upper()+'.APP'))
             binary_names.add('C/'+name.upper()+'.APP')
+    if gem_desktop:
         calculator=output/'bitmap-console/apps/calc'
         shutil.copyfile(calculator/'CALC.RSC',media/'CALC.RSC');binary_names.add('CALC.RSC')
         for name,source in zip(CALCULATOR_NOTICES,('COPYING','COPYING.LIB','docs/licence.md')):
@@ -353,7 +361,7 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
     if ide_only:
         guide=ide_only_guide(bitmap_shell_only)
     if bootable_atr:
-        guide=bootable_guide(bitmap_shell_only,gem_desktop,gem_desktop=gem_desktop)
+        guide=bootable_guide(bitmap_shell_only,gem_desktop,gem_desktop=gem_desktop,mgview_only=mgview_only)
     if system_drive!=1:
         from package_demo import split_guide
         guide=split_guide(system_drive,bitmap_shell_only)
@@ -467,6 +475,13 @@ def bundle(output,compiler_dir,filesystem='sdfs',sector_bytes=256,gem_vdi=False,
             *(p for p in (ROOT/'ports/gem4xe/apps/gemarc').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/g4bench').rglob('*') if p.is_file()),
             *(p for p in (ROOT/'ports/gem4xe/apps/calculator').rglob('*') if p.is_file()))})
+    if mgview_only:
+        record['mgview_only']=True
+        record['artifacts'].update({name:sha256(output/name) for name in MGVIEW_NOTICES})
+        record['source_inputs'].update({str(path.relative_to(ROOT)):sha256(path) for path in (
+            ROOT/'docs/mgview-distribution.txt',ROOT/'tools/build_gem_desktop.py',
+            ROOT/'tools/build_mgview.py',ROOT/'tools/prepare_mgview.py',
+            *(path for path in (ROOT/'ports/magic/mgview').rglob('*') if path.is_file()))})
     if qed:
         from package_demo import QED_NOTICES
         record['qed']=qed_entry
@@ -549,6 +564,15 @@ def finalize_cartridges(output,record):
 
 
 def record_task_census(record):
+    if record.get('mgview_only'):
+        # Controller, input, console backend, SCRENMGR, filesystem and SIO.
+        services=6
+        required=services+1+1  # Startup shell and foreground viewer.
+        record.update(requested_peak_tasks=required,expected_peak_tasks=required,
+            task_census=dict(shared_services_and_controller=services,dedicated_console_backend=1,
+                shell_processes=1,prime=0,initial_gui_processes=1,startup=required,
+                capacity=record['task_capacity']))
+        return
     backend=int(bool(record.get('gem_desktop')))
     mixed=int(bool(record.get('ideplus')) and record['kernel']['sio_enabled'])
     base=4+mixed+backend
@@ -575,8 +599,7 @@ def refresh_boot_disk(output):
     require(all(sha256(output/name)==digest for name,digest in record['artifacts'].items()),
             'Changed native demo artifacts')
     record_task_census(record)
-    if record.get('gem_desktop'):
-        # The terminal is a required boot application on the shared SYS disk.
+    if record.get('gem_desktop') or record.get('mgview_only'):
         # Refreshes reconcile disk APPs with the frozen provider's build record.
         for name,app in record['kernel']['gem_applications'].items():
             if name=='desktop':
@@ -587,7 +610,7 @@ def refresh_boot_disk(output):
             shutil.copyfile(source,output/'media'/target)
             record['files'][target]=dict(bytes=source.stat().st_size,sha256=app['sha256'])
     content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')),
-        gem_desktop=record.get('gem_desktop',False))
+        gem_desktop=record.get('gem_desktop',False),mgview_only=record.get('mgview_only',False))
     if record.get('basic_workbench'):
         content+=(ROOT/'docs/basic-workbench-distribution.txt').read_text()
     if record.get('gem_widget'):
@@ -598,6 +621,9 @@ def refresh_boot_disk(output):
     (output/'media/README.TXT').write_text(content,encoding='ascii')
     record['artifacts']['README.md']=sha256(output/'README.md')
     for name in ('tools/build_demo.py','tools/package_demo.py','docs/bootable-atr-distribution.txt'):
+        record['source_inputs'][name]=sha256(ROOT/name)
+    if record.get('mgview_only'):
+        name='docs/mgview-distribution.txt'
         record['source_inputs'][name]=sha256(ROOT/name)
     finalize_bootable_media(output,record)
     package(output/'of816',output/record['distribution'],
@@ -740,8 +766,10 @@ def refresh_boot_guide(output,program,record):
         content=guide.read_text().replace('@SYSTEM_DISK@',record['media']).replace('@SYSTEM_DRIVE@',str(drive))
         if record.get('bootable_atr'):
             content=bootable_guide(record.get('bitmap',False),bool(record.get('gemarc')),
-                gem_desktop=record.get('gem_desktop',False))
+                gem_desktop=record.get('gem_desktop',False),mgview_only=record.get('mgview_only',False))
             guide=ROOT/'docs/bootable-atr-distribution.txt'
+            if record.get('mgview_only'):
+                guides.append(ROOT/'docs/mgview-distribution.txt')
         elif drive!=1:
             from package_demo import split_guide
             content=split_guide(drive,record.get('bitmap',False))
@@ -946,6 +974,7 @@ if __name__=='__main__':
     parser.add_argument('--bitmap-console',action='store_true',help='Include the separately selected VBXE bitmap shell preview')
     parser.add_argument('--qed',action='store_true',help='Build a separate production QED application disk outside the demo ZIP')
     parser.add_argument('--gem-desktop',action='store_true',help='Files desktop and shared GEM console terminal')
+    parser.add_argument('--mgview-only',action='store_true',help='Combined boot disk with MGVIEW as the only GEM application')
     parser.add_argument('--gem-widget',action='store_true',help='Include the shared MagiC/Exec Widget, Pulse and Pair sample applications')
     parser.add_argument('--mouse-profile',choices=('off','mild'),help='Desktop pointer profile (default from config/mouse.json)')
     parser.add_argument('--bitmap-shell-only',action='store_true',help='Autoboot OF816 into a full-screen VBXE shell without primes')
@@ -993,7 +1022,7 @@ if __name__=='__main__':
     else:
         if args.cartridge_source_sha256:
             parser.error('--cartridge-source-sha256 requires --cartridge-from')
-        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,system_kib=args.system_kib,mouse_profile=args.mouse_profile,text_shell_only=args.text_shell_only,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed,gem_widget=args.gem_widget)
+        bundle(args.output,args.compiler_dir,args.format,args.sector_bytes,args.gem_vdi,args.bitmap_console,args.bitmap_shell_only,system_kib=args.system_kib,mouse_profile=args.mouse_profile,text_shell_only=args.text_shell_only,gem_desktop=args.gem_desktop,ideplus=args.ideplus,release_compiler=args.release_compiler,ide_only=args.ide_only,sdx=args.sdx,sdx_drive_a=args.sdx_drive_a,sdx_car_root=args.sdx_car_root,fastbasic=args.fastbasic,basic_workbench=args.basic_workbench,bootable_atr=args.bootable_atr,system_drive=args.system_drive,boot_sio=args.boot_sio,qed=args.qed,gem_widget=args.gem_widget,mgview_only=args.mgview_only)
     print(f'Demo distribution ready: {args.output}/exec816-demo.zip')
     if not args.cartridge_from:
         print(f'Local Altirra launcher: {args.output}/launch-altirra.command')
