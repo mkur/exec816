@@ -21,6 +21,9 @@ USE DESKCACHEWORK
 USE CONSOLEBITMAP
 USE AESDRAWSTATE
 
+; Private Policy result; Call still returns the ordinary handled value.
+CONST UNCHANGED_SLIDER=2
+
 ADDRESS mouseApply
 
 ; Startup binds the resident ordinary C device helper before client admission.
@@ -86,6 +89,12 @@ CARD FUNC Policy(LONGCARD value)
       ELSEIF request.operation=AESTYPES.OP_SET THEN
         IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
           status=AESWINDOW.Frame(service,client,request,@wake)
+          IF status=AESTYPES.OK AND wake=0 AND waiting=0
+              AND AESWINDOW.SliderField(request.intin(1))<>0 THEN
+            ; MagiC ws_slend goes straight to update_0 for an equal value.
+            request.status=status
+            RETURN(UNCHANGED_SLIDER)
+          FI
           IF status=AESTYPES.OK AND wake<>0 THEN
             status=AESFRAME.Paint(client,request)
           FI
@@ -350,7 +359,9 @@ PUBLIC CARD FUNC Call(LONGCARD value)
     handled=Policy(value)
     status=request.status
     result=CARD(request.intout(0))
-    IF status=AESTYPES.OK THEN
+    IF handled=UNCHANGED_SLIDER THEN
+      handled=1
+    ELSEIF status=AESTYPES.OK THEN
       status=Exposure(request)
       IF status<>AESTYPES.OK THEN
         result=0

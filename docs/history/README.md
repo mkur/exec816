@@ -1,5 +1,9 @@
 # Historical records
 
+- [Unchanged slider completion](gem-slider-noop.md): direct UPDATE release
+  after an equal value, with no general publication/menu/exposure pass and a
+  measured reduction in setter CPU on the reused MGVIEW APP/provider.
+
 - [MGVIEW pre-copy audit](gem-pre-copy-audit.md): slider arithmetic, unchanged
   and changed setters, selected painting, repeated completion work and a pinned
   MagiC comparison on the frozen EU5 executable.

@@ -53,9 +53,11 @@ The subsequent [pre-copy audit](../../history/gem-pre-copy-audit.md) reuses the
 EU5 executable without a build. Before copy entry, viewer CPU is about 36 ms:
 the unchanged size setter costs 4.37 ms, the changed position setter 20.6 ms
 (14.3 ms selected painting), and mouse hiding 5.9 ms. Arithmetic and contended
-UPDATE do not explain the delay. The proposed next bounded slice is to let an
-unchanged slider return without general publication/menu/exposure work, matching
-MagiC's existing early exit. No target behavior changes in the audit.
+UPDATE do not explain the delay. The audit identified a bounded follow-up:
+let an unchanged slider return without general publication/menu/exposure work,
+matching MagiC's early exit. The [delivered slice](../../history/gem-slider-noop.md)
+now implements that return through normal UPDATE release. Equal-setter CPU falls
+from 4.37 to about 2.87 ms; the C provider and MGVIEW APP remain reused.
 
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use

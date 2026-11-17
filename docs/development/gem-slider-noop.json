@@ -1,0 +1,342 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "date": "2026-11-17",
+  "scope": "Successful unchanged slider returns directly to common UPDATE release; changed setter retained",
+  "builds": {
+    "native": 1,
+    "c_provider": 0,
+    "applications": 0
+  },
+  "captures": {
+    "before": {
+      "path": "build/gem-pre-copy-audit/scroll/results.json",
+      "sha256": "e6eb7b23e216680a7001205d53d35d791091a4935ee31a1b92b0df531c3145bd"
+    },
+    "after": {
+      "path": "build/gem-slider-noop/scroll/results.json",
+      "sha256": "c231eacc703e86d5acf52949ebc6ff134f866efb2bb3eeec4922a3a02ce43cb4"
+    },
+    "definition": {
+      "path": "build/gem-slider-noop/scroll/definition.json",
+      "sha256": "8838272337e651339462ff856a54d9704d6a85a88ecf381a6ddf310c22fcc819"
+    },
+    "native_build": {
+      "path": "build/gem-slider-noop/viewer/program/build.json",
+      "sha256": "beb342d629af0a89bc661a7dd329004469e92e05def1379179341c918d4331d5"
+    },
+    "provider": {
+      "path": "build/gem-slider-noop/viewer/c-image.json",
+      "sha256": "09c9e0fe0a22555e891806739c54bb704d688e6bf8ab1103f09de4f6247865f8"
+    }
+  },
+  "inputs": {
+    "native_sha256": "e4490cd2038ed1981b02fc551ba68fca36260b0bb316dc26f507494dc6738b49",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "app_abi": 48,
+    "aes_abi": 28,
+    "base_clock_hz": 1773447.5
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "changes": [],
+    "override": false,
+    "build_profile": "release",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16"
+  },
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "command": "python3 tools/measure_mgview.py --cache build/gem-slider-noop/viewer --output build/gem-slider-noop/scroll --pre-copy-detail --expect-copy-units 1",
+  "samples": [
+    {
+      "action": "down",
+      "equal_before": {
+        "elapsed_ms": 5.292939317346581,
+        "charged_cpu_ms": 4.367059075614023,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.9258802417325576
+      },
+      "equal_after": {
+        "elapsed_ms": 3.4408968971452496,
+        "charged_cpu_ms": 2.8697635537561728,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.571133343389077
+      },
+      "equal_counts": {
+        "AESLOCAL_PUBLISH": 0,
+        "AESSNAPSHOT_PUBLISH": 0,
+        "AESLOCAL_EXPOSURE": 0,
+        "DESKMENU_RECONCILE": 0,
+        "DESKPAINT_COMPLETE": 0,
+        "GEMFRAME_SLIDE": 0,
+        "AESFRAME_PAINT": 0,
+        "AESLOCAL_SCOPE": 2,
+        "AESLOCKS_ACQUIRE": 1,
+        "AESLOCKS_RELEASE": 1
+      },
+      "equal_return_a": {
+        "wind_set": [
+          1
+        ],
+        "AESLOCAL_CALL": [
+          1
+        ],
+        "AESLOCAL_POLICY": [
+          2
+        ]
+      },
+      "changed_before": {
+        "elapsed_ms": 25.791713597385883,
+        "charged_cpu_ms": 20.662790976332822,
+        "off_cpu_ms": 0.6822869016421406,
+        "interrupt_ms": 4.446635719410922
+      },
+      "changed_after": {
+        "elapsed_ms": 25.78396033713995,
+        "charged_cpu_ms": 20.65602449466364,
+        "off_cpu_ms": 0.6822869016421406,
+        "interrupt_ms": 4.445648940834166
+      },
+      "changed_counts": {
+        "GEMFRAME_SLIDE": 1,
+        "AESFRAME_PAINT": 1,
+        "AESLOCAL_PUBLISH": 1,
+        "AESLOCAL_EXPOSURE": 1,
+        "AESLOCAL_SCOPE": 2
+      },
+      "pre_copy_before": {
+        "elapsed_ms": 44.98060980096676,
+        "charged_cpu_ms": 35.80251177438295,
+        "off_cpu_ms": 1.414265153042309,
+        "interrupt_ms": 7.763832873541506
+      },
+      "pre_copy_after": {
+        "elapsed_ms": 43.11841765826166,
+        "charged_cpu_ms": 34.30000042290511,
+        "off_cpu_ms": 1.3643623507321192,
+        "interrupt_ms": 7.454054884624439
+      },
+      "attempts": 3,
+      "obtain_waits": 0,
+      "observed_complete_ms": 120.28436139214722,
+      "call_counts": {
+        "semaphores_attempt": 3,
+        "ExecAESUpdate": 2,
+        "wind_update": 2,
+        "_Mul32": 5,
+        "_Div32": 2,
+        "semaphores_release": 3,
+        "DisplayEnter": 6,
+        "VbxeOwnerFence": 26,
+        "VbxeOwnerSubmit": 8,
+        "DisplayLeave": 6,
+        "window_calc_slider": 1,
+        "GemDrawingMouseBorrow": 2,
+        "VbxeOwnerCopyRect": 1,
+        "ExecGemRasterCopy": 1,
+        "vro_cpyfm": 1,
+        "GemDrawingSolidBorrow": 1,
+        "vr_recfl": 1,
+        "GemVdiPaint": 1,
+        "GemDrawingBorrow": 1,
+        "v_gtext": 1,
+        "_my_draw": 1,
+        "set_shift": 1,
+        "arrowed": 1,
+        "_my_keyed": 1
+      }
+    },
+    {
+      "action": "up",
+      "equal_before": {
+        "elapsed_ms": 5.292657380610365,
+        "charged_cpu_ms": 4.366988591429969,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.9256687891803957
+      },
+      "equal_after": {
+        "elapsed_ms": 3.4905882469032776,
+        "charged_cpu_ms": 2.87490889919211,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.6156793477111671
+      },
+      "equal_counts": {
+        "AESLOCAL_PUBLISH": 0,
+        "AESSNAPSHOT_PUBLISH": 0,
+        "AESLOCAL_EXPOSURE": 0,
+        "DESKMENU_RECONCILE": 0,
+        "DESKPAINT_COMPLETE": 0,
+        "GEMFRAME_SLIDE": 0,
+        "AESFRAME_PAINT": 0,
+        "AESLOCAL_SCOPE": 2,
+        "AESLOCKS_ACQUIRE": 1,
+        "AESLOCKS_RELEASE": 1
+      },
+      "equal_return_a": {
+        "wind_set": [
+          1
+        ],
+        "AESLOCAL_CALL": [
+          1
+        ],
+        "AESLOCAL_POLICY": [
+          2
+        ]
+      },
+      "changed_before": {
+        "elapsed_ms": 25.85409210027362,
+        "charged_cpu_ms": 20.622544507238022,
+        "off_cpu_ms": 0.7333879350812471,
+        "interrupt_ms": 4.498159657954352
+      },
+      "changed_after": {
+        "elapsed_ms": 25.650251839989625,
+        "charged_cpu_ms": 20.503426236186865,
+        "off_cpu_ms": 0.7333879350812471,
+        "interrupt_ms": 4.4134376687215155
+      },
+      "changed_counts": {
+        "GEMFRAME_SLIDE": 1,
+        "AESFRAME_PAINT": 1,
+        "AESLOCAL_PUBLISH": 1,
+        "AESLOCAL_EXPOSURE": 1,
+        "AESLOCAL_SCOPE": 2
+      },
+      "pre_copy_before": {
+        "elapsed_ms": 48.2916043469006,
+        "charged_cpu_ms": 36.340729003818836,
+        "off_cpu_ms": 3.94267380342525,
+        "interrupt_ms": 8.008201539656516
+      },
+      "pre_copy_after": {
+        "elapsed_ms": 46.40058417291744,
+        "charged_cpu_ms": 34.75716084067896,
+        "off_cpu_ms": 3.939361046774714,
+        "interrupt_ms": 7.704062285463765
+      },
+      "attempts": 3,
+      "obtain_waits": 0,
+      "observed_complete_ms": 119.95393153730234,
+      "call_counts": {
+        "semaphores_attempt": 3,
+        "ExecAESUpdate": 2,
+        "wind_update": 2,
+        "_Mul32": 5,
+        "_Div32": 2,
+        "semaphores_release": 3,
+        "DisplayEnter": 6,
+        "VbxeOwnerFence": 26,
+        "VbxeOwnerSubmit": 8,
+        "DisplayLeave": 6,
+        "window_calc_slider": 1,
+        "GemDrawingMouseBorrow": 2,
+        "VbxeOwnerCopyRect": 1,
+        "ExecGemRasterCopy": 1,
+        "vro_cpyfm": 1,
+        "GemDrawingSolidBorrow": 1,
+        "vr_recfl": 1,
+        "GemVdiPaint": 1,
+        "GemDrawingBorrow": 1,
+        "v_gtext": 1,
+        "_my_draw": 1,
+        "set_shift": 1,
+        "arrowed": 1,
+        "_my_keyed": 1
+      }
+    }
+  ],
+  "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+  "checks": {
+    "viewport_pixels": "pass",
+    "viewport_copies_per_action": 1,
+    "exposed_row_draws_per_action": 1,
+    "fallback_redraws": 0,
+    "process_lifetimes": 3,
+    "ownership_and_heap": "restored",
+    "guards": "intact",
+    "pointer_start": [
+      639,
+      0
+    ],
+    "pointer_end": [
+      639,
+      0
+    ],
+    "provider_and_app_reused": true,
+    "bank_zero_map_equal": true,
+    "host_tests": {
+      "run": 738,
+      "skipped": 4,
+      "status": "pass",
+      "log": {
+        "path": "build/gem-slider-noop/host-tests.log",
+        "sha256": "1ba8948aa6e3d3ccd5f4dd5acd3dbf8142f12ea5ce0a4d3a7cbb5d05d0dc51ad"
+      }
+    }
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_spare_included": true
+  },
+  "source_hashes": {
+    "lib/aes/aeslocal.act": "06e538752ea527a6be6dff436e3ec9ef4a4357cb719af06eb7c7a1bc536aeac4",
+    "lib/aes/aeswindow.act": "1465da741d82e0dc963107acda0af36ca546a68b62fab5c35a737b7235357f05",
+    "lib/aes/aeslocks.act": "42d76a1403a15d948c8a5f4e7d5d47b58b6419c8dc38646b83b8b4041d5c3e0a"
+  },
+  "limits": [
+    "Loaded pair covers vertical size equality and changed position, not a new four-field or failure matrix",
+    "Two PAL observations do not establish a latency distribution or end-to-end gain",
+    "No QED, Counter, C/application build, geometry run, demo refresh or release qualification"
+  ]
+}
