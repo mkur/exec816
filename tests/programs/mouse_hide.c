@@ -86,6 +86,38 @@ LONG EXEC_CALL HideRun(ULONG value)
     Reset();mouse.status=0;display.operationPending=1;
     Check(draw_Mouse(&mouse)==DISPLAY_BUSY);
     Check(!copies && !compares && !renders && mouse.completed==6);
+
+    /* Showing the cached built-in needs no MFORM payload, even if it differs. */
+    Reset();cursorForm.kind=AES_ARROW;cursorForm.words[3]=12;
+    cursorMasksReady=1;cursorVisible=0;
+    mouse.visible=1;mouse.form.kind=AES_ARROW;mouse.form.words[3]=4;
+    mouse.revision=8;mouse.status=0;
+    Check(draw_Mouse(&mouse)==DISPLAY_OK);
+    Check(!copies && !compares && !hides && renders==1);
+    Check(renderedVisible && renderedX==121 && renderedY==89);
+    Check(cursorForm.kind==AES_ARROW && cursorForm.words[3]==12 && cursorMasksReady==1);
+    Check(mouse.completed==8 && !mouse.status);
+    Reset();++mouse.revision;mouse.form.words[3]=1;
+    Check(draw_Mouse(&mouse)==DISPLAY_OK);
+    Check(!copies && !compares && !hides && cursorMasksReady==1);
+    Check(mouse.completed==9 && cursorForm.words[3]==12);
+
+    /* A different built-in still follows the original installation path. */
+    Reset();mouse.form.kind=AES_HOURGLASS;++mouse.revision;
+    Check(draw_Mouse(&mouse)==DISPLAY_OK);
+    Check(copies==2 && !compares && hides==1 && !cursorMasksReady && renders==1);
+    Check(cursorForm.kind==AES_HOURGLASS && mouse.completed==10);
+
+    /* A form publication after the kind-only snapshot remains pending. */
+    Reset();cursorMasksReady=1;++mouse.revision;late=1;
+    Check(draw_Mouse(&mouse)==DISPLAY_OK);
+    Check(!copies && !compares && !hides && renderedVisible);
+    Check(mouse.completed==11 && mouse.revision==12 &&
+          cursorForm.kind==AES_HOURGLASS && mouse.form.kind==AES_USER_DEF);
+    Reset();
+    Check(draw_Mouse(&mouse)==DISPLAY_OK);
+    Check(copies==2 && !compares && hides==1 && cursorForm.words[3]==7);
+    Check(cursorForm.kind==AES_USER_DEF && mouse.completed==12);
     return failures;
 }
 

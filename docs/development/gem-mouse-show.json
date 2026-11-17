@@ -1,0 +1,472 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Unchanged built-in cursor applies snapshot kind only; changed built-ins and all custom forms retain full snapshot and installation paths",
+  "commands": {
+    "device": "python3 tools/test_mouse_hide.py --output build/gem-mouse-show/device",
+    "scroll": "python3 tools/measure_mgview.py --cache build/gem-mouse-show/viewer --output build/gem-mouse-show/scroll --mouse-detail --expect-copy-units 1"
+  },
+  "captures": {
+    "before": {
+      "path": "build/gem-mouse-hide/scroll/results.json",
+      "sha256": "ca44ba905aedf84da388035f669c8de29b37f63a3af104835594999e3a19516a"
+    },
+    "after": {
+      "path": "build/gem-mouse-show/scroll/results.json",
+      "sha256": "1b0139f09fbe51569da96a4381721c1e6455022392f8e3711f7963654f97803b"
+    },
+    "definition": {
+      "path": "build/gem-mouse-show/scroll/definition.json",
+      "sha256": "8ee9909b51fef8a3bbd910753dc5fe7347bce9bc38c3a71839c497843fbcfb8a"
+    },
+    "device": {
+      "path": "build/gem-mouse-show/device/results.json",
+      "sha256": "589f9846ac503baaaab38d9339217374e620b1eb6e6ccb760e032de4ca6f46d1"
+    },
+    "native_build": {
+      "path": "build/gem-mouse-show/viewer/program/build.json",
+      "sha256": "9d9b5af308ff77882dac3008a316874e0baf9d3d90884d57ea3997cf1bf621cb"
+    },
+    "provider": {
+      "path": "build/gem-mouse-show/viewer/c-image.json",
+      "sha256": "87c0defffdfb5852611c46c74bdb435964c9a8bcd3b947fbbbf267a8ba39bbd0"
+    },
+    "objects": {
+      "path": "build/gem-mouse-show/objects.json",
+      "sha256": "b1d425bb045245438f75b0247f84a17dd0d0b313ed7f6e0a2708955d86250ed1"
+    }
+  },
+  "inputs": {
+    "native_sha256": "be7c2e60b20f706e5640e07be852dfe29eb97d57f18b8a2b5bd16a0d974cc232",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "app_abi": 48,
+    "aes_abi": 28,
+    "base_clock_hz": 1773447.5,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "changes": [],
+    "override": false,
+    "build_profile": "release",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16"
+  },
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "mgview_builds": {
+    "native": 1,
+    "c_sources_recompiled": [
+      "ports/gem4xe/adapter/gem-vbxe.c"
+    ],
+    "c_objects_reused": 46,
+    "layout_probes_reused": 10,
+    "app_builds": 0
+  },
+  "samples": [
+    {
+      "action": "down",
+      "mode": "M_OFF",
+      "before": {
+        "elapsed_ms": 3.960435817806842,
+        "charged_cpu_ms": 3.3039461275284436,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.6564896902783984
+      },
+      "after": {
+        "elapsed_ms": 3.9686119831570994,
+        "charged_cpu_ms": 3.3064130739703317,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.6621989091867676
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2873936217452167,
+          "charged_cpu_ms": 1.0675534516809773,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21984017006423928
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.28362835663305513,
+          "charged_cpu_ms": 0.23851847883853342,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.045109877794521684
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.08599070454580697,
+          "charged_cpu_ms": 0.08599070454580697,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 1.7268625093215333,
+          "charged_cpu_ms": 1.4167320994841968,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3101304098373366
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.5847367909114873,
+          "charged_cpu_ms": 0.4976183394208173,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08711845149067
+        }
+      ],
+      "before_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "after_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "submission_records": [
+        1
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "down",
+      "mode": "M_ON",
+      "before": {
+        "elapsed_ms": 6.398131323312362,
+        "charged_cpu_ms": 5.29702740002171,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.101103923290653
+      },
+      "after": {
+        "elapsed_ms": 5.159724209484634,
+        "charged_cpu_ms": 4.281420791988485,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.878303417496148
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2864068431684614,
+          "charged_cpu_ms": 1.0663552205520603,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22005162261640113
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.9283471881744456,
+          "charged_cpu_ms": 0.7978104793065484,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13053670886789714
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.13596399104005052,
+          "charged_cpu_ms": 0.09198186019039188,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 2.224480848742351,
+          "charged_cpu_ms": 1.8277253767027217,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.396755472039629
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.5845253383593256,
+          "charged_cpu_ms": 0.4975478552367634,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08697748312256214
+        }
+      ],
+      "before_counts": {
+        "memcpy": 1,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "submission_records": [
+        3
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "up",
+      "mode": "M_OFF",
+      "before": {
+        "elapsed_ms": 6.0262567682437735,
+        "charged_cpu_ms": 4.33766717086353,
+        "off_cpu_ms": 0.7328945457928695,
+        "interrupt_ms": 0.9556950515873743
+      },
+      "after": {
+        "elapsed_ms": 5.604620379233103,
+        "charged_cpu_ms": 3.9307619763201336,
+        "off_cpu_ms": 0.734727134578272,
+        "interrupt_ms": 0.9391312683346984
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2854200645917064,
+          "charged_cpu_ms": 1.06670764147233,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21871242311937625
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.2825006096881921,
+          "charged_cpu_ms": 0.23858896302258736,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0439116466656047
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.13659834869653598,
+          "charged_cpu_ms": 0.09177040763823005,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04482794105830593
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 1.6759024442505346,
+          "charged_cpu_ms": 1.4112343331279893,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.26466811112254524
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 2.224198912006135,
+          "charged_cpu_ms": 1.1224606310589968,
+          "off_cpu_ms": 0.734727134578272,
+          "interrupt_ms": 0.3670111463688663
+        }
+      ],
+      "before_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "after_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "submission_records": [
+        1
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "up",
+      "mode": "M_ON",
+      "before": {
+        "elapsed_ms": 6.443805074579315,
+        "charged_cpu_ms": 5.301044998512784,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1427600760665313
+      },
+      "after": {
+        "elapsed_ms": 5.160499535509227,
+        "charged_cpu_ms": 4.281702728724701,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.8787968067845257
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2856315171438681,
+          "charged_cpu_ms": 1.065720862895575,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21991065424829323
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.9786728955889588,
+          "charged_cpu_ms": 0.8021100145338388,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17656288105512002
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.08563828362553727,
+          "charged_cpu_ms": 0.08563828362553727,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 2.2260315007915374,
+          "charged_cpu_ms": 1.8316020068256884,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.394429493965849
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.5845253383593256,
+          "charged_cpu_ms": 0.49663156084406224,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        }
+      ],
+      "before_counts": {
+        "memcpy": 1,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "memcpy": 0,
+        "memcmp": 0,
+        "AESCURSOR_SELECT": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "submission_records": [
+        3
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    }
+  ],
+  "checks": {
+    "device_assertions": 42,
+    "viewport_pixels": "pass",
+    "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+    "viewport_copies_per_action": 1,
+    "exposed_row_draws_per_action": 1,
+    "fallback_redraws": 0,
+    "process_lifetimes": 3,
+    "ownership_and_heap": "restored",
+    "guards": "intact",
+    "pointer_start": [
+      639,
+      0
+    ],
+    "pointer_end": [
+      639,
+      0
+    ],
+    "copy_grants_and_submission_counts_unchanged": true,
+    "observed_complete_ms": [
+      120.2770310370056,
+      120.61930223477154
+    ],
+    "host_tests": {
+      "run": 740,
+      "skipped": 4,
+      "status": "pass",
+      "log": {
+        "path": "build/gem-mouse-show/host-tests.log",
+        "sha256": "99f57040135983a8feae46f084d21b3bb9d2250f58a3cbe0005a3a5471e2ab71"
+      }
+    }
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_spare_included": true
+  },
+  "c_dp_workspace_bytes": 23,
+  "production_static_storage_delta_bytes": 0,
+  "source_hashes": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "d2a9b1e04f0e06963a7193cab88938d461e43ab9e2747a149a290432a9aed763",
+    "tests/programs/mouse_hide.c": "31d99923a005002fb0a53345efc8523372082a5e4d2106b8406dadb320cfded1",
+    "tools/test_mouse_hide.py": "d9836f9de443afe2bf7b9ca2d126de38d5988e77336bac599b9710245f38e980"
+  },
+  "limits": [
+    "Two PAL scroll actions with one clipped pointer position do not establish end-to-end latency or a distribution",
+    "Device fixture executes production body with cursor/flush hardware substituted; loaded MGVIEW checks actual ownership and pixels",
+    "Native cursor policy unchanged and not rerun",
+    "No QED, Counter, application catalog, geometry run, demo refresh or release qualification"
+  ]
+}

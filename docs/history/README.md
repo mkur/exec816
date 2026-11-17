@@ -1,5 +1,9 @@
 # Historical records
 
+- [Cached built-in cursor shows](gem-mouse-show.md): unchanged built-ins skip
+  the full mouse-form snapshot while changed/custom forms retain their path;
+  focused device and loaded MGVIEW evidence.
+
 - [Direct mouse hiding](gem-mouse-hide.md): M_OFF skips recipient selection
   and invisible form copies while retaining synchronous restoration, with
   focused policy/device checks and a loaded MGVIEW comparison.

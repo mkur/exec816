@@ -682,7 +682,13 @@ static UWORD draw_Mouse(struct AESMouseState *mouse)
     revision=mouse->revision;
     /* A visible-to-hidden transition only restores the saved background.
      * Form updates while already hidden retain their installation path. */
-    if (visible || !cursorVisible) memcpy(target,&mouse->form,sizeof(*target));
+    if (visible || !cursorVisible) {
+        target->kind=mouse->form.kind;
+        /* An unchanged built-in uses its prepared sprite; its MFORM words
+         * are unused. Custom and changed forms retain the full snapshot. */
+        if (target->kind==AES_USER_DEF || target->kind!=cursorForm.kind)
+            memcpy(target,&mouse->form,sizeof(*target));
+    }
     Permit();
     if ((visible || !cursorVisible) && (cursorForm.kind!=target->kind || (target->kind==AES_USER_DEF &&
         memcmp(cursorForm.words,target->words,sizeof(target->words))))) {

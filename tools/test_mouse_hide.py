@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small optimized emitted draw_Mouse hide, form-apply and late-target cases."""
+"""Small emitted draw_Mouse visibility, cached built-in and late-target cases."""
 import argparse,json
 from pathlib import Path
 from calypsi_build import emit
@@ -44,12 +44,12 @@ ENDMODULE
                   number('firstFailure'),flush=True)
             raise
         checks,failures=number('checks'),number('failures')
-        require(checks==25 and failures==0,'Mouse hide assertions: '+str((checks,failures)))
+        require(checks==42 and failures==0,'Mouse visibility assertions: '+str((checks,failures)))
         ownership(bridge,p,p['output'])
     report=dict(status='pass',tier='development',qualification=False,checks=checks,
         failures=failures,machine=machine,runtime=runtime,build=p['build'],
         production_source_sha256=sha256(source),extracted_body_sha256=sha256(body),
-        scope='Production draw_Mouse with only flush/cursor hardware substituted; actual Exec guards. Direct hide, form installation while already hidden, subsequent show, late revision, busy and fault cases. MGVIEW supplies real hardware/pixels.')
+        scope='Production draw_Mouse with only flush/cursor hardware substituted; actual Exec guards. Direct hide, unchanged built-in show without payload copies, changed/custom forms, late revisions, busy and fault cases. MGVIEW supplies real hardware/pixels.')
     (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     print('Mouse hide checks passed:',checks,flush=True)
 

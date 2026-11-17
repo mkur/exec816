@@ -73,6 +73,12 @@ Measured hide CPU falls
 from about 5.9 to 3.3/4.3 ms, with one synchronous restore BCB and unchanged
 pixels. General guard/wake work remains a separate follow-up.
 
+The [cached built-in show slice](../../history/gem-mouse-show.md) skips the full
+form snapshot when the requested built-in already matches the renderer's cached
+selection. Changed/custom forms keep their paths. M_ON CPU falls from about
+5.30 to 4.28 ms in the loaded pair, with unchanged pixels, grants and commands;
+recipient selection and guard/wake work remain separate follow-ups.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:
