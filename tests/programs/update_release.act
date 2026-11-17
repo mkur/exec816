@@ -74,6 +74,7 @@ RETURN
 
 PROC Main()
   EXEC.Task POINTER firstTask,secondTask
+  CARD beforeYield
 
   parent=EXEC.FindTask(NULL)
   Require(EXEC.AllocSignal(16)=16)
@@ -83,12 +84,15 @@ PROC Main()
   service.live=1
   client.id=1
   EXEC.InitSemaphore(@service.updateResource)
+  beforeYield=RELEASESTATE.yields
   Begin(2)
   FinishUpdate()
+  Require(RELEASESTATE.yields=beforeYield)
   Require(service.updates=1)
   Require(EXEC.SetSignal(0,WAKE)=0)
   FinishUpdate()
   Require(service.updates=0)
+  Require(RELEASESTATE.yields=beforeYield+1)
   Require(EXEC.SetSignal(0,WAKE)=0)
   Require(RELEASEPOLICY.SystemBlocked()=0)
 
@@ -118,6 +122,33 @@ PROC Main()
   Require(RELEASESTATE.mouseDirty<>0)
   Require(EXEC.SetSignal(0,WAKE)=0)
 
+  ; Temporary native scopes and retained manager authority prevent inner yield.
+  beforeYield=RELEASESTATE.yields
+  RELEASEPOLICY.ObtainUI()
+  Begin(1)
+  FinishUpdate()
+  Require(RELEASESTATE.yields=beforeYield)
+  RELEASEPOLICY.ReleaseUI()
+  Require(RELEASESTATE.yields=beforeYield+1)
+
+  beforeYield=RELEASESTATE.yields
+  Require(RELEASEPOLICY.AttemptUI()<>0)
+  RELEASEPOLICY.ObtainUI()
+  RELEASEPOLICY.ReleaseUI()
+  Require(RELEASESTATE.yields=beforeYield)
+  RELEASEPOLICY.ReleaseUI()
+  Require(RELEASESTATE.yields=beforeYield+1)
+
+  beforeYield=RELEASESTATE.yields
+  EXEC.ObtainSemaphore(@service.updateResource)
+  RELEASEPOLICY.systemHeld=1
+  Begin(1)
+  FinishUpdate()
+  Require(RELEASESTATE.yields=beforeYield)
+  RELEASEPOLICY.systemHeld=0
+  RELEASEPOLICY.ReturnResource(service,1)
+  Require(RELEASESTATE.yields=beforeYield+1)
+
   EXEC.ObtainSemaphore(@service.updateResource)
   firstTask=EXEC.CreateTask(c"first",0,@First,1)
   Require(firstTask<>NULL)
@@ -130,6 +161,7 @@ PROC Main()
     EXEC.Yield()
   OD
   RELEASEPOLICY.ReturnResource(service,1)
+  Require(count<>0)
   WHILE finished<>2 DO
     BEGIN
       LET ignored=EXEC.Wait(WAKE)

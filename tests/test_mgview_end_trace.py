@@ -55,6 +55,13 @@ class EndTraceTests(unittest.TestCase):
         self.assertNotIn('journal_and_cache',[r['kind'] for r in stages])
         self.assertEqual(sum(r['end']-r['start'] for r in stages),100)
 
+    def test_final_yield_is_separate_from_permit(self):
+        rows=self.rows+[dict(kind='exec_yield',start=82,end=84)]
+        stages=resource_stages(rows,0,100)
+        yield_stage=next(r for r in stages if r['kind']=='final_yield')
+        self.assertEqual((yield_stage['start'],yield_stage['end']),(82,84))
+        self.assertEqual(sum(r['end']-r['start'] for r in stages),100)
+
     def test_peer_cpu_clipping_separates_interrupts(self):
         segments=[(0,10,1,False),(10,20,2,False),(20,25,2,True),
                   (25,30,3,False),(30,40,1,True)]

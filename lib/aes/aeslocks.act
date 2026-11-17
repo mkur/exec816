@@ -11,12 +11,16 @@ USE DESKSTATE
 USE CONSOLEBITMAP
 BYTE systemHeld
 CARD systemDepth
+; Temporary native facade levels have no application nesting or retained
+; manager marker. Count them only to identify the final scheduling boundary.
+CARD uiDepth
 
 PUBLIC PROC Init(AESSTATE.Service POINTER service)
 
   EXEC.InitSemaphore(@service.updateResource)
   systemHeld=0
   systemDepth=0
+  uiDepth=0
 
 RETURN
 
@@ -34,11 +38,13 @@ RETURN
 ; Only the short final notification/release pair needs an outer Task guard.
 PROC ReturnResource(AESSTATE.Service POINTER service BYTE final)
 
+  final=final<>0 AND uiDepth=0 AND systemHeld=0
   IF final<>0 THEN
     EXEC.Forbid()
     Notify(service)
     EXEC.ReleaseSemaphore(@service.updateResource)
     EXEC.Permit()
+    EXEC.Yield()
   ELSE
     EXEC.ReleaseSemaphore(@service.updateResource)
   FI
@@ -51,12 +57,24 @@ PUBLIC PROC ObtainUI()
 
   LET service=AESSTATE.Get()
   EXEC.ObtainSemaphore(@service.updateResource)
+  uiDepth==+1
 
 RETURN
+
+PUBLIC BYTE FUNC AttemptUI()
+
+  LET service=AESSTATE.Get()
+  IF EXEC.AttemptSemaphore(@service.updateResource)=0 THEN
+    RETURN(0)
+  FI
+  uiDepth==+1
+
+RETURN(1)
 
 PUBLIC PROC ReleaseUI()
 
   LET service=AESSTATE.Get()
+  uiDepth==-1
   ReturnResource(service,service.updates=0)
 
 RETURN

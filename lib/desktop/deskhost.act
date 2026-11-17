@@ -107,7 +107,7 @@ PUBLIC BYTE FUNC Idle()
   IF aes=NULL THEN
     RETURN(InspectIdle())
   FI
-  IF EXEC.AttemptSemaphore(@aes.updateResource)=0 THEN
+  IF AESLOCKS.AttemptUI()=0 THEN
     RETURN(0)
   FI
   result=InspectIdle()

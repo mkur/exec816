@@ -1,0 +1,288 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "EU5: release then yield once at final public/temporary/retained AES ownership boundary",
+  "captures": {
+    "scroll": {
+      "path": "build/gem-end-update/eu5/scroll/results.json",
+      "sha256": "7ffc25839ad65623c9cde90cd439ab2b6b065586d610e2914e145cf800b018ee"
+    },
+    "definition": {
+      "path": "build/gem-end-update/eu5/scroll/definition.json",
+      "sha256": "3adee07e95b259a72fe283d61cb6b99c813b23fc4ff8259d0adf5b2dbc34c098"
+    },
+    "geometry": {
+      "path": "build/gem-end-update/eu5/viewer/results-geometry.json",
+      "sha256": "e20fb668d2861c2cdb4f062b7759e2503cc9672f1c242f14ebaa6d8641346dfc"
+    },
+    "release": {
+      "path": "build/gem-end-update/eu5/release/results.json",
+      "sha256": "75670ccbd93b878b577a8f49e4f323d65c7e6b39ebcbe79b6f7d7c7b802be38e"
+    }
+  },
+  "inputs": {
+    "native_sha256": "4c7b27e000eaad921922413ed61106839c8ae68e7c335b64ca040d2ec8c01e51",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "app_abi": 48,
+    "aes_abi": 28
+  },
+  "samples": [
+    {
+      "action": "down",
+      "end": {
+        "elapsed_ms": 3.4105182138180017,
+        "charged_cpu_ms": 2.238577685553139,
+        "off_cpu_ms": 0.7337403560015169,
+        "interrupt_ms": 0.4382001722633458
+      },
+      "journal_present": false,
+      "manager_cpu_ms": 0.0,
+      "final_yield": {
+        "calls": 1,
+        "elapsed_ms": 1.4615600405425027,
+        "charged_cpu_ms": 0.5976353965933584,
+        "off_cpu_ms": 0.7337403560015169,
+        "interrupt_ms": 0.13018428794762743
+      },
+      "stages": {
+        "binding_and_dispatch": {
+          "elapsed_ms": 0.9700033409503241,
+          "charged_cpu_ms": 0.7944272384719593,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1755761024783649
+        },
+        "lock_entry": {
+          "elapsed_ms": 0.3185885119238094,
+          "charged_cpu_ms": 0.27453589689009683,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044052615033712585
+        },
+        "release_accounting": {
+          "elapsed_ms": 0.3135841348559797,
+          "charged_cpu_ms": 0.26946103563821316,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        "snapshot_and_release_dispatch": {
+          "elapsed_ms": 0.011136501080522542,
+          "charged_cpu_ms": 0.011136501080522542,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "notify_and_native_release": {
+          "elapsed_ms": 0.20362880773183306,
+          "charged_cpu_ms": 0.15936474014595867,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04426406758587441
+        },
+        "post_release_permit": {
+          "elapsed_ms": 0.06266043962395279,
+          "charged_cpu_ms": 0.06266043962395279,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "final_yield": {
+          "elapsed_ms": 1.4615600405425027,
+          "charged_cpu_ms": 0.5976353965933584,
+          "off_cpu_ms": 0.7337403560015169,
+          "interrupt_ms": 0.13018428794762743
+        },
+        "native_release_return": {
+          "elapsed_ms": 0.0017621046013485033,
+          "charged_cpu_ms": 0.0017621046013485033,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "binding_return": {
+          "elapsed_ms": 0.06759433250772859,
+          "charged_cpu_ms": 0.06759433250772859,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        }
+      }
+    },
+    {
+      "action": "up",
+      "end": {
+        "elapsed_ms": 3.4124917709715117,
+        "charged_cpu_ms": 2.238295748816923,
+        "off_cpu_ms": 0.7326126090566537,
+        "interrupt_ms": 0.4415834130979349
+      },
+      "journal_present": false,
+      "manager_cpu_ms": 0.0,
+      "final_yield": {
+        "calls": 1,
+        "elapsed_ms": 1.4608551987019633,
+        "charged_cpu_ms": 0.5971420073049809,
+        "off_cpu_ms": 0.7326126090566537,
+        "interrupt_ms": 0.13110058234032865
+      },
+      "stages": {
+        "binding_and_dispatch": {
+          "elapsed_ms": 0.9229903901863461,
+          "charged_cpu_ms": 0.7889294721157519,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13406091807059414
+        },
+        "lock_entry": {
+          "elapsed_ms": 0.36835034586589116,
+          "charged_cpu_ms": 0.28017463161441203,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08817571425147912
+        },
+        "release_accounting": {
+          "elapsed_ms": 0.3133021981197639,
+          "charged_cpu_ms": 0.26917909890199737,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        "snapshot_and_release_dispatch": {
+          "elapsed_ms": 0.011559406184846181,
+          "charged_cpu_ms": 0.011559406184846181,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "notify_and_native_release": {
+          "elapsed_ms": 0.20320590262750943,
+          "charged_cpu_ms": 0.1590828034097429,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        "post_release_permit": {
+          "elapsed_ms": 0.06273092380800672,
+          "charged_cpu_ms": 0.06273092380800672,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "final_yield": {
+          "elapsed_ms": 1.4608551987019633,
+          "charged_cpu_ms": 0.5971420073049809,
+          "off_cpu_ms": 0.7326126090566537,
+          "interrupt_ms": 0.13110058234032865
+        },
+        "native_release_return": {
+          "elapsed_ms": 0.0017621046013485033,
+          "charged_cpu_ms": 0.0017621046013485033,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "binding_return": {
+          "elapsed_ms": 0.06773530087583647,
+          "charged_cpu_ms": 0.06773530087583647,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        }
+      }
+    }
+  ],
+  "set_shift": {
+    "down": {
+      "calls": 1,
+      "elapsed_ms": 99.5660288787799,
+      "charged_cpu_ms": 76.75495045666703,
+      "off_cpu_ms": 6.037181816772134,
+      "interrupt_ms": 16.773896605340727
+    },
+    "up": {
+      "calls": 1,
+      "elapsed_ms": 95.60101158900953,
+      "charged_cpu_ms": 75.60020806931132,
+      "off_cpu_ms": 3.6648956340686714,
+      "interrupt_ms": 16.335907885629542
+    }
+  },
+  "observed_completion_ms": {
+    "down": 120.65539013700716,
+    "up": 140.3875784312758
+  },
+  "checks": {
+    "release_assertions": 37,
+    "host_tests": 734,
+    "skipped": 4,
+    "guards": "intact",
+    "scroll_lifetimes": 3,
+    "geometry_lifetimes": 3,
+    "settled_scanout_identical": true,
+    "copy_units_per_key": 1,
+    "borrower_grants_per_key": 6,
+    "raw_submissions_per_key": 8
+  },
+  "provider_and_APP_reused": true,
+  "upper_ram_added_bytes": 2,
+  "upper_ram_purpose": "Temporary UI scope count used only for final scheduling; native semaphore retains sole ownership/FIFO authority",
+  "reservation_map_identical": true,
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "limitations": [
+    "Two PAL/COP observations, not a latency distribution or release qualification.",
+    "Final Yield deliberately allows other ready Tasks to execute; off-Task time is not charged as semaphore CPU.",
+    "No QED, Counter, catalog, demo or release matrix."
+  ],
+  "stack_observations": [
+    {
+      "slot": 0,
+      "reserved_bytes": 1536,
+      "touched_bytes": 443,
+      "untouched_above_floor": 837
+    },
+    {
+      "slot": 1,
+      "reserved_bytes": 1312,
+      "touched_bytes": 346,
+      "untouched_above_floor": 710
+    },
+    {
+      "slot": 2,
+      "reserved_bytes": 1312,
+      "touched_bytes": 138,
+      "untouched_above_floor": 918
+    },
+    {
+      "slot": 3,
+      "reserved_bytes": 1312,
+      "touched_bytes": 315,
+      "untouched_above_floor": 741
+    },
+    {
+      "slot": 4,
+      "reserved_bytes": 1312,
+      "touched_bytes": 149,
+      "untouched_above_floor": 907
+    },
+    {
+      "slot": 5,
+      "reserved_bytes": 1312,
+      "touched_bytes": 18,
+      "untouched_above_floor": 1038
+    },
+    {
+      "slot": 6,
+      "reserved_bytes": 2560,
+      "touched_bytes": 720,
+      "untouched_above_floor": 1584
+    },
+    {
+      "slot": 7,
+      "reserved_bytes": 2560,
+      "touched_bytes": 1283,
+      "untouched_above_floor": 1021
+    },
+    {
+      "slot": 8,
+      "reserved_bytes": 512,
+      "touched_bytes": 66,
+      "untouched_above_floor": 190
+    }
+  ]
+}

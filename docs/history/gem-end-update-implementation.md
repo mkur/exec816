@@ -148,3 +148,62 @@ hashes are retained. No QED, Counter, catalog or demo is built. All reservation
 map fields match EU3 except foreign code placement: added bank-zero bytes are
 **0 fixed, root, kernel, idle and per-public-Task**, including guards, alignment
 and spare capacity. No VRAM range, Task, signal or platform operation is added.
+
+## EU5 — final native release precedes an explicit Exec yield
+
+Final resource return now follows MagiC's `end_update`: notify a genuinely armed
+continuation, release/handoff the native semaphore, leave the short Task guard,
+then call public `EXEC.Yield`. Inner levels do not yield as final releases.
+The caller's own outer Forbid nesting retains normal Exec semantics.
+
+Application UPDATE/MCTRL and retained manager ownership already have scope
+bookkeeping. Temporary native facade borrows now have a **two-byte upper-RAM
+counter**; the controller's nonblocking idle probe uses the same counted
+`AttemptUI`/`ReleaseUI` path. This identifies the final scheduling boundary
+without reading opaque semaphore fields. It does not grant ownership, select
+waiters or implement waiting. The public native semaphore remains the sole
+resource authority. The count reaches zero before ownership can pass to a peer.
+
+The [EU5 record](../development/gem-end-update-eu5.json) includes 37 optimized
+emitted checks. They cover public nesting, mixed public/native UI scopes,
+recursive UI borrows, a retained manager level, the arm/release race, native
+FIFO and ready-peer progress after final release. Yield counting is a fixture
+observation wrapper that still executes the real public service. The production
+observer independently sees **one final Yield per scroll END** and separates it
+from Permit. Host checks run 734 tests, four skipped.
+
+MGVIEW scrolling and the focused resize/move case again pass exact pixel,
+Process lifetime, heap/ownership and stack/domain guard checks. Provider and APP
+are reused unchanged from EU4. The complete settled scanout remains identical
+to the original audit. Each scroll still uses one viewport copy, six borrower
+admissions and eight raw submissions. No journal, application cache work,
+paint-only publication or SCRENMGR turn occurs during END.
+
+| Final matched work | Down | Up |
+| --- | ---: | ---: |
+| END elapsed, audit → final | 17.343 → **3.411 ms** | 17.448 → **3.412 ms** |
+| Viewer END CPU, audit → final | 6.231 → **2.239 ms** | 6.233 → **2.238 ms** |
+| SCRENMGR CPU during END, audit → final | 6.809 → **0 ms** | 6.810 → **0 ms** |
+| Explicit final Yield elapsed | 1.462 ms | 1.461 ms |
+| Explicit final Yield viewer CPU | 0.598 ms | 0.597 ms |
+| Explicit final Yield off-Task | 0.734 ms | 0.733 ms |
+| Whole `set_shift` viewer CPU, audit → final | 82.761 → **76.755 ms** | 81.326 → **75.600 ms** |
+| Whole `set_shift` elapsed, audit → final | 115.862 → **99.566 ms** | 111.711 → **95.601 ms** |
+| Complete viewport observed, audit → final | 120.535 → **120.655 ms** | 140.270 → **140.388 ms** |
+
+Inclusive rows overlap. Yield's off-Task work belongs to the test controller,
+not SCRENMGR or a contended draw. The port now follows the intended release/
+scheduling structure, with a smaller CPU bill. The two observed viewport
+latencies remain around 120/140 ms; no consistent end-to-end improvement is
+established by this workload's PAL/COP sampling.
+
+Native static payload grows by exactly two bytes; the reservation map is
+identical to EU4. Added reserved bank-zero bytes are **0 fixed, root, kernel,
+idle and per-public-Task**, including guards, alignment and unused capacity.
+No new Task, queue, signal, display grant, buffer, VRAM allocation or platform
+operation is introduced. EU1–EU5 are complete at the development tier.
+
+The final measured MGVIEW stack peak is 1,283 bytes in the existing 2,560-byte
+pool, leaving 1,021 bytes above its ordinary floor. SCRENMGR touches 720 bytes
+(up from 698 in EU4), leaving 1,584; root touches 443, leaving 837. These are
+observed peaks including the capture schedule, not larger reservations.

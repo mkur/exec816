@@ -323,7 +323,11 @@ zero result. Physical input/outline/route continuations retain existing private
 reply-signal hints after ownership has been established; those hints never grant
 UPDATE. No Task, signal or kernel ABI extension is added.
 
-Final local END publishes nesting and releases the native resource. It wakes
+Final local END publishes nesting, releases the native resource and calls public
+Exec Yield after the short guard. Only the final native ownership scope yields
+as a final release; public, temporary UI and retained manager levels are counted
+together for this decision. Normal Task preemption and caller Forbid nesting
+are preserved. It wakes
 SCRENMGR only for a genuinely armed blocked continuation. There is no journal,
 application backing-cache capture/patch scan or paint-only routing publication.
 Input.device continues copied keyboard/pointer delivery while another Task

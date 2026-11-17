@@ -40,11 +40,14 @@ An unconditional painting-release wake drives 6.81 ms of SCRENMGR input/mouse
 work without interaction or VBXE submission. It proposes a demand-driven wake
 slice and a separate journal/cache review; target behavior is unchanged.
 
-The proposed [END_UPDATE implementation plan](end-update-implementation-plan.md)
-orders cursor completion, genuine release notifications, event-driven input and
-mouse service, a separately selected standard-GEM painting/cache cutover, and
-MagiC's final scheduling boundary. Each passing executable slice gets a commit;
-MGVIEW and focused ownership/cursor cases are the development targets.
+The [END_UPDATE implementation plan](end-update-implementation-plan.md) is
+complete through EU5: caller cursor completion, genuine release notifications,
+event-driven input/mouse service, standard GEM application painting and final
+release followed by public Exec Yield. The
+[execution record](../../history/gem-end-update-implementation.md) records five
+separate commits and focused MGVIEW/ownership/cursor development checks. Final
+END is about 3.41 ms elapsed, with no synthetic manager work; viewport latency
+remains around 120/140 ms in the matched samples. Application ABI is now 48.
 
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use

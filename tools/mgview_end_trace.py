@@ -78,6 +78,9 @@ def resource_stages(rows,start,end):
     journal=journals[0] if journals else None
     handoff=one('AESLOCKS_RETURNRESOURCE')
     native=one('semaphores_release')
+    yields=[r for r in rows if r['kind']=='exec_yield'
+            and native['end']<=r['start']<r['end']<=handoff['end']]
+    require(len(yields)<=1,'Multiple final-release yields')
     points=[('binding_and_dispatch',start,lock['start']),
             ('lock_entry',lock['start'],release['start']),
             *([('window_update_flags',release['start'],journal['start']),
@@ -86,7 +89,10 @@ def resource_stages(rows,start,end):
               [('release_accounting',release['start'],release['end'])]),
             ('snapshot_and_release_dispatch',release['end'],handoff['start']),
             ('notify_and_native_release',handoff['start'],native['end']),
-            ('post_release_permit_and_return',native['end'],handoff['end']),
+            *([('post_release_permit',native['end'],yields[0]['start']),
+               ('final_yield',yields[0]['start'],yields[0]['end']),
+               ('native_release_return',yields[0]['end'],handoff['end'])] if yields else
+              [('post_release_permit_and_return',native['end'],handoff['end'])]),
             ('binding_return',handoff['end'],end)]
     require(all(left<=right for _,left,right in points),'Out-of-order END stages')
     return [dict(kind=name,start=left,end=right) for name,left,right in points]
@@ -166,4 +172,4 @@ def analyze(out,definition,audit):
             routines={n:dict(calls=len(v),**{k:sum(r[k] for r in v)
                 for k in ('elapsed_ms','charged_cpu_ms','off_cpu_ms','interrupt_ms')})
                 for n,v in functions.items()},spans=rows))
-    return dict(samples=result,scope='Final wind_update(END_UPDATE), synchronous caller journal and native release. Task CPU excludes interrupts and other Tasks; stages are disjoint. Native Release return is a conservative ownership-release boundary, not a hardware-store timestamp.')
+    return dict(samples=result,scope='Final wind_update(END_UPDATE), native release and final scheduling; journal work is reported only if present in the observed image. Task CPU excludes interrupts and other Tasks; stages are disjoint. Native Release return bounds ownership release, not its store timestamp.')

@@ -7,7 +7,7 @@
 Action! provides `InitSemaphore`, `ObtainSemaphore`, `AttemptSemaphore` and
 `ReleaseSemaphore` through `USE EXEC`.
 C provides the same functions in `<exec/semaphores.h>` (also included by
-`<proto/exec.h>`). Current loaded APP/provider ABI is 46; rebuild both together.
+`<proto/exec.h>`). Current loaded APP/provider ABI is 48; rebuild both together.
 
 `SignalSemaphore` is an opaque 12-byte, two-byte-aligned caller-owned object.
 Initialize it once before publication and keep its address live while used.
