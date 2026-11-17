@@ -1,0 +1,2235 @@
+{
+  "status": "documented",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Passive pre-copy audit and pinned MagiC comparison only; no runtime changes or target builds",
+  "builds_run": 0,
+  "commands": {
+    "capture": "python3 tools/measure_mgview.py --cache build/gem-end-update/eu5/viewer --output build/gem-pre-copy-audit/scroll --pre-copy-detail --expect-copy-units 1",
+    "reanalyze": "python3 tools/measure_mgview.py --cache build/gem-end-update/eu5/viewer --output build/gem-pre-copy-audit/scroll --analyze-only"
+  },
+  "captures": {
+    "current": {
+      "path": "build/gem-pre-copy-audit/scroll/results.json",
+      "sha256": "e6eb7b23e216680a7001205d53d35d791091a4935ee31a1b92b0df531c3145bd"
+    },
+    "definition": {
+      "path": "build/gem-pre-copy-audit/scroll/definition.json",
+      "sha256": "22e0b7cd8df0a92fcf71d7fd37bca9feca7c42b5723c52b8b2d07ede1ae0065e"
+    },
+    "baseline": {
+      "path": "build/gem-end-update/eu5/scroll/results.json",
+      "sha256": "7ffc25839ad65623c9cde90cd439ab2b6b065586d610e2914e145cf800b018ee"
+    },
+    "provider": {
+      "path": "build/gem-end-update/eu5/viewer/c-image.json",
+      "sha256": "09c9e0fe0a22555e891806739c54bb704d688e6bf8ab1103f09de4f6247865f8"
+    }
+  },
+  "inputs": {
+    "source_cache": "/Users/michalkurcewicz/action/exec816-public/build/gem-end-update/eu5/viewer",
+    "native_sha256": "4c7b27e000eaad921922413ed61106839c8ae68e7c335b64ca040d2ec8c01e51",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "app_abi": 48,
+    "aes_abi": 28,
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "base_clock_hz": 1773447.5,
+    "actionc": {
+      "schema_version": 1,
+      "repository": "https://github.com/mkur/actionc.git",
+      "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+      "binary": "actionc-65816",
+      "target": "wdc-65816-native",
+      "abi": "action65816.native.v2",
+      "image_format_version": 3,
+      "abi_json": "docs/abi/action65816-native-v2.json",
+      "abi_assembly": "docs/abi/action65816-native-v2.inc",
+      "abi_action": "docs/abi/action65816-native-v2.act"
+    },
+    "c_tools": {
+      "cc65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/cc65816",
+        "version": "Calypsi ISO C compiler for 65816 version 5.18",
+        "sha256": "32581974d919226e9e7054d890a39e934461806905b3ebc32b6002f32d3c2ee7"
+      },
+      "as65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/as65816",
+        "version": "Calypsi assembler for 65816 version 5.18",
+        "sha256": "348e8f8485d4dfc92e04ea295bdc2f2fb18169658ab64e20158e03b5745fa594"
+      },
+      "ln65816": {
+        "path": "/usr/local/lib/calypsi-65816-5.18/bin/ln65816",
+        "version": "Calypsi linker for 65816 version 5.18",
+        "sha256": "74738fc80ff249c726a6c19b7122969dbcbaf7fdb2579bca80440eea6152fb31"
+      }
+    },
+    "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "magic_aeswin": {
+      "path": "build/magic-architecture/text/AESWIN.S",
+      "sha256": "1b9b58824716dd47225c2615ef69cb4d4859e75cd46c925397240170bb7e3ee6"
+    },
+    "gem4xe_extraction": {
+      "upstream": {
+        "COPYING": {
+          "sha256": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+          "role": "notice"
+        },
+        "COPYING.LIB": {
+          "sha256": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+          "role": "notice"
+        },
+        "docs/licence.md": {
+          "sha256": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+          "role": "notice"
+        },
+        "src/portab.h": {
+          "sha256": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+          "role": "adapt"
+        },
+        "src/vdi/vdi.c": {
+          "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524",
+          "role": "extract"
+        },
+        "src/vdi/vdi.h": {
+          "sha256": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+          "role": "adapt"
+        },
+        "src/vdi/vdidev.h": {
+          "sha256": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+          "role": "adapt"
+        },
+        "src/vdi/dev_vbxe.c": {
+          "sha256": "efc6fb3fbecfb70ba4ae03598dabf707c91ee60038d93cfe15914a6e43e56573",
+          "role": "extract"
+        },
+        "src/vdi/font.c": {
+          "sha256": "745b1ff06f2a4363511c9ac9232ce5521635172780892a8f574d8183ce80ca7d",
+          "role": "extract-default-font-only"
+        },
+        "src/vdi/font.h": {
+          "sha256": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+          "role": "adapt"
+        },
+        "src/vdi/font8x8.c": {
+          "sha256": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+          "role": "unchanged-font"
+        },
+        "src/vbxe/vbxe.c": {
+          "sha256": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+          "role": "adapt"
+        },
+        "src/vbxe/vbxe.h": {
+          "sha256": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+          "role": "adapt"
+        },
+        "src/sys/zwin.h": {
+          "sha256": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+          "role": "replace"
+        },
+        "src/sys/farmem.h": {
+          "sha256": "c15c2d2dee0281ceadf3ee1d625c999b2156ad6c19aa69f788cefbc58362157c",
+          "role": "replace"
+        },
+        "src/vdi/pointer.c": {
+          "sha256": "88668a6e435010a05676dd636fc47343a6aad870c95e66dd2e5e2d8aaeb2542d",
+          "role": "reference-only"
+        },
+        "src/vdi/pointer.h": {
+          "sha256": "781f7b81138a7d935d2336ab858b08e87a8f5f6a4597349417b9dd81d1977b78",
+          "role": "reference-only"
+        },
+        "src/vdi/print.h": {
+          "sha256": "7fc51b95d34933a3ebe5497c40349919adf4a2eb2756b23e6b8b503902c28ab6",
+          "role": "reference-only"
+        },
+        "src/sys/ctx.h": {
+          "sha256": "7991b9d8f9b7ac3bfcbdaccf698b03c5b72a68d64cd551a90bdc7e9879006aa9",
+          "role": "reference-only"
+        },
+        "src/sys/irq.h": {
+          "sha256": "48c95d1d51d143572206d4592e49c1b286b00eb75e7ce1f0636dce04295dfe71",
+          "role": "reference-only"
+        },
+        "src/vdi/fillpat.c": {
+          "sha256": "20634028c7d2eabd47feeafb1cb969fb6f7f6702c49afea837a63d36307cb55b",
+          "role": "reference-only"
+        },
+        "src/vdi/sintbl.c": {
+          "sha256": "4d990d00f911037464b9eac35bcf2cc85bc176807a2b49dc800aaa20001b6244",
+          "role": "reference-only"
+        },
+        "tools/vdiref.py": {
+          "sha256": "7ec6865bad4e97de91364e6080e59fd3f32a8b695a9d86ef4792fc13462e2ae4",
+          "role": "host-oracle-only"
+        },
+        "tools/devref.py": {
+          "sha256": "0f7e9adba5b70f52067bee9abe847612de3629d027e91f0646e38a0d1d1f1a89",
+          "role": "host-oracle-only"
+        },
+        "tools/fontref.py": {
+          "sha256": "ada9337bc5bf1789e3dcb6522ab6823fc5ec81e3effbc26a1f8a3cdecd797495",
+          "role": "host-oracle-only"
+        },
+        "tools/vbxeref.py": {
+          "sha256": "7e3daae90b029aee293b9d3e93811b7db08be5bad8473c0f01b0572169d780e1",
+          "role": "host-oracle-only"
+        },
+        "tools/anticref.py": {
+          "sha256": "ab7d96ba2fed91ebcfe9b9b9e78245ebeb9855a291db9b275d1889190b29d5df",
+          "role": "host-oracle-only"
+        },
+        "src/vdi/font6x6.c": {
+          "sha256": "90f87a9c352d6c9b69a0a290c0bbd9be3dc720889b0e2d3d5b6433d321318388",
+          "role": "host-oracle-only"
+        }
+      },
+      "selection_sha256": "5b663fedccb5ce87d97dce7da3f80e4e9d0da1ee21d6678fa7e0fc7d5b341700",
+      "builder_tables": {
+        "generator_sha256": "9ba05977243aa55879f04db1e448894d623f93587237672b385e26331a89d374",
+        "contract_sha256": "65f4af88738d1ce5801399138f5a8a5ef73fba57c12c4217de09e28dabc2a1b7",
+        "header_sha256": "25ac7b42128af00c9e1abf6723c0c2343980abcc122517a35a7158a91d0ceb06",
+        "tables": {
+          "GemRecordOffsets": {
+            "element_bytes": 2,
+            "entries": 65,
+            "bytes": 130
+          },
+          "GemRowLimit2": {
+            "element_bytes": 2,
+            "entries": 512,
+            "bytes": 1024
+          },
+          "GemRowLimit3": {
+            "element_bytes": 2,
+            "entries": 512,
+            "bytes": 1024
+          },
+          "GemWork3": {
+            "element_bytes": 2,
+            "entries": 8192,
+            "bytes": 16384
+          },
+          "GemGlyphCapacity96": {
+            "element_bytes": 1,
+            "entries": 1025,
+            "bytes": 1025
+          },
+          "GemGlyphCapacity120": {
+            "element_bytes": 1,
+            "entries": 1025,
+            "bytes": 1025
+          },
+          "GemScreenRows": {
+            "element_bytes": 4,
+            "entries": 256,
+            "bytes": 1024
+          },
+          "GemFillRows": {
+            "element_bytes": 1,
+            "entries": 325,
+            "bytes": 325
+          }
+        },
+        "payload_bytes": 21961
+      },
+      "frame_gadgets": {
+        "generator_sha256": "0e384a1cffddcbf2312e0238b28033d3f5c3b6bcddd581de26cb2e848659a035",
+        "assets_sha256": "0a42191eff962e3151b0e6c3f20f23b16e69120da270ccfab9b552784f1f7edc",
+        "vram_sha256": "7010c599f288d5819d8857fc4a280f6ccf31f31f6a772d25203164e2c188292b",
+        "header_sha256": "268f6db2421333ff1d0a44c37cbbe8d52c674614c01a10ab10b5d47ea5c0b2cf",
+        "image_bytes": 3456,
+        "descriptor_bytes": 54,
+        "reserved_bytes": 4096,
+        "base": 233472
+      },
+      "patches": {
+        "0001-hosted-storage-and-subset.patch": "23ef9b1a4a3ed882bbccd016923e46b23c29a49a33fb2b53051a330ce7bf8cd7",
+        "0002-wide-raster-arithmetic.patch": "c641e159ca493e899f9b3347b7dbd50a31ff437a97817c6dd335e3da0582fe41",
+        "0003-hosted-window.patch": "abd32dbc2d637c70372d3cee79cddbf319fc4970616f35b0ac24b0944b3be963",
+        "0004-stencil-text.patch": "d3f908fdd4455583b5b47ed558e30f8c2b7fd0410df18858e5c54f83aacd1b87",
+        "0005-hosted-text-run.patch": "25c57eda7006181f9bd2b407bf668efc5aaa91ade39c6f73fdc0347703c2157f",
+        "0006-clipped-glyphs.patch": "646a822683b834b1336636990ffdf44ea8f2dc0907cdcdef0dd61ef07b306b48",
+        "0007-widget-glyph-runs.patch": "44810b54d75d685650b3180558db039a7ca0f64e7a7d063b15e525649227cba4"
+      },
+      "selected": {
+        "src/vdi/vdi.c": "e5a0ae0ce941265de949bd6345435ab8ee3db9b63c442d713e4ee316b0d2d180",
+        "src/vdi/dev_vbxe.c": "773535cf02d66e6a98a1e953c3b9cc1841c7a4b79359d6297b359e8574fa6035",
+        "src/vdi/font.c": "ffb0eac06eb7c869bc04dcfe79baa97e17a6af30be7b675a6590d31e7482700a",
+        "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+        "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f",
+        "src/vdi/font.h": "ddcfb21c646a790d3ca96b8c4c6441a4a6df09dbfc94cb985bba6dc1feff8088",
+        "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+        "src/vbxe/vbxe.c": "1bf9722b712dcc5dc8c235ea168a276af321f60d925c34fb3e90fcc2bd3e3f6b",
+        "src/vbxe/vbxe.h": "7778e91f07a726a5f4e068829f7dfec338c74596682a7efc1f001b22c9192608",
+        "src/portab.h": "60d5cc880e02d7a980dd483e1a0b44263cbcfe34bffae9cd19c00d3342fd245a",
+        "src/sys/zwin.h": "9530d12d510af3f10f0c7c18cf06298f5bd6fc292427cb27d711c5f2d83efa1b",
+        "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9"
+      },
+      "adapted": {
+        "COPYING": "aaf135472f81c5b4a0dca9367e5bb5e9750032b5bebe5442b36e4c0a47430df3",
+        "COPYING.LIB": "5bbcbb737e60fe9deba08ecbd00920cfcc3403ba2e534c64fdeea49d6bb87509",
+        "docs/licence.md": "50a405f2d07e3648cb624cb62f1dee68db58b752bf0d773afaef7f581d9984a9",
+        "src/gem-frame-gadgets.h": "268f6db2421333ff1d0a44c37cbbe8d52c674614c01a10ab10b5d47ea5c0b2cf",
+        "src/gem-vbxe-tables.h": "25ac7b42128af00c9e1abf6723c0c2343980abcc122517a35a7158a91d0ceb06",
+        "src/hosted-dispatch.inc": "64b1326b6509b0744e0edd4cba842672e2b0963f0ca48ab5d79ea0e0714494e0",
+        "src/hosted-vdi.h": "ef79d9693ee8f5f301f7a086aa0f73c9edce5e310e4e61f0eb08473f075958a1",
+        "src/operation-checks.inc": "96fae66f2f6426e77fae6522990f994a1b367b49c7c03869d33bda8dff00e6dd",
+        "src/portab.h": "e0f1db2609ab0b9999f4c4265009db21dae58dd2d337eed8f61b76fe05a3f2a6",
+        "src/sys/zwin.h": "0c9c991ebbe0c1478082434563cd27bb1477c559b808b3c79abc4f01980e8a9f",
+        "src/vbxe/vbxe.c": "6cdff42d3989f63beff75fb2ee20f792b4523ae81707605fa886275e2aac4779",
+        "src/vbxe/vbxe.h": "3b75e3e273133baa91f6f3818430cc739b1526d84cb88d6ce0bae461e68a484c",
+        "src/vdi/dev_vbxe.c": "2d17d845f09496ff35f0d8d41f1df97582ed0f9997b810978c752f8a85dd1411",
+        "src/vdi/font.c": "773e690778d68b02e5f3b8f295298bf061e483854653de289ba59f1a0154855b",
+        "src/vdi/font.h": "911bbf780203e8e69d7dfc8823cdee2e7b1378de8a467d7615b78b3b57dc86ae",
+        "src/vdi/font8x8.c": "ff29cc677ff75ef1ac9ee505579b153f161ce523e875524dfb0199fe54eae490",
+        "src/vdi/vdi.c": "200efd32d94ef44580b0184dbb90cafad3f953d26deb770277d6034b5459a3b7",
+        "src/vdi/vdi.h": "2703bf65c8d7797acac1030e9bec7636028a17eb3ed4a6c4c82191f06ab77ad8",
+        "src/vdi/vdidev.h": "cd316374e8e5ce84530a9ae016f7602843728a60e8488cdd4fa57e4debc6d83f"
+      }
+    }
+  },
+  "samples": [
+    {
+      "action": "down",
+      "measured": {
+        "elapsed_ms": 44.98060980096676,
+        "charged_cpu_ms": 35.80251177438295,
+        "off_cpu_ms": 1.414265153042309,
+        "interrupt_ms": 7.763832873541506
+      },
+      "stages": [
+        {
+          "kind": "before_slider",
+          "elapsed_ms": 1.8778396315650732,
+          "charged_cpu_ms": 1.5712334309304334,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3066062006346396
+        },
+        {
+          "kind": "slider_size_preparation",
+          "elapsed_ms": 0.41141618232284854,
+          "charged_cpu_ms": 0.3236633731756931,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08775280914715547
+        },
+        {
+          "kind": "WF_VSLSIZE",
+          "elapsed_ms": 5.292939317346581,
+          "charged_cpu_ms": 4.367059075614023,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9258802417325576
+        },
+        {
+          "kind": "slider_position_preparation",
+          "elapsed_ms": 0.3424121661340412,
+          "charged_cpu_ms": 0.29835955110032863,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044052615033712585
+        },
+        {
+          "kind": "WF_VSLIDE",
+          "elapsed_ms": 25.791713597385883,
+          "charged_cpu_ms": 20.662790976332822,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 4.446635719410922
+        },
+        {
+          "kind": "slider_return",
+          "elapsed_ms": 0.004722440331613989,
+          "charged_cpu_ms": 0.004722440331613989,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "after_slider_before_copy",
+          "elapsed_ms": 11.259566465880722,
+          "charged_cpu_ms": 8.574682926898035,
+          "off_cpu_ms": 0.7319782514001684,
+          "interrupt_ms": 1.9529052875825195
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "unselected": 2.894644470727213,
+        "context_lookup": 4.978650340650062,
+        "dispatch": 1.9975217760886639,
+        "scope": 1.4509169287503578,
+        "update_scope": 0.3926673893645005,
+        "kernel_coordination": 3.3532145721821487,
+        "window_view": 0.6323136151478971,
+        "app_arithmetic": 0.7362777866274586,
+        "binding": 0.871325483274808,
+        "window_lookup": 0.41916944256878197,
+        "native_mutation": 0.08197310605473238,
+        "mutation": 0.2915225852470965,
+        "layers": 1.0661437679998986,
+        "thumb_geometry": 0.9613337863116895,
+        "publication": 0.016845719988891693,
+        "input_snapshot": 0.9156600350447361,
+        "exposure": 0.10199061432605137,
+        "bitmap_packet": 0.16655412691946053,
+        "menu_reconcile": 0.6454941575659838,
+        "exposure_paint": 0.15464229981434466,
+        "cache_metadata": 0.10262497198253684,
+        "object_geometry": 0.10896854854739145,
+        "regions": 0.27277379228874843,
+        "damage": 0.1294089619230341,
+        "native_frame": 0.23703831097340067,
+        "renderer": 0.25606904066796454,
+        "display_access": 0.2939895316889843,
+        "batch_control": 0.1380080323776148,
+        "callback_control": 0.1531621319492119,
+        "scratch_clear": 0.031083525167787597,
+        "fills": 0.08126826421419296,
+        "solid_encoding": 4.235817524905585,
+        "traversal": 0.5380057768837251,
+        "object_callback": 0.283769325001163,
+        "object_preparation": 0.6989211690788704,
+        "object_raster": 0.6502870820816516,
+        "object_adapter": 0.5968600705687651,
+        "pattern_encoding": 0.08542683107337544,
+        "mask_encoding": 1.173702632866211,
+        "queue": 0.08366472647202694,
+        "submission": 0.005991155644584912,
+        "driver_submission": 0.5516092244061356,
+        "fence": 1.4289258633255284,
+        "upload": 1.5282380786575298,
+        "overlays": 0.008035196982149176
+      },
+      "inclusive_routines": {
+        "ExecAESContext": {
+          "calls": 7,
+          "elapsed_ms": 6.034926322882408,
+          "charged_cpu_ms": 4.978650340650061,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.0562759822323469
+        },
+        "AESWINDOWSTATE_UPDATES": {
+          "calls": 1,
+          "elapsed_ms": 0.15288019521299615,
+          "charged_cpu_ms": 0.1088980643633375,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        "AESLOCKS_CALL": {
+          "calls": 5,
+          "elapsed_ms": 3.2534794517458225,
+          "charged_cpu_ms": 2.683121434381339,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5703580173644835
+        },
+        "AESLOCAL_CALL": {
+          "calls": 4,
+          "elapsed_ms": 36.460763569262696,
+          "charged_cpu_ms": 28.77714169717457,
+          "off_cpu_ms": 1.414265153042309,
+          "interrupt_ms": 6.269356719045813
+        },
+        "ExecAESLocal": {
+          "calls": 4,
+          "elapsed_ms": 36.64472728964348,
+          "charged_cpu_ms": 28.916982318337585,
+          "off_cpu_ms": 1.414265153042309,
+          "interrupt_ms": 6.3134798182635805
+        },
+        "_Mul32": {
+          "calls": 4,
+          "elapsed_ms": 0.46420883617924974,
+          "charged_cpu_ms": 0.37701990050452583,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08718893567472395
+        },
+        "_Div32": {
+          "calls": 2,
+          "elapsed_ms": 0.4472926320063041,
+          "charged_cpu_ms": 0.35925788612293286,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08803474588337123
+        },
+        "AESLOCAL_SCOPE": {
+          "calls": 4,
+          "elapsed_ms": 2.6506987097165267,
+          "charged_cpu_ms": 2.211934663980749,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4387640457357773
+        },
+        "AESWINDOWSTATE_HANDLE": {
+          "calls": 3,
+          "elapsed_ms": 0.15548811002299193,
+          "charged_cpu_ms": 0.15548811002299193,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESWINDOW_FRAME": {
+          "calls": 2,
+          "elapsed_ms": 3.1057446019687642,
+          "charged_cpu_ms": 2.579650652190155,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5260939497786092
+        },
+        "AESSNAPSHOT_PUBLISH": {
+          "calls": 4,
+          "elapsed_ms": 0.8785853542323638,
+          "charged_cpu_ms": 0.7466389616833878,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13194639254897594
+        },
+        "AESLOCAL_PUBLISH": {
+          "calls": 2,
+          "elapsed_ms": 0.4811250403521954,
+          "charged_cpu_ms": 0.3930198102847702,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08810523006742517
+        },
+        "AESLOCAL_POLICY": {
+          "calls": 2,
+          "elapsed_ms": 22.982284505179884,
+          "charged_cpu_ms": 18.336108060712256,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 3.9638895428254854
+        },
+        "AESWINDOWSTATE_FIND": {
+          "calls": 2,
+          "elapsed_ms": 0.576842562297446,
+          "charged_cpu_ms": 0.48782103783731967,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08902152446012639
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 2,
+          "elapsed_ms": 0.1503427645870543,
+          "charged_cpu_ms": 0.10607869700117992,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04426406758587441
+        },
+        "DESKMENU_PUBLISHCHROME": {
+          "calls": 2,
+          "elapsed_ms": 1.2854905487757602,
+          "charged_cpu_ms": 1.06438166339855,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2211088853772102
+        },
+        "DESKMENU_RECONCILE": {
+          "calls": 2,
+          "elapsed_ms": 2.3883565766677615,
+          "charged_cpu_ms": 1.9450110589684781,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4433455176992835
+        },
+        "DESKPAINT_COMPLETE": {
+          "calls": 2,
+          "elapsed_ms": 0.23957574159934253,
+          "charged_cpu_ms": 0.19566409493373782,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0439116466656047
+        },
+        "AESLOCAL_EXPOSURE": {
+          "calls": 2,
+          "elapsed_ms": 2.763261951650669,
+          "charged_cpu_ms": 2.276004787285781,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.48725716436488814
+        },
+        "ExecAESWindowCall": {
+          "calls": 2,
+          "elapsed_ms": 29.3223368608318,
+          "charged_cpu_ms": 23.57378777776055,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 5.066262181429109
+        },
+        "wind_set": {
+          "calls": 2,
+          "elapsed_ms": 31.084652914732462,
+          "charged_cpu_ms": 25.029850051946845,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 5.372515961143479
+        },
+        "GEMFRAME_SCALE": {
+          "calls": 2,
+          "elapsed_ms": 1.1214033682981874,
+          "charged_cpu_ms": 0.9029728819150271,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21843048638316048
+        },
+        "GEMFRAME_SLIDE": {
+          "calls": 1,
+          "elapsed_ms": 1.164680657307307,
+          "charged_cpu_ms": 0.9462501709241463,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21843048638316048
+        },
+        "AESWINDOWSTATE_SLIDERS": {
+          "calls": 1,
+          "elapsed_ms": 0.18854519234428985,
+          "charged_cpu_ms": 0.14512693496706275,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043418257377227126
+        },
+        "GemDrawingFrameBorrow": {
+          "calls": 1,
+          "elapsed_ms": 15.977636778083365,
+          "charged_cpu_ms": 12.562043703013481,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 2.7333061734277444
+        },
+        "ExecAESFrameApply": {
+          "calls": 1,
+          "elapsed_ms": 16.95729645224908,
+          "charged_cpu_ms": 13.365633885412452,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 2.909375665194487
+        },
+        "AESFRAME_PAINT": {
+          "calls": 1,
+          "elapsed_ms": 18.175967994541704,
+          "charged_cpu_ms": 14.362491700487327,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 3.131189392412237
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 8.036959086750523,
+          "charged_cpu_ms": 5.923279375340967,
+          "off_cpu_ms": 0.7319782514001684,
+          "interrupt_ms": 1.3817014600093886
+        },
+        "wind_get": {
+          "calls": 1,
+          "elapsed_ms": 1.2414379337420476,
+          "charged_cpu_ms": 1.0200471116286216,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22139082211342598
+        }
+      },
+      "setters": [
+        {
+          "field": "WF_VSLSIZE",
+          "measured": {
+            "elapsed_ms": 5.292939317346581,
+            "charged_cpu_ms": 4.367059075614023,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.9258802417325576
+          },
+          "exclusive_cpu_ms": {
+            "unselected": 0.12757637313763165,
+            "binding": 0.2498664324712178,
+            "context_lookup": 0.7080136288218286,
+            "window_lookup": 0.1717699565394521,
+            "dispatch": 0.48662280670840274,
+            "update_scope": 0.16965543101783392,
+            "scope": 0.5747985209598817,
+            "kernel_coordination": 0.6731944418991822,
+            "native_mutation": 0.0335504716096755,
+            "mutation": 0.10283642453469866,
+            "layers": 0.16267749679649382,
+            "thumb_geometry": 0.007682776061879475,
+            "publication": 0.008458102086472817,
+            "input_snapshot": 0.1529506793970501,
+            "exposure": 0.051101033439106595,
+            "bitmap_packet": 0.039894048174530114,
+            "menu_reconcile": 0.3260598354335271,
+            "window_view": 0.24324091917014742,
+            "exposure_paint": 0.07710969735501051
+          },
+          "inclusive_routines": {
+            "ExecAESContext": {
+              "calls": 1,
+              "elapsed_ms": 0.8398895371867506,
+              "charged_cpu_ms": 0.7080136288218286,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.131875908364922
+            },
+            "AESLOCKS_CALL": {
+              "calls": 2,
+              "elapsed_ms": 1.2004866228067084,
+              "charged_cpu_ms": 1.0240647101196962,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.17642191268701216
+            },
+            "AESLOCAL_SCOPE": {
+              "calls": 2,
+              "elapsed_ms": 1.276327604848748,
+              "charged_cpu_ms": 1.0999056921617356,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.17642191268701216
+            },
+            "AESWINDOWSTATE_HANDLE": {
+              "calls": 1,
+              "elapsed_ms": 0.05173539109559206,
+              "charged_cpu_ms": 0.05173539109559206,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "AESWINDOW_FRAME": {
+              "calls": 1,
+              "elapsed_ms": 0.36827986168183724,
+              "charged_cpu_ms": 0.32493208848866406,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043347773193173185
+            },
+            "AESSNAPSHOT_PUBLISH": {
+              "calls": 2,
+              "elapsed_ms": 0.46434980454735764,
+              "charged_cpu_ms": 0.3761740902958785,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0881757142514791
+            },
+            "AESLOCAL_PUBLISH": {
+              "calls": 1,
+              "elapsed_ms": 0.2409149410963674,
+              "charged_cpu_ms": 0.19658038932643906,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.04433455176992834
+            },
+            "AESLOCAL_POLICY": {
+              "calls": 1,
+              "elapsed_ms": 1.2396758291406993,
+              "charged_cpu_ms": 1.0215977636778082,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21807806546289077
+            },
+            "AESWINDOWSTATE_FIND": {
+              "calls": 1,
+              "elapsed_ms": 0.2887032178849388,
+              "charged_cpu_ms": 0.2435933400904171,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.045109877794521684
+            },
+            "AESWINDOWSTATE_SYNC": {
+              "calls": 1,
+              "elapsed_ms": 0.050466675782621144,
+              "charged_cpu_ms": 0.050466675782621144,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "DESKMENU_PUBLISHCHROME": {
+              "calls": 1,
+              "elapsed_ms": 0.618216778337109,
+              "charged_cpu_ms": 0.5294771906131983,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08873958772391063
+            },
+            "DESKMENU_RECONCILE": {
+              "calls": 1,
+              "elapsed_ms": 1.1957641824750944,
+              "charged_cpu_ms": 0.9726112557603199,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.2231529267147745
+            },
+            "DESKPAINT_COMPLETE": {
+              "calls": 1,
+              "elapsed_ms": 0.1443516089424694,
+              "charged_cpu_ms": 0.10043996227686469,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0439116466656047
+            },
+            "AESLOCAL_EXPOSURE": {
+              "calls": 1,
+              "elapsed_ms": 1.4077806081093462,
+              "charged_cpu_ms": 1.1407160347289673,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.26706457338037914
+            },
+            "AESLOCAL_CALL": {
+              "calls": 1,
+              "elapsed_ms": 4.056646729040471,
+              "charged_cpu_ms": 3.350888594108368,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7057581349321026
+            },
+            "ExecAESLocal": {
+              "calls": 1,
+              "elapsed_ms": 4.140663876432767,
+              "charged_cpu_ms": 3.390782642282898,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7498812341498691
+            },
+            "ExecAESWindowCall": {
+              "calls": 1,
+              "elapsed_ms": 4.436838417827424,
+              "charged_cpu_ms": 3.6428340844597877,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7940043333676357
+            },
+            "wind_set": {
+              "calls": 1,
+              "elapsed_ms": 5.292939317346581,
+              "charged_cpu_ms": 4.367059075614023,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.9258802417325576
+            }
+          }
+        },
+        {
+          "field": "WF_VSLIDE",
+          "measured": {
+            "elapsed_ms": 25.791713597385883,
+            "charged_cpu_ms": 20.662790976332822,
+            "off_cpu_ms": 0.6822869016421406,
+            "interrupt_ms": 4.446635719410922
+          },
+          "exclusive_cpu_ms": {
+            "unselected": 0.13321510786194685,
+            "binding": 0.2508532110479729,
+            "context_lookup": 1.4237805178895908,
+            "window_lookup": 0.22914408235935937,
+            "dispatch": 0.46836740303843216,
+            "update_scope": 0.17550561829431094,
+            "scope": 0.5867103480649977,
+            "kernel_coordination": 1.0108841677016094,
+            "native_mutation": 0.04842263444505687,
+            "mutation": 0.18868616071239777,
+            "layers": 0.9034662712034045,
+            "thumb_geometry": 0.9536510102498099,
+            "cache_metadata": 0.10262497198253684,
+            "window_view": 0.28017463161441203,
+            "object_geometry": 0.10896854854739145,
+            "regions": 0.27277379228874843,
+            "damage": 0.1294089619230341,
+            "native_frame": 0.23703831097340067,
+            "bitmap_packet": 0.12666007874493043,
+            "renderer": 0.25606904066796454,
+            "display_access": 0.14103885229193422,
+            "batch_control": 0.1380080323776148,
+            "callback_control": 0.1531621319492119,
+            "scratch_clear": 0.031083525167787597,
+            "fills": 0.08126826421419296,
+            "solid_encoding": 4.235817524905585,
+            "traversal": 0.5380057768837251,
+            "object_callback": 0.283769325001163,
+            "object_preparation": 0.6989211690788704,
+            "object_raster": 0.6502870820816516,
+            "object_adapter": 0.5968600705687651,
+            "pattern_encoding": 0.08542683107337544,
+            "mask_encoding": 1.173702632866211,
+            "queue": 0.06315382891233037,
+            "submission": 0.004510987779452169,
+            "driver_submission": 0.4126144134517656,
+            "fence": 1.3921331192493716,
+            "upload": 1.4843969161759791,
+            "overlays": 0.008035196982149176,
+            "publication": 0.008387617902418876,
+            "input_snapshot": 0.14794630232922035,
+            "exposure": 0.05088958088694478,
+            "menu_reconcile": 0.3194343221324567,
+            "exposure_paint": 0.07753260245933416
+          },
+          "inclusive_routines": {
+            "ExecAESContext": {
+              "calls": 2,
+              "elapsed_ms": 1.7302457501561226,
+              "charged_cpu_ms": 1.4237805178895908,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.3064652322665317
+            },
+            "AESLOCKS_CALL": {
+              "calls": 2,
+              "elapsed_ms": 1.2994464172184403,
+              "charged_cpu_ms": 1.0371042841696752,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.2623421330487652
+            },
+            "AESLOCAL_SCOPE": {
+              "calls": 2,
+              "elapsed_ms": 1.3743711048677787,
+              "charged_cpu_ms": 1.1120289718190133,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.2623421330487652
+            },
+            "AESWINDOWSTATE_HANDLE": {
+              "calls": 2,
+              "elapsed_ms": 0.10375271892739987,
+              "charged_cpu_ms": 0.10375271892739987,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "GEMFRAME_SCALE": {
+              "calls": 2,
+              "elapsed_ms": 1.1214033682981874,
+              "charged_cpu_ms": 0.9029728819150271,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21843048638316048
+            },
+            "GEMFRAME_SLIDE": {
+              "calls": 1,
+              "elapsed_ms": 1.164680657307307,
+              "charged_cpu_ms": 0.9462501709241463,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21843048638316048
+            },
+            "AESWINDOWSTATE_SLIDERS": {
+              "calls": 1,
+              "elapsed_ms": 0.18854519234428985,
+              "charged_cpu_ms": 0.14512693496706275,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043418257377227126
+            },
+            "AESWINDOW_FRAME": {
+              "calls": 1,
+              "elapsed_ms": 2.737464740286927,
+              "charged_cpu_ms": 2.2547185637014913,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.482746176585436
+            },
+            "GemDrawingFrameBorrow": {
+              "calls": 1,
+              "elapsed_ms": 15.977636778083365,
+              "charged_cpu_ms": 12.562043703013481,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 2.7333061734277444
+            },
+            "ExecAESFrameApply": {
+              "calls": 1,
+              "elapsed_ms": 16.95729645224908,
+              "charged_cpu_ms": 13.365633885412452,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 2.909375665194487
+            },
+            "AESFRAME_PAINT": {
+              "calls": 1,
+              "elapsed_ms": 18.175967994541704,
+              "charged_cpu_ms": 14.362491700487327,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 3.131189392412237
+            },
+            "AESSNAPSHOT_PUBLISH": {
+              "calls": 2,
+              "elapsed_ms": 0.4142355496850062,
+              "charged_cpu_ms": 0.3704648713875094,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043770678297496826
+            },
+            "AESLOCAL_PUBLISH": {
+              "calls": 1,
+              "elapsed_ms": 0.24021009925582798,
+              "charged_cpu_ms": 0.19643942095833114,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043770678297496826
+            },
+            "AESLOCAL_POLICY": {
+              "calls": 1,
+              "elapsed_ms": 21.742608676039183,
+              "charged_cpu_ms": 17.31451029703445,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 3.7458114773625946
+            },
+            "AESWINDOWSTATE_FIND": {
+              "calls": 1,
+              "elapsed_ms": 0.28813934441250727,
+              "charged_cpu_ms": 0.2442276977469026,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0439116466656047
+            },
+            "AESWINDOWSTATE_SYNC": {
+              "calls": 1,
+              "elapsed_ms": 0.09987608880443317,
+              "charged_cpu_ms": 0.055612021218558766,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.04426406758587441
+            },
+            "DESKMENU_PUBLISHCHROME": {
+              "calls": 1,
+              "elapsed_ms": 0.6672737704386512,
+              "charged_cpu_ms": 0.5349044727853517,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.13236929765329958
+            },
+            "DESKMENU_RECONCILE": {
+              "calls": 1,
+              "elapsed_ms": 1.192592394192667,
+              "charged_cpu_ms": 0.9723998032081582,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.220192590984509
+            },
+            "DESKPAINT_COMPLETE": {
+              "calls": 1,
+              "elapsed_ms": 0.09522413265687313,
+              "charged_cpu_ms": 0.09522413265687313,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "AESLOCAL_EXPOSURE": {
+              "calls": 1,
+              "elapsed_ms": 1.3554813435413227,
+              "charged_cpu_ms": 1.1352887525568138,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.220192590984509
+            },
+            "AESLOCAL_CALL": {
+              "calls": 1,
+              "elapsed_ms": 24.55556197744788,
+              "charged_cpu_ms": 19.64492887440987,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 4.228346201395869
+            },
+            "ExecAESLocal": {
+              "calls": 1,
+              "elapsed_ms": 24.588760028137287,
+              "charged_cpu_ms": 19.678126925099274,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 4.228346201395869
+            },
+            "ExecAESWindowCall": {
+              "calls": 1,
+              "elapsed_ms": 24.885498443004376,
+              "charged_cpu_ms": 19.93095369330076,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 4.272257848061473
+            },
+            "wind_set": {
+              "calls": 1,
+              "elapsed_ms": 25.791713597385883,
+              "charged_cpu_ms": 20.662790976332822,
+              "off_cpu_ms": 0.6822869016421406,
+              "interrupt_ms": 4.446635719410922
+            }
+          }
+        }
+      ],
+      "peers": [
+        {
+          "dp": 3328,
+          "role": "test controller",
+          "charged_cpu_ms": 1.1948478880823932,
+          "interrupt_ms": 0.21941726495991565
+        }
+      ],
+      "native_semaphores": {
+        "semaphores_attempt": {
+          "calls": 3,
+          "charged_cpu_ms": 0.20306493425940153,
+          "return_a": [
+            1,
+            1,
+            1
+          ]
+        },
+        "semaphores_obtain": {
+          "calls": 0,
+          "charged_cpu_ms": 0,
+          "return_a": []
+        },
+        "semaphores_release": {
+          "calls": 2,
+          "charged_cpu_ms": 0.12581426853628314,
+          "return_a": [
+            82,
+            82
+          ]
+        }
+      },
+      "snapshot_returns": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "caller_calls": [
+        {
+          "kind": "set_shift/wind_update",
+          "elapsed_ms": 1.7960074938784487,
+          "charged_cpu_ms": 1.489401293243809,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3066062006346396
+        },
+        {
+          "kind": "window_calc_slider/_Mul32",
+          "elapsed_ms": 0.14639565028003365,
+          "charged_cpu_ms": 0.10262497198253684,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043770678297496826
+        },
+        {
+          "kind": "window_calc_slider/_Div32",
+          "elapsed_ms": 0.22484454713206903,
+          "charged_cpu_ms": 0.1808624162824104,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        {
+          "kind": "window_calc_slider/wind_set",
+          "elapsed_ms": 5.2942785168436055,
+          "charged_cpu_ms": 4.368398275111048,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9258802417325576
+        },
+        {
+          "kind": "window_calc_slider/_Mul32",
+          "elapsed_ms": 0.09698623725822163,
+          "charged_cpu_ms": 0.09698623725822163,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "window_calc_slider/_Div32",
+          "elapsed_ms": 0.22357583181909813,
+          "charged_cpu_ms": 0.17952321678538552,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044052615033712585
+        },
+        {
+          "kind": "window_calc_slider/wind_set",
+          "elapsed_ms": 25.79298231269885,
+          "charged_cpu_ms": 20.66405969164579,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 4.446635719410922
+        },
+        {
+          "kind": "set_shift/_Mul32",
+          "elapsed_ms": 0.1361049594081584,
+          "charged_cpu_ms": 0.09268670203093128,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043418257377227126
+        },
+        {
+          "kind": "set_shift/_Mul32",
+          "elapsed_ms": 0.08697748312256214,
+          "charged_cpu_ms": 0.08697748312256214,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "set_shift/graf_mouse",
+          "elapsed_ms": 8.038227802063496,
+          "charged_cpu_ms": 5.924548090653938,
+          "off_cpu_ms": 0.7319782514001684,
+          "interrupt_ms": 1.3817014600093886
+        },
+        {
+          "kind": "set_shift/rc_intersect",
+          "elapsed_ms": 0.07118902589447954,
+          "charged_cpu_ms": 0.07118902589447954,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "set_shift/vs_clip",
+          "elapsed_ms": 1.622475432737648,
+          "charged_cpu_ms": 1.3160806846551703,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3063947480824778
+        }
+      ],
+      "selected_frame": {
+        "measured": {
+          "elapsed_ms": 18.175967994541704,
+          "charged_cpu_ms": 14.362491700487327,
+          "off_cpu_ms": 0.6822869016421406,
+          "interrupt_ms": 3.131189392412237
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.6822164174580866,
+          "renderer": 0.964294122041955,
+          "display_access": 0.3701829346512936,
+          "batch_control": 0.1380080323776148,
+          "callback_control": 0.1531621319492119,
+          "scratch_clear": 0.031083525167787597,
+          "fills": 0.08126826421419296,
+          "solid_encoding": 4.235817524905585,
+          "traversal": 0.5380057768837251,
+          "object_callback": 0.283769325001163,
+          "object_preparation": 0.6989211690788704,
+          "object_raster": 0.6502870820816516,
+          "object_adapter": 0.5968600705687651,
+          "pattern_encoding": 0.08542683107337544,
+          "mask_encoding": 1.173702632866211,
+          "queue": 0.06315382891233037,
+          "submission": 0.004510987779452169,
+          "driver_submission": 0.4126144134517656,
+          "fence": 1.3921331192493716,
+          "upload": 1.4843969161759791,
+          "overlays": 0.008035196982149176,
+          "damage": 0.3146413976167888
+        },
+        "raw_submission_record_counts": [
+          19,
+          12,
+          5
+        ],
+        "record_accounting": {
+          "solid": 29,
+          "mask_and_other": 7,
+          "submitted": 36
+        }
+      },
+      "selected_objects": [
+        9,
+        10
+      ],
+      "observed_complete_ms": 120.50370817292308
+    },
+    {
+      "action": "up",
+      "measured": {
+        "elapsed_ms": 48.2916043469006,
+        "charged_cpu_ms": 36.340729003818836,
+        "off_cpu_ms": 3.94267380342525,
+        "interrupt_ms": 8.008201539656516
+      },
+      "stages": [
+        {
+          "kind": "before_slider",
+          "elapsed_ms": 5.197574216321599,
+          "charged_cpu_ms": 2.180921622997016,
+          "off_cpu_ms": 2.476250354183025,
+          "interrupt_ms": 0.540402239141559
+        },
+        {
+          "kind": "slider_size_preparation",
+          "elapsed_ms": 0.412121024163388,
+          "charged_cpu_ms": 0.32422724664812463,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        {
+          "kind": "WF_VSLSIZE",
+          "elapsed_ms": 5.292657380610365,
+          "charged_cpu_ms": 4.366988591429969,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9256687891803957
+        },
+        {
+          "kind": "slider_position_preparation",
+          "elapsed_ms": 0.34191877684566363,
+          "charged_cpu_ms": 0.29779567762789705,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        {
+          "kind": "WF_VSLIDE",
+          "elapsed_ms": 25.85409210027362,
+          "charged_cpu_ms": 20.622544507238022,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 4.498159657954352
+        },
+        {
+          "kind": "slider_return",
+          "elapsed_ms": 0.004933892883775809,
+          "charged_cpu_ms": 0.004933892883775809,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "after_slider_before_copy",
+          "elapsed_ms": 11.188306955802188,
+          "charged_cpu_ms": 8.543317464994029,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 1.91195397664718
+        }
+      ],
+      "exclusive_cpu_ms": {
+        "unselected": 3.9213170956569052,
+        "context_lookup": 5.593554362336636,
+        "dispatch": 1.973627637694378,
+        "scope": 1.4385821965409178,
+        "update_scope": 0.3854075184069447,
+        "kernel_coordination": 2.7861693114682007,
+        "window_view": 0.621600019171698,
+        "app_arithmetic": 0.7232382125774798,
+        "binding": 0.8835192471161396,
+        "window_lookup": 0.42953061762471123,
+        "native_mutation": 0.0821845586068942,
+        "mutation": 0.2911701643268267,
+        "layers": 1.0652979577912514,
+        "thumb_geometry": 0.9453338765314452,
+        "publication": 0.01677523580483775,
+        "input_snapshot": 0.4630106050503327,
+        "exposure": 0.11411389398332908,
+        "bitmap_packet": 0.16655412691946053,
+        "menu_reconcile": 0.650005145345436,
+        "exposure_paint": 0.16021055035460594,
+        "cache_metadata": 0.10283642453469866,
+        "object_geometry": 0.10417562403172352,
+        "regions": 0.2729852448409102,
+        "damage": 0.12426361648709645,
+        "native_frame": 0.2433818875382553,
+        "renderer": 0.2498664324712178,
+        "display_access": 0.3011789184624862,
+        "batch_control": 0.13145300326059833,
+        "callback_control": 0.14752339722489669,
+        "scratch_clear": 0.03693371244426464,
+        "fills": 0.07591146622609353,
+        "solid_encoding": 3.6337416247168286,
+        "traversal": 0.5554858545291023,
+        "object_callback": 0.26628924735578585,
+        "object_preparation": 0.704066514514808,
+        "object_raster": 1.2584951062831011,
+        "object_adapter": 0.5894592312431012,
+        "pattern_encoding": 0.09726817399443738,
+        "mask_encoding": 1.1741255379705349,
+        "queue": 0.07682776061879476,
+        "submission": 0.005920671460530972,
+        "driver_submission": 0.5210190885267254,
+        "fence": 1.4179303306131137,
+        "upload": 1.5300706674429325,
+        "overlays": 0.008317133718364936
+      },
+      "inclusive_routines": {
+        "ExecAESContext": {
+          "calls": 7,
+          "elapsed_ms": 9.405057099237503,
+          "charged_cpu_ms": 5.5935543623366355,
+          "off_cpu_ms": 2.476250354183025,
+          "interrupt_ms": 1.335252382717842
+        },
+        "AESWINDOWSTATE_UPDATES": {
+          "calls": 1,
+          "elapsed_ms": 0.15316213194921194,
+          "charged_cpu_ms": 0.1093914536517151,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043770678297496826
+        },
+        "AESLOCKS_CALL": {
+          "calls": 5,
+          "elapsed_ms": 3.2525631573531215,
+          "charged_cpu_ms": 2.6831919185653934,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5693712387877284
+        },
+        "AESLOCAL_CALL": {
+          "calls": 4,
+          "elapsed_ms": 36.448569805421364,
+          "charged_cpu_ms": 28.704683955967123,
+          "off_cpu_ms": 1.4664234492422246,
+          "interrupt_ms": 6.277462400212016
+        },
+        "ExecAESLocal": {
+          "calls": 4,
+          "elapsed_ms": 36.582983144412225,
+          "charged_cpu_ms": 28.839097294957988,
+          "off_cpu_ms": 1.4664234492422246,
+          "interrupt_ms": 6.277462400212016
+        },
+        "_Mul32": {
+          "calls": 4,
+          "elapsed_ms": 0.415645233366085,
+          "charged_cpu_ms": 0.37116971322804876,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044475520138036226
+        },
+        "_Div32": {
+          "calls": 2,
+          "elapsed_ms": 0.3960506301990896,
+          "charged_cpu_ms": 0.35206849934943096,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        "AESLOCAL_SCOPE": {
+          "calls": 4,
+          "elapsed_ms": 2.649782415323825,
+          "charged_cpu_ms": 2.2115117588764255,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.43827065644739976
+        },
+        "AESWINDOWSTATE_HANDLE": {
+          "calls": 3,
+          "elapsed_ms": 0.255505167195533,
+          "charged_cpu_ms": 0.1662721901832448,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08923297701228822
+        },
+        "AESWINDOW_FRAME": {
+          "calls": 2,
+          "elapsed_ms": 3.14627300779978,
+          "charged_cpu_ms": 2.575069180226649,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5712038275731308
+        },
+        "AESSNAPSHOT_PUBLISH": {
+          "calls": 4,
+          "elapsed_ms": 0.9286291249106613,
+          "charged_cpu_ms": 0.7524891489598649,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1761399759507964
+        },
+        "AESLOCAL_PUBLISH": {
+          "calls": 2,
+          "elapsed_ms": 0.481547945456519,
+          "charged_cpu_ms": 0.39309029446882415,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08845765098769487
+        },
+        "AESLOCAL_POLICY": {
+          "calls": 2,
+          "elapsed_ms": 22.99546504759797,
+          "charged_cpu_ms": 18.289095109948278,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 3.9729820025684437
+        },
+        "AESWINDOWSTATE_FIND": {
+          "calls": 2,
+          "elapsed_ms": 0.5770540148496079,
+          "charged_cpu_ms": 0.48789152202137365,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08916249282823427
+        },
+        "AESWINDOWSTATE_SYNC": {
+          "calls": 2,
+          "elapsed_ms": 0.10072189901308046,
+          "charged_cpu_ms": 0.10072189901308046,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "DESKMENU_PUBLISHCHROME": {
+          "calls": 2,
+          "elapsed_ms": 1.2850676436714366,
+          "charged_cpu_ms": 1.064240695030442,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22082694864099445
+        },
+        "DESKMENU_RECONCILE": {
+          "calls": 2,
+          "elapsed_ms": 2.338030869253248,
+          "charged_cpu_ms": 1.9390903875079473,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.39894048174530117
+        },
+        "DESKPAINT_COMPLETE": {
+          "calls": 2,
+          "elapsed_ms": 0.23964622578339645,
+          "charged_cpu_ms": 0.19573457911779177,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0439116466656047
+        },
+        "AESLOCAL_EXPOSURE": {
+          "calls": 2,
+          "elapsed_ms": 2.8133057223289666,
+          "charged_cpu_ms": 2.282489332218743,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5308163901102232
+        },
+        "ExecAESWindowCall": {
+          "calls": 2,
+          "elapsed_ms": 29.38408100606305,
+          "charged_cpu_ms": 23.53332985611359,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 5.117363214868216
+        },
+        "wind_set": {
+          "calls": 2,
+          "elapsed_ms": 31.146749480883983,
+          "charged_cpu_ms": 24.98953309866799,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 5.423828447134747
+        },
+        "GEMFRAME_SCALE": {
+          "calls": 2,
+          "elapsed_ms": 1.0614213276682847,
+          "charged_cpu_ms": 0.8870434563188366,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1743778713494479
+        },
+        "GEMFRAME_SLIDE": {
+          "calls": 1,
+          "elapsed_ms": 1.10462813249335,
+          "charged_cpu_ms": 0.930250261143902,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1743778713494479
+        },
+        "AESWINDOWSTATE_SLIDERS": {
+          "calls": 1,
+          "elapsed_ms": 0.18861567652834382,
+          "charged_cpu_ms": 0.14526790333517062,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043347773193173185
+        },
+        "GemDrawingFrameBorrow": {
+          "calls": 1,
+          "elapsed_ms": 15.999980264428466,
+          "charged_cpu_ms": 12.525814832409756,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 2.7407774969374623
+        },
+        "ExecAESFrameApply": {
+          "calls": 1,
+          "elapsed_ms": 16.979146549305803,
+          "charged_cpu_ms": 13.329052593888457,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 2.916706020336097
+        },
+        "AESFRAME_PAINT": {
+          "calls": 1,
+          "elapsed_ms": 18.198452449254912,
+          "charged_cpu_ms": 14.326333314067655,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 3.138731200106008
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 7.962950693493887,
+          "charged_cpu_ms": 5.891209071596425,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 1.338706107736485
+        },
+        "wind_get": {
+          "calls": 1,
+          "elapsed_ms": 1.2413674495579936,
+          "charged_cpu_ms": 1.0202585641807835,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2211088853772102
+        }
+      },
+      "setters": [
+        {
+          "field": "WF_VSLSIZE",
+          "measured": {
+            "elapsed_ms": 5.292657380610365,
+            "charged_cpu_ms": 4.366988591429969,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.9256687891803957
+          },
+          "exclusive_cpu_ms": {
+            "unselected": 0.13934723187463965,
+            "binding": 0.2563509774041803,
+            "context_lookup": 0.7080136288218286,
+            "window_lookup": 0.1764923968710661,
+            "dispatch": 0.46766256119789273,
+            "update_scope": 0.1696554310178339,
+            "scope": 0.5741641633033964,
+            "kernel_coordination": 0.6617055198983899,
+            "native_mutation": 0.034325797634268844,
+            "mutation": 0.10819322252279812,
+            "layers": 0.16310040190081748,
+            "thumb_geometry": 0.007400839325663714,
+            "publication": 0.008317133718364936,
+            "input_snapshot": 0.15457181563029074,
+            "exposure": 0.05688073653152968,
+            "bitmap_packet": 0.0349601552907543,
+            "menu_reconcile": 0.32479112012055616,
+            "window_view": 0.2383070262863716,
+            "exposure_paint": 0.08274843207932572
+          },
+          "inclusive_routines": {
+            "ExecAESContext": {
+              "calls": 1,
+              "elapsed_ms": 0.8398190530026968,
+              "charged_cpu_ms": 0.7080136288218286,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.13180542418086805
+            },
+            "AESLOCKS_CALL": {
+              "calls": 2,
+              "elapsed_ms": 1.2496140990923048,
+              "charged_cpu_ms": 1.0297739290280654,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21984017006423928
+            },
+            "AESLOCAL_SCOPE": {
+              "calls": 2,
+              "elapsed_ms": 1.3252436285821825,
+              "charged_cpu_ms": 1.105403458517943,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21984017006423928
+            },
+            "AESWINDOWSTATE_HANDLE": {
+              "calls": 1,
+              "elapsed_ms": 0.051876359463699936,
+              "charged_cpu_ms": 0.051876359463699936,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "AESWINDOW_FRAME": {
+              "calls": 1,
+              "elapsed_ms": 0.41768927470364925,
+              "charged_cpu_ms": 0.33057082321297926,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08711845149067
+            },
+            "AESSNAPSHOT_PUBLISH": {
+              "calls": 2,
+              "elapsed_ms": 0.4652660989400588,
+              "charged_cpu_ms": 0.37680844795236396,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08845765098769487
+            },
+            "AESLOCAL_PUBLISH": {
+              "calls": 1,
+              "elapsed_ms": 0.24133784620069104,
+              "charged_cpu_ms": 0.1968623260626548,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.044475520138036226
+            },
+            "AESLOCAL_POLICY": {
+              "calls": 1,
+              "elapsed_ms": 1.2400987342450227,
+              "charged_cpu_ms": 1.0215977636778082,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21850097056721443
+            },
+            "AESWINDOWSTATE_FIND": {
+              "calls": 1,
+              "elapsed_ms": 0.2888441862530467,
+              "charged_cpu_ms": 0.24380479264257893,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.04503939361046775
+            },
+            "AESWINDOWSTATE_SYNC": {
+              "calls": 1,
+              "elapsed_ms": 0.050466675782621144,
+              "charged_cpu_ms": 0.050466675782621144,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "DESKMENU_PUBLISHCHROME": {
+              "calls": 1,
+              "elapsed_ms": 0.618146294153055,
+              "charged_cpu_ms": 0.5289838013248207,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08916249282823427
+            },
+            "DESKMENU_RECONCILE": {
+              "calls": 1,
+              "elapsed_ms": 1.145508959244635,
+              "charged_cpu_ms": 0.9663381633795193,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.1791707958651158
+            },
+            "DESKPAINT_COMPLETE": {
+              "calls": 1,
+              "elapsed_ms": 0.14463354567868514,
+              "charged_cpu_ms": 0.10072189901308046,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0439116466656047
+            },
+            "AESLOCAL_EXPOSURE": {
+              "calls": 1,
+              "elapsed_ms": 1.4084149657658318,
+              "charged_cpu_ms": 1.140927487281129,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.26748747848470283
+            },
+            "AESLOCAL_CALL": {
+              "calls": 1,
+              "elapsed_ms": 4.056928665776686,
+              "charged_cpu_ms": 3.35110004666053,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7058286191161565
+            },
+            "ExecAESLocal": {
+              "calls": 1,
+              "elapsed_ms": 4.090197200650146,
+              "charged_cpu_ms": 3.3843685815339892,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7058286191161565
+            },
+            "ExecAESWindowCall": {
+              "calls": 1,
+              "elapsed_ms": 4.436626965275262,
+              "charged_cpu_ms": 3.6427636002757344,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.7938633649995278
+            },
+            "wind_set": {
+              "calls": 1,
+              "elapsed_ms": 5.292657380610365,
+              "charged_cpu_ms": 4.366988591429969,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.9256687891803957
+            }
+          }
+        },
+        {
+          "field": "WF_VSLIDE",
+          "measured": {
+            "elapsed_ms": 25.85409210027362,
+            "charged_cpu_ms": 20.622544507238022,
+            "off_cpu_ms": 0.7333879350812471,
+            "interrupt_ms": 4.498159657954352
+          },
+          "exclusive_cpu_ms": {
+            "unselected": 0.12743540476952375,
+            "binding": 0.2570558192447197,
+            "context_lookup": 1.4292078000617443,
+            "window_lookup": 0.23428942779529702,
+            "dispatch": 0.4693541816151874,
+            "update_scope": 0.16909155754540237,
+            "scope": 0.580648708236359,
+            "kernel_coordination": 1.0108841677016094,
+            "native_mutation": 0.047858760972625355,
+            "mutation": 0.1829769418040286,
+            "layers": 0.9021975558904336,
+            "thumb_geometry": 0.9379330372057815,
+            "cache_metadata": 0.10283642453469866,
+            "window_view": 0.2739015392336114,
+            "object_geometry": 0.10417562403172352,
+            "regions": 0.2729852448409102,
+            "damage": 0.12426361648709645,
+            "native_frame": 0.2433818875382553,
+            "bitmap_packet": 0.13159397162870623,
+            "renderer": 0.2498664324712178,
+            "display_access": 0.1540079421578592,
+            "batch_control": 0.13145300326059833,
+            "callback_control": 0.14752339722489669,
+            "scratch_clear": 0.03693371244426464,
+            "fills": 0.07591146622609353,
+            "solid_encoding": 3.6337416247168286,
+            "traversal": 0.5554858545291023,
+            "object_callback": 0.26628924735578585,
+            "object_preparation": 0.704066514514808,
+            "object_raster": 1.2584951062831011,
+            "object_adapter": 0.5894592312431012,
+            "pattern_encoding": 0.09726817399443738,
+            "mask_encoding": 1.1741255379705349,
+            "queue": 0.06244898707179097,
+            "submission": 0.004440503595398228,
+            "driver_submission": 0.3905528638428823,
+            "fence": 1.374018683947509,
+            "upload": 1.4843969161759794,
+            "overlays": 0.008317133718364936,
+            "publication": 0.008458102086472817,
+            "input_snapshot": 0.1533031003173198,
+            "exposure": 0.057233157451799396,
+            "menu_reconcile": 0.32521402522487974,
+            "exposure_paint": 0.07746211827528021
+          },
+          "inclusive_routines": {
+            "ExecAESContext": {
+              "calls": 2,
+              "elapsed_ms": 1.7797961315460422,
+              "charged_cpu_ms": 1.4292078000617443,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.35058833148429824
+            },
+            "AESLOCKS_CALL": {
+              "calls": 2,
+              "elapsed_ms": 1.2494026465401429,
+              "charged_cpu_ms": 1.0309721601569826,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21843048638316048
+            },
+            "AESLOCAL_SCOPE": {
+              "calls": 2,
+              "elapsed_ms": 1.324538786741643,
+              "charged_cpu_ms": 1.1061083003584826,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21843048638316048
+            },
+            "AESWINDOWSTATE_HANDLE": {
+              "calls": 2,
+              "elapsed_ms": 0.20362880773183306,
+              "charged_cpu_ms": 0.11439583071954484,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08923297701228822
+            },
+            "GEMFRAME_SCALE": {
+              "calls": 2,
+              "elapsed_ms": 1.0614213276682847,
+              "charged_cpu_ms": 0.8870434563188366,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.1743778713494479
+            },
+            "GEMFRAME_SLIDE": {
+              "calls": 1,
+              "elapsed_ms": 1.10462813249335,
+              "charged_cpu_ms": 0.930250261143902,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.1743778713494479
+            },
+            "AESWINDOWSTATE_SLIDERS": {
+              "calls": 1,
+              "elapsed_ms": 0.18861567652834382,
+              "charged_cpu_ms": 0.14526790333517062,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.043347773193173185
+            },
+            "AESWINDOW_FRAME": {
+              "calls": 1,
+              "elapsed_ms": 2.7285837330961304,
+              "charged_cpu_ms": 2.24449835701367,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.4840853760824608
+            },
+            "GemDrawingFrameBorrow": {
+              "calls": 1,
+              "elapsed_ms": 15.999980264428466,
+              "charged_cpu_ms": 12.525814832409756,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 2.7407774969374623
+            },
+            "ExecAESFrameApply": {
+              "calls": 1,
+              "elapsed_ms": 16.979146549305803,
+              "charged_cpu_ms": 13.329052593888457,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 2.916706020336097
+            },
+            "AESFRAME_PAINT": {
+              "calls": 1,
+              "elapsed_ms": 18.198452449254912,
+              "charged_cpu_ms": 14.326333314067655,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 3.138731200106008
+            },
+            "AESSNAPSHOT_PUBLISH": {
+              "calls": 2,
+              "elapsed_ms": 0.4633630259706024,
+              "charged_cpu_ms": 0.37568070100750095,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.08768232496310152
+            },
+            "AESLOCAL_PUBLISH": {
+              "calls": 1,
+              "elapsed_ms": 0.24021009925582798,
+              "charged_cpu_ms": 0.19622796840616935,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.04398213084965864
+            },
+            "AESLOCAL_POLICY": {
+              "calls": 1,
+              "elapsed_ms": 21.755366313352948,
+              "charged_cpu_ms": 17.26749734627047,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 3.7544810320012294
+            },
+            "AESWINDOWSTATE_FIND": {
+              "calls": 1,
+              "elapsed_ms": 0.2882098285965612,
+              "charged_cpu_ms": 0.2440867293787947,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.044123099217766526
+            },
+            "AESWINDOWSTATE_SYNC": {
+              "calls": 1,
+              "elapsed_ms": 0.05025522323045932,
+              "charged_cpu_ms": 0.05025522323045932,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "DESKMENU_PUBLISHCHROME": {
+              "calls": 1,
+              "elapsed_ms": 0.6669213495183816,
+              "charged_cpu_ms": 0.5352568937056214,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.13166445581276018
+            },
+            "DESKMENU_RECONCILE": {
+              "calls": 1,
+              "elapsed_ms": 1.192521910008613,
+              "charged_cpu_ms": 0.9727522241284279,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.21976968588018533
+            },
+            "DESKPAINT_COMPLETE": {
+              "calls": 1,
+              "elapsed_ms": 0.09501268010471131,
+              "charged_cpu_ms": 0.09501268010471131,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.0
+            },
+            "AESLOCAL_EXPOSURE": {
+              "calls": 1,
+              "elapsed_ms": 1.4048907565631348,
+              "charged_cpu_ms": 1.1415618449376144,
+              "off_cpu_ms": 0.0,
+              "interrupt_ms": 0.26332891162552036
+            },
+            "AESLOCAL_CALL": {
+              "calls": 1,
+              "elapsed_ms": 24.567826225473265,
+              "charged_cpu_ms": 19.59819786038211,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 4.23624043000991
+            },
+            "ExecAESLocal": {
+              "calls": 1,
+              "elapsed_ms": 24.60151766545105,
+              "charged_cpu_ms": 19.631889300359894,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 4.23624043000991
+            },
+            "ExecAESWindowCall": {
+              "calls": 1,
+              "elapsed_ms": 24.947454040787786,
+              "charged_cpu_ms": 19.890566255837854,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 4.323499849868688
+            },
+            "wind_set": {
+              "calls": 1,
+              "elapsed_ms": 25.85409210027362,
+              "charged_cpu_ms": 20.622544507238022,
+              "off_cpu_ms": 0.7333879350812471,
+              "interrupt_ms": 4.498159657954352
+            }
+          }
+        }
+      ],
+      "peers": [
+        {
+          "dp": 3328,
+          "role": "test controller",
+          "charged_cpu_ms": 1.8041836592287053,
+          "interrupt_ms": 0.39569820927881993
+        },
+        {
+          "dp": 3584,
+          "role": "other Task",
+          "charged_cpu_ms": 1.430335547006607,
+          "interrupt_ms": 0.3124563879111166
+        }
+      ],
+      "native_semaphores": {
+        "semaphores_attempt": {
+          "calls": 3,
+          "charged_cpu_ms": 0.20926754245614826,
+          "return_a": [
+            1,
+            1,
+            1
+          ]
+        },
+        "semaphores_obtain": {
+          "calls": 0,
+          "charged_cpu_ms": 0,
+          "return_a": []
+        },
+        "semaphores_release": {
+          "calls": 2,
+          "charged_cpu_ms": 0.13159397162870623,
+          "return_a": [
+            82,
+            82
+          ]
+        }
+      },
+      "snapshot_returns": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "caller_calls": [
+        {
+          "kind": "set_shift/wind_update",
+          "elapsed_ms": 5.1160944995552455,
+          "charged_cpu_ms": 2.099441906230661,
+          "off_cpu_ms": 2.476250354183025,
+          "interrupt_ms": 0.540402239141559
+        },
+        {
+          "kind": "window_calc_slider/_Mul32",
+          "elapsed_ms": 0.09684526889011374,
+          "charged_cpu_ms": 0.09684526889011374,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "window_calc_slider/_Div32",
+          "elapsed_ms": 0.22491503131612298,
+          "charged_cpu_ms": 0.18093290046646432,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        {
+          "kind": "window_calc_slider/wind_set",
+          "elapsed_ms": 5.293926095923336,
+          "charged_cpu_ms": 4.368257306742939,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9256687891803957
+        },
+        {
+          "kind": "window_calc_slider/_Mul32",
+          "elapsed_ms": 0.09733865817849133,
+          "charged_cpu_ms": 0.09733865817849133,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "window_calc_slider/_Div32",
+          "elapsed_ms": 0.1722633458278297,
+          "charged_cpu_ms": 0.1722633458278297,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "window_calc_slider/wind_set",
+          "elapsed_ms": 25.8555017839547,
+          "charged_cpu_ms": 20.6239541909191,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 4.498159657954352
+        },
+        {
+          "kind": "set_shift/_Mul32",
+          "elapsed_ms": 0.08648409383418454,
+          "charged_cpu_ms": 0.08648409383418454,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "set_shift/_Mul32",
+          "elapsed_ms": 0.13723270635302146,
+          "charged_cpu_ms": 0.09275718621498523,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044475520138036226
+        },
+        {
+          "kind": "set_shift/graf_mouse",
+          "elapsed_ms": 7.964219408806858,
+          "charged_cpu_ms": 5.892477786909396,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 1.338706107736485
+        },
+        {
+          "kind": "set_shift/rc_intersect",
+          "elapsed_ms": 0.1210213440206152,
+          "charged_cpu_ms": 0.07696872898690263,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044052615033712585
+        },
+        {
+          "kind": "set_shift/vs_clip",
+          "elapsed_ms": 1.5738413457404292,
+          "charged_cpu_ms": 1.3102304973786933,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2636108483617361
+        }
+      ],
+      "selected_frame": {
+        "measured": {
+          "elapsed_ms": 18.198452449254912,
+          "charged_cpu_ms": 14.326333314067655,
+          "off_cpu_ms": 0.7333879350812471,
+          "interrupt_ms": 3.138731200106008
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "native_frame": 0.6884190256548334,
+          "renderer": 0.9637302485695235,
+          "display_access": 0.3703943872034554,
+          "batch_control": 0.13145300326059833,
+          "callback_control": 0.14752339722489669,
+          "scratch_clear": 0.03693371244426464,
+          "fills": 0.07591146622609353,
+          "solid_encoding": 3.6337416247168286,
+          "traversal": 0.5554858545291023,
+          "object_callback": 0.26628924735578585,
+          "object_preparation": 0.704066514514808,
+          "object_raster": 1.2584951062831011,
+          "object_adapter": 0.5894592312431012,
+          "pattern_encoding": 0.09726817399443738,
+          "mask_encoding": 1.1741255379705349,
+          "queue": 0.06244898707179097,
+          "submission": 0.004440503595398228,
+          "driver_submission": 0.3905528638428823,
+          "fence": 1.374018683947509,
+          "upload": 1.4843969161759794,
+          "overlays": 0.008317133718364936,
+          "damage": 0.3088616945243656
+        },
+        "raw_submission_record_counts": [
+          19,
+          12,
+          5
+        ],
+        "record_accounting": {
+          "solid": 29,
+          "mask_and_other": 7,
+          "submitted": 36
+        }
+      },
+      "selected_objects": [
+        9,
+        10
+      ],
+      "observed_complete_ms": 140.22574674468797
+    }
+  ],
+  "frame_geometry": {
+    "handle": 1,
+    "objects": {
+      "0": {
+        "next": -1,
+        "head": 1,
+        "tail": 6,
+        "type": 25,
+        "flags": 0,
+        "state": 32,
+        "spec": 69888,
+        "x": 0,
+        "y": 11,
+        "width": 633,
+        "height": 222
+      },
+      "9": {
+        "next": 11,
+        "head": 10,
+        "tail": 10,
+        "type": 20,
+        "flags": 0,
+        "state": 0,
+        "spec": 69905,
+        "x": 617,
+        "y": 20,
+        "width": 16,
+        "height": 182
+      },
+      "10": {
+        "next": 9,
+        "head": -1,
+        "tail": -1,
+        "type": 20,
+        "flags": 0,
+        "state": 0,
+        "spec": 135424,
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 91
+      },
+      "13": {
+        "next": 6,
+        "head": 14,
+        "tail": 14,
+        "type": 20,
+        "flags": 0,
+        "state": 0,
+        "spec": 69905,
+        "x": 15,
+        "y": 211,
+        "width": 588,
+        "height": 11
+      },
+      "14": {
+        "next": 13,
+        "head": -1,
+        "tail": -1,
+        "type": 20,
+        "flags": 0,
+        "state": 0,
+        "spec": 135424,
+        "x": 0,
+        "y": 0,
+        "width": 419,
+        "height": 11
+      }
+    },
+    "rectangles": {
+      "current": [
+        0,
+        11,
+        633,
+        222
+      ],
+      "work": [
+        1,
+        22,
+        616,
+        200
+      ]
+    },
+    "sliders": {
+      "hslide": 1,
+      "vslide": 1,
+      "hsize": 712,
+      "vsize": 500
+    }
+  },
+  "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+  "checks": {
+    "viewport_pixels": "pass",
+    "viewport_copies_per_action": 1,
+    "exposed_row_draws_per_action": 1,
+    "fallback_redraws": 0,
+    "unchanged_native_provider_app": true,
+    "unchanged_settled_scanout": true,
+    "process_lifetimes": 3,
+    "ownership_and_heap": "restored",
+    "guards": "intact",
+    "runtime_status": 0,
+    "live_tasks": 0,
+    "pointer_start": [
+      639,
+      0
+    ],
+    "pointer_end": [
+      639,
+      0
+    ],
+    "host_tests": {
+      "run": 738,
+      "skipped": 4,
+      "status": "pass",
+      "log": {
+        "path": "build/gem-pre-copy-host-tests.log",
+        "sha256": "1c4e334dcc724fce4fb79fec6e4a286b2e3204cc12c7f9951d58e9e38604cba4"
+      }
+    }
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_spare_included": true
+  },
+  "upper_ram_delta_bytes": 0,
+  "source_hashes": {
+    "tools/measure_mgview.py": "7ad23f070da1f47f5af96a5853e00c11c4b16714efa88c483184d565b8d29040",
+    "tools/mgview_pre_copy_trace.py": "54cfcb278e5e1598790cd436d601d1388356a78ed84d72de60733e55846ad6f6",
+    "tools/mgview_slider_trace.py": "3b0c3b25046b686802cbaf2bbb704a370260917bb4668a692bbbc2380dd67421",
+    "tools/mgview_frame_trace.py": "7e24044ada266ff8e761f5bc114b31d349f3270e19ec559b00ff49bdb5dc8825",
+    "tests/test_mgview_pre_copy_trace.py": "51e2ca28d228c018d27576fb561511b49b69b8e1ff3110d8c8d3e4aadbe3f3e9",
+    "lib/aes/aeslocal.act": "03af8b048d9f5664a440616f5b944f2b39c8e904666d6ce47a90adaf6fd53d1c",
+    "lib/aes/aeswindow.act": "1465da741d82e0dc963107acda0af36ca546a68b62fab5c35a737b7235357f05",
+    "lib/aes/aeslocks.act": "42d76a1403a15d948c8a5f4e7d5d47b58b6419c8dc38646b83b8b4041d5c3e0a",
+    "lib/aes/gemframe.act": "2611f2bfeb9cf489caf28accfdb41a955e31f51a0dfa3f0508681132ade7e8d9",
+    "lib/desktop/deskmenu.act": "d7370a34019f0fefb9b11beedcd183bcba1c51516f10dbe801cb69608371570f",
+    "c/calypsi/aes.c": "e5c38c179b4013521dc163003a6840e180b9c94220783500329e48d56e0bff35",
+    "c/calypsi/aes-windows.c": "1dbb55cb7fd617dc785e460d98868848d7f6bf633c40565dc838c404658c4dbb"
+  },
+  "limits": [
+    "Two actions, no latency distribution or delivered performance improvement",
+    "Inclusive routine costs overlap; exclusive CPU partitions and caller stages reconcile separately",
+    "No QED, Counter, target build, demo refresh or release qualification"
+  ]
+}

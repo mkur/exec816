@@ -49,6 +49,14 @@ separate commits and focused MGVIEW/ownership/cursor development checks. Final
 END is about 3.41 ms elapsed, with no synthetic manager work; viewport latency
 remains around 120/140 ms in the matched samples. Application ABI is now 48.
 
+The subsequent [pre-copy audit](../../history/gem-pre-copy-audit.md) reuses the
+EU5 executable without a build. Before copy entry, viewer CPU is about 36 ms:
+the unchanged size setter costs 4.37 ms, the changed position setter 20.6 ms
+(14.3 ms selected painting), and mouse hiding 5.9 ms. Arithmetic and contended
+UPDATE do not explain the delay. The proposed next bounded slice is to let an
+unchanged slider return without general publication/menu/exposure work, matching
+MagiC's existing early exit. No target behavior changes in the audit.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

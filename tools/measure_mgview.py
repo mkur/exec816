@@ -29,15 +29,16 @@ RESIDENT=('vro_cpyfm','v_gtext','vr_recfl','ExecAESBeginUpdate','wind_update',
     'VbxeOwnerWrite','VbxeOwnerRead','VbxeOwnerCopyRect','GemVdiPaint','DisplayEnter','DisplayLeave')
 
 
-def definition(cache,p,foreign,app):
+def definition(cache,p,foreign,app,extra_app=()):
+    names=APP+extra_app
     entries={foreign['symbols'][n]:n for n in RESIDENT if n in foreign['symbols']}
-    app_entries={app['image']['symbols'][n]:n for n in APP}
+    app_entries={app['image']['symbols'][n]:n for n in names}
     app_returns=set();app_exits=set();sites={}
     for path in (cache/'apps/mgview').glob('*.lst'):
         if path.name=='link.lst':continue
         for section in path.read_text().split('.section ')[1:]:
             if not section.startswith('farcode,text'):continue
-            name=next((n for n in APP if re.search(r'\\ 000000\s+'+re.escape(n)+':',section)),None)
+            name=next((n for n in names if re.search(r'\\ 000000\s+'+re.escape(n)+':',section)),None)
             if not name:continue
             base=app['image']['symbols'][name]
             for m in re.finditer(r'\\ ([0-9a-f]{6}) 22[.]{6}\s+jsl\s+long:([^\s]+)',section):
@@ -183,7 +184,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False,end_detail=False):
+def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False,end_detail=False,pre_copy_detail=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview',)}
@@ -193,7 +194,13 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
     shutil.copyfile(cache/'system.atr',out/'system.atr')
     disk=Audit((out/'system.atr').read_bytes());disk.sdfs();content=disk.files['VIEW.TXT']
     for name,app in apps.items():require(hashlib.sha256(disk.files[name.upper()+'.APP']).hexdigest()==app['sha256'],'Cached disk APP differs: '+name)
-    d=definition(cache,p,foreign,apps['mgview'])
+    if pre_copy_detail:
+        import mgview_pre_copy_trace
+        slider_detail=True
+    d=definition(cache,p,foreign,apps['mgview'],mgview_pre_copy_trace.APP if pre_copy_detail else ())
+    if pre_copy_detail:
+        d['pre_copy']=mgview_pre_copy_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['pre_copy']['pcs']))
     if presenter:
         import mgview_presenter_trace
         d['presenter']=mgview_presenter_trace.definition(p)
@@ -338,6 +345,8 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
             report['text']=mgview_text_trace.analyze(out,d,report['audit'])
         if end_detail:
             report['end_update']=mgview_end_trace.analyze(out,d,report['audit'])
+        if pre_copy_detail:
+            report['pre_copy']=mgview_pre_copy_trace.analyze(out,d,report['audit'],report['loaded_base'])
         report['status']='pass'
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
@@ -355,8 +364,13 @@ def reanalyze(cache,out):
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     app=json.loads((cache/'apps/mgview/app.json').read_text())
     require(sha256(p['xex'])==r['native_sha256'] and app['sha256']==r['app_sha256']['mgview'],'Captured binaries changed')
-    d=definition(cache,p,foreign,app)
     recorded=json.loads((out/'definition.json').read_text())
+    if 'pre_copy' in recorded:
+        import mgview_pre_copy_trace
+    d=definition(cache,p,foreign,app,mgview_pre_copy_trace.APP if 'pre_copy' in recorded else ())
+    if 'pre_copy' in recorded:
+        d['pre_copy']=mgview_pre_copy_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['pre_copy']['pcs']))
     if 'worker_dp' in recorded['timeline']:
         require(r['manager_identity']['dp']==recorded['timeline']['worker_dp'],
                 'Captured manager identity changed')
@@ -391,6 +405,8 @@ def reanalyze(cache,out):
         r['text']=mgview_text_trace.analyze(out,d,r['audit'])
     if 'end_update' in d:
         r['end_update']=mgview_end_trace.analyze(out,d,r['audit'])
+    if 'pre_copy' in d:
+        r['pre_copy']=mgview_pre_copy_trace.analyze(out,d,r['audit'],r['loaded_base'])
     r.update(status='pass');r.pop('error',None)
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     return r
@@ -406,9 +422,10 @@ if __name__=='__main__':
     parser.add_argument('--slider-detail',action='store_true',help='Separate frame preparation, objects, scratch clear/publication and mask encoding; no rebuild')
     parser.add_argument('--text-detail',action='store_true',help='Separate input conversion, visibility, damage and glyph preparation; no rebuild')
     parser.add_argument('--end-detail',action='store_true',help='Trace END_UPDATE journal, publication, native release and peer Tasks; no rebuild')
+    parser.add_argument('--pre-copy-detail',action='store_true',help='Separate pre-copy arithmetic, setters, publication and selected frame work; no rebuild')
     parser.add_argument('--expect-copy-units',type=int,help='Assert the measured physical copy count per scroll')
     args=parser.parse_args()
-    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail,args.end_detail)
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail,args.end_detail,args.pre_copy_detail)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
     if 'presenter' in r:
         for row in r['presenter']['samples']:

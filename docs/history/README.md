@@ -1,5 +1,9 @@
 # Historical records
 
+- [MGVIEW pre-copy audit](gem-pre-copy-audit.md): slider arithmetic, unchanged
+  and changed setters, selected painting, repeated completion work and a pinned
+  MagiC comparison on the frozen EU5 executable.
+
 - [MagiC-led END_UPDATE implementation](gem-end-update-implementation.md):
   selected plan, per-slice caller completion, release/input changes and focused
   MGVIEW evidence.
