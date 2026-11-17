@@ -50,6 +50,11 @@ class EndTraceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):resource_stages(self.rows[:-1],0,100)
         with self.assertRaises(RuntimeError):resource_stages(self.rows+[self.rows[-1]],0,100)
 
+    def test_removed_journal_has_no_synthetic_work_stage(self):
+        stages=resource_stages([r for r in self.rows if r['kind']!='AESWINDOWSTATE_ENDUPDATE'],0,100)
+        self.assertNotIn('journal_and_cache',[r['kind'] for r in stages])
+        self.assertEqual(sum(r['end']-r['start'] for r in stages),100)
+
     def test_peer_cpu_clipping_separates_interrupts(self):
         segments=[(0,10,1,False),(10,20,2,False),(20,25,2,True),
                   (25,30,3,False),(30,40,1,True)]

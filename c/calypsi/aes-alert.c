@@ -112,7 +112,6 @@ WORD ExecAESAlertPaint(struct ExecAESContext *c)
     WORD i,row,bottom;
     if (!a->icon) return 1;
     p.icon=a->icon; p.x=a->tree[0].ob_x+16; p.y=a->tree[0].ob_y+16;
-    ExecAESChanged(c,p.x,p.y,p.x+32,p.y+32);
     for (i=0;i<v->visibleCount;++i) {
         p.left=p.x>v->visible[i].left ? p.x:v->visible[i].left;
         p.right=p.x+32<v->visible[i].right ? p.x+32:v->visible[i].right;
@@ -123,7 +122,7 @@ WORD ExecAESAlertPaint(struct ExecAESContext *c)
             p.top=row; p.bottom=row+16<bottom ? row+16:bottom;
             if (GemDrawingBorrow(&c->workstation->grant,p.left,p.top,p.right,p.bottom,
                                  icon_strip,&p)!=DISPLAY_OK) {
-                c->request.paintFailed=1;c->diagnostic=AES_DISPLAY_ERROR; return 0;
+                c->diagnostic=AES_DISPLAY_ERROR; return 0;
             }
         }
     }

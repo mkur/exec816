@@ -95,17 +95,6 @@ static BOOL drawing(struct ExecAESContext *c)
 
 /* The update snapshot supplies screen/work clipping even when user clipping
  * is off. No shared Layers traversal, RPC or event wait occurs here. */
-static void changed(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
-{
-    struct ExecVDIWorkstation *w=c->workstation;
-    if (w->clipped) {
-        if (left<w->clip[0]) left=w->clip[0];
-        if (top<w->clip[1]) top=w->clip[1];
-        if (right>(LONG)w->clip[2]+1) right=(LONG)w->clip[2]+1;
-        if (bottom>(LONG)w->clip[3]+1) bottom=(LONG)w->clip[3]+1;
-    }
-    ExecAESChanged(c,left,top,right,bottom);
-}
 
 /* Admission precedes all mutation. A single current visible rectangle must
  * contain both ends; character-cache equality cannot establish pixel validity. */
@@ -124,7 +113,7 @@ static WORD copy_rect(struct ExecAESContext *c,WORD h,WORD x,WORD y,
     if (!drawing(c)) return EXEC_VDI_COPY_ERROR;
     if (width<0 || height<0) { c->diagnostic=AES_MALFORMED; return EXEC_VDI_COPY_ERROR; }
     if (!width || !height || (!dx && !dy)) return EXEC_VDI_COPY_DONE;
-    if ((dx&1) || !v->pixelsReady) return EXEC_VDI_COPY_REDRAW;
+    if (dx&1) return EXEC_VDI_COPY_REDRAW;
     if (left<v->work.left || top<v->work.top || right>v->work.right || bottom>v->work.bottom)
         return EXEC_VDI_COPY_REDRAW;
     if (w->clipped && (left<w->clip[0] || top<w->clip[1] ||
@@ -142,9 +131,9 @@ static WORD copy_rect(struct ExecAESContext *c,WORD h,WORD x,WORD y,
     copy->destinationX=dl; copy->destinationY=dt;
     copy->width=width; copy->height=height;
     status=GemDrawingCopyBorrow(&w->grant,copy);
-    ExecAESChanged(c,dl,dt,dr,db);
+
     if (status!=DISPLAY_OK) {
-        c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR;
+        c->diagnostic=AES_DISPLAY_ERROR;
         return EXEC_VDI_COPY_ERROR;
     }
     return EXEC_VDI_COPY_DONE;
@@ -160,7 +149,7 @@ WORD ExecVDICopyRect(WORD h,WORD x,WORD y,WORD width,WORD height,WORD dx,WORD dy
     return result;
 }
 
-static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom,BOOL reportChange)
+static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bottom)
 {
     struct ExecVDIWorkstation *w=c->workstation;
     struct AESWindowView *v=c->view;
@@ -173,9 +162,6 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
         if (right>(LONG)w->clip[2]+1) right=(LONG)w->clip[2]+1;
         if (bottom>(LONG)w->clip[3]+1) bottom=(LONG)w->clip[3]+1;
     }
-    /* Rectangle damage and visible fragments use the same user-clipped area.
-     * Report covered content before looking for any physical drawing work. */
-    if (reportChange) ExecAESChanged(c,left,top,right,bottom);
     if (left>=right || top>=bottom) return;
     u->textColor=w->textColor; u->fillColor=w->fillColor; u->writeMode=w->writeMode;
     for (i=0;i<v->visibleCount;++i) {
@@ -192,7 +178,7 @@ static void paint(struct ExecAESContext *c,LONG left,LONG top,LONG right,LONG bo
                 GemDrawingSolidBorrow(&w->grant,u->left,u->top,u->right,u->bottom,u->fillColor):
                 GemDrawingBorrow(&w->grant,u->left,u->top,u->right,u->bottom,GemVdiPaint,u);
             if (status!=DISPLAY_OK) {
-                c->request.paintFailed=1;c->diagnostic=AES_DISPLAY_ERROR;return;
+                c->diagnostic=AES_DISPLAY_ERROR;return;
             }
         }
     }
@@ -205,7 +191,7 @@ static void bar(struct ExecAESContext *c,const WORD *points)
     if (l>r) { swap=l; l=r; r=swap; }
     if (t>b) { swap=t; t=b; b=swap; }
     c->workstation->unit.operation=11;
-    paint(c,l,t,r+1,b+1,TRUE);
+    paint(c,l,t,r+1,b+1);
 }
 
 /* Named strings and parameter-block words share the streaming renderer. The
@@ -254,11 +240,10 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
         }
         if (!count) break;
         w->unit.count=count; w->unit.x=(WORD)at;
-        paint(c,at,top,at+((LONG)count<<3),top+EXEC_VDI_FONT_HEIGHT,FALSE);
+        paint(c,at,top,at+((LONG)count<<3),top+EXEC_VDI_FONT_HEIGHT);
         at+=(LONG)count<<3;
         if (c->diagnostic!=AES_OK) break;
     }
-    if (at>origin) changed(c,origin,top,at,top+EXEC_VDI_FONT_HEIGHT);
 }
 
 static WORD fill_color(struct ExecAESContext *c,WORD color)

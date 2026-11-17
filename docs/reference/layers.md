@@ -216,6 +216,7 @@ move and paint operations remain mutually exclusive with a read.
 ## External application painting
 
 `SetExternal(scene,id)` marks a newly created hidden layer as application-painted.
+It does not automatically create a client paint obligation.
 `BeginPaint` then admits `UPDATE_HANDOFF`: the manager paints frame pixels and
 accumulates work-area damage for the application. `PaintRegion` and `AdvancePaint`
 retain their usual traversal. After exhaustion and durable damage delivery,
@@ -242,10 +243,13 @@ move advances the coordinate epoch; an acknowledgement for the old location
 cannot retire newer paint. Pending application repaint neither retains a
 transaction nor makes the presenter runnable.
 
-The [resident counter example](../guides/aes-applications.md#counter-example)
-uses this external-paint path. All AES window bodies, including the terminal,
-use external paint. Neither delayed redraw delivery nor
-fully covered timer updates make an external layer cache eligible.
+Ordinary AES windows use handoff and `WM_REDRAW` without the optional explicit
+`ExternalArea`/`RequirePaint`/`Painted` coverage protocol. Their owners are
+responsible for completing drawing before reusing visible pixels. They are
+excluded from application backing-cache capture and restore; ending UPDATE
+neither declares damage nor acknowledges painted rectangles. The explicit
+coverage primitives remain available to other Layers clients that request them.
+See the [AES contract](aes.md#optional-repaint-completion).
 
 ## Saved scene rectangles
 

@@ -426,7 +426,7 @@
 -					w->user_tabsize);
 -			w->arrange(w);	/* Scrollbalken justieren! */
 +            get_line_column_count(w->user_file,w->user_fsize,&lines,&columns,newtab);
-+            if(!ExecAESBeginUpdate(w->handle))return;
++            if(!wind_update(BEG_UPDATE))return;
 +            w->user_tabsize=newtab;
 +            w->vscroll.n=lines;w->hscroll.n=columns;
 +            w->arrange(w);
@@ -611,7 +611,7 @@
  	register WINDOW **w;
  
  
-@@ -100,12 +94,14 @@
+@@ -100,12 +94,13 @@
  	GRECT g;
  
  
@@ -623,7 +623,6 @@
 -		if	(rc_intersect(neu,&g))
 +		if	(rc_intersect(neu,&g)) {
  			w->draw(w, &g);
-+            ExecAESPainted(w->handle,g.g_x,g.g_y,g.g_w,g.g_h);
 +        }
  		wind_get(w->handle,WF_NEXTXYWH,&(g.g_x),&(g.g_y),&(g.g_w),&(g.g_h));
  		}
@@ -787,7 +786,7 @@
  	long new_shift;
  
  
-@@ -419,16 +411,18 @@
+@@ -419,16 +411,16 @@
  *
  ****************************************************************/
  
@@ -802,8 +801,6 @@
 -	int  pxy[8];
 +	register WORD xcopy,ycopy;		/* soviele x-Pixel werden kopiert */
 +	MFDB src_mfdb={0},dest_mfdb={0};
-+    WORD pixels_ready,repair=0;
-+    const struct AESWindowView *view;
 +	WORD  pxy[8];
  	GRECT g;
 -	int clip_rect[4];
@@ -811,13 +808,11 @@
  
  
  
-@@ -444,6 +438,9 @@
+@@ -444,6 +438,7 @@
  	if	(0 == (diff = newshift - wsi->shift))
  		return;		/* nix zu scrollen */
  
-+	if(!ExecAESBeginUpdate(w->handle))return;
-+    view=ExecAESWindowView(w->handle);
-+    pixels_ready=view && view->pixelsReady;
++	if(!wind_update(BEG_UPDATE))return;
  	wsi->shift = newshift;
  	wsi->arrange(w, is_horiz);		/* Slider anzeigen,
  							ggf. Objektpos. umsetzen */
@@ -826,17 +821,16 @@
  
  	absdiff = (diff > 0) ? diff : -diff;
 -	if	(absdiff > wsi->nvis)
-+	if	(absdiff > wsi->nvis || !pixels_ready)
++	if	(absdiff > wsi->nvis)
  		{
 +		wind_update(END_UPDATE);
  		update_window(w);
  		return;
  		}
-@@ -470,9 +468,10 @@
+@@ -470,9 +468,9 @@
  	do	{
  		if	(rc_intersect(&scrg, &g))
  			{
-+            GRECT painted=g;
  			if	(is_horiz)
  				{
 -				xcopy = g.g_w - (int) absdiff;		/* soviele Pixel blitten */
@@ -881,11 +875,10 @@
  						}
  					pxy[3] = pxy[1] + ycopy - 1;
  					pxy[7] = pxy[5] + ycopy - 1;
-@@ -532,12 +531,15 @@
+@@ -532,12 +531,13 @@
  					}
  				}
  			w->draw(w, &g);
-+            if(!ExecAESPainted(w->handle,painted.g_x,painted.g_y,painted.g_w,painted.g_h))repair=1;
  			}
  		wind_get_grect(w->handle,WF_NEXTXYWH,&g);
  		}
@@ -893,7 +886,6 @@
  
  	graf_mouse(M_ON, NULL);
 +    wind_update(END_UPDATE);
-+    if(repair)update_window(w);
  }
  
  

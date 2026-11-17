@@ -1,5 +1,5 @@
 {
-  "version": 23,
+  "version": 24,
   "constants": {
     "WINDOWS": 6,
     "TITLE_BYTES": 65,
@@ -136,10 +136,6 @@
       ],
       [
         "paintDirty",
-        "BYTE"
-      ],
-      [
-        "preserve",
         "BYTE"
       ],
       [

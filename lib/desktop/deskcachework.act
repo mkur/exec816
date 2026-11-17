@@ -49,23 +49,11 @@ BYTE FUNC Capture(CONSOLEBITMAP.Packet POINTER output)
     RETURN(0)
   FI
 
-  ; Search for a window only when one of the two slots actually needs repair.
-  FOR index=0 TO 1 DO
-    IF service.repairs(index).state=LAYERTYPES.CACHE_CHANGE_READY THEN
-      BEGIN
-        LET window=Find(service,service.cache.slots(index).identity)
-        IF window<>NULL AND DESKCACHE.Patch(service,window,output)<>0 THEN
-          RETURN(1)
-        FI
-      END
-    FI
-  OD
-
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=service.windows(index)
       IF DESKCACHE.TakeCandidate(index)<>0
-          AND window<>NULL AND window.id<>0
+          AND window<>NULL AND window.id<>0 AND window.owner=0
           AND window.iconified=0
           AND window.visualRevision<>0
           AND window.captureAttempt<>window.visualRevision THEN

@@ -1,0 +1,56 @@
+MODULE GEMEXTERNALTEST
+USE EXEC
+USE HEAPCORE
+USE LAYERS
+USE LAYERTYPES
+USE REGIONS
+CARD checks
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LAYERTYPES.Rect area
+  LONGCARD id,token
+  BYTE status
+
+  LET scene=LAYERTYPES.Scene POINTER(EXEC.AllocMem(SIZEOF(LAYERTYPES.Scene),
+      EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+  Require(scene<>NULL)
+  Require(LAYERS.Init(scene,32,24)=LAYERTYPES.OK)
+  REGIONS.Assign(@area,0,0,16,16)
+  Require(LAYERS.Create(scene,@area,@id)=LAYERTYPES.OK)
+  Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  LET layer=LAYERS.Find(scene,id)
+  Require(layer.pending.count=0)
+  Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
+  Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
+  status=LAYERTYPES.OK
+  WHILE status=LAYERTYPES.OK DO
+    status=LAYERS.AdvancePaint(scene,token)
+  OD
+  Require(status=LAYERTYPES.EMPTY)
+  Require(LAYERS.FinishHandoff(scene,token)=LAYERTYPES.OK)
+  Require(layer.dirty=0 AND layer.pending.count=0)
+  Require(LAYERS.PixelsReady(layer,@area)<>0)
+  ; Explicit coverage remains opt-in for other Layers clients.
+  LAYERS.RequirePaint(scene,id,@area)
+  Require(layer.pending.count=1)
+  Require(LAYERS.PixelsReady(layer,@area)=0)
+  Require(LAYERS.Painted(scene,id,layer.paintEpoch,@area)<>0)
+  Require(LAYERS.PixelsReady(layer,@area)<>0)
+  Require(LAYERS.BeginMove(scene,id,16,0,@token)=LAYERTYPES.OK)
+  Require(LAYERS.Finish(scene,token,1)=LAYERTYPES.OK)
+  Require(layer.bounds.left=16 AND scene.busy=0)
+  Require(LAYERS.Show(scene,id,0)=LAYERTYPES.OK)
+  Require(LAYERS.Delete(scene,id)=LAYERTYPES.OK)
+  EXEC.FreeMem(BYTE POINTER(scene),SIZEOF(LAYERTYPES.Scene))
+
+RETURN
+ENDMODULE

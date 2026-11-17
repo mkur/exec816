@@ -50,9 +50,7 @@ static int16_t draw(void *opaque,const struct GemRasterRect *r)
     UWORD status;
     client->copy->rect=*r;
     status=copy(c->workstation,client->copy);
-    if (!client->copy->destination.address)
-        ExecAESChanged(c,r->dx,r->dy,r->dx+r->width,r->dy+r->height);
-    if (status!=DISPLAY_OK) { c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR; return 0; }
+    if (status!=DISPLAY_OK) { c->diagnostic=AES_DISPLAY_ERROR; return 0; }
     return 1;
 }
 

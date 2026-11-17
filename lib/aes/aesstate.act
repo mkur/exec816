@@ -72,12 +72,10 @@ PUBLIC TYPE Service=[
   CARD updates,mouseHolds
   LONGCARD cursorHides
   LONGCARD cursorOwner
-  INT updateWindow
   INPUT.Event ARRAY pointerEvents(POINTER_EVENTS)
   PointerTarget ARRAY pointerTargets(POINTER_EVENTS)
   BYTE pointerHead,pointerCount,pointerLost
   CARD updateHolds
-  BYTE paintPrepared
   BYTE updateHint
   EXEC.SignalSemaphore updateResource
 ]

@@ -353,8 +353,9 @@ PUBLIC BYTE FUNC SetExternal(LAYERTYPES.Scene POINTER scene LONGCARD id)
     RETURN(LAYERTYPES.BUSY)
   FI
 
+  ; External clients receive redraw notices and own their drawing completion.
+  ; Explicit RequirePaint remains available to clients of that separate protocol.
   layer.externalPaint=1
-  RequirePaint(scene,id,@layer.bounds)
 
 RETURN(LAYERTYPES.OK)
 

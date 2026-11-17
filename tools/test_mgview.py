@@ -22,7 +22,8 @@ LAYOUT=[('WORD',2),('huge pointer',4),('WINDOW',338),('outer',260),('work',268),
 DOCUMENT=b''.join((f'Row {i:03d}\t'+''.join(chr(65+(i+j)%26) for j in range(100))+'\r\n').encode() for i in range(50))
 
 
-def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=None,vertical_only=False):
+def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=None,vertical_only=False,geometry_only=False):
+    interactions=interactions or geometry_only
     out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     content=Path(document).read_bytes() if document else DOCUMENT
     if not reuse:
@@ -175,7 +176,7 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
                             move(632,0);picture(window,'moved',content)
                             # Both drags use the stored track/thumb rectangles. They
                             # verify the manager's object-based WM_*SLID path.
-                            for axis,object_id,offset in (('vertical',10,280),('horizontal',14,304)):
+                            for axis,object_id,offset in (() if geometry_only else (('vertical',10,280),('horizontal',14,304))):
                                 from generate_desktop import layout as dl
                                 from generate_gem_objects import layout as gl
                                 desktop=next(d['address'] for d in program['image']['data'] if '_DESKSTATE_SERVICE_' in d['name'])
@@ -220,7 +221,7 @@ def run(out,reuse=False,scroll=False,failures=False,interactions=False,document=
     finally:
         payload=json.dumps(report,indent=2)+'\n'
         (out/'results.json').write_text(payload)
-        (out/('results-'+('reference' if document else 'failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
+        (out/('results-'+('geometry' if geometry_only else 'reference' if document else 'failures' if failures else 'interactions' if interactions else 'scroll' if scroll else 'smoke')+'.json')).write_text(payload)
     print('MGVIEW development check passed: three lifetimes, exact pixels and guards',flush=True)
     return report
 
@@ -229,4 +230,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--reuse',action='store_true');parser.add_argument('--scroll',action='store_true');parser.add_argument('--failures',action='store_true');parser.add_argument('--interactions',action='store_true')
     parser.add_argument('--document',type=Path);parser.add_argument('--vertical-only',action='store_true')
-    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures,args.interactions,args.document,args.vertical_only)
+    parser.add_argument('--geometry-only',action='store_true',help='One resize/move case; omit scrollbar gesture checks')
+    args=parser.parse_args();run(args.output,args.reuse,args.scroll,args.failures,args.interactions,args.document,args.vertical_only,args.geometry_only)

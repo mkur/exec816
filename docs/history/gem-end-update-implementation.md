@@ -102,3 +102,49 @@ No runtime state is added: the two bits reuse one existing byte. Generated
 reservations remain identical; added bank-zero bytes are **0 fixed, root,
 kernel, idle and per-public-Task**, including guards, alignment and spare
 capacity. No Task, service, signal, queue, buffer or physical admission is added.
+
+## EU4 — standard GEM application painting replaces the journal
+
+The selected cutover removes the ordinary BEGIN/END paint transaction, the
+per-draw journal writes and application backing-cache preservation together.
+External GEM windows cannot enter backing-image capture or restore. System-owned
+window/menu/background storage retains its owning operation's validity and
+physical completion rules. The old patch producer and scoped journal helpers
+are removed; there is no replacement per-primitive RPC or success stub.
+
+MGVIEW now uses ordinary `wind_update(BEG_UPDATE)` across visible enumeration,
+copy and exposed-strip redraw. Its completeness query, paint reports and extra
+repair fallback are gone. Native geometry/lifetime epochs remain; pixel-proof
+fields are removed from the application view. `SetExternal` establishes drawing
+responsibility without inventing an initial coverage obligation. Explicit
+Layers coverage primitives remain opt-in and have a focused emitted check;
+their older fixtures now request that protocol explicitly.
+
+Application import ABI is **48**, AES wire ABI **28**, desktop records **24**.
+Removed APIs are `ExecAESBeginUpdate`, `ExecAESInvalidate`, `ExecAESPainted`,
+`ExecAESPaintedChanges` and `WF_EXEC_PRESERVE`. The request shrinks from **418 to
+190 bytes**, and each window view from **840 to 826 bytes**. The read-only
+geometry/identity view helper remains. Other applications using the removed
+protocol need migration; they are not built or admitted as compatibility gates.
+
+The [EU4 record](../development/gem-end-update-eu4.json) records 162 independent
+C/native layout checks in each of raw and optimized modes, plus actual emitted
+array-stride, three-byte pointer, signed-coordinate and wide-field bridging.
+The focused external handoff/coverage/move fixture passes 20 assertions. Host
+checks run 733 tests, four skipped. MGVIEW's scroll pair and one resize/move
+case pass with exact viewport/window pixels and three clean lifetimes each.
+The settled scanout matches the audit baseline completely; guards remain intact.
+
+END takes **1.987/1.987 ms elapsed**, **1.636/1.637 ms viewer CPU**, with no
+journal, cache operation, routing publication or manager CPU. `set_shift` is
+**74.67/76.40 ms CPU**, down from the audit's 82.76/81.33 ms. Observed viewport
+completion remains **120.72/140.03 ms** in these two PAL/COP samples; it is not
+a latency distribution or evidence of a consistent end-to-end gain.
+
+The APP and shared provider are rebuilt for the changed ABI. After correcting
+remaining internal references, the final relink reuses already compiled objects
+from that new-ABI build and recompiles the two affected C objects; the object
+hashes are retained. No QED, Counter, catalog or demo is built. All reservation
+map fields match EU3 except foreign code placement: added bank-zero bytes are
+**0 fixed, root, kernel, idle and per-public-Task**, including guards, alignment
+and spare capacity. No VRAM range, Task, signal or platform operation is added.

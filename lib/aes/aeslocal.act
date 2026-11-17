@@ -82,7 +82,6 @@ CARD FUNC Policy(LONGCARD value)
         status=AESMENU.Request(service,client,request)
       ELSEIF request.operation=AESTYPES.OP_OPEN
           OR request.operation=AESTYPES.OP_CLOSE THEN
-        AESWINDOWSTATE.PrepareUpdate(client)
         status=AESWINDOW.Visibility(service,client,request)
       ELSEIF request.operation=AESTYPES.OP_SET THEN
         IF AESWINDOW.FrameField(request.intin(1))<>0 THEN
@@ -94,13 +93,11 @@ CARD FUNC Policy(LONGCARD value)
             wake=0
           FI
         ELSEIF AESWINDOW.GeometryField(request.intin(1))<>0 THEN
-          AESWINDOWSTATE.PrepareUpdate(client)
           status=AESWINDOW.Geometry(service,client,request)
         ELSE
           status=AESWINDOW.Request(service,client,request)
         FI
       ELSE
-        AESWINDOWSTATE.PrepareUpdate(client)
         status=AESWINDOW.Lifecycle(service,client,request)
       FI
       IF status=AESTYPES.PENDING AND waiting=0 THEN

@@ -58,12 +58,8 @@ struct ExecAESContext *ExecAESContext(void);
 UWORD ExecAESDiagnostic(void);
 /* Optional repaint completion, after drawing and before outer END_UPDATE.
  * Coordinates are screen x/y/width/height; only visible intersections count. */
-WORD ExecAESBeginUpdate(WORD window);
-WORD ExecAESPainted(WORD window,WORD x,WORD y,WORD width,WORD height);
-WORD ExecAESPaintedChanges(WORD window);
 /* Declare logical damage before drawing, independently of visible/user clips.
  * Empty dimensions explicitly declare no additional damage in this UPDATE. */
-WORD ExecAESInvalidate(WORD window,WORD x,WORD y,WORD width,WORD height);
 /* Borrow the owning window's read-only presentation snapshot. Fresh within
  * UPDATE, with final epoch/completeness published by END. Retired at delete. */
 const struct AESWindowView *ExecAESWindowView(WORD window);

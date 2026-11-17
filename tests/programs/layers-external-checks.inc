@@ -8,12 +8,20 @@ PROC ExternalTransactions()
   REGIONS.Assign(@bounds,0,0,16,16)
   Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,id)
+    LAYERS.RequirePaint(scene,id,@external.bounds)
+  END
   Require(LAYERS.SetRetained(scene,id)=LAYERTYPES.OK)
   BEGIN
     LET layer=LAYERS.Find(scene,id)
     Require(layer.externalPaint=0 AND layer.pending.count=0)
   END
   Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,id)
+    LAYERS.RequirePaint(scene,id,@external.bounds)
+  END
   Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
   Require(LAYERS.SetRetained(scene,id)=LAYERTYPES.BUSY)
   Require(LAYERS.BeginPaint(scene,id,@token)=LAYERTYPES.OK)
@@ -161,6 +169,10 @@ PROC DamageRetirement(CARD count)
   REGIONS.Assign(@bounds,0,0,32,24)
   Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,id)
+    LAYERS.RequirePaint(scene,id,@external.bounds)
+  END
   LET layer=LAYERS.Find(scene,id)
   epoch=layer.paintEpoch
   Require(epoch<>0)

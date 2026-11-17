@@ -97,7 +97,6 @@ PUBLIC CARD FUNC CreateHidden(AESSTATE.Service POINTER service
         item.inputBound=0
         item.inputUnit=0
         item.visibilityEpoch=0
-        item.preserve=0
         item.focusNotices=0
         window.id=desktop.nextWindow
         desktop.nextWindow==+1
@@ -675,10 +674,6 @@ PUBLIC CARD FUNC Request(AESSTATE.Service POINTER service
       AESGUI.Post(service,item,AESTYPES.GUI_FOCUS,
           INT(window.id=desktop.focus),0,0,0)
     FI
-  WHEN AESTYPES.WF_EXEC_PRESERVE THEN
-    ; Set before opening. Reporting every content change is the caller's
-    ; promise; this changes exposure policy, not snapshot eligibility.
-    item.preserve=(request.intin(2)<>0)
   WHEN AESTYPES.WF_EXEC_DESKTOP THEN
     IF window.frameKind<>DESKTYPES.FRAME_BORDERLESS
         OR (DESKSTATE.desktopWindow<>0 AND DESKSTATE.desktopWindow<>window.id) THEN

@@ -311,20 +311,19 @@ WORD evnt_timer(UWORD lo, UWORD hi)
     return ExecAESTimerWait(c, (ULONG)lo | ((ULONG)hi << 16));
 }
 
-WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
+WORD ExecAESUpdate(struct ExecAESContext *c,WORD code)
 {
     UWORD handled=0;
     if (c == NULL) return 0;
     if (c->busy) { c->diagnostic = AES_BUSY; return 0; }
     if (!c->identity) { c->diagnostic = AES_IDENTITY; return 0; }
     c->request.intin[0] = code;
-    c->request.intin[1] = window;
     handled=ExecAESLocal(c,AES_OP_UPDATE);
     if (handled) {
         c->diagnostic=c->request.status;
         if (c->diagnostic!=AES_OK || !c->request.intout[0]) return 0;
     } else { c->diagnostic=AES_UNSUPPORTED; return 0; }
-    switch (code & ~(BEG_CHECK|AES_UPDATE_WINDOW)) {
+    switch (code & ~BEG_CHECK) {
     case BEG_UPDATE: ++c->updateDepth; break;
     case END_UPDATE: --c->updateDepth; break;
     case BEG_MCTRL: ++c->mouseDepth; break;
@@ -334,21 +333,7 @@ WORD ExecAESUpdate(struct ExecAESContext *c,WORD code,WORD window)
 }
 
 WORD wind_update(WORD code)
-{ return ExecAESUpdate(ExecAESContext(),code,0); }
-
-/* The outermost scope is a caller promise: no other owned window changes. */
-WORD ExecAESBeginUpdate(WORD window)
-{
-    struct ExecAESContext *c=ExecAESContext();
-    struct AESWindowView *view;
-    if (!c || !(view=ExecAESFindView(c,window))) return 0;
-    Forbid();
-    c->view=view;
-    c->request.view=view;
-    Permit();
-    return ExecAESUpdate(c,BEG_UPDATE|AES_UPDATE_WINDOW,window);
-}
-
+{ return ExecAESUpdate(ExecAESContext(),code); }
 
 static WORD multi(struct ExecAESContext *c, WORD *message)
 {
@@ -462,7 +447,7 @@ void EXEC_CALL aes_call(AESPB *pb)
         break;
     case AES_OP_TIMER:
         result = ExecAESTimerWait(c,(ULONG)(UWORD)pb->int_in[0] | ((ULONG)(UWORD)pb->int_in[1]<<16)); break;
-    case AES_OP_UPDATE: result = ExecAESUpdate(c,pb->int_in[0],0); break;
+    case AES_OP_UPDATE: result = ExecAESUpdate(c,pb->int_in[0]); break;
     case AES_OP_CREATE:
         result = ExecAESWindowCall(c,AES_OP_CREATE,pb->int_in[0],pb->int_in[1],pb->int_in[2],
             pb->int_in[3],pb->int_in[4],0); break;

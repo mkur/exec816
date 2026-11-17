@@ -7,14 +7,13 @@ UWORD EXEC_CALL _AESLocalCall(struct AESRequest *);
 UWORD ExecAESLocal(struct ExecAESContext *, UWORD);
 struct AESWindowView *ExecAESFindView(struct ExecAESContext *, WORD);
 BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
-void ExecAESChanged(struct ExecAESContext *,LONG,LONG,LONG,LONG);
 BOOL ExecAESDisplayEnsure(struct ExecAESContext *c);
 BOOL ExecAESDisplayClose(struct ExecAESContext *);
 void ExecAESResourceFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 /* Private entry points reuse the public caller's established context.
  * These perform their own admission; callers have not set busy yet. */
-WORD ExecAESUpdate(struct ExecAESContext *,WORD,WORD);
+WORD ExecAESUpdate(struct ExecAESContext *,WORD);
 WORD ExecAESWindowCall(struct ExecAESContext *,UWORD,WORD,WORD,WORD,WORD,WORD,WORD);
 WORD ExecAESWindowFind(struct ExecAESContext *c, WORD x, WORD y);
 WORD ExecAESWindowDelete(struct ExecAESContext *c, WORD handle);

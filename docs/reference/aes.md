@@ -304,10 +304,10 @@ pending notices with the window epoch. These report accepted focus changes;
 `WM_TOPPED` remains a request for the application to raise its window.
 
 One native semaphore owns UPDATE for public painting, MCTRL and temporary
-window/menu handlers. Ordinary and recursive UPDATE entry changes journal/depth
-facts without sweeping geometry/caches. Routing transitions and final journal
-reconciliation use that same UPDATE ownership. Temporary handler
-levels do not start a public journal or change explicit binding depth.
+window/menu handlers. Ordinary and recursive UPDATE entry records ownership
+and authorizes the caller's committed window views. It does not begin a paint
+journal or sweep caches. Temporary handler levels do not change explicit C
+binding depth.
 
 An uncontended native Attempt completes directly. A normal miss publishes a
 manager quiescence hint, then blocks in native Obtain.
@@ -323,69 +323,45 @@ zero result. Physical input/outline/route continuations retain existing private
 reply-signal hints after ownership has been established; those hints never grant
 UPDATE. No Task, signal or kernel ABI extension is added.
 
-Final local END consumes the binding's paint journal before returning and
-signals the existing AES wake bit. Input.device continues captured keyboard and
-pointer delivery through copied routing while another Task owns UPDATE. Manager
-window/control interpretation, cache work and scene commits try UPDATE at their
-operation boundary. Caller registration, message/timer waits and device completion
-remain independent. Caller drawing keeps UPDATE, its packet and any Layers token through
-physical completion; geometry commits only after terminal completion.
+Final local END publishes nesting and releases the native resource. It wakes
+SCRENMGR only for a genuinely armed blocked continuation. There is no journal,
+application backing-cache capture/patch scan or paint-only routing publication.
+Input.device continues copied keyboard/pointer delivery while another Task
+owns UPDATE. Window/menu handlers finish their physical effects synchronously;
+application exposure uses ordinary `WM_REDRAW` delivery.
 
-There is no separate scene gate, scene waiter queue or turn-wide scene claim.
-Snapshot construction uses UPDATE; copied registration/event/capture publication
-uses short Task guards. Physical calls do not release and re-enter UI ownership.
-All scene metadata work remains preemptible. The combined frontend loop remains
-until the separate SCRENMGR event-loop migration.
-Background cache captures and patches now retain their UPDATE operation through
-the accepted copy's completion/watchdog wake and token/pin retirement. They do
-not rely on a later frontend turn to complete. Refused physical admission drops
-the optional image; a different borrower's readiness cannot delay logical
-retirement of an already completed copy.
+UPDATE is the live scene resource. Copied registration, event and capture
+publication uses short Task guards; physical calls retain logical UI ownership.
+Normal Task preemption and independent device progress continue. SCRENMGR waits
+for actual interaction and service events, and acquires UPDATE when interpreting
+the live scene. Optional internal window/menu/background images belong to the
+operations that construct, invalidate and retire them. External GEM application
+windows have no backing-image preservation contract.
 
-`ExecAESBeginUpdate(window)` acquires the same UPDATE lock but scopes change
-tracking, repaint obligations and cache holds to one caller-owned window. End
-it with `wind_update(END_UPDATE)`. The caller must restrict drawing/model changes
-to that window. Nested calls keep the outer scope, including nested ordinary
-`BEG_UPDATE`; an ordinary outer BEGIN still covers every owned window. Empty or
-hidden scoped updates invalidate their target, while untouched siblings remain
-eligible for caching. The helper uses the UPDATE_WINDOW flag in the current
-wire ABI; rebuild programs and their matching host when the APP ABI changes.
-
-`ExecAESInvalidate(window,x,y,width,height)` declares logical damage inside the
-caller's UPDATE scope. Coordinates are screen coordinates clipped to the work
-area, independent of visibility and the VDI user clip. Negative dimensions fail;
-an empty declaration explicitly reports no additional damage. Up to eight
-nonempty rectangles belong to a separate invalidation journal. Overflow fails
-before changing that journal; callers may end the current scope and reacquire.
-Declarations report no painted pixels and invalidate earlier overlapping paint
-completion reports in the same scope. Declare damage before drawing it.
-
-END_UPDATE retains declared obligations across partial repairs and applies
-actual drawing changes outside the declared rectangles conservatively. An
-explicitly declared scope avoids implicit whole-client damage when no drawing
-occurs. Paint completion keeps its separate eight-entry journal and epoch
-checks. A completed empty update preserves a valid saved image; it never clears
-older unsatisfied damage. This uses existing local/presenter ownership and adds
-114 payload bytes to the request/context, with no new bank-zero reservation.
+`wind_update(BEG_UPDATE)` and matching END cover the caller's windows. Window
+queries select the view used by subsequent drawing/visible-rectangle enumeration.
+Keep UPDATE across enumeration, screen copying and exposed-strip drawing.
+`ExecAESBeginUpdate`, `ExecAESInvalidate`, `ExecAESPainted` and
+`ExecAESPaintedChanges`, their wire flag and the preservation setter are removed.
+Current application import ABI is **48** and AES wire ABI is **28**; rebuild the
+application and provider together. Old applications using the removed extensions
+require source migration and are outside the MGVIEW acceptance target.
 
 Ordinary keyboard/button delivery follows copied routing without UPDATE.
 Global shortcuts and keys for a published active menu enter the manager's copied
 queue before application delivery. Capture only classifies those records; menu
 interpretation and drawing run in the frontend under UPDATE.
 
-The manager uses nonblocking native Try for live scene/readiness inspection,
-menu/gesture work, painting, cache candidates and console controls. Failed Try
-returns without inspecting the protected scene and arms the existing release
-hint. Copied endpoint/event queues and caller registration remain independent, so
-registration, input and pending-caller wakeups still progress. Nested operation
-scopes share one native hold. A native capture or open menu retains that hold
-through its interaction; physical/cache tokens retain it through completion.
+The manager uses blocking native Obtain at actual interaction entry. Input and
+backend Tasks remain independent if it blocks. Nested operation scopes share
+one native hold; a capture or open menu can retain it through the interaction.
+Physical tokens remain owned through their completion. Input eligibility and
+cursor selection consume separate dirty bits, and an idle manager wake does
+not repeat input scans or unchanged cursor presentation.
 
-Publication precedes final native release. END keeps its painting marker active
-until journal/cache completion finishes. Short Task guards cover copied state
-and owner transitions, with normal Task preemption across the operation. Idle
-console reuse is discarded under the manager's own UPDATE before a waiting
-caller takes over; active DMA keeps its existing owner through retirement.
+Publication precedes final native release. Short Task guards protect copied
+state and owner transitions, while ordinary Tasks remain preemptible.
+
 
 Application MCTRL outlines remain separately retained physical visuals. Their
 capture/admission values use short guards and frozen drawing coordinates;
@@ -1310,82 +1286,21 @@ signal, timer, bank-zero reservation or IRQ work is involved.
 
 ## Optional repaint completion
 
-`ExecAESPainted(window,x,y,width,height)` records completed client pixels during
-UPDATE. Call it after reconstructing the entire requested region and before
-the matching `END_UPDATE`. It clips claims to the published visible work area;
-eight rectangles fit the caller-local journal. Overflow discards excess claims,
-without failing the application's paint. Later drawing revokes intersecting
-claims. A drawing failure remains sticky until the next outer UPDATE.
-
-`ExecAESPaintedChanges(window)` reports the accumulated changed span after the
-caller successfully finishes every drawable change in the UPDATE scope. It
-only records completion if the work area was already complete at lock grant;
-otherwise it succeeds without claiming pixels, preserving the repaint fallback.
-Files uses it for incremental selection. Like `ExecAESPainted`, it is
-caller-local and adds no RPC. The current C application ABI exports this helper; rebuild
-the runtime and applications together.
-
-The UPDATE snapshot's `AESWindowView.pixelsReady` is nonzero when Layers had no
-pending content or presentation repair in the work area at lock grant. It uses
-the former padding byte; record sizes and offsets are unchanged. A caller that
-successfully draws every change in that scope may then report the bounding
-span of those changes: the intervening untouched pixels were already complete.
-If `pixelsReady` is zero, report only regions actually reconstructed; never use
-this shortcut to retire an earlier exposure obligation. Normal visibility
-clipping, failure and generation checks still apply, including hidden changes.
-The flag is a snapshot, not a promise of a cached image or a live readiness poll.
-
-Only the outer END publishes the journal. Layers subtracts matching-generation
-claims from pending external repaint; neither ending UPDATE nor exhausting
-`WF_NEXTXYWH` implies completion. Existing GEM callers can omit this port helper
-and continue receiving ordinary exposure redraws. Files, desktop,
-Text, Panel, Calculator and shared dialogs use it in complete redraw paths.
-It adds no per-draw RPC or kernel call. An UPDATE without drawing reports leaves
-a full client repaint obligation, preventing recapture of old pixels after an
-unreported model change. Eligible
-snapshot captures and acknowledged patches finish at outer END, before UPDATE
-is released; image validity still depends on complete current pixels.
+The former Exec-specific paint report API is removed in application ABI 48.
+Applications draw through standard GEM calls under UPDATE; `END_UPDATE` does
+not acknowledge pixel coverage. Window mutations and exposure produce ordinary
+`WM_REDRAW` messages. Correct application-owned source pixels remain the caller's
+responsibility when copying visible screen contents.
 
 ## Opt-in window preservation
 
-Set `wind_set(window,AES_WF_EXEC_PRESERVE,1,0,0,0)` after creation and before
-opening. Zero is the default. The setting survives close/reopen and
-iconification until deletion; changing it while open is unsupported.
+The former `WF_EXEC_PRESERVE` extension and application backing-image cache are
+removed. A menu/background save owned by a system operation does not suppress
+ordinary application redraw notification. Existing applications using the old
+preservation/reporting protocol need migration; no compatibility stubs remain.
 
-An opted-in window promises to publish **every drawable content change**, even
-while fully covered or iconified, through `ExecAESBeginUpdate(window)` and the
-matching `wind_update(END_UPDATE)`. Prepare private data outside the lock; keep
-the publication/drawing scope short. Report only pixels actually completed with
-`ExecAESPainted`. A model-only change uses an empty update pair, which invalidates
-the saved image and leaves a repaint obligation without pretending hidden pixels
-were drawn. Applications that defer drawing across event waits must publish that
-invalidation before waiting; Text uses one empty pair for each newly queued batch
-before its ordinary drawing slices.
-
-VDI and object drawing accept an active update with no visible rectangles,
-including an iconified window. They record the logical content change without
-drawing or claiming completion of hidden pixels.
-
-A valid completed client or menu-background restore satisfies new exposure
-without generating `WM_REDRAW`. Missing, evicted, unaligned or invalid images
-still use the normal redraw handler. Existing pending content repairs and already
-delivered messages are not cancelled. This flag does not allocate a bitmap or
-make incomplete pixels cacheable. Failing to report a change is a caller bug;
-AES does not inspect the application's model.
-
-Files/Desktop, Control Panel, Calculator and Text opt in. Shared forms
-use window-specific updates and invalidate borrowed content at dismissal before
-requesting the owner's repair. Temporary dialog windows retain the default
-policy. Ordinary GEM callers need no changes and keep conventional exposure
-notifications, including after a successful menu-background restore.
-
-`ExecAESWindowView(window)` returns the owning application's read-only window
-snapshot, borrowed until window deletion. UPDATE establishes fresh geometry,
-visible rectangles and pixel completeness; END publishes its final paint epoch
-and completeness before replying. Applications may retain the identity for
-later comparison but must reacquire UPDATE before reusing screen pixels. No RPC
-or allocation is needed to read the borrowed view. This is part of C import ABI 30.
-An application committing a copied presentation must finish END_UPDATE even
-when its exposed cells already match and require no glyph drawing. Only that
-publication establishes the final epoch and pixel completeness; cache equality
-alone cannot satisfy an outstanding paint obligation.
+`ExecAESWindowView(window)` still returns borrowed read-only geometry, visibility
+and identity for an owned window until deletion. Its pixel-completion fields
+are removed. Reacquire UPDATE before using the view for drawing. The
+[END_UPDATE record](../history/gem-end-update-implementation.md) describes the
+cutover and focused MGVIEW checks.

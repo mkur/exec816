@@ -1,6 +1,6 @@
 {
   "abi": "exec816.aes",
-  "version": 27,
+  "version": 28,
   "constants": {
     "CLIENTS": 4,
     "CONTEXTS": 8,
@@ -111,20 +111,13 @@
     "GUI_FULLED": 8,
     "WINDOWS": 6,
     "WF_EXEC_DESKTOP": 24576,
-    "WF_EXEC_PRESERVE": 24577,
     "OP_FIND": 106,
     "OP_DRAG_OUTLINE": 203,
-    "PAINT_REPORTS": 8,
-    "UPDATE_WINDOW": 512,
     "OP_GRAF_MKSTATE": 79,
     "GUI_FOCUS": 9,
     "WM_UNTOPPED": 30,
     "WM_ONTOP": 31,
     "WF_EXEC_FOCUS": 24579,
-    "CHANGE_RECT": 1,
-    "CHANGE_DECLARED": 2,
-    "CHANGE_UNDECLARED": 4,
-    "INVALIDATION_REPORTS": 8,
     "WF_PXYWH": 6,
     "WF_FXYWH": 7,
     "WF_PREVXYWH": 6,
@@ -523,20 +516,6 @@
         "INT"
       ]
     ],
-    "PaintReport": [
-      [
-        "handle",
-        "INT"
-      ],
-      [
-        "epoch",
-        "LONGCARD"
-      ],
-      [
-        "rect",
-        "Rect"
-      ]
-    ],
     "WindowView": [
       [
         "handle",
@@ -602,22 +581,6 @@
       [
         "epoch",
         "LONGCARD"
-      ],
-      [
-        "paintEpoch",
-        "LONGCARD"
-      ],
-      [
-        "changed",
-        "BYTE"
-      ],
-      [
-        "pixelsReady",
-        "BYTE"
-      ],
-      [
-        "change",
-        "Rect"
       ]
     ],
     "Request": [
@@ -723,28 +686,6 @@
       [
         "displayGrantPad",
         "BYTE"
-      ],
-      [
-        "paintCount",
-        "BYTE"
-      ],
-      [
-        "paintFailed",
-        "BYTE"
-      ],
-      [
-        "paints",
-        "PaintReport",
-        "PAINT_REPORTS"
-      ],
-      [
-        "invalidationCount",
-        "CARD"
-      ],
-      [
-        "invalidations",
-        "PaintReport",
-        "INVALIDATION_REPORTS"
       ],
       [
         "mouseWait",

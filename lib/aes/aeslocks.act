@@ -159,17 +159,13 @@ RETURN
 
 ; UPDATE is the common recursive resource; MCTRL adds a routing overlay.
 CARD FUNC Acquire(AESSTATE.Service POINTER service
-    AESSTATE.Client POINTER client CARD code INT window BYTE painting)
+    AESSTATE.Client POINTER client CARD code BYTE painting)
 
   IF service.updates=$ffff THEN
     RETURN(AESTYPES.OVERFLOW)
   FI
   IF code=AESTYPES.BEG_MCTRL AND service.mouseHolds=$ffff THEN
     RETURN(AESTYPES.OVERFLOW)
-  FI
-  IF painting<>0 AND service.updateHolds+service.mouseHolds=0 THEN
-    service.updateWindow=window
-    AESWINDOWSTATE.BeginUpdate(client)
   FI
   EXEC.Forbid()
   service.updateOwner=client.id
@@ -193,7 +189,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
 
 RETURN(AESTYPES.OK)
 
-; Publication and the journal finish before the resource is made available.
+; Publish nesting and routing before making the common resource available.
 CARD FUNC Release(AESSTATE.Service POINTER service
     AESSTATE.Client POINTER client CARD code BYTE painting)
   CARD updates,mouse
@@ -216,12 +212,6 @@ CARD FUNC Release(AESSTATE.Service POINTER service
   FI
   IF painting<>0 THEN
     AESWINDOWSTATE.Updates(client,updates+mouse)
-    IF updates+mouse=0 THEN
-      ; Keep the painting marker live until journal/cache completion finishes.
-      ; Retained application visuals cannot resume halfway through END.
-      AESWINDOWSTATE.EndUpdate(client)
-      service.updateWindow=0
-    FI
   FI
   EXEC.Forbid()
   service.updateHolds=updates
@@ -243,12 +233,8 @@ RETURN(AESTYPES.OK)
 
 PUBLIC CARD FUNC Decode(CARD code)
 
-  IF (code & $fcfc)<>0
+  IF (code & $fefc)<>0
       OR ((code & AESTYPES.TRY)<>0 AND (code & 1)=0) THEN
-    RETURN(AESTYPES.UNSUPPORTED)
-  FI
-  IF (code & AESTYPES.UPDATE_WINDOW)<>0
-      AND (code & $ff)<>AESTYPES.BEG_UPDATE THEN
     RETURN(AESTYPES.UNSUPPORTED)
   FI
 
@@ -307,9 +293,7 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
       AESWAIT.RemoveWindow(service,client)
       client.waitMode=AESWAIT.IDLE
     FI
-    status=Acquire(service,client,code,
-        IF (CARD(request.intin(0)) & AESTYPES.UPDATE_WINDOW)<>0 THEN
-          request.intin(1) ELSE INT(0) FI,painting)
+    status=Acquire(service,client,code,painting)
     IF guarded<>0 THEN
       AESSNAPSHOT.Publish()
     FI

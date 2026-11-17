@@ -412,8 +412,7 @@ PROC Exposed()
   FOR index=0 TO DESKTYPES.WINDOWS-1 DO
     BEGIN
       LET window=service.windows(index)
-      IF window<>NULL AND window.id<>0
-          AND AESWINDOWSTATE.Preserves(window)=0 THEN
+      IF window<>NULL AND window.id<>0 THEN
         BEGIN
           LET layer=LAYERS.Find(@service.scene,window.layer)
           DESKGEOMETRY.Work(window,@work)

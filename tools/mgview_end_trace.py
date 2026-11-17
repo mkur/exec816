@@ -61,7 +61,7 @@ def definition(program,foreign):
     for name in C_NAMES:
         require(name in foreign['symbols'],'Missing END binding boundary: '+name)
         entries[foreign['symbols'][name]]=name
-    require('AESWINDOWSTATE_ENDUPDATE' in entries.values(),'Missing END journal')
+    require('AESLOCKS_RELEASE' in entries.values(),'Missing UPDATE release')
     return dict(entries=entries,returns=sorted(returns),exits=sorted(exits),sites=sites,
                 pcs=sorted(set(entries)|returns|exits|set(sites)))
 
@@ -73,13 +73,17 @@ def resource_stages(rows,start,end):
         require(len(matches)==1,'Expected one END stage: '+name)
         return matches[0]
     lock=one('AESLOCKS_CALL');release=one('AESLOCKS_RELEASE')
-    journal=one('AESWINDOWSTATE_ENDUPDATE');handoff=one('AESLOCKS_RETURNRESOURCE')
+    journals=[r for r in rows if r['kind']=='AESWINDOWSTATE_ENDUPDATE']
+    require(len(journals)<=1,'Ambiguous END journal')
+    journal=journals[0] if journals else None
+    handoff=one('AESLOCKS_RETURNRESOURCE')
     native=one('semaphores_release')
     points=[('binding_and_dispatch',start,lock['start']),
             ('lock_entry',lock['start'],release['start']),
-            ('window_update_flags',release['start'],journal['start']),
-            ('journal_and_cache',journal['start'],journal['end']),
-            ('release_accounting',journal['end'],release['end']),
+            *([('window_update_flags',release['start'],journal['start']),
+               ('journal_and_cache',journal['start'],journal['end']),
+               ('release_accounting',journal['end'],release['end'])] if journal else
+              [('release_accounting',release['start'],release['end'])]),
             ('snapshot_and_release_dispatch',release['end'],handoff['start']),
             ('notify_and_native_release',handoff['start'],native['end']),
             ('post_release_permit_and_return',native['end'],handoff['end']),
@@ -115,7 +119,7 @@ def analyze(out,definition,audit):
            for dp in definition['timeline']['task_dps']}
     timeline=Timeline(profile['segments'],viewer);result=[]
     for sample in audit['samples']:
-        end_call=[r for r in sample['spans'] if r['kind']=='wind_update']
+        end_call=[r for r in sample['spans'] if r['kind']=='wind_update' and r['argument']==0]
         require(len(end_call)==1 and end_call[0]['argument']==0,'Expected one END_UPDATE')
         start,end=end_call[0]['start'],end_call[0]['end']
         rows=[dict(r,**timeline.measure(r['start'],r['end'])) for r in by_dp[viewer]
@@ -146,11 +150,12 @@ def analyze(out,definition,audit):
         peer_charges=charged_peers(profile['segments'],start,end,viewer,roles)
         require(abs(sum(p['charged_cpu_ms']+p['interrupt_ms'] for p in peer_charges)
                     -measured['off_cpu_ms'])<1e-6,'END peer accounting does not reconcile')
-        journal=next(r for r in rows if r['kind']=='AESWINDOWSTATE_ENDUPDATE')
+        journal=next((r for r in rows if r['kind']=='AESWINDOWSTATE_ENDUPDATE'),None)
         result.append(dict(action=sample['action'],start=start,end=end,
             measured=measured,stages=stages,
+            journal_present=journal is not None,
             journal_cpu_ms=partition([r for r in rows if r['kind'] in JOURNAL_PHASES],
-                timeline,journal['start'],journal['end'],JOURNAL_PHASES),
+                timeline,journal['start'],journal['end'],JOURNAL_PHASES) if journal else {},
             resource_release_tick=release['end'],
             before_resource_release=timeline.measure(start,release['end']),
             after_resource_release=timeline.measure(release['end'],end),

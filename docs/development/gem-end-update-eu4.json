@@ -1,0 +1,101 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "EU4: standard GEM application painting, no journal/backing-cache preservation, coordinated ABI cutover",
+  "captures": {
+    "scroll": {
+      "path": "build/gem-end-update/eu4/scroll/results.json",
+      "sha256": "a81fee1ad15ef0140acf378bba5bd81518b8e34e3272b5cf7c4de67c20463251"
+    },
+    "definition": {
+      "path": "build/gem-end-update/eu4/scroll/definition.json",
+      "sha256": "ad0167a22f274e084d0df0bb9afbc4e743c023db16e9c9590bbfe0a1e3a11fba"
+    },
+    "geometry": {
+      "path": "build/gem-end-update/eu4/viewer/results-geometry.json",
+      "sha256": "2edf19c5b0bfe8742470407cf43e166abb7aa6f75b091d06e86ce58b95dd03d7"
+    },
+    "wire_raw": {
+      "path": "build/gem-end-update/eu4/wire/raw/results.json",
+      "sha256": "c453abcc1efccefb97c3d28cde27ade369ee364272ec7ddd70d9aea5201b83c6"
+    },
+    "wire_opt": {
+      "path": "build/gem-end-update/eu4/wire/opt/results.json",
+      "sha256": "064dbad58427e5c4771c08b5d3a7756a4de80995cef80aec3deb1f733b694cad"
+    },
+    "external": {
+      "path": "build/gem-end-update/eu4/external/results.json",
+      "sha256": "42b0e5afd79172a6f0597396a1f011843b15c824ecb55db4da612af82d77c322"
+    }
+  },
+  "inputs": {
+    "native_sha256": "b5cee1725ebccac3cf39e24bfdc61d6951f6fda702c12f047fb16d8f8f9625d0",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "app_abi": 48,
+    "aes_abi": 28
+  },
+  "samples": [
+    {
+      "action": "down",
+      "end": {
+        "elapsed_ms": 1.987372053584896,
+        "charged_cpu_ms": 1.6360788802600585,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.3512931733248376
+      },
+      "journal_present": false,
+      "manager_cpu_ms": 0.0
+    },
+    {
+      "action": "up",
+      "end": {
+        "elapsed_ms": 1.98744253776895,
+        "charged_cpu_ms": 1.6372771113889755,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.3501654263799746
+      },
+      "journal_present": false,
+      "manager_cpu_ms": 0.0
+    }
+  ],
+  "observed_completion_ms": {
+    "down": 120.71685234550219,
+    "up": 140.0261355354472
+  },
+  "payload_bytes": {
+    "request_before": 418,
+    "request_after": 190,
+    "window_view_before": 840,
+    "window_view_after": 826
+  },
+  "checks": {
+    "wire_layout_checks_per_mode": 162,
+    "external_assertions": 20,
+    "host_tests": 733,
+    "skipped": 4,
+    "guards": "intact",
+    "scroll_lifetimes": 3,
+    "geometry_lifetimes": 3,
+    "settled_scanout_identical": true
+  },
+  "full_provider_and_mgview_rebuilt": true,
+  "retry_objects": {
+    "path": "build/gem-end-update/eu4/viewer/../retry-objects.json",
+    "sha256": "b903003f52e14f58cf74c311c1fe0f46abacdbc20e87b2b3676122d7c1a41e28"
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "reservation_map_identical": true,
+  "compatibility": "APP 48 and AES 28 only; removed painting/preservation APIs require migration of unbuilt applications. No compatibility stubs.",
+  "no_release_or_catalog_build": true
+}

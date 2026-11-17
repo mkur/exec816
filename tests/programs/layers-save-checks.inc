@@ -34,6 +34,10 @@ PROC DisjointSavedDamage(INT width)
   REGIONS.Assign(@whole,0,0,width,24)
   Require(LAYERS.Create(scene,@whole,@base)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,base)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,base)
+    LAYERS.RequirePaint(scene,base,@external.bounds)
+  END
   Require(LAYERS.Show(scene,base,1)=LAYERTYPES.OK)
   REGIONS.Assign(@outside,24,16,width,24)
   Require(LAYERS.Create(scene,@outside,@side)=LAYERTYPES.OK)
@@ -96,6 +100,10 @@ PROC SavedScene()
   REGIONS.Assign(@bounds,16,0,32,24)
   Require(LAYERS.Create(scene,@bounds,@right)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,right)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,right)
+    LAYERS.RequirePaint(scene,right,@external.bounds)
+  END
   Require(LAYERS.Show(scene,right,1)=LAYERTYPES.OK)
   REGIONS.Assign(@area,8,4,24,16)
   Require(LAYERS.Create(scene,@area,@popup)=LAYERTYPES.OK)
@@ -232,6 +240,10 @@ PROC ReplaceSavedScene(BYTE stripes)
   REGIONS.Assign(@whole,0,0,32,24)
   Require(LAYERS.Create(scene,@whole,@base)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,base)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,base)
+    LAYERS.RequirePaint(scene,base,@external.bounds)
+  END
   Require(LAYERS.Show(scene,base,1)=LAYERTYPES.OK)
   SavePaint()
   LET under=LAYERS.Find(scene,base)

@@ -39,7 +39,9 @@ class DesktopContractTests(unittest.TestCase):
     def test_caller_service_operations_exclude_message_and_event_waits(self):
         import generate_aes_server as aes
         self.assertEqual(aes.ABI['service_operations'], ['OP_INIT', 'OP_DETACH', 'OP_MOUSE_PROFILE'])
-        self.assertEqual(aes.layout()['Request']['size'], 418)
+        self.assertEqual(aes.layout()['Request']['size'], 190)
+        for field in ('paintCount','paintFailed','paints','invalidationCount','invalidations'):
+            self.assertNotIn(field,aes.layout()['Request']['fields'])
         self.assertNotIn('words', aes.layout()['Request']['fields'])
         self.assertEqual(aes.layout()['Delivery']['size'], 32)
         self.assertEqual(aes.layout()['GuiDelivery']['size'], 40)

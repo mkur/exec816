@@ -135,10 +135,8 @@ BYTE FUNC PaintStrip(CONSOLEBITMAP.Packet POINTER output
           OR strip.top>=layer.bounds.top+GEMOBJECTS.BOX_HEIGHT) THEN
       cached=DESKCACHE.Restore(service,window,@layer.bounds,@strip,output)
       IF cached=DESKTYPES.CACHE_PENDING THEN
-        IF AESWINDOWSTATE.Preserves(window)=0 THEN
-          REGIONS.Intersect(@client,@strip,@area)
-          AESWINDOWSTATE.Damage(window,@area)
-        FI
+        REGIONS.Intersect(@client,@strip,@area)
+        AESWINDOWSTATE.Damage(window,@area)
         started=PAINT_CACHE
         RETURN(2)
       ELSEIF cached=DESKTYPES.CACHE_FAILED THEN

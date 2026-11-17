@@ -64,7 +64,7 @@ BOOL ExecAESFormFinish(struct ExecAESContext *c)
     } else if (f->ready && c->view) {
         /* The saved dialog is no longer the owner's drawable content, even
          * if it was covered before dismissal. Publish that model-only change. */
-        if (!ExecAESBeginUpdate(f->window) || !wind_update(END_UPDATE)) return FALSE;
+        if (!wind_update(BEG_UPDATE) || !wind_update(END_UPDATE)) return FALSE;
         c->repair=c->view->work;
         c->repairWindow=c->view->handle;
         c->repairEpoch=c->view->epoch;
@@ -200,7 +200,7 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
     OBJECT *o;
     WORD i,okay=1;
     UWORD status;
-    if (!ExecAESBeginUpdate(f->window)) return 0;
+    if (!wind_update(BEG_UPDATE)) return 0;
     if (full) {
         f->paper.ob_next=f->paper.ob_head=f->paper.ob_tail=NIL;
         f->paper.ob_type=G_BOX; f->paper.ob_flags=LASTOB; f->paper.ob_spec=0x1170;
@@ -224,10 +224,6 @@ WORD ExecAESFormPaint(struct ExecAESContext *c,WORD full)
         if (f->focusLine.ob_width>0) okay=draw_object(c,&f->focusLine,0,0);
     }
     status=c->diagnostic;
-    if (okay && full)
-        ExecAESPainted(f->window,c->view->work.left,c->view->work.top,
-                      c->view->work.right-c->view->work.left,
-                      c->view->work.bottom-c->view->work.top);
     if (!wind_update(END_UPDATE)) return 0;
     c->diagnostic=status;
     return okay;

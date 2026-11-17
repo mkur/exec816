@@ -75,6 +75,10 @@ PROC ReadinessTransactions()
   ; remains pending, and an active paint token prevents concurrent completion.
   Require(LAYERS.Create(scene,@bounds,@id)=LAYERTYPES.OK)
   Require(LAYERS.SetExternal(scene,id)=LAYERTYPES.OK)
+  BEGIN
+    LET external=LAYERS.Find(scene,id)
+    LAYERS.RequirePaint(scene,id,@external.bounds)
+  END
   Require(LAYERS.Show(scene,id,1)=LAYERTYPES.OK)
   BEGIN
     LET layer=LAYERS.Find(scene,id)
