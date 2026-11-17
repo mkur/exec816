@@ -35,6 +35,21 @@ PROC Check(BYTE fallback,oldHint,okay,lateDraw,expected)
 
 RETURN
 
+PROC Caller(BYTE oldHint,okay,lateDraw,expected)
+  CURSORHINTBITMAP.Packet packet
+  BYTE result
+
+  CURSORHINTBITMAP.drawingChanged=oldHint
+  CURSORHINTBITMAP.returnOkay=okay
+  CURSORHINTBITMAP.lateDraw=lateDraw
+  result=CURSORHINTBITMAP.Submit(@packet,CURSORHINTBITMAP.OP_FRAME)
+  Require(result=okay)
+  Require(CURSORHINTBITMAP.observedChanged=0)
+  Require(CURSORHINTBITMAP.Changed()=expected)
+  Require(packet.operation=CURSORHINTBITMAP.OP_FRAME)
+
+RETURN
+
 PROC Main()
   BYTE fallback
 
@@ -46,6 +61,12 @@ PROC Main()
     Check(fallback,0,0,1,1)
     Check(fallback,1,1,0,0)
   OD
+  Caller(1,1,0,0)
+  Caller(0,1,0,0)
+  Caller(1,1,1,1)
+  Caller(0,1,1,1)
+  Caller(1,0,0,1)
+  Caller(0,0,1,1)
 
 RETURN
 ENDMODULE

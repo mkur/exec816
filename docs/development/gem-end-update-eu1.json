@@ -1,0 +1,63 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "EU1: completed caller draw retires old cursor work; late hints and failures survive",
+  "captures": {
+    "scroll": {
+      "path": "build/gem-end-update/eu1/scroll/results.json",
+      "sha256": "24878fcfc34290a24b4b38bbf0d10a8511eeb2d399ab2e62fd85f99c32d26bad"
+    },
+    "hints": {
+      "path": "build/gem-end-update/eu1/hints/results.json",
+      "sha256": "8a06d444d1e7b11ceedab6c2717182470400e479d995ff029f038d84bfa3294e"
+    }
+  },
+  "native_sha256": "bc4dc3dfac003bc5c05bda83a09d0b364ca269a484448a09767e86d4b4e2ef13",
+  "app_sha256": {
+    "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+  },
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "C_provider_and_APP_reused": true,
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "memory_map_identical": true,
+  "samples": [
+    {
+      "action": "down",
+      "end": {
+        "elapsed_ms": 15.148954226161191,
+        "charged_cpu_ms": 6.237215931117216,
+        "off_cpu_ms": 7.486195672553036,
+        "interrupt_ms": 1.4255426224909393
+      },
+      "manager_cpu_ms": 4.9034437162645075,
+      "manager_mouse_calls": 0
+    },
+    {
+      "action": "up",
+      "end": {
+        "elapsed_ms": 15.147896963400383,
+        "charged_cpu_ms": 6.237004478565055,
+        "off_cpu_ms": 7.488521650626816,
+        "interrupt_ms": 1.422370834208512
+      },
+      "manager_cpu_ms": 4.9034437162645075,
+      "manager_mouse_calls": 0
+    }
+  ],
+  "checks": {
+    "emitted_hint_assertions": 72,
+    "host_tests": 729,
+    "skipped": 4,
+    "full_scanout_identical": true,
+    "guards": "intact",
+    "process_lifetimes": 3
+  }
+}

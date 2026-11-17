@@ -5,9 +5,11 @@
 [Port guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing](../../contributing/testing.md)
 
-Status: proposed, 2026-11-17. Planning only; no runtime changes. Commit every
-passing executable slice separately. MGVIEW is the sole application acceptance
-target; other applications may break during the later API cutover.
+Status: selected for implementation, 2026-11-17, including EU4's proposed
+application-cache removal and EU5's explicit final yield. EU1 is implemented;
+see the [execution record](../../history/gem-end-update-implementation.md).
+Commit every passing executable slice separately. MGVIEW is the sole application
+acceptance target; other applications may break during the later API cutover.
 
 ## Outcome and source baseline
 

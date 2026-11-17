@@ -23,29 +23,48 @@ def run(out):
     source = ROOT/'lib/console/consolebitmap.act'
     text = source.read_text()
     bodies = []
-    for name in ('Mouse', 'Cursor', 'Changed'):
+    for name in ('Drawn', 'Submit', 'Mouse', 'Cursor', 'Changed'):
         start = re.search(r'(?m)^PUBLIC BYTE FUNC '+name+r'\(', text)
         require(start is not None, 'Missing cursor routine '+name)
         body = re.split(r'(?m)^(?:PUBLIC |ENDMODULE)', text[start.start()+7:], maxsplit=1)[0]
         bodies.append('PUBLIC '+body)
     module = '''MODULE CURSORHINTBITMAP
 USE DISPLAY
+USE EXEC
+USE CONSOLEBACKEND
 INCLUDE "'''+str(ROOT/'lib/console/console-bitmap-types.inc')+'''"
 PUBLIC BYTE drawingChanged,lateDraw,returnOkay,observedChanged
 PUBLIC CARD lastOperation
+LONGCARD completionMask
 Packet request
+Binding stored
 
 Packet POINTER FUNC GetPacket()
 
 RETURN(@request)
 
-BYTE FUNC Submit(Packet POINTER output CARD operation)
+Binding POINTER FUNC GetBinding()
+
+RETURN(@stored)
+
+BYTE FUNC Failed()
+
+RETURN(returnOkay=0)
+
+PROC Apply(Packet POINTER output)
 
   observedChanged=drawingChanged
-  lastOperation=operation
   IF lateDraw<>0 THEN
     drawingChanged=1
   FI
+  output.status=IF returnOkay<>0 THEN DISPLAY.OK ELSE DISPLAY.DEVICE_FAULT FI
+
+RETURN
+
+BYTE FUNC Run(CARD operation)
+
+  lastOperation=operation
+  Apply(@request)
 
 RETURN(returnOkay)
 
@@ -61,9 +80,9 @@ RETURN(returnOkay)
         runtime, _ = execute(bridge, p, frame_limit=600, timeout=120)
         ownership(bridge, p, p['output'])
         checks = data(bridge, p['image'], 'checks', True)[0]
-        require(checks == 48, 'Incomplete hint regression: '+str(checks))
+        require(checks == 72, 'Incomplete hint regression: '+str(checks))
     report = dict(status='pass', tier='development', qualification=False,
-                  checks=checks, cases=12, mode='opt', source_sha256=sha256(source),
+                  checks=checks, cases=18, mode='opt', source_sha256=sha256(source),
                   native_sha256=sha256(p['xex']), machine=machine, runtime=runtime,
                   bank_zero_delta=dict(fixed=0, root=0, kernel=0, idle=0, per_public_task=0))
     (out/'results.json').write_text(json.dumps(report, indent=2)+'\n')

@@ -1,5 +1,9 @@
 # Historical records
 
+- [MagiC-led END_UPDATE implementation](gem-end-update-implementation.md):
+  selected plan, per-slice caller completion, release/input changes and focused
+  MGVIEW evidence.
+
 - [END_UPDATE audit](gem-end-update-audit.md): separate paint/cache bookkeeping,
   native release, post-release scheduling and an idle SCRENMGR mouse cycle;
   no target behavior changes.
