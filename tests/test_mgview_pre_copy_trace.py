@@ -38,6 +38,11 @@ class PreCopyTraceTests(unittest.TestCase):
                                report['measured']['charged_cpu_ms'])
         self.assertEqual(report['routines']['ExecAESContext']['calls'],1)
 
+    def test_content_first_copy_has_no_pre_copy_setters(self):
+        result=stages(self.rows,self.timeline,0,10)
+        self.assertEqual(result,[dict(kind='before_copy',start=0,end=10,
+                                      **self.timeline.measure(0,10))])
+
     def test_missing_or_extra_setter_is_rejected(self):
         with self.assertRaises(RuntimeError):stages(self.rows[:-2],self.timeline,0,100)
         with self.assertRaises(RuntimeError):stages(self.rows+[self.rows[1]],self.timeline,0,100)

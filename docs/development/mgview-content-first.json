@@ -1,0 +1,110 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Loaded MGVIEW short scroll draws content before the thumb under the same UPDATE",
+  "captures": {
+    "slider_first": {
+      "path": "build/mgview-content-first/baseline/results.json",
+      "sha256": "342479fb89d72c1b9008d8ef5bd5849b3282ce67a122ff1df66e3a77723e1f69"
+    },
+    "content_first": {
+      "path": "build/mgview-content-first/scroll/results.json",
+      "sha256": "b8a0b3afd0b83e30cb51653464dd0746eae2069d5bcadfc3f6bdf6496c6fc44f"
+    },
+    "functional": {
+      "path": "build/mgview-content-first/functional/results.json",
+      "sha256": "0ad82ee3a32910b9228f5429e33e0e1af6fd14ac634560e8c159cedc9cef743f"
+    },
+    "pre_copy": {
+      "path": "build/mgview-content-first/pre-copy/results.json",
+      "sha256": "3389f527ca3cb16798d44aabdce184d89ea6b64944004057557381754c49cf57"
+    }
+  },
+  "reused_native_xex_sha256": "be7c2e60b20f706e5640e07be852dfe29eb97d57f18b8a2b5bd16a0d974cc232",
+  "reused_provider_sha256": "87c0defffdfb5852611c46c74bdb435964c9a8bcd3b947fbbbf267a8ba39bbd0",
+  "app_sha256": {
+    "slider_first": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e",
+    "content_first": "b1b5c03915b2d6e0626d7f68ac7aaca56504da3b59298d6d0a76b39d101598f9"
+  },
+  "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+  "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+  "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+  "work": [
+    1,
+    22,
+    616,
+    200
+  ],
+  "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+  "samples": [
+    {
+      "action": "down",
+      "viewport_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+      "thumb_sha256": "ba7a6b557fad9ec6c6f6fe0c17e9634e4ec283284ed056df65dc9e61cb9d5fa3",
+      "slider_first": {
+        "viewport_ms": 120.277,
+        "viewport_and_thumb_ms": 120.277,
+        "viewport_poll": 6,
+        "viewport_and_thumb_poll": 6,
+        "copy_entry_ms": 58.0898,
+        "row_return_ms": 100.8206,
+        "slider_entry_ms": 19.3261,
+        "whole_shift_elapsed_ms": 96.6168,
+        "whole_shift_cpu_ms": 74.2651
+      },
+      "content_first": {
+        "viewport_ms": 80.1462,
+        "viewport_and_thumb_ms": 120.4406,
+        "viewport_poll": 4,
+        "viewport_and_thumb_poll": 6,
+        "copy_entry_ms": 28.1246,
+        "row_return_ms": 67.3778,
+        "slider_entry_ms": 73.764,
+        "whole_shift_elapsed_ms": 92.9123,
+        "whole_shift_cpu_ms": 71.2779
+      }
+    },
+    {
+      "action": "up",
+      "viewport_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+      "thumb_sha256": "04eebf41800e8cad6fdd45f043c4c753354fcebdd5dae9a0fb646e5fc67ffb9a",
+      "slider_first": {
+        "viewport_ms": 120.6193,
+        "viewport_and_thumb_ms": 120.6193,
+        "viewport_poll": 6,
+        "viewport_and_thumb_poll": 6,
+        "copy_entry_ms": 60.558,
+        "row_return_ms": 101.7185,
+        "slider_entry_ms": 21.6969,
+        "whole_shift_elapsed_ms": 91.7431,
+        "whole_shift_cpu_ms": 72.4147
+      },
+      "content_first": {
+        "viewport_ms": 100.211,
+        "viewport_and_thumb_ms": 120.2556,
+        "viewport_poll": 5,
+        "viewport_and_thumb_poll": 6,
+        "copy_entry_ms": 26.5011,
+        "row_return_ms": 65.714,
+        "slider_entry_ms": 72.1519,
+        "whole_shift_elapsed_ms": 92.7709,
+        "whole_shift_cpu_ms": 71.1265
+      }
+    }
+  ],
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "function_checks": 20,
+  "process_lifetimes": 3,
+  "host_tests": {
+    "total": 741,
+    "skipped": 4
+  }
+}

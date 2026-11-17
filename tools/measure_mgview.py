@@ -159,7 +159,10 @@ def analyze(out,d,base,samples):
             phases[name]=dict(calls=len(rows),**{k:sum(s[k] for s in rows) for k in ('elapsed_ms','charged_cpu_ms','off_cpu_ms','interrupt_ms')})
         scope_charges={str(other):Timeline(profile['segments'],other).measure(shift['start'],shift['end']) for other in d['timeline']['task_dps']}
         def last_wrong(field):
-            values=[(poll['tick']-sample['start'])%(1<<32)*1000/BASE_HZ for poll in sample['polls'] if not poll[field]]
+            values=[]
+            for poll in sample['polls']:
+                if poll[field]:break
+                values.append((poll['tick']-sample['start'])%(1<<32)*1000/BASE_HZ)
             return max(values) if values else None
         result.append(dict(sample,start=start,end=end,viewer_dp=dp,call_counts=dict(counts),phases=phases,
             update_ownership=dict(
@@ -252,10 +255,15 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
                 try:run_to(b,marker,condition=condition,timeout=180,frame_limit=18000)
                 finally:b.regs=original
             def frames(count):reach('@frame>=%d'%(b.eval_expr('@frame')+count))
-            def screen(work):
+            def screen(work,rail=None):
                 x,y,w,h=work;path=out/'current.bgra';frame=b.rawscreen(str(path));raw=path.read_bytes()
-                return b''.join(raw[yy*frame.stride+(x+16)*4+i:yy*frame.stride+(x+16)*4+i+3]
+                pixels=b''.join(raw[yy*frame.stride+(x+16)*4+i:yy*frame.stride+(x+16)*4+i+3]
                     for yy in range(y,y+h) for i in range(0,w*4,4))
+                if rail is None:return pixels,None
+                x,y,w,h=rail
+                slider=b''.join(raw[yy*frame.stride+(x+16)*4:yy*frame.stride+(x+16+w)*4]
+                    for yy in range(y,y+h))
+                return pixels,hashlib.sha256(slider).hexdigest()
             def before(b):
                 b._cmd_ok('KEY ALL up');b._cmd_ok('MOUSE ST');base=0
                 for execution_index in range(3):
@@ -291,10 +299,16 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
                         require(report['pointer_start']==position,'Pointer did not settle at the requested position')
                         work=[number(window+268+i*2) for i in range(4)];report['work']=work
                         font=font_bytes(cache/'selected/src/vdi/font8x8.c')
-                        require(screen(work)==expected(font,work,content,0),'Initial pixels differ')
+                        rail=None
                         if slider_detail:
                             from mgview_frame_trace import geometry
                             report['frame_geometry']=geometry(b,p,window)
+                            objects=report['frame_geometry']['objects']
+                            root,track=objects['0'],objects['9']
+                            rail=(root['x']+track['x'],root['y']+track['y'],track['width'],track['height'])
+                        initial,last_slider=screen(work,rail)
+                        require(initial==expected(font,work,content,0),'Initial pixels differ')
+                        if rail is not None:report['initial_slider_sha256']=last_slider
                         report['manager_identity']=manager_identity(b,p)
                         d['timeline']['worker_dp']=report['manager_identity']['dp']
                         (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
@@ -302,25 +316,43 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
                         for label,key,shift in (('down','EQUALS',1),('up','MINUS',0)):
                             want=expected(font,work,content,shift);row_bytes=work[2]*8*3
                             sample=dict(action=label,start=b.eval_expr('@clk')&0xffffffff,service_before=number(context+layout()['Request']['fields']['service'],3),polls=[])
+                            def poll():
+                                got,thumb=screen(work,rail)
+                                row=dict(tick=b.eval_expr('@clk')&0xffffffff,top=got[:row_bytes]==want[:row_bytes],complete=got==want)
+                                if rail is not None:row['slider_sha256']=thumb
+                                sample['polls'].append(row)
+                                return row
                             b._cmd_ok('KEY '+key+' down')
                             first=None;full=None
                             for index in range(150):
                                 frames(1)
                                 if index==2:b._cmd_ok('KEY '+key+' up')
-                                got=screen(work);tick=b.eval_expr('@clk')&0xffffffff
-                                top=got[:row_bytes]==want[:row_bytes];complete=got==want
-                                sample['polls'].append(dict(tick=tick,top=top,complete=complete))
-                                if top and first is None:first=tick
-                                if complete:
-                                    full=tick;b._cmd_ok('KEY '+key+' up');break
+                                observed=poll()
+                                if observed['top'] and first is None:first=observed['tick']
+                                if observed['complete']:
+                                    full=observed['tick'];b._cmd_ok('KEY '+key+' up');break
                             require(full is not None,'Viewport did not settle: '+label)
-                            reach(f'dw(${depth:x})=0');frames(2)
+                            if rail is not None:
+                                for _ in range(150):
+                                    if number(depth)==0:break
+                                    frames(1);poll()
+                                else:raise RuntimeError('Scroll UPDATE did not retire: '+label)
+                                frames(1);poll()
+                                frames(1);settled=poll()
+                                slider=settled['slider_sha256']
+                                require(settled['complete'] and slider!=last_slider,'Scrollbar or viewport did not settle: '+label)
+                                both=next(row['tick'] for row in sample['polls'] if row['complete'] and row['slider_sha256']==slider)
+                                sample.update(slider_sha256=slider,viewport_and_slider_tick=both,
+                                    offered_to_viewport_and_slider_ms=((both-sample['start'])&0xffffffff)*1000/BASE_HZ)
+                                last_slider=slider
+                            else:
+                                reach(f'dw(${depth:x})=0');frames(2)
                             require(number(window+280,4)==shift,'Wrong scroll position')
                             sample.update(first_row_tick=first,complete_tick=full,end=b.eval_expr('@clk')&0xffffffff,
                                 offered_to_first_row_ms=((first-sample['start'])&0xffffffff)*1000/BASE_HZ,
                                 offered_to_complete_ms=((full-sample['start'])&0xffffffff)*1000/BASE_HZ,
                                 service_binding_delta=number(context+layout()['Request']['fields']['service'],3)-sample['service_before'],
-                                pixel_sha256=hashlib.sha256(got).hexdigest())
+                                pixel_sha256=hashlib.sha256(want).hexdigest())
                             require(sample['service_binding_delta']==0,'Scroll changed its service binding')
                             report['samples'].append(sample)
                             report['stack_phases'].append(dict(phase=label,usage=stack_usage(b,p['build']['memory'])))

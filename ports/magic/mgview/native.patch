@@ -808,28 +808,26 @@
  
  
  
-@@ -444,6 +438,7 @@
+@@ -444,15 +435,16 @@
  	if	(0 == (diff = newshift - wsi->shift))
  		return;		/* nix zu scrollen */
  
 +	if(!wind_update(BEG_UPDATE))return;
  	wsi->shift = newshift;
- 	wsi->arrange(w, is_horiz);		/* Slider anzeigen,
- 							ggf. Objektpos. umsetzen */
-@@ -451,8 +448,9 @@
+-	wsi->arrange(w, is_horiz);		/* Slider anzeigen,
+-							ggf. Objektpos. umsetzen */
+ 
  	/* wenn >= 1 Seite gescrollt, wird das Fenster neu aufgebaut */
  
  	absdiff = (diff > 0) ? diff : -diff;
--	if	(absdiff > wsi->nvis)
-+	if	(absdiff > wsi->nvis)
+ 	if	(absdiff > wsi->nvis)
  		{
++		wsi->arrange(w, is_horiz);
 +		wind_update(END_UPDATE);
  		update_window(w);
  		return;
  		}
-@@ -470,9 +468,9 @@
- 	do	{
- 		if	(rc_intersect(&scrg, &g))
+@@ -472,7 +464,7 @@
  			{
  			if	(is_horiz)
  				{
@@ -838,7 +836,7 @@
  				if	(xcopy > 0)
  					{
  					pxy[1] = pxy[5] = g.g_y;
-@@ -480,11 +479,11 @@
+@@ -480,11 +472,11 @@
  					if	(diff > 0)
  						{
  						pxy[4] = g.g_x;
@@ -852,7 +850,7 @@
  						}
  					pxy[2] = pxy[0] + xcopy - 1;
  					pxy[6] = pxy[4] + xcopy - 1;
-@@ -502,7 +501,7 @@
+@@ -502,7 +494,7 @@
  					}
  				}
  			else	{
@@ -861,7 +859,7 @@
  				if	(ycopy > 0)
  					{
  					pxy[0] = pxy[4] = g.g_x;
-@@ -510,11 +509,11 @@
+@@ -510,11 +502,11 @@
  					if	(diff > 0)
  						{
  						pxy[5] = g.g_y;
@@ -875,16 +873,12 @@
  						}
  					pxy[3] = pxy[1] + ycopy - 1;
  					pxy[7] = pxy[5] + ycopy - 1;
-@@ -532,12 +531,13 @@
- 					}
- 				}
- 			w->draw(w, &g);
- 			}
- 		wind_get_grect(w->handle,WF_NEXTXYWH,&g);
- 		}
+@@ -538,6 +530,9 @@
  	while(g.g_w > 0);					/* bis Rechteckliste vollstndig */
  
  	graf_mouse(M_ON, NULL);
++	/* Paint the thumb after the viewport is complete, under the same UPDATE. */
++	wsi->arrange(w, is_horiz);
 +    wind_update(END_UPDATE);
  }
  

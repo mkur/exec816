@@ -44,6 +44,10 @@
   2 ms less scrollbar CPU with the same observed MGVIEW completion frame and
   byte-identical settled scanouts.
 
+- [Content-first MGVIEW scrolling](mgview-content-first.md) moves the viewport
+  ahead of the thumb and shows text one to two PAL frames earlier in the
+  matched capture.
+
 - [MGVIEW on standalone GEM4XE](gem4xe-mgview-benchmark.md) compares the same
   odd-edge scroll on both native stacks and traces the packed-edge copy cost.
 

@@ -20,6 +20,7 @@ from test_mouse_observe import BRIDGE, PIN, ROM
 
 GEM4XE_REVISION = '2bf10f6788372dcfa94f6d9416e4b957eb4ce394'
 GEM4XE_REPOSITORY = 'https://github.com/slaapliedje/gem4xe.git'
+MGVIEW_REFERENCE = '54c913cca7c7c431060baf8baf7187e97516afa0'
 DOCUMENT_SHA256 = '02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a'
 
 
@@ -52,7 +53,10 @@ def prepare_fixture(root, baseline_disk):
     require(sha256(document.read_bytes()).hexdigest() == DOCUMENT_SHA256, 'Changed fixture document')
 
     source = root / 'source'
-    prepare(source)
+    # Reproduce the original slider-first MGVIEW workload from the paired capture.
+    patch_path = root / 'reference-native.patch'
+    patch_path.write_text(command(['git', 'show', f'{MGVIEW_REFERENCE}:ports/magic/mgview/native.patch'], cwd=ROOT))
+    prepare(source, patch_path)
 
     def replace(name, changes):
         path = source / name

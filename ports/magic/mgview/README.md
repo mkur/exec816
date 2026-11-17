@@ -29,8 +29,11 @@ index to 16,380 entries, including clean empty-file and acquisition rollback.
 The 273-byte draw scratch is private to each loaded image in upper BSS.
 Existing Task stacks and all fixed/per-Task bank-zero reservations are unchanged.
 
-The original copy/strip path holds UPDATE across model publication, stable
-visible rectangles, S_ONLY copying, exposed-strip drawing and honest completion.
+The copy/strip path holds UPDATE across model publication, stable visible
+rectangles, S_ONLY copying, exposed-strip drawing and the synchronous thumb
+update. Short scrolls paint the viewport before the thumb.
+[Content-first development record](../../../docs/history/mgview-content-first.md)
+
 Tabs stage their width calculation outside UPDATE, then publish the change under
 ownership. Accepted keyboard events retain their owning document. Native reads
 and indexing do not hold the drawing owner.

@@ -87,9 +87,12 @@ def stages(rows,timeline,start,end):
     """Disjoint caller intervals, with arithmetic inside the slider explicit."""
     selected=[r for r in rows if start<=r['start']<r['end']<=end]
     slider=[r for r in selected if r['kind']=='window_calc_slider']
+    setters=sorted((r for r in selected if r['kind']=='wind_set'),key=lambda r:r['start'])
+    if not slider:
+        require(not setters,'Unexpected setter before a content-first copy')
+        return [dict(kind='before_copy',start=start,end=end,**timeline.measure(start,end))]
     require(len(slider)==1,'Expected one slider helper before the copy')
     helper=slider[0]
-    setters=sorted((r for r in selected if r['kind']=='wind_set'),key=lambda r:r['start'])
     require(len(setters)==2 and all(helper['start']<=r['start']<r['end']<=helper['end']
                                   for r in setters),'Expected two slider setters')
     labels=[('before_slider',start,helper['start']),
