@@ -34,6 +34,12 @@ source/output pointer walk for byte strings. Conversion CPU falls from 2.72 to
 about 1.28 ms; the measured net text-call saving is 0.43/0.82 ms, with unchanged
 viewport pixels and no established completion-latency improvement.
 
+The [END_UPDATE audit](../../history/gem-end-update-audit.md) separates the
+6.23 ms viewer CPU from a 9.06 ms scheduling interval after native release.
+An unconditional painting-release wake drives 6.81 ms of SCRENMGR input/mouse
+work without interaction or VBXE submission. It proposes a demand-driven wake
+slice and a separate journal/cache review; target behavior is unchanged.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

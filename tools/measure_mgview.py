@@ -166,7 +166,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False):
+def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False,end_detail=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview',)}
@@ -190,6 +190,10 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
         import mgview_text_trace
         d['text']=mgview_text_trace.definition(cache,foreign)
         d['pcs']=sorted(set(d['pcs'])|set(d['text']['pcs']))
+    if end_detail:
+        import mgview_end_trace
+        d['end_update']=mgview_end_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['end_update']['pcs']))
     (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
     at=lambda name:next(r['address'] for r in p['image']['data'] if '_CMGVIEWTEST_'+name.upper()+'_' in r['name'])
     report=dict(status='running',tier='development',qualification=False,builds_run=0,samples=[],
@@ -310,6 +314,8 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
             report['slider']=mgview_slider_trace.analyze(out,d,report['audit'])
         if text_detail:
             report['text']=mgview_text_trace.analyze(out,d,report['audit'])
+        if end_detail:
+            report['end_update']=mgview_end_trace.analyze(out,d,report['audit'])
         report['status']='pass'
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
@@ -341,6 +347,10 @@ def reanalyze(cache,out):
         import mgview_text_trace
         d['text']=mgview_text_trace.definition(cache,foreign)
         d['pcs']=sorted(set(d['pcs'])|set(d['text']['pcs']))
+    if 'end_update' in recorded:
+        import mgview_end_trace
+        d['end_update']=mgview_end_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['end_update']['pcs']))
     require(json.loads(json.dumps(d))==json.loads((out/'definition.json').read_text()),'Captured markers changed')
     r['audit']=analyze(out,d,r['loaded_base'],r['samples'])
     if r.get('expected_copy_units') is not None:
@@ -353,6 +363,8 @@ def reanalyze(cache,out):
     if 'text' in d:
         import mgview_text_trace
         r['text']=mgview_text_trace.analyze(out,d,r['audit'])
+    if 'end_update' in d:
+        r['end_update']=mgview_end_trace.analyze(out,d,r['audit'])
     r.update(status='pass');r.pop('error',None)
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     return r
@@ -367,9 +379,10 @@ if __name__=='__main__':
     parser.add_argument('--slider',action='store_true',help='Trace caller slider mutation, publication and frame raster costs')
     parser.add_argument('--slider-detail',action='store_true',help='Separate frame preparation, objects, scratch clear/publication and mask encoding; no rebuild')
     parser.add_argument('--text-detail',action='store_true',help='Separate input conversion, visibility, damage and glyph preparation; no rebuild')
+    parser.add_argument('--end-detail',action='store_true',help='Trace END_UPDATE journal, publication, native release and peer Tasks; no rebuild')
     parser.add_argument('--expect-copy-units',type=int,help='Assert the measured physical copy count per scroll')
     args=parser.parse_args()
-    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail)
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail,args.end_detail)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
     if 'presenter' in r:
         for row in r['presenter']['samples']:

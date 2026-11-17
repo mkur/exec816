@@ -1,5 +1,9 @@
 # Historical records
 
+- [END_UPDATE audit](gem-end-update-audit.md): separate paint/cache bookkeeping,
+  native release, post-release scheduling and an idle SCRENMGR mouse cycle;
+  no target behavior changes.
+
 - [Text preparation audit and sequential string conversion](gem-text-preparation.md):
   passive conversion/clipping/damage/glyph costs, pinned donor comparison and
   a pointer walk that halves input conversion with a smaller net text-call gain.
