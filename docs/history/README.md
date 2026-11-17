@@ -1,5 +1,9 @@
 # Historical records
 
+- [Text preparation audit and sequential string conversion](gem-text-preparation.md):
+  passive conversion/clipping/damage/glyph costs, pinned donor comparison and
+  a pointer walk that halves input conversion with a smaller net text-call gain.
+
 - [One grant for packed-edge screen copies](gem-copy-grant.md): retain source
   edges in VRAM throughout the copy, remove CPU readback/reload and reduce
   matched MGVIEW copy CPU from 27–28 to 13–14 ms.

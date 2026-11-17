@@ -28,6 +28,12 @@ captured source edges in VRAM through the aligned interior and restoration.
 It removes CPU edge transfers and the intermediate physical handoff, reducing
 matched MGVIEW copy CPU from 27–28 to 13–14 ms with unchanged application bytes.
 
+The completed [text-preparation slice](../../history/gem-text-preparation.md)
+traces conversion, clipping, damage and glyph work, then adopts MagiC's sequential
+source/output pointer walk for byte strings. Conversion CPU falls from 2.72 to
+about 1.28 ms; the measured net text-call saving is 0.43/0.82 ms, with unchanged
+viewport pixels and no established completion-latency improvement.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

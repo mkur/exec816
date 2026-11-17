@@ -60,6 +60,13 @@ shared upper scratch under physical ownership. The
 bytes, odd X, clipping and mixed faces with exact pixels. Strings are
 not truncated at a fixed call-size limit.
 
+Byte-string input uses a sequential source/output pointer walk into the existing
+80-word workstation chunk, selecting byte/word representation once per chunk.
+It preserves the terminating NUL for a following empty iteration. This is a
+preparation optimization with unchanged alignment, face grouping, clipping,
+damage and physical drawing boundaries; see the
+[text-preparation record](../history/gem-text-preparation.md).
+
 The binding releases [physical access](display.md#delegated-renderer-access)
 between solid-fill units bounded by 8,192 estimated bus accesses or 80-glyph
 text chunks. A solid fill costs two accesses per complete packed byte and six

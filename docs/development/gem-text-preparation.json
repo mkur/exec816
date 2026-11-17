@@ -1,0 +1,1712 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Requested granular text-preparation audit and one donor-guided conversion optimization; MGVIEW unchanged",
+  "captures": {
+    "before": {
+      "path": "build/gem-text-preparation/before/results.json",
+      "sha256": "aed35f6c8da4c50e0c9b1c4838ed043241a9d25abab3ab39de167082c24e725e"
+    },
+    "after": {
+      "path": "build/gem-text-preparation/after/results.json",
+      "sha256": "643931ef003faebeb35dd092c479472998ebd155a94db0bef7e1f6ea9087eadf"
+    }
+  },
+  "definitions": {
+    "before": {
+      "path": "build/gem-text-preparation/before/definition.json",
+      "sha256": "b14a53f495e1a50ae05c36660d5e9529cd141c3fdccd9c7f7f8fdf674b50f044"
+    },
+    "after": {
+      "path": "build/gem-text-preparation/after/definition.json",
+      "sha256": "fb593bf6ed22520cd08fd0bc34af3609c1c6d499b7c236cc33e0b294b334d65b"
+    }
+  },
+  "prior_capture": {
+    "path": "build/gem-copy-grant/scroll/results.json",
+    "sha256": "bd4cf9a66e9dc9b7c9a34cc0cb185a8770cf28b1a6bcdb8d0fd7f4c537247c41"
+  },
+  "baseline_timing_and_pixels_reproduced": true,
+  "inputs": {
+    "native_sha256": "7ab143118c197f675bc11113ccf8c2b5dc0becf3a82c051d6702a55bc83e35ab",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "app_abi": 47,
+    "aes_abi": 27
+  },
+  "provider": {
+    "path": "build/gem-text-preparation/viewer/c-image.json",
+    "sha256": "388251ff162876ce849b41744ca451b476ebab6715188ae09b9014bfc99213b5"
+  },
+  "audit": {
+    "chunk_words": 80,
+    "visible_cells": 77,
+    "expanded_file_row_characters": 108,
+    "exclusive_cpu_reconciles": true,
+    "lookup": "Unique full emitted-section matching; static paint must not resolve through same-named global data",
+    "source_intervals": "Conversion includes chunk setup/loop control; damage interval ends with the local text routine"
+  },
+  "donor_comparison": [
+    {
+      "name": "MagiC AESOBJ",
+      "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "path": "build/magic-architecture/sources/MagiC/KERNEL/AES/SRC/AESOBJ.S",
+      "routine": "str_to_ints:874-904",
+      "sha256": "abbda7614a2a9339894c87ca65666cc9581624ea631889dae2e070e2f3e66bd3"
+    },
+    {
+      "name": "MagiC VDI",
+      "revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+      "path": "build/gem-text-preparation/donors/TEXT_BMP.S",
+      "routine": "text:292-310",
+      "sha256": "e8ea226d7a96cf47c5b4a6d038fd502d2413ac9fac54a6fd1465b03479ae0828"
+    },
+    {
+      "name": "GEM4XE VDI",
+      "revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+      "path": "build/gem-vdi/upstream/src/vdi/vdi.c",
+      "routine": "vdi_v_gtext:405",
+      "sha256": "fd2c7a95d3afb65cde3e327347b1abb4ef89d31108bc9e5c6c14e338cb1c6524"
+    }
+  ],
+  "emitted_probe": {
+    "path": "build/gem-text-preparation/text-probe/results.json",
+    "sha256": "45049eaa44f936350808458e96e957ee0dd877fcd3b5d0c3a291a2a4d710142a",
+    "mode": "optimized",
+    "checks": 274,
+    "guards": "intact",
+    "cases": [
+      "six vertical alignments",
+      "whole-string horizontal alignment",
+      "byte values 1/127/128/255",
+      "79/80/81 characters",
+      "nonzero data after NUL",
+      "second chunk source position",
+      "mixed GEM/ATASCII word runs",
+      "clipping",
+      "error publication",
+      "workstation isolation"
+    ]
+  },
+  "samples": [
+    {
+      "action": "down",
+      "before": {
+        "action": "down",
+        "measured": {
+          "elapsed_ms": 12.005077680619246,
+          "charged_cpu_ms": 9.18444160314867,
+          "off_cpu_ms": 0.7340927769217865,
+          "interrupt_ms": 2.08654330054879
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "text_entry": 0.7625683872795783,
+          "text_setup_and_loop": 0.10868661181117568,
+          "input_conversion": 2.721394346322629,
+          "visibility_clipping": 0.262553585600927,
+          "draw_admission": 0.42981255436092697,
+          "glyph_preparation": 1.2202926785258654,
+          "glyph_adapter": 0.07189386773501893,
+          "queue": 0.02093380266402022,
+          "driver_text": 0.20391074446804883,
+          "fences": 0.9222150641617528,
+          "command_encoding_and_upload": 2.287916614390897,
+          "damage_preparation": 0.06399963912097764,
+          "damage_reporting": 0.10826370670685205
+        },
+        "routines": {
+          "DisplayEnter": {
+            "calls": 1,
+            "charged_cpu_ms": 0.1829769418040286
+          },
+          "drain": {
+            "calls": 2,
+            "charged_cpu_ms": 0.0100087541356595
+          },
+          "VbxeOwnerFence": {
+            "calls": 3,
+            "charged_cpu_ms": 0.9222150641617528
+          },
+          "_VbxeTextUpload": {
+            "calls": 1,
+            "charged_cpu_ms": 2.287916614390897
+          },
+          "VBXE_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.395434598430458
+          },
+          "vbxe_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.4722623590492527
+          },
+          "GemVdiPaint": {
+            "calls": 1,
+            "charged_cpu_ms": 4.692555037575119
+          },
+          "fence_owner": {
+            "calls": 1,
+            "charged_cpu_ms": 0.0346077343704846
+          },
+          "DisplayLeave": {
+            "calls": 1,
+            "charged_cpu_ms": 0.18643066682267168
+          },
+          "drawing_borrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.137803628243859
+          },
+          "GemDrawingBorrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.156975326306529
+          },
+          "VDI_paint": {
+            "calls": 1,
+            "charged_cpu_ms": 5.419528911907458
+          },
+          "ExecAESChanged": {
+            "calls": 1,
+            "charged_cpu_ms": 0.10826370670685205
+          },
+          "VDI_text": {
+            "calls": 1,
+            "charged_cpu_ms": 8.421873215869091
+          },
+          "v_gtext": {
+            "calls": 1,
+            "charged_cpu_ms": 9.18444160314867
+          }
+        },
+        "stages": [
+          {
+            "kind": "text_input_conversion",
+            "start": 70531612.875,
+            "end": 70539019.125,
+            "elapsed_ms": 4.176187905195953,
+            "charged_cpu_ms": 2.721394346322629,
+            "off_cpu_ms": 0.7340927769217865,
+            "interrupt_ms": 0.720700781951538
+          },
+          {
+            "kind": "text_damage_preparation",
+            "start": 70550741.25,
+            "end": 70551124.75,
+            "elapsed_ms": 0.21624547667748834,
+            "charged_cpu_ms": 0.1722633458278297,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04398213084965864
+          }
+        ],
+        "spans": [
+          {
+            "kind": "DisplayEnter",
+            "start": 70539609.25,
+            "argument": 27576,
+            "stack": 24099,
+            "end": 70540012.0,
+            "return_a": 0,
+            "elapsed_ms": 0.2271000410217951,
+            "charged_cpu_ms": 0.1829769418040286,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.044123099217766526
+          },
+          {
+            "kind": "drain",
+            "start": 70542705.625,
+            "argument": 214,
+            "stack": 24014,
+            "end": 70542714.375,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70542850.75,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 70542971.25,
+            "return_a": 0,
+            "elapsed_ms": 0.0679467534279983,
+            "charged_cpu_ms": 0.02396462257833965,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04398213084965864
+          },
+          {
+            "kind": "_VbxeTextUpload",
+            "start": 70543078.5,
+            "argument": 23944,
+            "stack": 23928,
+            "end": 70547991.5,
+            "return_a": 6,
+            "elapsed_ms": 2.7703103700560634,
+            "charged_cpu_ms": 2.287916614390897,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.4823937556651663
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70548121.375,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 70550000.25,
+            "return_a": 0,
+            "elapsed_ms": 1.0594477705147742,
+            "charged_cpu_ms": 0.8796426169931729,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.17980515352160129
+          },
+          {
+            "kind": "VBXE_text_run",
+            "start": 70542749.25,
+            "argument": 12288,
+            "stack": 23975,
+            "end": 70550023.25,
+            "return_a": 0,
+            "elapsed_ms": 4.1016156384668845,
+            "charged_cpu_ms": 3.395434598430458,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7061810400364262
+          },
+          {
+            "kind": "vbxe_text_run",
+            "start": 70542648.125,
+            "argument": 1,
+            "stack": 24062,
+            "end": 70550136.5,
+            "return_a": 24048,
+            "elapsed_ms": 4.2224960141193915,
+            "charged_cpu_ms": 3.4722623590492527,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7502336550701388
+          },
+          {
+            "kind": "GemVdiPaint",
+            "start": 70540042.75,
+            "argument": 11029,
+            "stack": 24099,
+            "end": 70550161.25,
+            "return_a": 24091,
+            "elapsed_ms": 5.7055537307983455,
+            "charged_cpu_ms": 4.692555037575119,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.0129986932232278
+          },
+          {
+            "kind": "drain",
+            "start": 70550176.75,
+            "argument": 0,
+            "stack": 24081,
+            "end": 70550185.75,
+            "return_a": 13,
+            "elapsed_ms": 0.005074861251883689,
+            "charged_cpu_ms": 0.005074861251883689,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70550196.25,
+            "argument": 13,
+            "stack": 24087,
+            "end": 70550229.25,
+            "return_a": 0,
+            "elapsed_ms": 0.018607824590240196,
+            "charged_cpu_ms": 0.018607824590240196,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "fence_owner",
+            "start": 70550172.375,
+            "argument": 4,
+            "stack": 24090,
+            "end": 70550233.75,
+            "return_a": 0,
+            "elapsed_ms": 0.0346077343704846,
+            "charged_cpu_ms": 0.0346077343704846,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "DisplayLeave",
+            "start": 70550244.25,
+            "argument": 4,
+            "stack": 24090,
+            "end": 70550652.625,
+            "return_a": 0,
+            "elapsed_ms": 0.23027182930422244,
+            "charged_cpu_ms": 0.18643066682267168,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04384116248155077
+          },
+          {
+            "kind": "drawing_borrow",
+            "start": 70539598.625,
+            "argument": 1,
+            "stack": 24116,
+            "end": 70550662.75,
+            "return_a": 0,
+            "elapsed_ms": 6.238766583166403,
+            "charged_cpu_ms": 5.137803628243859,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.100962954922545
+          },
+          {
+            "kind": "GemDrawingBorrow",
+            "start": 70539571.5,
+            "argument": 1,
+            "stack": 24139,
+            "end": 70550669.625,
+            "return_a": 0,
+            "elapsed_ms": 6.257938281229075,
+            "charged_cpu_ms": 5.156975326306529,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.100962954922545
+          },
+          {
+            "kind": "VDI_paint",
+            "start": 70539060.0,
+            "argument": 1,
+            "stack": 24216,
+            "end": 70550701.75,
+            "return_a": 24208,
+            "elapsed_ms": 6.56447399767966,
+            "charged_cpu_ms": 5.419528911907458,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.1449450857722037
+          },
+          {
+            "kind": "ExecAESChanged",
+            "start": 70550844.625,
+            "argument": 1,
+            "stack": 24218,
+            "end": 70551114.625,
+            "return_a": 24210,
+            "elapsed_ms": 0.1522458375565107,
+            "charged_cpu_ms": 0.10826370670685205,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04398213084965864
+          },
+          {
+            "kind": "VDI_text",
+            "start": 70531500.5,
+            "argument": 1,
+            "stack": 24279,
+            "end": 70551124.75,
+            "return_a": 24271,
+            "elapsed_ms": 11.065593991364278,
+            "charged_cpu_ms": 8.421873215869091,
+            "off_cpu_ms": 0.7340927769217865,
+            "interrupt_ms": 1.9096279985734002
+          },
+          {
+            "kind": "v_gtext",
+            "start": 70529848.625,
+            "argument": 2,
+            "stack": 24300,
+            "end": 70551139.0,
+            "return_a": 0,
+            "elapsed_ms": 12.005077680619246,
+            "charged_cpu_ms": 9.18444160314867,
+            "off_cpu_ms": 0.7340927769217865,
+            "interrupt_ms": 2.08654330054879
+          }
+        ]
+      },
+      "after": {
+        "action": "down",
+        "measured": {
+          "elapsed_ms": 11.367407267483248,
+          "charged_cpu_ms": 8.757871321254223,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 1.8765004320680483
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "text_entry": 0.7628503240157942,
+          "text_setup_and_loop": 0.10798176997063628,
+          "input_conversion": 1.2884508845060256,
+          "visibility_clipping": 0.26783989940497255,
+          "draw_admission": 1.4333663669209264,
+          "glyph_preparation": 1.2204336468939734,
+          "glyph_adapter": 0.0660436804585419,
+          "queue": 0.020722350111858398,
+          "driver_text": 0.21730273943829745,
+          "fences": 0.9167877819895994,
+          "command_encoding_and_upload": 2.28671838326198,
+          "damage_preparation": 0.06674852229908132,
+          "damage_reporting": 0.10262497198253684
+        },
+        "routines": {
+          "DisplayEnter": {
+            "calls": 1,
+            "charged_cpu_ms": 1.1867422069161901
+          },
+          "drain": {
+            "calls": 2,
+            "charged_cpu_ms": 0.0100087541356595
+          },
+          "VbxeOwnerFence": {
+            "calls": 3,
+            "charged_cpu_ms": 0.9167877819895994
+          },
+          "_VbxeTextUpload": {
+            "calls": 1,
+            "charged_cpu_ms": 2.28671838326198
+          },
+          "VBXE_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.40262398520396
+          },
+          "vbxe_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.473601558546278
+          },
+          "GemVdiPaint": {
+            "calls": 1,
+            "charged_cpu_ms": 4.694035205440252
+          },
+          "fence_owner": {
+            "calls": 1,
+            "charged_cpu_ms": 0.03397337671399915
+          },
+          "DisplayLeave": {
+            "calls": 1,
+            "charged_cpu_ms": 0.1808624162824104
+          },
+          "drawing_borrow": {
+            "calls": 1,
+            "charged_cpu_ms": 6.1424147035646675
+          },
+          "GemDrawingBorrow": {
+            "calls": 1,
+            "charged_cpu_ms": 6.161374949075177
+          },
+          "VDI_paint": {
+            "calls": 1,
+            "charged_cpu_ms": 6.42921484848015
+          },
+          "ExecAESChanged": {
+            "calls": 1,
+            "charged_cpu_ms": 0.10262497198253684
+          },
+          "VDI_text": {
+            "calls": 1,
+            "charged_cpu_ms": 7.995020997238429
+          },
+          "v_gtext": {
+            "calls": 1,
+            "charged_cpu_ms": 8.757871321254223
+          }
+        },
+        "stages": [
+          {
+            "kind": "text_input_conversion",
+            "start": 70531735.625,
+            "end": 70534563.875,
+            "elapsed_ms": 1.5947751484044494,
+            "charged_cpu_ms": 1.2884508845060256,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.3063242638984239
+          },
+          {
+            "kind": "text_damage_preparation",
+            "start": 70549819.0,
+            "end": 70550119.375,
+            "elapsed_ms": 0.16937349428161813,
+            "charged_cpu_ms": 0.16937349428161813,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          }
+        ],
+        "spans": [
+          {
+            "kind": "DisplayEnter",
+            "start": 70535154.125,
+            "argument": 27576,
+            "stack": 24099,
+            "end": 70539083.5,
+            "return_a": 0,
+            "elapsed_ms": 2.215670325735608,
+            "charged_cpu_ms": 1.1867422069161901,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 0.2958926046584407
+          },
+          {
+            "kind": "drain",
+            "start": 70541780.375,
+            "argument": 214,
+            "stack": 24014,
+            "end": 70541789.125,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70541925.5,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 70541958.25,
+            "return_a": 0,
+            "elapsed_ms": 0.018466856222132313,
+            "charged_cpu_ms": 0.018466856222132313,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "_VbxeTextUpload",
+            "start": 70542155.625,
+            "argument": 23944,
+            "stack": 23928,
+            "end": 70546985.5,
+            "return_a": 6,
+            "elapsed_ms": 2.723438387660193,
+            "charged_cpu_ms": 2.28671838326198,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.4367200043982131
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70547206.375,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 70549078.25,
+            "return_a": 0,
+            "elapsed_ms": 1.0555006562077536,
+            "charged_cpu_ms": 0.8801360062815505,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.17536464992620307
+          },
+          {
+            "kind": "VBXE_text_run",
+            "start": 70541823.875,
+            "argument": 12288,
+            "stack": 23975,
+            "end": 70549101.25,
+            "return_a": 0,
+            "elapsed_ms": 4.103518711436341,
+            "charged_cpu_ms": 3.40262398520396,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7008947262323807
+          },
+          {
+            "kind": "vbxe_text_run",
+            "start": 70541722.875,
+            "argument": 1,
+            "stack": 24062,
+            "end": 70549126.125,
+            "return_a": 24048,
+            "elapsed_ms": 4.174496284778659,
+            "charged_cpu_ms": 3.473601558546278,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7008947262323807
+          },
+          {
+            "kind": "GemVdiPaint",
+            "start": 70539113.75,
+            "argument": 11069,
+            "stack": 24099,
+            "end": 70549151.0,
+            "return_a": 24091,
+            "elapsed_ms": 5.6597390111632855,
+            "charged_cpu_ms": 4.694035205440252,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.9657038057230338
+          },
+          {
+            "kind": "drain",
+            "start": 70549166.75,
+            "argument": 0,
+            "stack": 24081,
+            "end": 70549175.75,
+            "return_a": 13,
+            "elapsed_ms": 0.005074861251883689,
+            "charged_cpu_ms": 0.005074861251883689,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 70549186.0,
+            "argument": 13,
+            "stack": 24087,
+            "end": 70549218.25,
+            "return_a": 0,
+            "elapsed_ms": 0.018184919485916554,
+            "charged_cpu_ms": 0.018184919485916554,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "fence_owner",
+            "start": 70549162.5,
+            "argument": 4,
+            "stack": 24090,
+            "end": 70549222.75,
+            "return_a": 0,
+            "elapsed_ms": 0.03397337671399915,
+            "charged_cpu_ms": 0.03397337671399915,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "DisplayLeave",
+            "start": 70549321.625,
+            "argument": 4,
+            "stack": 24090,
+            "end": 70549642.375,
+            "return_a": 0,
+            "elapsed_ms": 0.1808624162824104,
+            "charged_cpu_ms": 0.1808624162824104,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "drawing_borrow",
+            "start": 70535143.5,
+            "argument": 1,
+            "stack": 24116,
+            "end": 70549652.25,
+            "return_a": 0,
+            "elapsed_ms": 8.181099243140832,
+            "charged_cpu_ms": 6.1424147035646675,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 1.3056490254151871
+          },
+          {
+            "kind": "GemDrawingBorrow",
+            "start": 70535116.625,
+            "argument": 1,
+            "stack": 24139,
+            "end": 70549659.0,
+            "return_a": 0,
+            "elapsed_ms": 8.200059488651341,
+            "charged_cpu_ms": 6.161374949075177,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 1.3056490254151871
+          },
+          {
+            "kind": "VDI_paint",
+            "start": 70534605.75,
+            "argument": 1,
+            "stack": 24216,
+            "end": 70549779.25,
+            "return_a": 24208,
+            "elapsed_ms": 8.555934133939685,
+            "charged_cpu_ms": 6.42921484848015,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 1.3936837712985584
+          },
+          {
+            "kind": "ExecAESChanged",
+            "start": 70549927.5,
+            "argument": 1,
+            "stack": 24218,
+            "end": 70550109.5,
+            "return_a": 24210,
+            "elapsed_ms": 0.10262497198253684,
+            "charged_cpu_ms": 0.10262497198253684,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VDI_text",
+            "start": 70531625.75,
+            "argument": 1,
+            "stack": 24279,
+            "end": 70550119.375,
+            "return_a": 24271,
+            "elapsed_ms": 10.428064546596389,
+            "charged_cpu_ms": 7.995020997238429,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 1.7000080351969822
+          },
+          {
+            "kind": "v_gtext",
+            "start": 70530062.875,
+            "argument": 2,
+            "stack": 24300,
+            "end": 70550222.375,
+            "return_a": 0,
+            "elapsed_ms": 11.367407267483248,
+            "charged_cpu_ms": 8.757871321254223,
+            "off_cpu_ms": 0.7330355141609775,
+            "interrupt_ms": 1.8765004320680483
+          }
+        ]
+      },
+      "scroll_before": {
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.75197179504891,
+          "charged_cpu_ms": 18.9048449418435,
+          "off_cpu_ms": 0.7340927769217865,
+          "interrupt_ms": 4.113034076283623
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 116.95264449610151,
+          "charged_cpu_ms": 83.49951154460452,
+          "off_cpu_ms": 15.14176483938769,
+          "interrupt_ms": 18.311368112109324
+        }
+      },
+      "scroll_after": {
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.16110288012473,
+          "charged_cpu_ms": 18.48271516354445,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 3.9453522024192993
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 115.8619017478668,
+          "charged_cpu_ms": 82.76147165337571,
+          "off_cpu_ms": 15.096373024856954,
+          "interrupt_ms": 18.004057069634147
+        }
+      },
+      "completion_ms": {
+        "before": 120.03061832955304,
+        "after": 120.53528508737924,
+        "after_bracket": [
+          103.80008429908413,
+          120.53528508737924
+        ]
+      },
+      "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+      "call_counts": {
+        "semaphores_attempt": 3,
+        "ExecAESUpdate": 2,
+        "ExecAESBeginUpdate": 1,
+        "semaphores_release": 3,
+        "DisplayEnter": 6,
+        "VbxeOwnerFence": 26,
+        "VbxeOwnerSubmit": 8,
+        "DisplayLeave": 6,
+        "window_calc_slider": 1,
+        "GemDrawingMouseBorrow": 2,
+        "VbxeOwnerCopyRect": 1,
+        "ExecGemRasterCopy": 1,
+        "vro_cpyfm": 1,
+        "GemDrawingSolidBorrow": 1,
+        "vr_recfl": 1,
+        "GemVdiPaint": 1,
+        "GemDrawingBorrow": 1,
+        "v_gtext": 1,
+        "_my_draw": 1,
+        "ExecAESPainted": 1,
+        "wind_update": 1,
+        "set_shift": 1,
+        "arrowed": 1,
+        "_my_keyed": 1
+      }
+    },
+    {
+      "action": "up",
+      "before": {
+        "action": "up",
+        "measured": {
+          "elapsed_ms": 11.866717227321361,
+          "charged_cpu_ms": 9.150045321330346,
+          "off_cpu_ms": 0.6838375536913273,
+          "interrupt_ms": 2.0328343522996875
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "text_entry": 0.7627798398317402,
+          "text_setup_and_loop": 0.11418437816738301,
+          "input_conversion": 2.7204780519299274,
+          "visibility_clipping": 0.2628355223371428,
+          "draw_admission": 0.42931916507254936,
+          "glyph_preparation": 1.220997520366405,
+          "glyph_adapter": 0.06632561719475767,
+          "queue": 0.02058138174375052,
+          "driver_text": 0.21702080270208166,
+          "fences": 0.8840126364045171,
+          "command_encoding_and_upload": 2.27974044904064,
+          "damage_preparation": 0.06977934221340072,
+          "damage_reporting": 0.10199061432605137
+        },
+        "routines": {
+          "DisplayEnter": {
+            "calls": 1,
+            "charged_cpu_ms": 0.18276548925186675
+          },
+          "drain": {
+            "calls": 2,
+            "charged_cpu_ms": 0.009867785767551618
+          },
+          "VbxeOwnerFence": {
+            "calls": 3,
+            "charged_cpu_ms": 0.8840126364045172
+          },
+          "_VbxeTextUpload": {
+            "calls": 1,
+            "charged_cpu_ms": 2.27974044904064
+          },
+          "VBXE_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.3614612217164592
+          },
+          "vbxe_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.4327207317949924
+          },
+          "GemVdiPaint": {
+            "calls": 1,
+            "charged_cpu_ms": 4.653718252161398
+          },
+          "fence_owner": {
+            "calls": 1,
+            "charged_cpu_ms": 0.03496015529075431
+          },
+          "DisplayLeave": {
+            "calls": 1,
+            "charged_cpu_ms": 0.18607824590240196
+          },
+          "drawing_borrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.098755390277976
+          },
+          "GemDrawingBorrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.117997572524701
+          },
+          "VDI_paint": {
+            "calls": 1,
+            "charged_cpu_ms": 5.380833094861844
+          },
+          "ExecAESChanged": {
+            "calls": 1,
+            "charged_cpu_ms": 0.10199061432605137
+          },
+          "VDI_text": {
+            "calls": 1,
+            "charged_cpu_ms": 8.387265481498606
+          },
+          "v_gtext": {
+            "calls": 1,
+            "charged_cpu_ms": 9.150045321330346
+          }
+        },
+        "stages": [
+          {
+            "kind": "text_input_conversion",
+            "start": 70997065.5,
+            "end": 71004283.625,
+            "elapsed_ms": 4.070109208194773,
+            "charged_cpu_ms": 2.7204780519299274,
+            "off_cpu_ms": 0.6838375536913273,
+            "interrupt_ms": 0.6657936025735186
+          },
+          {
+            "kind": "text_damage_preparation",
+            "start": 71015944.25,
+            "end": 71016327.0,
+            "elapsed_ms": 0.2158225715731647,
+            "charged_cpu_ms": 0.17176995653945212,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.044052615033712585
+          }
+        ],
+        "spans": [
+          {
+            "kind": "DisplayEnter",
+            "start": 71004961.375,
+            "argument": 27576,
+            "stack": 24099,
+            "end": 71005363.875,
+            "return_a": 0,
+            "elapsed_ms": 0.22695907265368723,
+            "charged_cpu_ms": 0.18276548925186675,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04419358340182047
+          },
+          {
+            "kind": "drain",
+            "start": 71008059.25,
+            "argument": 22,
+            "stack": 24014,
+            "end": 71008068.0,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71008204.375,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 71008237.5,
+            "return_a": 0,
+            "elapsed_ms": 0.018678308774294137,
+            "charged_cpu_ms": 0.018678308774294137,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "_VbxeTextUpload",
+            "start": 71008434.875,
+            "argument": 23944,
+            "stack": 23928,
+            "end": 71013257.5,
+            "return_a": 6,
+            "elapsed_ms": 2.7193503049850642,
+            "charged_cpu_ms": 2.27974044904064,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.43960985594442464
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71013477.625,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 71015289.25,
+            "return_a": 0,
+            "elapsed_ms": 1.0215272794937544,
+            "charged_cpu_ms": 0.8460216611994434,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.17550561829431094
+          },
+          {
+            "kind": "VBXE_text_run",
+            "start": 71008102.875,
+            "argument": 12288,
+            "stack": 23975,
+            "end": 71015312.875,
+            "return_a": 0,
+            "elapsed_ms": 4.065527736231267,
+            "charged_cpu_ms": 3.3614612217164592,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.704066514514808
+          },
+          {
+            "kind": "vbxe_text_run",
+            "start": 71008001.875,
+            "argument": 1,
+            "stack": 24062,
+            "end": 71015338.25,
+            "return_a": 24048,
+            "elapsed_ms": 4.136787246309801,
+            "charged_cpu_ms": 3.4327207317949924,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.704066514514808
+          },
+          {
+            "kind": "GemVdiPaint",
+            "start": 71005394.75,
+            "argument": 11029,
+            "stack": 24099,
+            "end": 71015363.0,
+            "return_a": 24091,
+            "elapsed_ms": 5.62083174156551,
+            "charged_cpu_ms": 4.653718252161398,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.9671134894041127
+          },
+          {
+            "kind": "drain",
+            "start": 71015378.375,
+            "argument": 0,
+            "stack": 24081,
+            "end": 71015387.125,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71015397.25,
+            "argument": 13,
+            "stack": 24087,
+            "end": 71015431.5,
+            "return_a": 0,
+            "elapsed_ms": 0.0193126664307796,
+            "charged_cpu_ms": 0.0193126664307796,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "fence_owner",
+            "start": 71015374.125,
+            "argument": 4,
+            "stack": 24090,
+            "end": 71015436.125,
+            "return_a": 0,
+            "elapsed_ms": 0.03496015529075431,
+            "charged_cpu_ms": 0.03496015529075431,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "DisplayLeave",
+            "start": 71015446.875,
+            "argument": 4,
+            "stack": 24090,
+            "end": 71015854.875,
+            "return_a": 0,
+            "elapsed_ms": 0.2300603767520606,
+            "charged_cpu_ms": 0.18607824590240196,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.04398213084965864
+          },
+          {
+            "kind": "drawing_borrow",
+            "start": 71004950.875,
+            "argument": 1,
+            "stack": 24116,
+            "end": 71015864.75,
+            "return_a": 0,
+            "elapsed_ms": 6.154044593933567,
+            "charged_cpu_ms": 5.098755390277976,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.0552892036555919
+          },
+          {
+            "kind": "GemDrawingBorrow",
+            "start": 71004923.75,
+            "argument": 1,
+            "stack": 24139,
+            "end": 71015871.75,
+            "return_a": 0,
+            "elapsed_ms": 6.1732867761802925,
+            "charged_cpu_ms": 5.117997572524701,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.0552892036555919
+          },
+          {
+            "kind": "VDI_paint",
+            "start": 71004412.5,
+            "argument": 1,
+            "stack": 24216,
+            "end": 71015904.75,
+            "return_a": 24208,
+            "elapsed_ms": 6.4801749135511475,
+            "charged_cpu_ms": 5.380833094861844,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.0993418186893043
+          },
+          {
+            "kind": "ExecAESChanged",
+            "start": 71016136.0,
+            "argument": 1,
+            "stack": 24218,
+            "end": 71016316.875,
+            "return_a": 24210,
+            "elapsed_ms": 0.10199061432605137,
+            "charged_cpu_ms": 0.10199061432605137,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VDI_text",
+            "start": 70996953.125,
+            "argument": 1,
+            "stack": 24279,
+            "end": 71016327.0,
+            "return_a": 24271,
+            "elapsed_ms": 10.924414170704235,
+            "charged_cpu_ms": 8.387265481498606,
+            "off_cpu_ms": 0.6838375536913273,
+            "interrupt_ms": 1.853311135514302
+          },
+          {
+            "kind": "v_gtext",
+            "start": 70995296.75,
+            "argument": 2,
+            "stack": 24300,
+            "end": 71016341.75,
+            "return_a": 0,
+            "elapsed_ms": 11.866717227321361,
+            "charged_cpu_ms": 9.150045321330346,
+            "off_cpu_ms": 0.6838375536913273,
+            "interrupt_ms": 2.0328343522996875
+          }
+        ]
+      },
+      "after": {
+        "action": "up",
+        "measured": {
+          "elapsed_ms": 10.930193873796659,
+          "charged_cpu_ms": 8.33130103935978,
+          "off_cpu_ms": 0.7340927769217865,
+          "interrupt_ms": 1.8648000575150943
+        },
+        "exclusive_cpu_ms": {
+          "unselected": 0.0,
+          "text_entry": 1.3770495038618285,
+          "text_setup_and_loop": 0.10755886486631265,
+          "input_conversion": 1.2804156875238766,
+          "visibility_clipping": 0.26304697488930456,
+          "draw_admission": 0.42910771252038754,
+          "glyph_preparation": 1.220997520366405,
+          "glyph_adapter": 0.07154144681474923,
+          "queue": 0.02044041337564264,
+          "driver_text": 0.21173448889803617,
+          "fences": 0.884365057324787,
+          "command_encoding_and_upload": 2.290172108280623,
+          "damage_preparation": 0.06688949066718919,
+          "damage_reporting": 0.10798176997063628
+        },
+        "routines": {
+          "DisplayEnter": {
+            "calls": 1,
+            "charged_cpu_ms": 0.17698578615944366
+          },
+          "drain": {
+            "calls": 2,
+            "charged_cpu_ms": 0.009867785767551618
+          },
+          "VbxeOwnerFence": {
+            "calls": 3,
+            "charged_cpu_ms": 0.884365057324787
+          },
+          "_VbxeTextUpload": {
+            "calls": 1,
+            "charged_cpu_ms": 2.290172108280623
+          },
+          "VBXE_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.367311408992936
+          },
+          "vbxe_text_run": {
+            "calls": 1,
+            "charged_cpu_ms": 3.443786748691461
+          },
+          "GemVdiPaint": {
+            "calls": 1,
+            "charged_cpu_ms": 4.664784269057866
+          },
+          "fence_owner": {
+            "calls": 1,
+            "charged_cpu_ms": 0.03446676600237673
+          },
+          "DisplayLeave": {
+            "calls": 1,
+            "charged_cpu_ms": 0.186007761718348
+          },
+          "drawing_borrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.109468986254175
+          },
+          "GemDrawingBorrow": {
+            "calls": 1,
+            "charged_cpu_ms": 5.128358747580631
+          },
+          "VDI_paint": {
+            "calls": 1,
+            "charged_cpu_ms": 5.391405722469934
+          },
+          "ExecAESChanged": {
+            "calls": 1,
+            "charged_cpu_ms": 0.10798176997063628
+          },
+          "VDI_text": {
+            "calls": 1,
+            "charged_cpu_ms": 6.954251535497949
+          },
+          "v_gtext": {
+            "calls": 1,
+            "charged_cpu_ms": 8.33130103935978
+          }
+        },
+        "stages": [
+          {
+            "kind": "text_input_conversion",
+            "start": 71000623.5,
+            "end": 71003367.75,
+            "elapsed_ms": 1.5474097767202017,
+            "charged_cpu_ms": 1.2804156875238766,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.2669940891963252
+          },
+          {
+            "kind": "text_damage_preparation",
+            "start": 71015040.125,
+            "end": 71015427.75,
+            "elapsed_ms": 0.21857145475126835,
+            "charged_cpu_ms": 0.1748712606378255,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.043700194113442885
+          }
+        ],
+        "spans": [
+          {
+            "kind": "DisplayEnter",
+            "start": 71004046.625,
+            "argument": 27576,
+            "stack": 24099,
+            "end": 71004360.5,
+            "return_a": 0,
+            "elapsed_ms": 0.17698578615944366,
+            "charged_cpu_ms": 0.17698578615944366,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "drain",
+            "start": 71007055.25,
+            "argument": 22,
+            "stack": 24014,
+            "end": 71007064.0,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71007288.25,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 71007321.5,
+            "return_a": 0,
+            "elapsed_ms": 0.018748792958348075,
+            "charged_cpu_ms": 0.018748792958348075,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "_VbxeTextUpload",
+            "start": 71007428.5,
+            "argument": 23944,
+            "stack": 23928,
+            "end": 71012345.5,
+            "return_a": 6,
+            "elapsed_ms": 2.7725658639457893,
+            "charged_cpu_ms": 2.290172108280623,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.4823937556651663
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71012565.625,
+            "argument": 22200,
+            "stack": 23928,
+            "end": 71014384.375,
+            "return_a": 0,
+            "elapsed_ms": 1.0255448779848289,
+            "charged_cpu_ms": 0.846656018855929,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.17888885912890007
+          },
+          {
+            "kind": "VBXE_text_run",
+            "start": 71007186.625,
+            "argument": 12288,
+            "stack": 23975,
+            "end": 71014408.125,
+            "return_a": 0,
+            "elapsed_ms": 4.07201228116423,
+            "charged_cpu_ms": 3.367311408992936,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7047008721712935
+          },
+          {
+            "kind": "vbxe_text_run",
+            "start": 71006998.625,
+            "argument": 1,
+            "stack": 24062,
+            "end": 71014433.25,
+            "return_a": 24048,
+            "elapsed_ms": 4.192187814976197,
+            "charged_cpu_ms": 3.443786748691461,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.7484010662847363
+          },
+          {
+            "kind": "GemVdiPaint",
+            "start": 71004391.5,
+            "argument": 11069,
+            "stack": 24099,
+            "end": 71014458.0,
+            "return_a": 24091,
+            "elapsed_ms": 5.6762323102319066,
+            "charged_cpu_ms": 4.664784269057866,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.011448041174041
+          },
+          {
+            "kind": "drain",
+            "start": 71014473.25,
+            "argument": 0,
+            "stack": 24081,
+            "end": 71014482.0,
+            "return_a": 13,
+            "elapsed_ms": 0.004933892883775809,
+            "charged_cpu_ms": 0.004933892883775809,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "VbxeOwnerFence",
+            "start": 71014492.0,
+            "argument": 13,
+            "stack": 24087,
+            "end": 71014525.625,
+            "return_a": 0,
+            "elapsed_ms": 0.018960245510509895,
+            "charged_cpu_ms": 0.018960245510509895,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "fence_owner",
+            "start": 71014469.125,
+            "argument": 4,
+            "stack": 24090,
+            "end": 71014530.25,
+            "return_a": 0,
+            "elapsed_ms": 0.03446676600237673,
+            "charged_cpu_ms": 0.03446676600237673,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.0
+          },
+          {
+            "kind": "DisplayLeave",
+            "start": 71014540.75,
+            "argument": 4,
+            "stack": 24090,
+            "end": 71014950.625,
+            "return_a": 0,
+            "elapsed_ms": 0.23111763951286973,
+            "charged_cpu_ms": 0.186007761718348,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.045109877794521684
+          },
+          {
+            "kind": "drawing_borrow",
+            "start": 71003947.25,
+            "argument": 1,
+            "stack": 24116,
+            "end": 71014960.75,
+            "return_a": 0,
+            "elapsed_ms": 6.210220488624557,
+            "charged_cpu_ms": 5.109468986254175,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.100751502370383
+          },
+          {
+            "kind": "GemDrawingBorrow",
+            "start": 71003920.75,
+            "argument": 1,
+            "stack": 24139,
+            "end": 71014967.75,
+            "return_a": 0,
+            "elapsed_ms": 6.229110249951013,
+            "charged_cpu_ms": 5.128358747580631,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.100751502370383
+          },
+          {
+            "kind": "VDI_paint",
+            "start": 71003408.75,
+            "argument": 1,
+            "stack": 24216,
+            "end": 71015000.375,
+            "return_a": 24208,
+            "elapsed_ms": 6.536209839874031,
+            "charged_cpu_ms": 5.391405722469934,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.1448041174040957
+          },
+          {
+            "kind": "ExecAESChanged",
+            "start": 71015148.625,
+            "argument": 1,
+            "stack": 24218,
+            "end": 71015417.625,
+            "return_a": 24210,
+            "elapsed_ms": 0.15168196408407916,
+            "charged_cpu_ms": 0.10798176997063628,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 0.043700194113442885
+          },
+          {
+            "kind": "VDI_text",
+            "start": 71000513.5,
+            "argument": 1,
+            "stack": 24279,
+            "end": 71015427.75,
+            "return_a": 24271,
+            "elapsed_ms": 8.409749936211814,
+            "charged_cpu_ms": 6.954251535497949,
+            "off_cpu_ms": 0.0,
+            "interrupt_ms": 1.4554984007138638
+          },
+          {
+            "kind": "v_gtext",
+            "start": 70996058.375,
+            "argument": 2,
+            "stack": 24300,
+            "end": 71015442.5,
+            "return_a": 0,
+            "elapsed_ms": 10.930193873796659,
+            "charged_cpu_ms": 8.33130103935978,
+            "off_cpu_ms": 0.7340927769217865,
+            "interrupt_ms": 1.8648000575150943
+          }
+        ]
+      },
+      "scroll_before": {
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.77614787017941,
+          "charged_cpu_ms": 18.99358452956741,
+          "off_cpu_ms": 0.6838375536913273,
+          "interrupt_ms": 4.098725786920673
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 113.15545004856361,
+          "charged_cpu_ms": 82.50279469789774,
+          "off_cpu_ms": 12.67009595716817,
+          "interrupt_ms": 17.98255939349769
+        }
+      },
+      "scroll_after": {
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 22.92230246454998,
+          "charged_cpu_ms": 18.21325412790624,
+          "off_cpu_ms": 0.7340927769217865,
+          "interrupt_ms": 3.974955559721954
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 111.71101766474621,
+          "charged_cpu_ms": 81.32563834001289,
+          "off_cpu_ms": 12.674959365867894,
+          "interrupt_ms": 17.71041995886543
+        }
+      },
+      "completion_ms": {
+        "before": 140.30807227166295,
+        "after": 140.27029274901005,
+        "after_bracket": [
+          121.43635489632481,
+          140.27029274901005
+        ]
+      },
+      "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+      "call_counts": {
+        "semaphores_attempt": 3,
+        "ExecAESUpdate": 2,
+        "ExecAESBeginUpdate": 1,
+        "semaphores_release": 3,
+        "DisplayEnter": 6,
+        "VbxeOwnerFence": 26,
+        "VbxeOwnerSubmit": 8,
+        "DisplayLeave": 6,
+        "window_calc_slider": 1,
+        "GemDrawingMouseBorrow": 2,
+        "VbxeOwnerCopyRect": 1,
+        "ExecGemRasterCopy": 1,
+        "vro_cpyfm": 1,
+        "GemDrawingSolidBorrow": 1,
+        "vr_recfl": 1,
+        "GemVdiPaint": 1,
+        "GemDrawingBorrow": 1,
+        "v_gtext": 1,
+        "_my_draw": 1,
+        "ExecAESPainted": 1,
+        "wind_update": 1,
+        "set_shift": 1,
+        "arrowed": 1,
+        "_my_keyed": 1
+      }
+    }
+  ],
+  "full_window_comparison": {
+    "before_capture": {
+      "path": "build/gem-text-preparation/before/current.bgra",
+      "sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4"
+    },
+    "after_capture": {
+      "path": "build/gem-text-preparation/after/current.bgra",
+      "sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4"
+    },
+    "rectangle": [
+      0,
+      11,
+      633,
+      222
+    ],
+    "pixels": 140526,
+    "scanout": [
+      672,
+      240
+    ],
+    "stride": 2688,
+    "horizontal_border": 16,
+    "exact": true,
+    "before_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c",
+    "after_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c"
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "process_lifetimes": 3,
+    "live_tasks_after": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 444,
+        "untouched_above_floor": 836
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 346,
+        "untouched_above_floor": 710
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 128,
+        "untouched_above_floor": 928
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 318,
+        "untouched_above_floor": 738
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 149,
+        "untouched_above_floor": 907
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 698,
+        "untouched_above_floor": 1606
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 1306,
+        "untouched_above_floor": 998
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 66,
+        "untouched_above_floor": 190
+      }
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "includes_guards_alignment_unused": true,
+    "matched_budget_reservations_pools": true
+  },
+  "build_scope": {
+    "recompiled_provider_sources": [
+      "c/calypsi/vdi.c"
+    ],
+    "reused_provider_objects": 56,
+    "reused_apps": [
+      "MGVIEW"
+    ],
+    "native_loader_rebuilt": true,
+    "table_change": false,
+    "abi_change": false,
+    "qed": false,
+    "counter": false,
+    "catalog": false,
+    "demo": false
+  },
+  "host": {
+    "status": "pass",
+    "tests": 726,
+    "skipped": 4,
+    "focused_trace_tests": 4
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "clean": true,
+    "local_override": false
+  },
+  "source_sha256": {
+    "c/calypsi/vdi.c": "0277a99aba793f388bbda10a3419a6c7a0af12e6847f0d8b24aa88c023e0db8b",
+    "tests/programs/vdi_text_abi.c": "286171ddab3b1f05e568ceed8807670afa0efcd82b56cd0d1abfcef5f2e91e6a",
+    "tools/mgview_text_trace.py": "3824f3de9b8bc2c2625f97f3680ad8360f1597f11e2368b4148a56006f90062c",
+    "tools/measure_mgview.py": "b8cdf5a9738efb3802eb1caa782024326bb8908fc30111a03efe2d78ab654382",
+    "tests/test_mgview_text_trace.py": "1635e667bde0d6fae12fc96ce7aa4b281dc09ce1313fb2a7543ae3ab0ce18e25"
+  }
+}

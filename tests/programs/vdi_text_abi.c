@@ -12,6 +12,7 @@ static UWORD calls,changes,status,unexpected;
 static WORD observed[6];
 static WORD observedMode;
 static struct ExecVDIUnit units[8];
+static WORD unitGlyphs[8][EXEC_VDI_TEXT_CHUNK];
 static UWORD textCalls;
 volatile UWORD CopyChecks;
 struct ExecAESContext *ExecAESContext(void) { return &context; }
@@ -41,6 +42,7 @@ void EXEC_CALL FreeMem(APTR p,ULONG n) { (void)p;(void)n;++unexpected; }
 BYTE EXEC_CALL AllocSignal(BYTE n) { (void)n;++unexpected;return -1; }
 void EXEC_CALL FreeSignal(BYTE n) { (void)n;++unexpected; }
 UWORD DisplayDelegate(struct DisplayGrant *g) { (void)g;++unexpected;return DISPLAY_BAD_ARGUMENT; }
+BOOL ExecAESDisplayClose(struct ExecAESContext *c) { (void)c;++unexpected;return FALSE; }
 BOOL ExecAESMouseCopy(struct ExecAESContext *c,const WORD *p)
 { (void)c;(void)p;++unexpected;return FALSE; }
 WORD ExecAESMouseControl(struct ExecAESContext *c,WORD m,WORD r,WORD z)
@@ -52,17 +54,28 @@ UWORD GemSolidRows(UWORD l,UWORD r) { (void)l;(void)r;return 240; }
 UWORD GemDrawingSolidBorrow(struct DisplayGrant *g,UWORD l,UWORD t,UWORD r,UWORD b,UWORD p)
 { (void)g;++calls;observed[0]=l;observed[1]=t;observed[2]=r;observed[3]=b;observed[4]=p;return status; }
 UWORD GemDrawingBorrow(struct DisplayGrant *g,UWORD l,UWORD t,UWORD r,UWORD b,void (*fn)(void *),void *p)
-{ (void)g;(void)l;(void)t;(void)r;(void)b;(void)fn;units[textCalls++]=*(struct ExecVDIUnit *)p;return status; }
+{
+    const struct ExecVDIUnit *u=p;
+    UWORD i;
+    (void)g;(void)l;(void)t;(void)r;(void)b;(void)fn;
+    units[textCalls]=*u;
+    for (i=0;i<u->count;++i) unitGlyphs[textCalls][i]=u->glyphs[i];
+    ++textCalls;return status;
+}
 void GemVdiPaint(void *p) { (void)p;++unexpected; }
 #define CHECK(c) do { ++CopyChecks;if (!(c)) return __LINE__; } while (0)
 LONG CopyProbe(void)
 {
-    WORD a,b,attr[12],i,points[4]={100,40,20,10},clip[4]={30,15,70,30};
+    WORD a,b,attr[12],i,j,n,points[4]={100,40,20,10},clip[4]={30,15,70,30};
     WORD control[12]={38,0,99,0,99,0,2,0,0,0,0,0},ints[2]={1,5};
     VDIPB pb={control,ints,points,attr,attr+6};
     char longText[194];
+    char boundary[83],bytes[5]={1,127,(char)128,(char)255,0};
+    WORD mixed[4]={'A',(WORD)(EXEC_VDI_ATASCII_BASE+'A'),
+                      (WORD)(EXEC_VDI_ATASCII_BASE+'B'),'B'};
     static const WORD tops[6]={34,36,34,33,33,40};
     context.identity=1;context.workstation=&station;context.view=&view;
+    station.unit.glyphs=station.intin;
     station.handle=2;station.writeMode=MD_REPLACE;station.textColor=6;station.fillColor=4;
     view.visibleCount=1;view.work.right=640;view.work.bottom=240;view.visible[0]=view.work;
     vqt_attributes(2,attr);
@@ -95,6 +108,28 @@ LONG CopyProbe(void)
     textCalls=0;v_gtext(2,600,40,"");CHECK(textCalls==0);
     control[0]=8;control[1]=1;control[3]=2;ints[0]='A';ints[1]='B';points[0]=100;points[1]=40;
     vdi_call(&pb);CHECK(textCalls==1 && units[0].x==84 && units[0].top==40);
+    /* Preserve byte values, terminators on either side of an 80-word chunk,
+     * and source position through a second visible chunk. Nonzero bytes after
+     * NUL make an accidentally consumed terminator observable. */
+    vst_alignment(2,TA_LEFT,TA_TOP,&a,&b);
+    textCalls=0;v_gtext(2,0,40,bytes);
+    CHECK(textCalls==1 && units[0].count==4 && unitGlyphs[0][0]==1 &&
+          unitGlyphs[0][1]==127 && unitGlyphs[0][2]==128 && unitGlyphs[0][3]==255);
+    for (n=79;n<=81;++n) {
+        for (i=0;i<n;++i) boundary[i]='A'+i%26;
+        boundary[n]=0;boundary[n+1]='Z';
+        if (n<81) boundary[n+2]=0;
+        textCalls=0;v_gtext(2,-16,40,boundary);
+        CHECK(textCalls==(n==81 ? 2:1) && units[0].count==(n<80 ? n:80));
+        for (i=0;i<textCalls;++i) for (j=0;j<units[i].count;++j)
+            CHECK(unitGlyphs[i][j]=='A'+(i*80+j)%26);
+        if (n==81) CHECK(units[1].x==624 && units[1].count==1);
+    }
+    textCalls=0;control[3]=4;pb.intin=mixed;points[0]=0;vdi_call(&pb);
+    CHECK(textCalls==3 && units[0].count==1 && units[1].count==2 && units[2].count==1);
+    CHECK(unitGlyphs[0][0]=='A' && unitGlyphs[1][0]==mixed[1] &&
+          unitGlyphs[1][1]==mixed[2] && unitGlyphs[2][0]=='B');
+    pb.intin=ints;
     vs_clip(2,1,clip);points[0]=100;points[1]=40;points[2]=20;points[3]=10;
     vr_recfl(2,points);CHECK(calls==1 && observed[0]==30 && observed[1]==15 && observed[2]==71 && observed[3]==31 && observed[4]==4);
     control[0]=114;control[1]=2;control[3]=0;vdi_call(&pb);

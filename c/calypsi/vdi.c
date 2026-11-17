@@ -230,11 +230,20 @@ static void text(struct ExecAESContext *c,WORD x,WORD y,const void *source,UWORD
     w->unit.operation=8; w->unit.y=(WORD)(top+EXEC_VDI_FONT_TOP);
     while (at<EXEC_VDI_WIDTH) {
         count=0;
-        while (count<EXEC_VDI_TEXT_CHUNK) {
-            if (string) {
-                if (!*chars) break;
-                w->intin[count++]=*chars++;
-            } else {
+        if (string) {
+            WORD *out=w->intin;
+            UWORD ch;
+            /* MagiC str_to_ints advances source/output pointers directly.
+             * Select the input representation once for this bounded chunk;
+             * retain its NUL for a following empty iteration after painting. */
+            while (count<EXEC_VDI_TEXT_CHUNK) {
+                ch=*chars;
+                if (!ch) break;
+                *out++=ch;
+                ++chars;++count;
+            }
+        } else {
+            while (count<EXEC_VDI_TEXT_CHUNK) {
                 if (!words) break;
                 /* A private-use page selects the Atari terminal glyph set.
                  * Keep each physical unit homogeneous without altering VDI state. */
