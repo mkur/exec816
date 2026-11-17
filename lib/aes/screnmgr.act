@@ -67,9 +67,9 @@ PUBLIC PROC Run()
         DESKFINISH.Finish()
         AESHOST.Commit()
         AESLOCKS.SystemEnd()
+        DESKINPUT.Present()
       FI
     FI
-    DESKINPUT.Present()
     ; Ownership scopes are complete; wait for the next interaction/device wake.
     IF DESKINPUT.InteractionPending()=0 THEN
       bits=EXEC.Wait(mask)

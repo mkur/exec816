@@ -1,0 +1,68 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "EU3: event-driven input refresh and cursor selection using independent bits in existing mouseDirty byte",
+  "captures": {
+    "scroll": {
+      "path": "build/gem-end-update/eu3/scroll/results.json",
+      "sha256": "c0a38ef9e9cf04f8c3af69d70345005f023b9db76761f9150e31e20c2b928cb6"
+    },
+    "definition": {
+      "path": "build/gem-end-update/eu3/scroll/definition.json",
+      "sha256": "65bf7d1a9c9afa119d1bf76cbcf919f28023f5f38d18fa8753fb10884027206a"
+    },
+    "routing": {
+      "path": "build/gem-end-update/eu3/routing/results.json",
+      "sha256": "710087df9d6794e5ea956055dbdf51d48f6681ab99bfde0542fd67085e1747f1"
+    }
+  },
+  "inputs": {
+    "native_sha256": "27e9ef5ae84f807a0b570b5b00410693ee6ef37ffcdc435cb89993ffaf1cfc0a",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338"
+  },
+  "samples": [
+    {
+      "action": "down",
+      "end": {
+        "elapsed_ms": 6.573707425790727,
+        "charged_cpu_ms": 4.726457930105064,
+        "off_cpu_ms": 0.7337403560015169,
+        "interrupt_ms": 1.1135091396841463
+      },
+      "manager_cpu_ms": 0.0,
+      "end_snapshot_publications": 0
+    },
+    {
+      "action": "up",
+      "end": {
+        "elapsed_ms": 6.57180435282127,
+        "charged_cpu_ms": 4.730616496964246,
+        "off_cpu_ms": 0.6834146485870036,
+        "interrupt_ms": 1.1577732072700209
+      },
+      "manager_cpu_ms": 0.0,
+      "end_snapshot_publications": 0
+    }
+  ],
+  "checks": {
+    "routing_assertions": 31,
+    "host_tests": 732,
+    "skipped": 4,
+    "guards": "intact",
+    "process_lifetimes": 3,
+    "settled_scanout_identical": true
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "new_runtime_state_bytes": 0
+}

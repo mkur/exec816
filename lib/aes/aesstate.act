@@ -10,6 +10,7 @@ USE LAYERTYPES
 PUBLIC CONST POINTER_EVENTS=16
 
 ; Policy-gate snapshot invalidation; no caller ABI or per-client storage.
+PUBLIC CONST MOUSE_INPUT_DIRTY=1, MOUSE_CURSOR_DIRTY=2, MOUSE_DIRTY=3
 PUBLIC BYTE mouseDirty
 
 ; Owned association storage; only the caller's tree and strings are borrowed.

@@ -133,7 +133,7 @@ PUBLIC PROC CommitFocus(DESKTYPES.Service POINTER service LONGCARD id)
 
   EXEC.Forbid()
   service.focus=id
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   EXEC.Permit()
   PublishInput(service)
   AESMOUSE.Refresh()

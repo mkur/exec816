@@ -6,7 +6,7 @@
 [Development testing](../../contributing/testing.md)
 
 Status: selected for implementation, 2026-11-17, including EU4's proposed
-application-cache removal and EU5's explicit final yield. EU1–EU2 are implemented;
+application-cache removal and EU5's explicit final yield. EU1–EU3 are implemented;
 see the [execution record](../../history/gem-end-update-implementation.md).
 Commit every passing executable slice separately. MGVIEW is the sole application
 acceptance target; other applications may break during the later API cutover.

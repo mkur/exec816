@@ -49,7 +49,7 @@ PROC PublishActive(BYTE active)
 
   IF DESKSTATE.menuActive<>active THEN
     DESKSTATE.menuActive=active
-    AESSTATE.mouseDirty=1
+    AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   FI
 
 RETURN

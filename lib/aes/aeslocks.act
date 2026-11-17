@@ -176,7 +176,7 @@ CARD FUNC Acquire(AESSTATE.Service POINTER service
   service.updates==+1
   IF code=AESTYPES.BEG_MCTRL THEN
     IF service.mouseHolds=0 THEN
-      AESSTATE.mouseDirty=1
+      AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
     FI
     service.mouseOwner=client.id
     service.mouseHolds==+1
@@ -227,7 +227,7 @@ CARD FUNC Release(AESSTATE.Service POINTER service
   service.updateHolds=updates
   service.mouseHolds=mouse
   IF code=AESTYPES.END_MCTRL AND mouse=0 THEN
-    AESSTATE.mouseDirty=1
+    AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
     service.mouseOwner=0
   FI
   service.updates==-1
@@ -322,8 +322,7 @@ PUBLIC CARD FUNC Call(AESTYPES.Request POINTER request BYTE painting)
         OR (code=AESTYPES.END_UPDATE AND painting<>0 AND service.updateHolds=0) THEN
       RETURN(AESTYPES.IDENTITY)
     FI
-    guarded=(code=AESTYPES.END_MCTRL OR
-        (painting<>0 AND service.updateHolds+service.mouseHolds=1))
+    guarded=(code=AESTYPES.END_MCTRL)
     status=Release(service,client,code,painting)
     IF guarded<>0 THEN
       AESSNAPSHOT.Publish()

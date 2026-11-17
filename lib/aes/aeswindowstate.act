@@ -345,7 +345,7 @@ PUBLIC PROC Sync()
       Snapshot(service.windows(slot))
     FI
   OD
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   top=0
   slot=0
   WHILE slot<desktop.scene.count DO

@@ -491,7 +491,8 @@ PUBLIC PROC Present()
 
   BEGIN
     LET service=AESSTATE.Get()
-    IF service<>NULL THEN
+    IF service<>NULL AND (dirty<>0 OR
+        (AESSTATE.mouseDirty & AESSTATE.MOUSE_CURSOR_DIRTY)<>0) THEN
       AESCURSOR.Select(service)
     FI
   END
@@ -523,9 +524,9 @@ PUBLIC PROC Present()
       IF drawn=0 AND CONSOLEBITMAP.Failed()=0 THEN
         dirty=1
       FI
+      AESCURSOR.Wake()
     FI
   FI
-  AESCURSOR.Wake()
 
 RETURN
 

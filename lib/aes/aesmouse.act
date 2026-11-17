@@ -23,7 +23,7 @@ AESSNAPSHOT.WindowRoute capturedRoute
 
 PUBLIC PROC Reset()
 
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   owner=0
   openEpoch=0
   clickCount=0
@@ -96,7 +96,7 @@ RETURN(recipient)
 
 PUBLIC PROC Cancel(LONGCARD client)
 
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
 
   IF clickOwner=client THEN
     clickCount=0
@@ -114,7 +114,7 @@ PUBLIC PROC CancelWindow(LONGCARD epoch)
 
   EXEC.Forbid()
   AESINPUT.CancelWindow(epoch)
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
 
   IF epoch<>0 AND clickEpoch=epoch THEN
     clickCount=0
@@ -139,7 +139,7 @@ PUBLIC PROC Retained()
   IF manager<>0 THEN
     IF manager=FRAME OR nativePending=0 THEN
       IF nativePending<>manager THEN
-        AESSTATE.mouseDirty=1
+        AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
         nativePending=manager
       FI
     FI
@@ -154,6 +154,10 @@ PUBLIC PROC RefreshSnapshot()
   AESSNAPSHOT.WindowRoute route
   AESTYPES.InputRecord snapshot
 
+  EXEC.Forbid()
+  AESSTATE.mouseDirty=AESSTATE.mouseDirty &
+      ($ff-AESSTATE.MOUSE_INPUT_DIRTY)
+  EXEC.Permit()
   FOR index=0 TO AESTYPES.CLIENTS-1 DO
     ; Selection, latest sample and inbox publication form one bounded read.
     ; A caller can refresh lock eligibility without overwriting newer capture.
@@ -187,6 +191,14 @@ PUBLIC PROC RefreshSnapshot()
 
 RETURN
 
+PUBLIC PROC RefreshPending()
+
+  IF (AESSTATE.mouseDirty & AESSTATE.MOUSE_INPUT_DIRTY)<>0 THEN
+    RefreshSnapshot()
+  FI
+
+RETURN
+
 ; Scene changes publish routing before refreshing caller-owned inboxes. Input
 ; capture uses RefreshSnapshot alone and never reads the mutable window table.
 PUBLIC PROC Refresh()
@@ -198,15 +210,18 @@ PUBLIC PROC Refresh()
   EXEC.Forbid()
   IF service.pointerCount=0 AND nativePending<>0 THEN
     nativePending=0
-    AESSTATE.mouseDirty=1
+    AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   FI
   EXEC.Permit()
   LET changed=AESSNAPSHOT.Publish()
-  IF changed=0 AND AESSTATE.mouseDirty=0 THEN
+  IF changed=0 AND
+      (AESSTATE.mouseDirty & AESSTATE.MOUSE_INPUT_DIRTY)=0 THEN
     RETURN
   FI
-  AESSTATE.mouseDirty=0
   RefreshSnapshot()
+  IF (AESSTATE.mouseDirty & AESSTATE.MOUSE_CURSOR_DIRTY)<>0 THEN
+    EXEC.Signal(service.owner,service.mask)
+  FI
 
 RETURN
 
@@ -214,7 +229,7 @@ PUBLIC PROC Lost()
   BYTE index
   AESSNAPSHOT.WindowRoute route
 
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   owner=0
   openEpoch=0
   clickCount=0
@@ -252,7 +267,7 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
     RETURN(0)
   FI
 
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   EXEC.Forbid()
   previous=latest.buttons
   latest.x=sample.x
@@ -285,7 +300,7 @@ BYTE FUNC RouteSample(INPUT.Event POINTER sample)
     accepted=Publish(capturedRoute.endpoint,sample)
     IF latest.buttons=0 THEN
       EXEC.Forbid()
-      AESSTATE.mouseDirty=1
+      AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
       owner=0
       openEpoch=0
       needRelease=0

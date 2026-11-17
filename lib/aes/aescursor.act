@@ -59,6 +59,8 @@ PUBLIC CARD FUNC Select(AESSTATE.Service POINTER service)
 
   status=AESTYPES.OK
   EXEC.Forbid()
+  AESSTATE.mouseDirty=AESSTATE.mouseDirty &
+      ($ff-AESSTATE.MOUSE_CURSOR_DIRTY)
   LET recipient=AESMOUSE.CursorRecipient()
   IF recipient<>service.cursorOwner THEN
     BEGIN

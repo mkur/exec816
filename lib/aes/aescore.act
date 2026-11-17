@@ -213,7 +213,7 @@ CARD FUNC Admit(AESSTATE.Service POINTER service
   request.client=client.id
   request.intout(0)=client.gemId
   Globals(request,client.gemId)
-  AESSTATE.mouseDirty=1
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   AESMOUSE.RefreshSnapshot()
 
 RETURN(AESTYPES.OK)

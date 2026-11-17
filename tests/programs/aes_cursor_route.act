@@ -33,12 +33,18 @@ PROC Main()
   LET desktop=DESKTYPES.Service POINTER(EXEC.AllocMem(SIZEOF(DESKTYPES.Service),
       EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
   Require(service<>NULL AND desktop<>NULL)
-  FOR index=0 TO AESTYPES.WINDOWS-1 DO
-    service.windows(index)=@desktop.windows(index)
+  FOR index=0 TO 1 DO
+    desktop.windows(index)=DESKTYPES.Window POINTER(EXEC.AllocMem(
+        SIZEOF(DESKTYPES.Window),EXEC.MEMF_PUBLIC OR EXEC.MEMF_CLEAR))
+    Require(desktop.windows(index)<>NULL)
+    service.windows(index)=desktop.windows(index)
   OD
   AESSTATE.Bind(service)
   DESKSTATE.Bind(desktop)
   AESCURSOR.Init(service)
+  service.owner=EXEC.FindTask(NULL)
+  service.mask=$10000
+  Require(EXEC.AllocSignal(16)=16)
   service.live=1
   service.count=2
   desktop.scene.count=2
@@ -46,7 +52,7 @@ PROC Main()
   FOR index=0 TO 1 DO
     BEGIN
       LET client=@service.clients(index)
-      LET window=@desktop.windows(index)
+      LET window=desktop.windows(index)
       LET layer=@desktop.scene.items(index)
       client.id=LONGCARD(index)+1
       client.binding=@binding
@@ -62,6 +68,11 @@ PROC Main()
       window.owner=client.id
       window.id=(LONGCARD(index)+1)*11
       window.layer=(LONGCARD(index)+1)*100
+      window.gui.window=INT(index)+1
+      window.frame.work.x=INT(index)*200
+      window.frame.work.y=32
+      window.frame.work.width=180
+      window.frame.work.height=148
       desktop.scene.order(index)=index
       layer.id=window.layer
       layer.shown=1
@@ -78,6 +89,10 @@ PROC Main()
     AESMOUSE.Reset()
     AESSNAPSHOT.Invalidate()
     Require(AESSNAPSHOT.Publish()<>0)
+    Require(AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY)
+    AESMOUSE.RefreshPending()
+    Require((AESSTATE.mouseDirty & AESSTATE.MOUSE_INPUT_DIRTY)=0)
+    Require((AESSTATE.mouseDirty & AESSTATE.MOUSE_CURSOR_DIRTY)<>0)
     sample.kind=INPUT.EVENT_POINTER
     sample.x=50
     sample.y=50
@@ -85,6 +100,7 @@ PROC Main()
     Require(AESMOUSE.CursorRecipient()=1)
     Require(AESCURSOR.Select(service)=AESTYPES.OK)
     Require(service.directory.mouse.form.words(3)=2)
+    Require((AESSTATE.mouseDirty & AESSTATE.MOUSE_CURSOR_DIRTY)=0)
     ; An UPDATE-only owner is not the pointer's input recipient.
     service.updateOwner=2
     service.mouseOwner=2
@@ -149,6 +165,12 @@ PROC Main()
     sample.buttons=0
     AESMOUSE.Route(@sample)
     Require(AESMOUSE.CursorRecipient()=2)
+    service.clients(0).endpoint.state=AESTYPES.ENDPOINT_CLOSING
+    AESSNAPSHOT.Invalidate()
+    AESSNAPSHOT.Publish()
+    AESMOUSE.RefreshPending()
+    Require(service.clients(0).endpoint.holds=0)
+    Require((AESSTATE.mouseDirty & AESSTATE.MOUSE_INPUT_DIRTY)=0)
     AESMOUSE.Lost()
     Require(service.clients(0).mouseHides=0 AND service.clients(1).mouseHides=0)
     AESSTATE.Bind(NULL)
@@ -157,6 +179,10 @@ PROC Main()
   END
   Require(service.directory.endpoints(0).holds=0
       AND service.directory.endpoints(1).holds=0)
+  FOR index=0 TO 1 DO
+    EXEC.FreeMem(BYTE POINTER(desktop.windows(index)),SIZEOF(DESKTYPES.Window))
+  OD
+  EXEC.FreeSignal(16)
   EXEC.FreeMem(BYTE POINTER(service),SIZEOF(AESSTATE.Service))
   EXEC.FreeMem(BYTE POINTER(desktop),SIZEOF(DESKTYPES.Service))
 

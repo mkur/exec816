@@ -25,7 +25,7 @@ def run(out):
     (out/'releasepolicy.act').write_text('MODULE RELEASEPOLICY\nUSE EXEC\nUSE AESTYPES\nUSE RELEASESTATE\nBYTE systemHeld\n'+''.join(bodies)+'ENDMODULE\n')
     (out/'releasestate.act').write_text('''MODULE RELEASESTATE
 USE EXEC
-PUBLIC CONST UPDATE_WAITING=1
+PUBLIC CONST UPDATE_WAITING=1, MOUSE_DIRTY=3
 PUBLIC TYPE Client=[LONGCARD id]
 PUBLIC TYPE Service=[
   EXEC.Task POINTER owner

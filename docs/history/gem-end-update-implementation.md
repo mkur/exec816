@@ -68,3 +68,37 @@ bytes: **0 fixed, root, kernel, idle and per-public-Task**, including guards,
 alignment and unused capacity. No new runtime storage or platform service is
 introduced. Only the focused release fixture and MGVIEW execute; no QED,
 Counter, catalog, demo or release qualification runs.
+
+## EU3 — input and cursor consumers acknowledge independent changes
+
+The existing mouse-dirty byte now has input-refresh and cursor-selection bits.
+Real routing/eligibility changes set both. Snapshot refresh consumes its bit
+before copying, and cursor selection consumes its own bit under the existing
+guard. A later producer remains pending. Physical input retains its independent
+capture/publication path. `AESHOST.Service` refreshes copied input only when
+pending, and real caller-side routing changes preserve the manager wake needed
+to select the new cursor form.
+
+SCRENMGR runs its second presentation only after actual interaction. Presentation
+selects the cursor only for pointer/routing changes, and wakes mouse-completion
+waiters after physical presentation rather than on every idle check. Paint-only
+END no longer calls routing publication; END_MCTRL still publishes its routing
+transition. Lifecycle settlement and application-outline suspension remain.
+
+The [EU3 record](../development/gem-end-update-eu3.json) records 31 optimized
+emitted routing assertions: stationary focus/MCTRL changes, separate consumer
+acknowledgment, raw form survival and closing-endpoint retirement. The old
+routing fixture is updated for canonical heap-owned window records, work
+rectangles and a valid lifecycle wake target. Host checks run 732 tests, four
+skipped. MGVIEW retains the entire settled scanout, three clean lifetimes and
+intact guards. Provider/APP bytes remain reused.
+
+END is **6.574/6.572 ms elapsed**, **4.726/4.731 ms viewer CPU**, with zero manager
+CPU and zero routing-publication calls. Journal/cache work remains until EU4.
+Observed viewport latency varies with the PAL sampling boundary; no further
+latency gain is claimed from this slice.
+
+No runtime state is added: the two bits reuse one existing byte. Generated
+reservations remain identical; added bank-zero bytes are **0 fixed, root,
+kernel, idle and per-public-Task**, including guards, alignment and spare
+capacity. No Task, service, signal, queue, buffer or physical admission is added.
