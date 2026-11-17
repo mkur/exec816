@@ -225,7 +225,7 @@ def caller_probes(out, timer=False):
     (out/'aes-events.c').write_text(binding)
 
 
-def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all', visibility_local='all', reuse_c=False):
+def applications(out, suite, replay=False, mode='opt', video='PAL', from_build=None, filesystem='sdfs', frame_local='all', geometry_local='all', visibility_local='all', reuse_c=False, build_only=False):
     gui = suite == 'gui'
     inbox = suite == 'inbox'
     keyboard = suite == 'keyboard'
@@ -530,6 +530,8 @@ ENDMODULE
             generate_tasks.policy_modules=policy_modules
     from generate_mouse_acceleration import metadata
     program['build']['desktop_mouse'] = metadata(None)
+    if build_only:
+        return program, foreign
     pin = json.loads(json.dumps(PIN))
     pin['machine']['video'] = video
     report = dict(status='running', tier='development', qualification=False,

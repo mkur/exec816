@@ -23,6 +23,10 @@ hoisting-only optimization: narrow operations now use their complete height
 within the existing raw-list work budget, reducing scrollbar records from
 101 to 36 and measured paint CPU from 31–32 to about 14 ms.
 
+The [direct scrollbar comparison](../../history/gem-direct-scrollbar.md)
+removes scratch publication in the comparison build, saving about 2 ms of
+scrollbar CPU. Both paths complete in the same observed MGVIEW frame.
+
 The completed [single-grant copy slice](../../history/gem-copy-grant.md) keeps
 captured source edges in VRAM through the aligned interior and restoration.
 It removes CPU edge transfers and the intermediate physical handoff, reducing

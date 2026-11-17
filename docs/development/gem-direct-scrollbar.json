@@ -1,0 +1,280 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Test-only direct and scratch paint for the same selected scrollbar subtree",
+  "baseline_revision": "301bed51",
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "gem4xe_aes_revision": "e413c39d2f8e1bec8fe16596f610b923de4a0ae9",
+  "inputs": {
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "base_clock_hz": 1773447.5,
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "pointer_start": [
+      639,
+      0
+    ],
+    "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+    "app_abi": 48,
+    "aes_abi": 28
+  },
+  "machine": {
+    "ok": true,
+    "basic": false,
+    "machine": "800XL",
+    "memory": "64K",
+    "video": "pal",
+    "selftest": false,
+    "fastboot": false,
+    "fppatch": false,
+    "stereo": false,
+    "stereomono": false,
+    "siopatch": "off",
+    "burstio": false,
+    "accuratedisk": true,
+    "casautoboot": true,
+    "casautobasicboot": false,
+    "artifact": "none",
+    "axlonmemsize": "none",
+    "highbanks": 63,
+    "highbanks_overridden": false,
+    "randmem": false,
+    "randdelay": false,
+    "diskemu": "generic56k",
+    "vbxe": true,
+    "covox": false,
+    "soundboard": false,
+    "rapidus": false,
+    "slightsid": false,
+    "addons": "custom",
+    "exeloadmode": "default",
+    "kernel_id": "$c017f1e4033f056f",
+    "actual_kernel_id": "$c017f1e4033f056f",
+    "basic_id": "$0000000000000000",
+    "actual_basic_id": "$0000000000000005",
+    "debugbrkrun": true
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "override": false,
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16"
+  },
+  "comparison": {
+    "c_sources_recompiled": [
+      "7-gem-vbxe.o",
+      "9-desktop-frame.o"
+    ],
+    "c_objects_reused": 45,
+    "layout_probes_reused": 10,
+    "app_rebuilds": 0,
+    "native_rebuilds": 1
+  },
+  "captures": {
+    "scratch_scroll": {
+      "path": "build/gem-direct-scrollbar/scratch-scroll/results.json",
+      "sha256": "f104ecffc6b1c9ec1499516e7208407d1d49ee62cce838f47c83df3dc5fea0cd"
+    },
+    "direct_scroll": {
+      "path": "build/gem-direct-scrollbar/direct-scroll/results.json",
+      "sha256": "1991579ed51236b89a7c218b4c254a510cd2665beb9f33af8c8267def96580cc"
+    },
+    "scratch_definition": {
+      "path": "build/gem-direct-scrollbar/scratch-scroll/definition.json",
+      "sha256": "db1eec52645f10d62e3f519a02abea53c516e3537810074bdbf2b2b6a185e7a2"
+    },
+    "direct_definition": {
+      "path": "build/gem-direct-scrollbar/direct-scroll/definition.json",
+      "sha256": "874d4bd3d48304a1e2de5f6cb2bb6921927570650b2bf79130b51adc66e4a774"
+    },
+    "scratch_native": {
+      "path": "build/gem-mouse-show/viewer/program/build.json",
+      "sha256": "9d9b5af308ff77882dac3008a316874e0baf9d3d90884d57ea3997cf1bf621cb"
+    },
+    "direct_native": {
+      "path": "build/gem-direct-scrollbar/viewer/program/build.json",
+      "sha256": "3ccef2e62b944204209ed80475d2f6c68f60f387abceb830fea2851e71355556"
+    },
+    "scratch_provider": {
+      "path": "build/gem-mouse-show/viewer/c-image.json",
+      "sha256": "87c0defffdfb5852611c46c74bdb435964c9a8bcd3b947fbbbf267a8ba39bbd0"
+    },
+    "direct_provider": {
+      "path": "build/gem-direct-scrollbar/viewer/c-image.json",
+      "sha256": "a7903a878421af29948841528b2bd2c5474fdad1fc971582bd16741c80b4c632"
+    },
+    "comparison_objects": {
+      "path": "build/gem-direct-scrollbar/viewer/objects.json",
+      "sha256": "8d22f43faed9ad001e1e6805b8b434c8e899eec1ef7d52a71da0f3ed9bd2b9ad"
+    },
+    "scratch_overlap": {
+      "path": "build/gem-direct-scrollbar/scratch-frame/overlap.json",
+      "sha256": "b499b1db5c149394cde0aa2342bcf70c739ab8e7c2f0cd6ba2508315fc350a56"
+    },
+    "direct_overlap": {
+      "path": "build/gem-direct-scrollbar/frame/overlap.json",
+      "sha256": "b3c2a842389174ce2e904d4a7a989d277cbb9ab84a0b26b49c0fe10259fc36f8"
+    },
+    "scratch_full_frame": {
+      "path": "build/gem-direct-scrollbar/scratch-frame/results.json",
+      "sha256": "3105eb928b69727108adcbc1d8be0e51b708bbe5439b3341c1844dd00c0631a4"
+    },
+    "direct_full_frame": {
+      "path": "build/gem-direct-scrollbar/frame/results.json",
+      "sha256": "9e46e3fcd0c166737c27a38ceeb482561d0c65be27d1e73afdd500994b0d7331"
+    },
+    "host_checks": {
+      "path": "build/gem-direct-scrollbar/host-tests.log",
+      "sha256": "858e7011adc93ffba51786731a39ce2b9ce85b12a04671e19988051ad821577f"
+    }
+  },
+  "samples": [
+    {
+      "action": "down",
+      "viewport_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+      "scratch": {
+        "paint_cpu_ms": 14.1848,
+        "paint_elapsed_ms": 18.0151,
+        "records_per_submission": [
+          19,
+          12,
+          5
+        ],
+        "paint_fence_calls": 8,
+        "paint_admissions": 1,
+        "scroll_submissions": 8,
+        "scroll_fence_calls": 26,
+        "scroll_admissions": 6,
+        "key_to_copy_ms": 58.0898,
+        "key_to_exposed_row_return_ms": 100.8206,
+        "key_to_viewport_observation_ms": 120.277
+      },
+      "direct": {
+        "paint_cpu_ms": 12.3737,
+        "paint_elapsed_ms": 15.8511,
+        "records_per_submission": [
+          19,
+          12
+        ],
+        "paint_fence_calls": 5,
+        "paint_admissions": 1,
+        "scroll_submissions": 7,
+        "scroll_fence_calls": 23,
+        "scroll_admissions": 6,
+        "key_to_copy_ms": 57.5214,
+        "key_to_exposed_row_return_ms": 100.2722,
+        "key_to_viewport_observation_ms": 120.2438
+      }
+    },
+    {
+      "action": "up",
+      "viewport_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+      "scratch": {
+        "paint_cpu_ms": 14.3579,
+        "paint_elapsed_ms": 18.1698,
+        "records_per_submission": [
+          19,
+          12,
+          5
+        ],
+        "paint_fence_calls": 8,
+        "paint_admissions": 1,
+        "scroll_submissions": 8,
+        "scroll_fence_calls": 26,
+        "scroll_admissions": 6,
+        "key_to_copy_ms": 60.558,
+        "key_to_exposed_row_return_ms": 101.7185,
+        "key_to_viewport_observation_ms": 120.6193
+      },
+      "direct": {
+        "paint_cpu_ms": 12.377,
+        "paint_elapsed_ms": 15.8527,
+        "records_per_submission": [
+          19,
+          12
+        ],
+        "paint_fence_calls": 5,
+        "paint_admissions": 1,
+        "scroll_submissions": 7,
+        "scroll_fence_calls": 23,
+        "scroll_admissions": 6,
+        "key_to_copy_ms": 54.2684,
+        "key_to_exposed_row_return_ms": 98.9592,
+        "key_to_viewport_observation_ms": 120.5646
+      }
+    }
+  ],
+  "overlap": [
+    {
+      "phase": 13,
+      "field": "WF_HSLIDE",
+      "changed_pixels": 163,
+      "matched_scratch": true,
+      "paint_calls": 1
+    },
+    {
+      "phase": 15,
+      "field": "WF_HSLIDE",
+      "changed_pixels": 359,
+      "matched_scratch": true,
+      "paint_calls": 1
+    },
+    {
+      "phase": 25,
+      "field": "WF_HSLIDE",
+      "changed_pixels": 0,
+      "matched_scratch": true,
+      "paint_calls": 1
+    },
+    {
+      "phase": 26,
+      "field": "WF_HSLSIZE",
+      "changed_pixels": 0,
+      "matched_scratch": true,
+      "paint_calls": 1
+    },
+    {
+      "phase": 29,
+      "field": "WF_VSLIDE",
+      "changed_pixels": 212,
+      "matched_scratch": true,
+      "paint_calls": 1
+    },
+    {
+      "phase": 30,
+      "field": "WF_VSLSIZE",
+      "changed_pixels": 140,
+      "matched_scratch": true,
+      "paint_calls": 1
+    }
+  ],
+  "legacy_full_frame": {
+    "status": "fail on both variants",
+    "c_checks": 223,
+    "c_failures": 4,
+    "first_failure_line": 53,
+    "termination_status": "$FF93"
+  },
+  "bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  },
+  "c_dp_workspace_bytes": 23,
+  "host_tests": {
+    "total": 740,
+    "skipped": 4
+  }
+}

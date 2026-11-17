@@ -40,6 +40,10 @@
   heights replace the sixteen-row cap, with emitted boundary/pixel checks
   and lower MGVIEW copy, scrollbar CPU and observed completion latency.
 
+- [Direct scrollbar paint comparison](gem-direct-scrollbar.md) measures about
+  2 ms less scrollbar CPU with the same observed MGVIEW completion frame and
+  byte-identical settled scanouts.
+
 - [Selected-scrollbar raster audit](gem-scrollbar-raster-audit.md): passive
   preparation/traversal/clear/publication costs, donor comparison and a proposed
   reduction of repeated row-advance work; drawing code remains unchanged.
