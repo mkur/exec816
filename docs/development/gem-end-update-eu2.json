@@ -1,0 +1,76 @@
+{
+  "status": "pass",
+  "tier": "development",
+  "qualification": false,
+  "scope": "EU2: final painting release does not manufacture a manager wake; armed continuations retain guarded notification",
+  "captures": {
+    "scroll": {
+      "path": "build/gem-end-update/eu2/scroll-settled/results.json",
+      "sha256": "34a17ac13f21b0acb19259b48fef7791af92dc1ee3064c5d1f768f71e3ed5b3b"
+    },
+    "definition": {
+      "path": "build/gem-end-update/eu2/scroll-settled/definition.json",
+      "sha256": "5b66b317dbea25e1e2c6d1ccadea49e2ed578df434589d92b01110f85a60d9f3"
+    },
+    "release": {
+      "path": "build/gem-end-update/eu2/release/results.json",
+      "sha256": "1111a41ec526ac9137e06e8357941ac1d3bbd6d28b1da486352c4dfe2cae91a0"
+    }
+  },
+  "inputs": {
+    "native_sha256": "865d27af86129e298107699dabca8f6e26ec29740576df52da83e51c00e55148",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "manager_identity": {
+      "task": 137620,
+      "dp": 4864
+    }
+  },
+  "samples": [
+    {
+      "action": "down",
+      "end": {
+        "elapsed_ms": 6.820684006715734,
+        "charged_cpu_ms": 4.927760759763117,
+        "off_cpu_ms": 0.7340927769217865,
+        "interrupt_ms": 1.1588304700308298
+      },
+      "manager_cpu_ms": 0.0,
+      "release_signals": 0
+    },
+    {
+      "action": "up",
+      "end": {
+        "elapsed_ms": 6.767468447755008,
+        "charged_cpu_ms": 4.932765136830946,
+        "off_cpu_ms": 0.6838375536913273,
+        "interrupt_ms": 1.1508657572327345
+      },
+      "manager_cpu_ms": 0.0,
+      "release_signals": 0
+    }
+  ],
+  "observed_completion_ms": {
+    "down": 120.32326866174499,
+    "up": 120.24207088171485
+  },
+  "checks": {
+    "release_assertions": 25,
+    "host_tests": 732,
+    "skipped": 4,
+    "guards": "intact",
+    "process_lifetimes": 3,
+    "settled_scanout_identical": true
+  },
+  "scanout_note": "The viewport-observation frame differs at four clipped cursor pixels; the settled frame matches the entire baseline scanout.",
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0
+  }
+}

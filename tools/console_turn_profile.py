@@ -101,8 +101,13 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
     turns = [t for t, e in events if e[0] == 'cpu' and int(e[4], 16) == points['turn']]
     workers = {int(e[9], 16) for t, e in events
                if e[0] == 'cpu' and int(e[4], 16) == points['turn']}
-    require(len(workers) == 1 and len(turns) > 1, 'Missing unique console worker turns')
-    worker = workers.pop()
+    if 'worker_dp' in definition:
+        worker = definition['worker_dp']
+        require(worker in definition['task_dps'] and workers <= {worker},
+                'Captured worker identity disagrees with observed turns')
+    else:
+        require(len(workers) == 1 and len(turns) > 1, 'Missing unique console worker turns')
+        worker = workers.pop()
     owner = None
     interrupts = []
     segments = []
@@ -164,7 +169,8 @@ def analyze_events(events, definition, window=None, allow_empty_window=False, in
     if window is not None:
         rows = [r for r in rows if window[0] <= r['start'] < r['end'] <= window[1]]
         require(rows or allow_empty_window, 'No complete worker turns in workload window')
-    start, end = (rows[0]['start'], rows[-1]['end']) if rows else window
+    start, end = ((rows[0]['start'], rows[-1]['end']) if rows else
+                  window if window is not None else (events[0][0],events[-1][0]))
     totals = {}
     for kind in definitions:
         selected = [s for s in spans if s['kind'] == kind and start <= s['start'] < s['end'] <= end]

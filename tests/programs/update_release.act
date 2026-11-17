@@ -1,0 +1,144 @@
+MODULE UPDATERELEASETEST
+USE EXEC
+USE AESTYPES
+USE RELEASESTATE
+USE RELEASEPOLICY
+USE HEAPCORE
+CARD checks
+BYTE count,finished
+BYTE ARRAY order(2)
+RELEASESTATE.Client client
+EXEC.Task POINTER parent
+CONST WAKE=$10000
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fc00+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Begin(CARD depth)
+  CARD index
+
+  LET service=RELEASESTATE.Get()
+  service.updates=depth
+  service.updateHolds=depth
+  service.mouseHolds=0
+  service.updateOwner=client.id
+  service.updateHint=0
+  FOR index=1 TO depth DO
+    EXEC.ObtainSemaphore(@service.updateResource)
+  OD
+
+RETURN
+
+PROC FinishUpdate()
+
+  LET service=RELEASESTATE.Get()
+  Require(RELEASEPOLICY.Release(service,@client,AESTYPES.END_UPDATE,1)=AESTYPES.OK)
+  RELEASEPOLICY.ReturnResource(service,service.updates=0)
+
+RETURN
+
+PROC Peer(BYTE tag)
+
+  LET service=RELEASESTATE.Get()
+  EXEC.ObtainSemaphore(@service.updateResource)
+  order(count)=tag
+  count==+1
+  RELEASEPOLICY.ReturnResource(service,1)
+  EXEC.Forbid()
+  finished==+1
+  EXEC.Signal(parent,WAKE)
+  EXEC.Permit()
+  BEGIN
+    LET ignored=EXEC.Wait(0)
+  END
+
+RETURN
+
+PROC First()
+
+  Peer(1)
+
+RETURN
+
+PROC Second()
+
+  Peer(2)
+
+RETURN
+
+PROC Main()
+  EXEC.Task POINTER firstTask,secondTask
+
+  parent=EXEC.FindTask(NULL)
+  Require(EXEC.AllocSignal(16)=16)
+  LET service=RELEASESTATE.Get()
+  service.owner=parent
+  service.mask=WAKE
+  service.live=1
+  client.id=1
+  EXEC.InitSemaphore(@service.updateResource)
+  Begin(2)
+  FinishUpdate()
+  Require(service.updates=1)
+  Require(EXEC.SetSignal(0,WAKE)=0)
+  FinishUpdate()
+  Require(service.updates=0)
+  Require(EXEC.SetSignal(0,WAKE)=0)
+  Require(RELEASEPOLICY.SystemBlocked()=0)
+
+  Begin(1)
+  Require(RELEASEPOLICY.SystemBlocked()<>0)
+  Require((service.updateHint & RELEASESTATE.UPDATE_WAITING)<>0)
+  FinishUpdate()
+  Require(EXEC.SetSignal(0,WAKE)=WAKE)
+  Require(service.updateHint=0)
+  Require(RELEASEPOLICY.SystemBlocked()=0)
+  Require(EXEC.SetSignal(0,WAKE)=0)
+
+  Begin(1)
+  RELEASESTATE.releaseBeforeArm=1
+  Require(RELEASEPOLICY.SystemBlocked()=0)
+  Require(service.updateHint=0)
+  Require(EXEC.SetSignal(0,WAKE)=0)
+  service.updateHolds=0
+
+  Begin(1)
+  service.mouseHolds=1
+  service.updateHolds=0
+  service.mouseOwner=1
+  Require(RELEASEPOLICY.Release(service,@client,AESTYPES.END_MCTRL,1)=AESTYPES.OK)
+  RELEASEPOLICY.ReturnResource(service,1)
+  Require(service.mouseHolds=0 AND service.mouseOwner=0)
+  Require(RELEASESTATE.mouseDirty<>0)
+  Require(EXEC.SetSignal(0,WAKE)=0)
+
+  EXEC.ObtainSemaphore(@service.updateResource)
+  firstTask=EXEC.CreateTask(c"first",0,@First,1)
+  Require(firstTask<>NULL)
+  WHILE firstTask.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  secondTask=EXEC.CreateTask(c"second",0,@Second,1)
+  Require(secondTask<>NULL)
+  WHILE secondTask.tc_State<>EXEC.TS_WAIT DO
+    EXEC.Yield()
+  OD
+  RELEASEPOLICY.ReturnResource(service,1)
+  WHILE finished<>2 DO
+    BEGIN
+      LET ignored=EXEC.Wait(WAKE)
+    END
+  OD
+  Require(count=2 AND order(0)=1 AND order(1)=2)
+  EXEC.RemTask(firstTask)
+  EXEC.RemTask(secondTask)
+  EXEC.FreeSignal(16)
+
+RETURN
+ENDMODULE

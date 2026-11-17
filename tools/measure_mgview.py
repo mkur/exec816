@@ -88,6 +88,23 @@ def expected(font,work,content,shift):
     return b''.join(colours[model.pixels[yy*640+xx]] for yy in range(y,y+h) for xx in range(x,x+w))
 
 
+def manager_identity(bridge,program):
+    """Read the live owner once; a sleeping manager need never execute a turn."""
+    from generate_desktop import layout as desktop_layout
+    number=lambda a,n=3:int.from_bytes(bridge.memdump(a,n),'little')
+    var=next(r['address'] for r in program['image']['data'] if '_DESKSTATE_SERVICE_' in r['name'])
+    service=number(var);require(service,'Missing live desktop')
+    task=number(service+desktop_layout()['Service']['fields']['owner'])
+    fields=json.loads((ROOT/'abi/native-dp.json').read_text())['direct_page']['fields']
+    owner=next(f['offset'] for f in fields if f['name']=='owner_pointer')
+    task_fields=json.loads((ROOT/'abi/tasks.json').read_text())['context']['fields']
+    item=next(f[2] for f in task_fields if f[0]=='item')
+    matches=[pool['dp'] for pool in program['build']['memory']['task_pools']
+             if number(pool['dp']+owner) and number(number(pool['dp']+owner)+item)==task]
+    require(task and len(matches)==1,'Missing unique live SCRENMGR Task identity')
+    return dict(task=task,dp=matches[0])
+
+
 def analyze(out,d,base,samples):
     events=read_events(out/'emulator.log',kinds={'cpu'})
     interrupts={d['timeline']['points'][n] for n in ('native_irq','native_nmi')}
@@ -267,6 +284,9 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
                         if slider_detail:
                             from mgview_frame_trace import geometry
                             report['frame_geometry']=geometry(b,p,window)
+                        report['manager_identity']=manager_identity(b,p)
+                        d['timeline']['worker_dp']=report['manager_identity']['dp']
+                        (out/'definition.json').write_text(json.dumps(d,indent=2)+'\n')
                         b._cmd_ok('KEY CTRL down');frames(3);b.profile_start();frames(2)
                         for label,key,shift in (('down','EQUALS',1),('up','MINUS',0)):
                             want=expected(font,work,content,shift);row_bytes=work[2]*8*3
@@ -297,6 +317,8 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
                             print('MGVIEW',label,'complete pixels:',round(sample['offered_to_complete_ms'],2),'ms',flush=True)
                             frames(5)
                         frames(3);b.profile_stop();b._cmd_ok('KEY CTRL up');frames(60)
+                        b.rawscreen(str(out/'settled.bgra'))
+                        report['settled_scanout_sha256']=sha256(out/'settled.bgra')
                         report['pointer_end']=[number(cursor(n)) for n in ('cursorX','cursorY')]
                         require(report['pointer_start']==report['pointer_end'],'Pointer moved during scroll capture')
                     else:frames(20);require(number(sy['nwindows'])==0,'No-argument viewer opened a window')
@@ -335,6 +357,10 @@ def reanalyze(cache,out):
     require(sha256(p['xex'])==r['native_sha256'] and app['sha256']==r['app_sha256']['mgview'],'Captured binaries changed')
     d=definition(cache,p,foreign,app)
     recorded=json.loads((out/'definition.json').read_text())
+    if 'worker_dp' in recorded['timeline']:
+        require(r['manager_identity']['dp']==recorded['timeline']['worker_dp'],
+                'Captured manager identity changed')
+        d['timeline']['worker_dp']=r['manager_identity']['dp']
     if 'presenter' in recorded:
         import mgview_presenter_trace
         d['presenter']=mgview_presenter_trace.definition(p)

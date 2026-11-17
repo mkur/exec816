@@ -18,6 +18,18 @@ DEFINITION = dict(points=dict(turn=10, selected=20, native_irq=30,
 
 
 class ConsoleTurnProfile(unittest.TestCase):
+    def test_known_sleeping_worker_needs_no_turns(self):
+        definition=dict(DEFINITION,worker_dp=0x1200,spans={})
+        result=analyze_events([event(0,20),event(10,60)],definition)
+        self.assertEqual(result['complete_turns'],0)
+        self.assertEqual(result['window_cpu']['charged_cpu_ms'],0)
+        self.assertAlmostEqual(result['window_cpu']['off_cpu_ms'],10/BASE_HZ*1000)
+
+    def test_known_worker_must_match_observed_identity(self):
+        with self.assertRaises(RuntimeError):
+            analyze_events([event(0,20),event(1,10),event(2,10)],
+                           dict(DEFINITION,worker_dp=0x1200))
+
     def test_shared_c_return_ignores_nested_callback_and_primitive_returns(self):
         definition = dict(DEFINITION, spans={'text': dict(entry=70, returns=[80],
                                                          match_return_stack=True)})

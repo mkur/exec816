@@ -35,3 +35,36 @@ bank-zero bytes: **0 fixed, root, kernel, idle and per-public-Task**, including
 guards, alignment and unused capacity. No new state, Task, signal, buffer,
 platform operation or physical admission is introduced. No QED, Counter,
 catalog, demo or release matrix ran.
+
+## EU2 — final release wakes only an armed continuation
+
+Final painting release no longer manufactures `UPDATE_WAITING`. `SystemBlocked`
+still arms under the existing guard, and `Notify` consumes that hint with the
+native release. Native FIFO waiting is unchanged; no AES ownership queue or
+signal-based semaphore wait is added.
+
+The [EU2 record](../development/gem-end-update-eu2.json) records the production
+release/arm routines in a small optimized fixture: 25 checks include nesting,
+MCTRL, release before/after arming and a deterministic release between the first
+check and guarded recheck. Two actual Tasks verify FIFO ownership handoff.
+Journal and mouse edges alone are substituted. Host checks run 732 tests,
+four skipped, including sleeping-manager attribution and identity indirection.
+
+The observer reads the live desktop owner and resolves Task DP through native
+context identity at the ready checkpoint. A manager with no observed turn is
+valid and is charged zero CPU. It never wakes that Task for measurement. The
+full-window pixels match; a new settled screenshot also matches the entire
+baseline scanout. Four clipped cursor pixels differed in the earlier PAL
+observation frame, which is not an atomic framebuffer snapshot.
+
+The two scrolls produce **zero release Signals and zero SCRENMGR CPU during
+END**. END is **6.821/6.767 ms elapsed**, **4.928/4.933 ms viewer CPU**. Observed
+complete viewport latency is **120.32/120.24 ms**; these remain two quantized
+samples. Three Process lifetimes, heap/ownership restoration and stack/domain
+guards pass. C provider and APP are reused again.
+
+The generated reservation map remains identical. Added reserved bank-zero
+bytes: **0 fixed, root, kernel, idle and per-public-Task**, including guards,
+alignment and unused capacity. No new runtime storage or platform service is
+introduced. Only the focused release fixture and MGVIEW execute; no QED,
+Counter, catalog, demo or release qualification runs.

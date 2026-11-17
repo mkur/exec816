@@ -6,10 +6,28 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from console_turn_profile import Timeline
 from mgview_end_trace import charged_peers,resource_stages
+from measure_mgview import manager_identity
 from sio_transaction_trace import BASE_HZ
 
 
 class EndTraceTests(unittest.TestCase):
+    def test_sleeping_manager_identity_follows_context_to_task(self):
+        memory={}
+        def pointer(address,value):
+            memory.update({address+i:b for i,b in enumerate(value.to_bytes(3,'little'))})
+        pointer(0x90000,0x100000)
+        pointer(0x100000,0x110000)
+        pointer(0x1300+192,0x200000)
+        pointer(0x1600+192,0x210000)
+        pointer(0x200000,0x120000)
+        pointer(0x210000,0x110000)
+        class Bridge:
+            def memdump(self,address,size):
+                return bytes(memory.get(address+i,0) for i in range(size))
+        program=dict(image=dict(data=[dict(name='M_DESKSTATE_SERVICE_TEST',address=0x90000)]),
+                     build=dict(memory=dict(task_pools=[dict(dp=0x1300),dict(dp=0x1600)])))
+        self.assertEqual(manager_identity(Bridge(),program),dict(task=0x110000,dp=0x1600))
+
     rows=[dict(kind=name,start=start,end=end) for name,start,end in (
         ('AESLOCKS_CALL',10,90),('AESLOCKS_RELEASE',20,60),
         ('AESWINDOWSTATE_ENDUPDATE',30,50),

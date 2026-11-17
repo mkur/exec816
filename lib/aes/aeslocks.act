@@ -230,9 +230,6 @@ CARD FUNC Release(AESSTATE.Service POINTER service
     AESSTATE.mouseDirty=1
     service.mouseOwner=0
   FI
-  IF painting<>0 AND updates+mouse=0 THEN
-    service.updateHint=service.updateHint OR AESSTATE.UPDATE_WAITING
-  FI
   service.updates==-1
   IF service.updates=0 THEN
     service.updateOwner=0
