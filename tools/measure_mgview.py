@@ -184,7 +184,7 @@ def analyze(out,d,base,samples):
         visible_scope='PAL-frame polling at native COP boundaries: observed top-row and complete-viewport matches are upper bounds, bracketed by prior mismatches.')
 
 
-def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False,end_detail=False,pre_copy_detail=False):
+def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_detail=False,text_detail=False,end_detail=False,pre_copy_detail=False,mouse_detail=False):
     cache=cache.resolve();out=out.resolve();out.mkdir(parents=True,exist_ok=True)
     p=read_build(cache/'program');foreign=json.loads((cache/'c-image.json').read_text())
     apps={n:json.loads((cache/'apps'/n/'app.json').read_text()) for n in ('mgview',)}
@@ -201,6 +201,10 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
     if pre_copy_detail:
         d['pre_copy']=mgview_pre_copy_trace.definition(p,foreign)
         d['pcs']=sorted(set(d['pcs'])|set(d['pre_copy']['pcs']))
+    if mouse_detail:
+        import mgview_mouse_trace
+        d['mouse']=mgview_mouse_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['mouse']['pcs']))
     if presenter:
         import mgview_presenter_trace
         d['presenter']=mgview_presenter_trace.definition(p)
@@ -347,6 +351,8 @@ def run(cache,out,presenter=False,expect_copy_units=None,slider=False,slider_det
             report['end_update']=mgview_end_trace.analyze(out,d,report['audit'])
         if pre_copy_detail:
             report['pre_copy']=mgview_pre_copy_trace.analyze(out,d,report['audit'],report['loaded_base'])
+        if mouse_detail:
+            report['mouse']=mgview_mouse_trace.analyze(out,d,report['audit'])
         report['status']='pass'
     except Exception as error:report.update(status='fail',error=str(error));raise
     finally:
@@ -371,6 +377,10 @@ def reanalyze(cache,out):
     if 'pre_copy' in recorded:
         d['pre_copy']=mgview_pre_copy_trace.definition(p,foreign)
         d['pcs']=sorted(set(d['pcs'])|set(d['pre_copy']['pcs']))
+    if 'mouse' in recorded:
+        import mgview_mouse_trace
+        d['mouse']=mgview_mouse_trace.definition(p,foreign)
+        d['pcs']=sorted(set(d['pcs'])|set(d['mouse']['pcs']))
     if 'worker_dp' in recorded['timeline']:
         require(r['manager_identity']['dp']==recorded['timeline']['worker_dp'],
                 'Captured manager identity changed')
@@ -407,6 +417,8 @@ def reanalyze(cache,out):
         r['end_update']=mgview_end_trace.analyze(out,d,r['audit'])
     if 'pre_copy' in d:
         r['pre_copy']=mgview_pre_copy_trace.analyze(out,d,r['audit'],r['loaded_base'])
+    if 'mouse' in d:
+        r['mouse']=mgview_mouse_trace.analyze(out,d,r['audit'])
     r.update(status='pass');r.pop('error',None)
     (out/'results.json').write_text(json.dumps(r,indent=2)+'\n')
     return r
@@ -423,9 +435,10 @@ if __name__=='__main__':
     parser.add_argument('--text-detail',action='store_true',help='Separate input conversion, visibility, damage and glyph preparation; no rebuild')
     parser.add_argument('--end-detail',action='store_true',help='Trace END_UPDATE journal, publication, native release and peer Tasks; no rebuild')
     parser.add_argument('--pre-copy-detail',action='store_true',help='Separate pre-copy arithmetic, setters, publication and selected frame work; no rebuild')
+    parser.add_argument('--mouse-detail',action='store_true',help='Separate mouse hiding/showing policy, device restore and completion; no rebuild')
     parser.add_argument('--expect-copy-units',type=int,help='Assert the measured physical copy count per scroll')
     args=parser.parse_args()
-    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail,args.end_detail,args.pre_copy_detail)
+    r=reanalyze(args.cache,args.output) if args.analyze_only else run(args.cache,args.output,args.presenter,args.expect_copy_units,args.slider,args.slider_detail,args.text_detail,args.end_detail,args.pre_copy_detail,args.mouse_detail)
     for row in r['audit']['samples']:print(row['action'],row['call_counts'],row['phases']['set_shift'])
     if 'presenter' in r:
         for row in r['presenter']['samples']:

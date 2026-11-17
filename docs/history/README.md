@@ -1,5 +1,9 @@
 # Historical records
 
+- [MGVIEW mouse hide/show audit](gem-mouse-hide-audit.md): passive policy,
+  form-copy, coordination and cursor restoration costs, compared with MagiC's
+  direct hide path; no runtime change.
+
 - [Unchanged slider completion](gem-slider-noop.md): direct UPDATE release
   after an equal value, with no general publication/menu/exposure pass and a
   measured reduction in setter CPU on the reused MGVIEW APP/provider.

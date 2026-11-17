@@ -59,6 +59,13 @@ matching MagiC's early exit. The [delivered slice](../../history/gem-slider-noop
 now implements that return through normal UPDATE release. Equal-setter CPU falls
 from 4.37 to about 2.87 ms; the C provider and MGVIEW APP remain reused.
 
+The [mouse hide/show audit](../../history/gem-mouse-hide-audit.md) then reuses
+that executable. M_OFF charges about 5.9 ms CPU, of which cursor restoration
+including submission is about 0.5 ms. Recipient selection, a full form copy,
+nested coordination and completion checks dominate. It proposes a direct
+M_OFF visibility path following MagiC, retaining synchronous completion and
+normal Task preemption; runtime behavior is unchanged in the audit.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

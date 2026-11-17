@@ -1,0 +1,1508 @@
+{
+  "status": "documented",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Passive mouse hide/show audit and pinned MagiC comparison; no runtime changes",
+  "builds_run": 0,
+  "command": "python3 tools/measure_mgview.py --cache build/gem-slider-noop/viewer --output build/gem-mouse-hide-audit/scroll --mouse-detail --expect-copy-units 1",
+  "captures": {
+    "current": {
+      "path": "build/gem-mouse-hide-audit/scroll/results.json",
+      "sha256": "e331fb33b5687cc30fa970f81f421774f25ec12e3fa95a35e87f5e6a87366c2a"
+    },
+    "definition": {
+      "path": "build/gem-mouse-hide-audit/scroll/definition.json",
+      "sha256": "7b988051c504493e0ada4f507d037efa010b0bd1317609f5198c44c3a3e97a04"
+    },
+    "baseline": {
+      "path": "build/gem-slider-noop/scroll/results.json",
+      "sha256": "c231eacc703e86d5acf52949ebc6ff134f866efb2bb3eeec4922a3a02ce43cb4"
+    },
+    "provider": {
+      "path": "build/gem-slider-noop/viewer/c-image.json",
+      "sha256": "09c9e0fe0a22555e891806739c54bb704d688e6bf8ab1103f09de4f6247865f8"
+    }
+  },
+  "inputs": {
+    "source_cache": "/Users/michalkurcewicz/action/exec816-public/build/gem-slider-noop/viewer",
+    "native_sha256": "e4490cd2038ed1981b02fc551ba68fca36260b0bb316dc26f507494dc6738b49",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "app_abi": 48,
+    "aes_abi": 28,
+    "base_clock_hz": 1773447.5,
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "magic_sources": {
+    "AESMAIN.S": {
+      "path": "build/magic-architecture/text/AESMAIN.S",
+      "sha256": "26a22fb0f2a59272fc03b0cff3dc1aca99ce70db8e205dcca4af93378b026d88"
+    },
+    "AESOBJ.S": {
+      "path": "build/magic-architecture/text/AESOBJ.S",
+      "sha256": "9d48338914569ed512c14960c5043035263e99ee49a1460cc246a7a11a753310"
+    },
+    "INPUT.S": {
+      "path": "build/magic-architecture/text/INPUT.S",
+      "sha256": "a6ca1fd83c76904218a30d22b63ee0cc674832a89e33b3acd07f2eeef218cdc5"
+    }
+  },
+  "pointer_start": [
+    639,
+    0
+  ],
+  "pointer_end": [
+    639,
+    0
+  ],
+  "mouse_form_bytes": 76,
+  "samples": [
+    {
+      "measured": {
+        "elapsed_ms": 8.033716814284043,
+        "charged_cpu_ms": 5.9276493947523115,
+        "off_cpu_ms": 0.6820754490899787,
+        "interrupt_ms": 1.4239919704417527
+      },
+      "exclusive_cpu_ms": {
+        "unselected": 0.0,
+        "binding": 0.08888055609201852,
+        "context_lookup": 0.5912918200285038,
+        "coordination": 2.051512661073981,
+        "dispatch": 0.14977889111462284,
+        "registration_lookup": 0.17656288105512002,
+        "cursor_policy": 0.1320873609170838,
+        "recipient_selection": 0.22646568336530964,
+        "device_apply": 0.10861612762712175,
+        "display_admission": 0.16620170599919087,
+        "device_target": 0.04877505536532658,
+        "queue": 0.01459022609916561,
+        "target_copy": 1.481225127893552,
+        "cursor_render": 0.2738310550495574,
+        "submission": 0.13850142166599239,
+        "fence": 0.03679274407615675,
+        "upload": 0.045109877794521684,
+        "completion_and_wake": 0.19742619953508633
+      },
+      "routines": {
+        "Forbid": {
+          "calls": 4,
+          "elapsed_ms": 0.23471233289962068,
+          "charged_cpu_ms": 0.23471233289962068,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "Permit": {
+          "calls": 4,
+          "elapsed_ms": 1.7141753561918243,
+          "charged_cpu_ms": 0.8119778003013903,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 0.22012210680045505
+        },
+        "ExecAESContext": {
+          "calls": 1,
+          "elapsed_ms": 0.8408763157635057,
+          "charged_cpu_ms": 0.7089299232145299,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13194639254897594
+        },
+        "ExecAESEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.01557700467592077,
+          "charged_cpu_ms": 0.01557700467592077,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESSTATE_GET": {
+          "calls": 3,
+          "elapsed_ms": 0.018325887854024437,
+          "charged_cpu_ms": 0.018325887854024437,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_forbid": {
+          "calls": 9,
+          "elapsed_ms": 0.5867103480649977,
+          "charged_cpu_ms": 0.4985346338135186,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0881757142514791
+        },
+        "AESSTATE_FIND": {
+          "calls": 1,
+          "elapsed_ms": 0.20151428221021486,
+          "charged_cpu_ms": 0.1582369932010956,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043277289009119244
+        },
+        "tasks_permit": {
+          "calls": 9,
+          "elapsed_ms": 0.6388686442649134,
+          "charged_cpu_ms": 0.506287894059452,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1325807502054614
+        },
+        "AESSNAPSHOT_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.3041392541927517,
+          "charged_cpu_ms": 0.2607209968155246,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043418257377227126
+        },
+        "AESSNAPSHOT_DROP": {
+          "calls": 1,
+          "elapsed_ms": 0.0034537250186430666,
+          "charged_cpu_ms": 0.0034537250186430666,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESMOUSE_CURSORRECIPIENT": {
+          "calls": 1,
+          "elapsed_ms": 0.5110103343910659,
+          "charged_cpu_ms": 0.4233280094279645,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08768232496310154
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.6961722859007667,
+          "charged_cpu_ms": 0.5645783142720605,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13159397162870623
+        },
+        "AESCURSOR_SETDEPTH": {
+          "calls": 1,
+          "elapsed_ms": 0.03277514558508216,
+          "charged_cpu_ms": 0.03277514558508216,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESCURSOR_CALL": {
+          "calls": 1,
+          "elapsed_ms": 0.9817037155032782,
+          "charged_cpu_ms": 0.8050703502641042,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.176633365239174
+        },
+        "DisplayEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.22639519918125572,
+          "charged_cpu_ms": 0.18255403669970496,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04384116248155077
+        },
+        "drain": {
+          "calls": 2,
+          "elapsed_ms": 0.01007923831971344,
+          "charged_cpu_ms": 0.01007923831971344,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "flush": {
+          "calls": 2,
+          "elapsed_ms": 0.014590226099165608,
+          "charged_cpu_ms": 0.014590226099165608,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "memcpy": {
+          "calls": 1,
+          "elapsed_ms": 1.9366234410660592,
+          "charged_cpu_ms": 1.481225127893552,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.45539831317250723
+        },
+        "cursor_record": {
+          "calls": 1,
+          "elapsed_ms": 0.17219286164377576,
+          "charged_cpu_ms": 0.12842218334627895,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043770678297496826
+        },
+        "VbxeOwnerFence": {
+          "calls": 2,
+          "elapsed_ms": 0.03679274407615675,
+          "charged_cpu_ms": 0.03679274407615675,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "_VbxeUpload": {
+          "calls": 1,
+          "elapsed_ms": 0.045109877794521684,
+          "charged_cpu_ms": 0.045109877794521684,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "submit": {
+          "calls": 1,
+          "elapsed_ms": 0.2628355223371428,
+          "charged_cpu_ms": 0.21892387567153807,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0439116466656047
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1,
+          "elapsed_ms": 0.2643156902022755,
+          "charged_cpu_ms": 0.22040404353667079,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0439116466656047
+        },
+        "cursor_render": {
+          "calls": 1,
+          "elapsed_ms": 0.5891068103228316,
+          "charged_cpu_ms": 0.5014244853597302,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08768232496310154
+        },
+        "draw_Mouse": {
+          "calls": 1,
+          "elapsed_ms": 4.295517628799273,
+          "charged_cpu_ms": 2.8502394347732314,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 0.7632027449360639
+        },
+        "DisplayLeave": {
+          "calls": 1,
+          "elapsed_ms": 0.2309061869607079,
+          "charged_cpu_ms": 0.1867126035588874,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04419358340182047
+        },
+        "GemDrawingMouseBorrow": {
+          "calls": 1,
+          "elapsed_ms": 4.772202165556071,
+          "charged_cpu_ms": 3.2388892256466573,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 0.851237490819435
+        },
+        "ExecAESMouseApply": {
+          "calls": 1,
+          "elapsed_ms": 5.043566274163741,
+          "charged_cpu_ms": 3.465143456459805,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 0.8963473686139567
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 1,
+          "elapsed_ms": 0.37786571071317304,
+          "charged_cpu_ms": 0.28912612298926244,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08873958772391063
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 1,
+          "elapsed_ms": 0.14815775488138216,
+          "charged_cpu_ms": 0.14815775488138216,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESLOCAL_CALL": {
+          "calls": 1,
+          "elapsed_ms": 7.026991213441616,
+          "charged_cpu_ms": 5.096358928020141,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.2485568363314956
+        },
+        "_AESLocalCall": {
+          "calls": 1,
+          "elapsed_ms": 7.035942704816466,
+          "charged_cpu_ms": 5.105310419394992,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.2485568363314956
+        },
+        "ExecAESLocal": {
+          "calls": 1,
+          "elapsed_ms": 7.060471200867237,
+          "charged_cpu_ms": 5.129838915445763,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.2485568363314956
+        },
+        "ExecAESMouseControl": {
+          "calls": 1,
+          "elapsed_ms": 7.095149419421777,
+          "charged_cpu_ms": 5.1645171340003015,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.2485568363314956
+        },
+        "ExecAESMouseForm": {
+          "calls": 1,
+          "elapsed_ms": 7.183325133673255,
+          "charged_cpu_ms": 5.2092041066905,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.2920455778927766
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 8.033716814284043,
+          "charged_cpu_ms": 5.9276493947523115,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 1.4239919704417527
+        }
+      },
+      "action": "down",
+      "mode": "M_OFF",
+      "return_a": 1,
+      "stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "start": 70173709.75,
+          "end": 70175991.25,
+          "elapsed_ms": 1.2864773273525154,
+          "charged_cpu_ms": 1.0677649042331392,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21871242311937625
+        },
+        {
+          "kind": "cursor_policy",
+          "start": 70175991.25,
+          "end": 70177732.25,
+          "elapsed_ms": 0.9817037155032782,
+          "charged_cpu_ms": 0.8050703502641042,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.176633365239174
+        },
+        {
+          "kind": "policy_to_device",
+          "start": 70177732.25,
+          "end": 70177885.25,
+          "elapsed_ms": 0.08627264128202272,
+          "charged_cpu_ms": 0.08627264128202272,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "device_apply",
+          "start": 70177885.25,
+          "end": 70186829.75,
+          "elapsed_ms": 5.043566274163741,
+          "charged_cpu_ms": 3.465143456459805,
+          "off_cpu_ms": 0.6820754490899787,
+          "interrupt_ms": 0.8963473686139567
+        },
+        {
+          "kind": "completion_and_return",
+          "start": 70186829.75,
+          "end": 70187957.125,
+          "elapsed_ms": 0.6356968559824862,
+          "charged_cpu_ms": 0.5033980425132405,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13229881346924566
+        }
+      ],
+      "submission_records": [
+        1
+      ],
+      "memcpy_bytes": [
+        76
+      ]
+    },
+    {
+      "measured": {
+        "elapsed_ms": 6.43781391893473,
+        "charged_cpu_ms": 5.294137548475498,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1436763704592328
+      },
+      "exclusive_cpu_ms": {
+        "unselected": 0.0,
+        "binding": 0.08852813517174882,
+        "context_lookup": 0.5909393991082341,
+        "coordination": 1.5024408672937881,
+        "dispatch": 0.14921501764219128,
+        "registration_lookup": 0.17007833612215753,
+        "cursor_policy": 0.12532087924790558,
+        "recipient_selection": 0.22202517976991143,
+        "device_apply": 0.10325932963902229,
+        "display_admission": 0.16732945294405388,
+        "device_target": 0.048281666076949,
+        "queue": 0.014378773547003787,
+        "target_copy": 1.0163819340578168,
+        "cursor_render": 0.5947455450471469,
+        "submission": 0.13807851656166872,
+        "fence": 0.04313632064101136,
+        "upload": 0.12341780627844919,
+        "completion_and_wake": 0.19658038932643906
+      },
+      "routines": {
+        "Forbid": {
+          "calls": 4,
+          "elapsed_ms": 0.2844741668417024,
+          "charged_cpu_ms": 0.24028058343988193,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04419358340182047
+        },
+        "Permit": {
+          "calls": 4,
+          "elapsed_ms": 0.38519606585478283,
+          "charged_cpu_ms": 0.25261531564932144,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1325807502054614
+        },
+        "ExecAESContext": {
+          "calls": 1,
+          "elapsed_ms": 0.8928231594112598,
+          "charged_cpu_ms": 0.7139343002823597,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17888885912890007
+        },
+        "ExecAESEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.01508361538754319,
+          "charged_cpu_ms": 0.01508361538754319,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESSTATE_GET": {
+          "calls": 3,
+          "elapsed_ms": 0.017762014381592917,
+          "charged_cpu_ms": 0.017762014381592917,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_forbid": {
+          "calls": 9,
+          "elapsed_ms": 0.6853882057405138,
+          "charged_cpu_ms": 0.5094596823418793,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17592852339863457
+        },
+        "AESSTATE_FIND": {
+          "calls": 1,
+          "elapsed_ms": 0.15231632174056464,
+          "charged_cpu_ms": 0.15231632174056464,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_permit": {
+          "calls": 9,
+          "elapsed_ms": 0.5876971266417529,
+          "charged_cpu_ms": 0.5000852858627053,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08761184077904759
+        },
+        "AESSNAPSHOT_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.35291430955807823,
+          "charged_cpu_ms": 0.2656548896993004,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08725941985877789
+        },
+        "AESSNAPSHOT_DROP": {
+          "calls": 1,
+          "elapsed_ms": 0.0035946933867509467,
+          "charged_cpu_ms": 0.0035946933867509467,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESMOUSE_CURSORRECIPIENT": {
+          "calls": 1,
+          "elapsed_ms": 0.5099530716302569,
+          "charged_cpu_ms": 0.422693651771479,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08725941985877789
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.645212220829768,
+          "charged_cpu_ms": 0.5579528009709901,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08725941985877789
+        },
+        "AESCURSOR_SETDEPTH": {
+          "calls": 1,
+          "elapsed_ms": 0.0328456297691361,
+          "charged_cpu_ms": 0.0328456297691361,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESCURSOR_CALL": {
+          "calls": 1,
+          "elapsed_ms": 0.9725407715762661,
+          "charged_cpu_ms": 0.7972466058341169,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17529416574214912
+        },
+        "DisplayEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.22717052520584907,
+          "charged_cpu_ms": 0.183681783644568,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04348874156128107
+        },
+        "drain": {
+          "calls": 2,
+          "elapsed_ms": 0.009867785767551618,
+          "charged_cpu_ms": 0.009867785767551618,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "flush": {
+          "calls": 2,
+          "elapsed_ms": 0.014378773547003787,
+          "charged_cpu_ms": 0.014378773547003787,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "memcpy": {
+          "calls": 1,
+          "elapsed_ms": 1.2348124204409772,
+          "charged_cpu_ms": 1.0163819340578168,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21843048638316048
+        },
+        "cursor_record": {
+          "calls": 3,
+          "elapsed_ms": 0.46723965609356916,
+          "charged_cpu_ms": 0.3792049102101979,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08803474588337123
+        },
+        "VbxeOwnerFence": {
+          "calls": 2,
+          "elapsed_ms": 0.0869069989385082,
+          "charged_cpu_ms": 0.04313632064101136,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043770678297496826
+        },
+        "_VbxeUpload": {
+          "calls": 1,
+          "elapsed_ms": 0.12341780627844919,
+          "charged_cpu_ms": 0.12341780627844919,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "submit": {
+          "calls": 1,
+          "elapsed_ms": 0.39104625313125985,
+          "charged_cpu_ms": 0.3031524756159965,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1,
+          "elapsed_ms": 0.3925264209963926,
+          "charged_cpu_ms": 0.3046326434811293,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "cursor_render": {
+          "calls": 1,
+          "elapsed_ms": 1.0824960987004126,
+          "charged_cpu_ms": 0.906567575301778,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17592852339863457
+        },
+        "draw_Mouse": {
+          "calls": 1,
+          "elapsed_ms": 2.707156541143733,
+          "charged_cpu_ms": 2.2250447222147822,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.48211181892895055
+        },
+        "DisplayLeave": {
+          "calls": 1,
+          "elapsed_ms": 0.1808624162824104,
+          "charged_cpu_ms": 0.1808624162824104,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "GemDrawingMouseBorrow": {
+          "calls": 1,
+          "elapsed_ms": 3.134431664878718,
+          "charged_cpu_ms": 2.608831104388486,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5256005604902316
+        },
+        "ExecAESMouseApply": {
+          "calls": 1,
+          "elapsed_ms": 3.405161415829902,
+          "charged_cpu_ms": 2.8353672719378498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.569794143892052
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 1,
+          "elapsed_ms": 0.3773723214247955,
+          "charged_cpu_ms": 0.28947854390953215,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 1,
+          "elapsed_ms": 0.1477348497770585,
+          "charged_cpu_ms": 0.1477348497770585,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESLOCAL_CALL": {
+          "calls": 1,
+          "elapsed_ms": 5.379070990260495,
+          "charged_cpu_ms": 4.4576312521233366,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9214397381371594
+        },
+        "_AESLocalCall": {
+          "calls": 1,
+          "elapsed_ms": 5.388022481635345,
+          "charged_cpu_ms": 4.466582743498186,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9214397381371594
+        },
+        "ExecAESLocal": {
+          "calls": 1,
+          "elapsed_ms": 5.413114851158548,
+          "charged_cpu_ms": 4.4916751130213886,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9214397381371594
+        },
+        "ExecAESMouseControl": {
+          "calls": 1,
+          "elapsed_ms": 5.4972024827349,
+          "charged_cpu_ms": 4.532414971404567,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9647875113303326
+        },
+        "ExecAESMouseForm": {
+          "calls": 1,
+          "elapsed_ms": 5.535334426308081,
+          "charged_cpu_ms": 4.570546914977748,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9647875113303326
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 6.43781391893473,
+          "charged_cpu_ms": 5.294137548475498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1436763704592328
+        }
+      },
+      "action": "down",
+      "mode": "M_ON",
+      "return_a": 1,
+      "stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "start": 70266117.875,
+          "end": 70268404.25,
+          "elapsed_ms": 1.2892262105306191,
+          "charged_cpu_ms": 1.0660027996317907,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2232234108988284
+        },
+        {
+          "kind": "cursor_policy",
+          "start": 70268404.25,
+          "end": 70270129.0,
+          "elapsed_ms": 0.9725407715762661,
+          "charged_cpu_ms": 0.7972466058341169,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17529416574214912
+        },
+        {
+          "kind": "policy_to_device",
+          "start": 70270129.0,
+          "end": 70270370.0,
+          "elapsed_ms": 0.1358935068559966,
+          "charged_cpu_ms": 0.09177040763823005,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        {
+          "kind": "device_apply",
+          "start": 70270370.0,
+          "end": 70276408.875,
+          "elapsed_ms": 3.405161415829902,
+          "charged_cpu_ms": 2.8353672719378498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.569794143892052
+        },
+        {
+          "kind": "completion_and_return",
+          "start": 70276408.875,
+          "end": 70277535.0,
+          "elapsed_ms": 0.6349920141419466,
+          "charged_cpu_ms": 0.5037504634335102,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13124155070843652
+        }
+      ],
+      "submission_records": [
+        3
+      ],
+      "memcpy_bytes": [
+        76
+      ]
+    },
+    {
+      "measured": {
+        "elapsed_ms": 8.016236736638666,
+        "charged_cpu_ms": 5.903543803805864,
+        "off_cpu_ms": 0.7321192197682762,
+        "interrupt_ms": 1.3805737130645253
+      },
+      "exclusive_cpu_ms": {
+        "unselected": 0.0,
+        "binding": 0.08295988463148755,
+        "context_lookup": 0.5907984307401262,
+        "coordination": 2.469413388329792,
+        "dispatch": 0.1607039396429835,
+        "registration_lookup": 0.17014882030621145,
+        "cursor_policy": 0.13215784510113776,
+        "recipient_selection": 0.2204040435366708,
+        "device_apply": 0.10361175055929199,
+        "display_admission": 0.16606073763108298,
+        "device_target": 0.04905699210154234,
+        "queue": 0.014872162835381366,
+        "target_copy": 1.0145493452724144,
+        "cursor_render": 0.2741834759698271,
+        "submission": 0.13913577932247784,
+        "fence": 0.06977934221340074,
+        "upload": 0.04384116248155077,
+        "completion_and_wake": 0.20186670313048455
+      },
+      "routines": {
+        "Forbid": {
+          "calls": 4,
+          "elapsed_ms": 0.23421894361124307,
+          "charged_cpu_ms": 0.23421894361124307,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "Permit": {
+          "calls": 4,
+          "elapsed_ms": 0.38449122401424346,
+          "charged_cpu_ms": 0.2538135467782384,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.130677677236005
+        },
+        "ExecAESContext": {
+          "calls": 1,
+          "elapsed_ms": 0.8907791180736955,
+          "charged_cpu_ms": 0.714709626306953,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17606949176674244
+        },
+        "ExecAESEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.01515409957159713,
+          "charged_cpu_ms": 0.01515409957159713,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESSTATE_GET": {
+          "calls": 3,
+          "elapsed_ms": 0.017973466933754734,
+          "charged_cpu_ms": 0.017973466933754734,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_forbid": {
+          "calls": 9,
+          "elapsed_ms": 1.2383366296436742,
+          "charged_cpu_ms": 0.915941971780952,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3223946578627222
+        },
+        "AESSTATE_FIND": {
+          "calls": 1,
+          "elapsed_ms": 0.15217535337245675,
+          "charged_cpu_ms": 0.15217535337245675,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_permit": {
+          "calls": 9,
+          "elapsed_ms": 2.0173983159918745,
+          "charged_cpu_ms": 1.065438926159359,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 0.21984017006423928
+        },
+        "AESSNAPSHOT_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.35481738252753464,
+          "charged_cpu_ms": 0.2669236050122713,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "AESSNAPSHOT_DROP": {
+          "calls": 1,
+          "elapsed_ms": 0.0034537250186430666,
+          "charged_cpu_ms": 0.0034537250186430666,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESMOUSE_CURSORRECIPIENT": {
+          "calls": 1,
+          "elapsed_ms": 0.5113627553113357,
+          "charged_cpu_ms": 0.42346897779607234,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.6464104519586851,
+          "charged_cpu_ms": 0.5585166744434217,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08789377751526335
+        },
+        "AESCURSOR_SETDEPTH": {
+          "calls": 1,
+          "elapsed_ms": 0.03319805068940581,
+          "charged_cpu_ms": 0.03319805068940581,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESCURSOR_CALL": {
+          "calls": 1,
+          "elapsed_ms": 0.9813512945830085,
+          "charged_cpu_ms": 0.8054932553684279,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17585803921458065
+        },
+        "DisplayEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.22773439867828058,
+          "charged_cpu_ms": 0.18255403669970496,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.045180361978575626
+        },
+        "drain": {
+          "calls": 2,
+          "elapsed_ms": 0.010149722503767378,
+          "charged_cpu_ms": 0.010149722503767378,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "flush": {
+          "calls": 2,
+          "elapsed_ms": 0.01487216283538137,
+          "charged_cpu_ms": 0.01487216283538137,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "memcpy": {
+          "calls": 1,
+          "elapsed_ms": 1.2355172622815167,
+          "charged_cpu_ms": 1.0145493452724144,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22096791700910234
+        },
+        "cursor_record": {
+          "calls": 1,
+          "elapsed_ms": 0.17233383001188363,
+          "charged_cpu_ms": 0.12849266753033287,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04384116248155077
+        },
+        "VbxeOwnerFence": {
+          "calls": 2,
+          "elapsed_ms": 0.06977934221340074,
+          "charged_cpu_ms": 0.06977934221340074,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "_VbxeUpload": {
+          "calls": 1,
+          "elapsed_ms": 0.04384116248155077,
+          "charged_cpu_ms": 0.04384116248155077,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "submit": {
+          "calls": 1,
+          "elapsed_ms": 0.2948353418976316,
+          "charged_cpu_ms": 0.2512761161522966,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043559225745335
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1,
+          "elapsed_ms": 0.29631550976276433,
+          "charged_cpu_ms": 0.25275628401742933,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043559225745335
+        },
+        "cursor_render": {
+          "calls": 1,
+          "elapsed_ms": 0.621740987539806,
+          "charged_cpu_ms": 0.5343405993129201,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08740038822688577
+        },
+        "draw_Mouse": {
+          "calls": 1,
+          "elapsed_ms": 2.247670145296097,
+          "charged_cpu_ms": 1.8521129043853848,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.39555724091071204
+        },
+        "DisplayLeave": {
+          "calls": 1,
+          "elapsed_ms": 2.2604277826098604,
+          "charged_cpu_ms": 1.160874511368394,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 0.36743405147318997
+        },
+        "GemDrawingMouseBorrow": {
+          "calls": 1,
+          "elapsed_ms": 4.755426929751232,
+          "charged_cpu_ms": 3.2151360556204795,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 0.8081716543624776
+        },
+        "ExecAESMouseApply": {
+          "calls": 1,
+          "elapsed_ms": 4.976465330944389,
+          "charged_cpu_ms": 3.4361744568136356,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 0.8081716543624776
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 1,
+          "elapsed_ms": 0.3273990349305519,
+          "charged_cpu_ms": 0.2831349673446775,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04426406758587441
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 1,
+          "elapsed_ms": 0.19728523116697844,
+          "charged_cpu_ms": 0.1537964896056974,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04348874156128107
+        },
+        "AESLOCAL_CALL": {
+          "calls": 1,
+          "elapsed_ms": 7.009299683244077,
+          "charged_cpu_ms": 5.072676242178018,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.204504221297783
+        },
+        "_AESLocalCall": {
+          "calls": 1,
+          "elapsed_ms": 7.018180690434873,
+          "charged_cpu_ms": 5.081557249368815,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.204504221297783
+        },
+        "ExecAESLocal": {
+          "calls": 1,
+          "elapsed_ms": 7.042497733933483,
+          "charged_cpu_ms": 5.105874292867424,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.204504221297783
+        },
+        "ExecAESMouseControl": {
+          "calls": 1,
+          "elapsed_ms": 7.077528373408291,
+          "charged_cpu_ms": 5.140904932342232,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.204504221297783
+        },
+        "ExecAESMouseForm": {
+          "calls": 1,
+          "elapsed_ms": 7.115942253717688,
+          "charged_cpu_ms": 5.179318812651629,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.204504221297783
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 8.016236736638666,
+          "charged_cpu_ms": 5.903543803805864,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 1.3805737130645253
+        }
+      },
+      "action": "up",
+      "mode": "M_OFF",
+      "return_a": 1,
+      "stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "start": 70633015.125,
+          "end": 70635297.0,
+          "elapsed_ms": 1.2866887799046771,
+          "charged_cpu_ms": 1.0672010307607076,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.21948774914396957
+        },
+        {
+          "kind": "cursor_policy",
+          "start": 70635297.0,
+          "end": 70637037.375,
+          "elapsed_ms": 0.9813512945830085,
+          "charged_cpu_ms": 0.8054932553684279,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17585803921458065
+        },
+        {
+          "kind": "policy_to_device",
+          "start": 70637037.375,
+          "end": 70637280.0,
+          "elapsed_ms": 0.13680980124869782,
+          "charged_cpu_ms": 0.09162943927012218,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.045180361978575626
+        },
+        {
+          "kind": "device_apply",
+          "start": 70637280.0,
+          "end": 70646105.5,
+          "elapsed_ms": 4.976465330944389,
+          "charged_cpu_ms": 3.4361744568136356,
+          "off_cpu_ms": 0.7321192197682762,
+          "interrupt_ms": 0.8081716543624776
+        },
+        {
+          "kind": "completion_and_return",
+          "start": 70646105.5,
+          "end": 70647231.5,
+          "elapsed_ms": 0.6349215299578927,
+          "charged_cpu_ms": 0.5030456215929707,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.131875908364922
+        }
+      ],
+      "submission_records": [
+        1
+      ],
+      "memcpy_bytes": [
+        76
+      ]
+    },
+    {
+      "measured": {
+        "elapsed_ms": 6.436897624542029,
+        "charged_cpu_ms": 5.294419485211714,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1424781393303156
+      },
+      "exclusive_cpu_ms": {
+        "unselected": 0.0,
+        "binding": 0.08232552697500208,
+        "context_lookup": 0.5962257129122795,
+        "coordination": 1.4999739208519003,
+        "dispatch": 0.14935598601029912,
+        "registration_lookup": 0.1762104601348503,
+        "cursor_policy": 0.11897730268305096,
+        "recipient_selection": 0.2263951991812557,
+        "device_apply": 0.10318884545496834,
+        "display_admission": 0.16006958198649807,
+        "device_target": 0.05511863193018119,
+        "queue": 0.014660710283219547,
+        "target_copy": 1.0097564207567464,
+        "cursor_render": 0.6001023430352463,
+        "submission": 0.1383604532978845,
+        "fence": 0.036722259892102815,
+        "upload": 0.12405216393493465,
+        "completion_and_wake": 0.20292396589129363
+      },
+      "routines": {
+        "Forbid": {
+          "calls": 4,
+          "elapsed_ms": 0.23443039616340489,
+          "charged_cpu_ms": 0.23443039616340489,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "Permit": {
+          "calls": 4,
+          "elapsed_ms": 0.33465890588810776,
+          "charged_cpu_ms": 0.24683561255689834,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08782329333120942
+        },
+        "ExecAESContext": {
+          "calls": 1,
+          "elapsed_ms": 0.8916954124663966,
+          "charged_cpu_ms": 0.7138638160983057,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17783159636809096
+        },
+        "ExecAESEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.01522458375565107,
+          "charged_cpu_ms": 0.01522458375565107,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESSTATE_GET": {
+          "calls": 3,
+          "elapsed_ms": 0.06759433250772859,
+          "charged_cpu_ms": 0.024105590946447528,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04348874156128107
+        },
+        "tasks_forbid": {
+          "calls": 9,
+          "elapsed_ms": 0.6359787927187018,
+          "charged_cpu_ms": 0.5048782103783732,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13110058234032865
+        },
+        "AESSTATE_FIND": {
+          "calls": 1,
+          "elapsed_ms": 0.1521048691884028,
+          "charged_cpu_ms": 0.1521048691884028,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "tasks_permit": {
+          "calls": 9,
+          "elapsed_ms": 0.6895467725996963,
+          "charged_cpu_ms": 0.5138297017532236,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17571707084647276
+        },
+        "AESSNAPSHOT_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.3046326434811293,
+          "charged_cpu_ms": 0.2606505126314706,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04398213084965864
+        },
+        "AESSNAPSHOT_DROP": {
+          "calls": 1,
+          "elapsed_ms": 0.0034537250186430666,
+          "charged_cpu_ms": 0.0034537250186430666,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESMOUSE_CURSORRECIPIENT": {
+          "calls": 1,
+          "elapsed_ms": 0.5105874292867424,
+          "charged_cpu_ms": 0.42297558850769473,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08761184077904759
+        },
+        "AESCURSOR_SELECT": {
+          "calls": 1,
+          "elapsed_ms": 0.6959608333486049,
+          "charged_cpu_ms": 0.5641554091677369,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13180542418086805
+        },
+        "AESCURSOR_SETDEPTH": {
+          "calls": 1,
+          "elapsed_ms": 0.03347998742562156,
+          "charged_cpu_ms": 0.03347998742562156,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "AESCURSOR_CALL": {
+          "calls": 1,
+          "elapsed_ms": 0.9235542636587776,
+          "charged_cpu_ms": 0.7917488394779096,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13180542418086805
+        },
+        "DisplayEnter": {
+          "calls": 1,
+          "elapsed_ms": 0.22674762010152544,
+          "charged_cpu_ms": 0.1833293627242983,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043418257377227126
+        },
+        "drain": {
+          "calls": 2,
+          "elapsed_ms": 0.0100087541356595,
+          "charged_cpu_ms": 0.0100087541356595,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "flush": {
+          "calls": 2,
+          "elapsed_ms": 0.014660710283219547,
+          "charged_cpu_ms": 0.014660710283219547,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "memcpy": {
+          "calls": 1,
+          "elapsed_ms": 1.1850505864988954,
+          "charged_cpu_ms": 1.0097564207567464,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17529416574214912
+        },
+        "cursor_record": {
+          "calls": 3,
+          "elapsed_ms": 0.467451108645731,
+          "charged_cpu_ms": 0.37948684694641377,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08796426169931729
+        },
+        "VbxeOwnerFence": {
+          "calls": 2,
+          "elapsed_ms": 0.036722259892102815,
+          "charged_cpu_ms": 0.036722259892102815,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "_VbxeUpload": {
+          "calls": 1,
+          "elapsed_ms": 0.12405216393493465,
+          "charged_cpu_ms": 0.12405216393493465,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        "submit": {
+          "calls": 1,
+          "elapsed_ms": 0.34177780847755573,
+          "charged_cpu_ms": 0.2976547092597892,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        "VbxeOwnerSubmit": {
+          "calls": 1,
+          "elapsed_ms": 0.34325797634268845,
+          "charged_cpu_ms": 0.299134877124922,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        "cursor_render": {
+          "calls": 1,
+          "elapsed_ms": 1.0824256145163587,
+          "charged_cpu_ms": 0.906567575301778,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17585803921458065
+        },
+        "draw_Mouse": {
+          "calls": 1,
+          "elapsed_ms": 2.7075794462480562,
+          "charged_cpu_ms": 2.2247627854785668,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.4828166607694899
+        },
+        "DisplayLeave": {
+          "calls": 1,
+          "elapsed_ms": 0.23118812369692365,
+          "charged_cpu_ms": 0.18692405611104926,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04426406758587441
+        },
+        "GemDrawingMouseBorrow": {
+          "calls": 1,
+          "elapsed_ms": 3.1850393090294467,
+          "charged_cpu_ms": 2.6145403232968554,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5704989857325915
+        },
+        "ExecAESMouseApply": {
+          "calls": 1,
+          "elapsed_ms": 3.4058662576704415,
+          "charged_cpu_ms": 2.8353672719378498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5704989857325915
+        },
+        "AESCURSOR_WAKE": {
+          "calls": 1,
+          "elapsed_ms": 0.3764560270320943,
+          "charged_cpu_ms": 0.28954902809358607,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08690699893850819
+        },
+        "AESCURSOR_PENDING": {
+          "calls": 1,
+          "elapsed_ms": 0.19770813627130207,
+          "charged_cpu_ms": 0.15393745797380526,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043770678297496826
+        },
+        "AESLOCAL_CALL": {
+          "calls": 1,
+          "elapsed_ms": 5.429678634411224,
+          "charged_cpu_ms": 4.465032091449,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9646465429622246
+        },
+        "_AESLocalCall": {
+          "calls": 1,
+          "elapsed_ms": 5.438559641602021,
+          "charged_cpu_ms": 4.473913098639796,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9646465429622246
+        },
+        "ExecAESLocal": {
+          "calls": 1,
+          "elapsed_ms": 5.46287668510063,
+          "charged_cpu_ms": 4.498230142138405,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9646465429622246
+        },
+        "ExecAESMouseControl": {
+          "calls": 1,
+          "elapsed_ms": 5.497413935287061,
+          "charged_cpu_ms": 4.5327673923248355,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9646465429622246
+        },
+        "ExecAESMouseForm": {
+          "calls": 1,
+          "elapsed_ms": 5.535686847228351,
+          "charged_cpu_ms": 4.571040304266125,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.9646465429622246
+        },
+        "graf_mouse": {
+          "calls": 1,
+          "elapsed_ms": 6.436897624542029,
+          "charged_cpu_ms": 5.294419485211714,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 1.1424781393303156
+        }
+      },
+      "action": "up",
+      "mode": "M_ON",
+      "return_a": 1,
+      "stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "start": 70726269.25,
+          "end": 70728641.25,
+          "elapsed_ms": 1.3375078766075679,
+          "charged_cpu_ms": 1.071500565987998,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.26600731061957006
+        },
+        {
+          "kind": "cursor_policy",
+          "start": 70728641.25,
+          "end": 70730279.125,
+          "elapsed_ms": 0.9235542636587776,
+          "charged_cpu_ms": 0.7917488394779096,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13180542418086805
+        },
+        {
+          "kind": "policy_to_device",
+          "start": 70730279.125,
+          "end": 70730519.25,
+          "elapsed_ms": 0.13540011756761902,
+          "charged_cpu_ms": 0.09191137600633795,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04348874156128107
+        },
+        {
+          "kind": "device_apply",
+          "start": 70730519.25,
+          "end": 70736559.375,
+          "elapsed_ms": 3.4058662576704415,
+          "charged_cpu_ms": 2.8353672719378498,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5704989857325915
+        },
+        {
+          "kind": "completion_and_return",
+          "start": 70736559.375,
+          "end": 70737684.75,
+          "elapsed_ms": 0.6345691090376231,
+          "charged_cpu_ms": 0.503891431801618,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.130677677236005
+        }
+      ],
+      "submission_records": [
+        3
+      ],
+      "memcpy_bytes": [
+        76
+      ]
+    }
+  ],
+  "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+  "checks": {
+    "frozen_native_provider_app": true,
+    "action_observations_identical": true,
+    "local_mouse_symbols_match_linked_code": true,
+    "viewport_pixels": "pass",
+    "viewport_copies_per_action": 1,
+    "exposed_row_draws_per_action": 1,
+    "fallback_redraws": 0,
+    "process_lifetimes": 3,
+    "ownership_and_heap": "restored",
+    "guards": "intact",
+    "runtime_status": 0,
+    "host_tests": {
+      "run": 740,
+      "skipped": 4,
+      "status": "pass",
+      "log": {
+        "path": "build/gem-mouse-hide-audit/host-tests.log",
+        "sha256": "5d23c100863a5cfd9b2e2571006c1b837ed13dd44785af561c6140c73c00ea8b"
+      }
+    }
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_spare_included": true
+  },
+  "runtime_storage_delta_bytes": 0,
+  "source_hashes": {
+    "tools/measure_mgview.py": "1d4407b73d4a8db2e0b194e7f0c0bd0b2b248c4d508ce640afa44b0b6075fcc7",
+    "tools/mgview_mouse_trace.py": "7c5a27345bddcfb58efe74884571b2633d0b9f0a06c859693a471bfc1711ebae",
+    "tests/test_mgview_mouse_trace.py": "025d86c080a74e880d14d6907032157e45d7eeb4d7bb6e6f4bad53ecb8907a59",
+    "lib/aes/aeslocal.act": "06e538752ea527a6be6dff436e3ec9ef4a4357cb719af06eb7c7a1bc536aeac4",
+    "lib/aes/aescursor.act": "03cfc13d407142fac52eec2c0beb0856b4f45521096c39c1f968e753cb7c7be5",
+    "lib/aes/aesmouse.act": "1cbfc9f995c38558b98503bbaf80e96c93734edb4a22c1846090d8edae1432a6",
+    "c/calypsi/aes-input.c": "87c795226e31105d9c8ca902fe03a3d753e08d9d0c5ac845c38b1f5b4b53cc78",
+    "ports/gem4xe/adapter/gem-vbxe.c": "d5dd7e162e1b3b00b7b6e14a0d77586d22fb90321d7fd7c81fd4fc07c2c07a0e"
+  },
+  "limits": [
+    "Two scrolls with pointer parked at clipped corner (639,0), not a position/form distribution",
+    "Inclusive routine costs overlap; disjoint caller stages and exclusive CPU groups reconcile",
+    "Task CPU includes bus stalls and gateway/scheduler continuation charges",
+    "No target builds, QED, Counter, demo refresh or release qualification"
+  ]
+}
