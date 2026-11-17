@@ -1,5 +1,10 @@
 # Implementation plans
 
+- [MagiC-led END_UPDATE and SCRENMGR completion](gem4xe/end-update-implementation-plan.md):
+  proposed cursor-hint retirement, demand-driven release notifications and
+  input/mouse service, followed by an explicit application-cache/journal choice
+  and MagiC final-release scheduling. Small commits and focused MGVIEW checks.
+
 - [MagiC window geometry for MGVIEW](gem4xe/magic-window-geometry-design.md):
   proposed authoritative frame objects, full-layout/selected-axis separation,
   drawing and SCRENMGR hit-test consumers. MGVIEW is the sole application
