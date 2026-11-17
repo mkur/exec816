@@ -25,13 +25,21 @@ GROUPS = {
 }
 
 
-def definition(program, foreign):
+def definition(program, foreign, detail=False):
     names={name for group in GROUPS.values() for name in group.split()}
     native=native_markers(program,[(n,n) for n in names if n.isupper()])
     entries={value['entry']:name for name,value in native.items()}
     entries.update({foreign['symbols'][n]:n for n in names if n in foreign['symbols']})
+    if detail:
+        from mgview_frame_trace import GROUPS as FRAME_GROUPS
+        from native_program import require
+        names={name for group in FRAME_GROUPS.values() for name in group.split()}
+        require(names<=foreign['symbols'].keys(),'Missing frame trace routines: '+str(names-foreign['symbols'].keys()))
+        entries.update({foreign['symbols'][n]:n for n in names})
     exits=sorted({pc for value in native.values() for pc in value['returns']})
-    return dict(entries=entries,exits=exits,pcs=sorted(set(entries)|set(exits)))
+    result=dict(entries=entries,exits=exits,pcs=sorted(set(entries)|set(exits)))
+    if detail:result['detail']=True
+    return result
 
 
 def analyze(out, definition, audit):
@@ -45,6 +53,9 @@ def analyze(out, definition, audit):
     spans,unfinished=calls(events,selected['entries'],set(definition['returns']),dp,
         set(definition['exits'])|set(selected['exits']))
     kinds={name:group for group,names in GROUPS.items() for name in names.split()}
+    if selected.get('detail'):
+        from mgview_frame_trace import GROUPS as FRAME_GROUPS
+        kinds.update({name:group for group,names in FRAME_GROUPS.items() for name in names.split()})
     samples=[]
     for sample in audit['samples']:
         window=next(s for s in sample['spans'] if s['kind']=='window_calc_slider')
@@ -72,7 +83,11 @@ def analyze(out, definition, audit):
             total=routines.setdefault(row['kind'],dict(calls=0,elapsed_ms=0,charged_cpu_ms=0))
             total['calls']+=1
             for key in ('elapsed_ms','charged_cpu_ms'):total[key]+=row[key]
-        samples.append(dict(action=sample['action'],measured=measured,
-            exclusive_cpu_ms=dict(exclusive),routines=routines,spans=rows))
+        result=dict(action=sample['action'],measured=measured,
+            exclusive_cpu_ms=dict(exclusive),routines=routines,spans=rows)
+        if selected.get('detail'):
+            from mgview_frame_trace import analyze as analyze_frame
+            result['frame_detail']=analyze_frame(rows,timeline)
+        samples.append(result)
     return dict(samples=samples,unfinished_calls=unfinished,
         scope='Innermost selected routine owns each CPU interval; inclusive routine totals must not be added. Other Tasks and native interrupts are separate.')

@@ -1,5 +1,9 @@
 # Historical records
 
+- [Selected-scrollbar raster audit](gem-scrollbar-raster-audit.md): passive
+  preparation/traversal/clear/publication costs, donor comparison and a proposed
+  reduction of repeated row-advance work; drawing code remains unchanged.
+
 - [Odd-edge screen copies](gem-odd-edge-copy.md): one aligned interior blit,
   bounded edge restoration, overlap/failure checks and matched MGVIEW costs.
 

@@ -16,6 +16,11 @@ separates one aligned interior copy from bounded edge preservation. Its
 [matched MGVIEW record](../../history/gem-odd-edge-copy.md) keeps geometry and
 application bytes fixed while measuring copy CPU and physical admissions.
 
+The [selected-scrollbar raster audit](../../history/gem-scrollbar-raster-audit.md)
+identifies repeated row-advance calculation in the mask producer as a concrete
+next reduction. The tracing and MagiC/GEM4XE comparison are complete; that
+optimization is not implemented.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:
