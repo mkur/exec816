@@ -1,0 +1,465 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "One physical grant for same-parity screen edge capture/interior/restoration; remove CPU edge readback/reload",
+  "decision": "User approved retaining the existing display grant for the complete screen copy",
+  "captures": {
+    "before": {
+      "path": "build/gem-mask-height/scroll/results.json",
+      "sha256": "dd74b2e925e7f5d2fe602e3545b4c32f7234761efc13153c88fc937d112084a3"
+    },
+    "after": {
+      "path": "build/gem-copy-grant/scroll/results.json",
+      "sha256": "bd4cf9a66e9dc9b7c9a34cc0cb185a8770cf28b1a6bcdb8d0fd7f4c537247c41"
+    }
+  },
+  "inputs": {
+    "native_sha256": "cb07ff5cec67162addbb70dc82cc3be7daf3a3f4c4ab3a19073363bc01563059",
+    "app_sha256": {
+      "mgview": "c848320737bd8fa6940ad68327910aa459a9ed1525543ffbc60a57a76275f39d"
+    },
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    },
+    "app_abi": 47,
+    "aes_abi": 27
+  },
+  "provider": {
+    "path": "build/gem-copy-grant/viewer/c-image.json",
+    "sha256": "6f754aabf07b2c3d82be1469de0179cd1dc6c2cbc5b54d74d7fd7e0e9f84ada2"
+  },
+  "emitted_probe": {
+    "path": "build/gem-copy-grant/probe/results.json",
+    "sha256": "80fbe3b4417135e468bd45914f6a22030a94050c7d87a4f6bf7100984ef0118a",
+    "cases": 58,
+    "mask_cases": 18,
+    "guards": "intact"
+  },
+  "caller_abi_probes": {
+    "raw": {
+      "path": "build/gem-copy-grant/abi-raw/results.json",
+      "sha256": "2b6dd9ae1f3ac39900dd5c1272fd2514fff2a49b351bc230c3083699ee70c0ea",
+      "status": "pass",
+      "checks": 24,
+      "guards": "intact"
+    },
+    "opt": {
+      "path": "build/gem-copy-grant/abi-opt/results.json",
+      "sha256": "a45eae520e111cb25d013f97bc5d9b6d95045883ceddb19cd64af18738f4cbb0",
+      "status": "pass",
+      "checks": 24,
+      "guards": "intact"
+    }
+  },
+  "samples": [
+    {
+      "action": "down",
+      "before": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 34.44005249662028,
+          "charged_cpu_ms": 27.044710937312775,
+          "off_cpu_ms": 1.4192695301101386,
+          "interrupt_ms": 5.976072029197368
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 134.0190504652661,
+          "charged_cpu_ms": 96.92731248035254,
+          "off_cpu_ms": 15.81883591140984,
+          "interrupt_ms": 21.272902073503726
+        },
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.702350929474935,
+          "charged_cpu_ms": 18.93635137211561,
+          "off_cpu_ms": 0.7320487355842222,
+          "interrupt_ms": 4.033950821775101
+        },
+        "wind_update": {
+          "calls": 1,
+          "elapsed_ms": 17.46013062128989,
+          "charged_cpu_ms": 6.236370120908569,
+          "off_cpu_ms": 9.727028851995902,
+          "interrupt_ms": 1.4967316483854187
+        }
+      },
+      "after": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 17.442580059460457,
+          "charged_cpu_ms": 13.70085666477299,
+          "off_cpu_ms": 0.7328240616088155,
+          "interrupt_ms": 3.0088993330786504
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 116.95264449610151,
+          "charged_cpu_ms": 83.49951154460452,
+          "off_cpu_ms": 15.14176483938769,
+          "interrupt_ms": 18.311368112109324
+        },
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.75197179504891,
+          "charged_cpu_ms": 18.9048449418435,
+          "off_cpu_ms": 0.7340927769217865,
+          "interrupt_ms": 4.113034076283623
+        },
+        "wind_update": {
+          "calls": 1,
+          "elapsed_ms": 17.44441264824586,
+          "charged_cpu_ms": 6.235101405595598,
+          "off_cpu_ms": 9.783063778318782,
+          "interrupt_ms": 1.4262474643314786
+        }
+      },
+      "copy_grants": {
+        "before": 2,
+        "after": 1
+      },
+      "copy_fences": {
+        "before": 12,
+        "after": 8
+      },
+      "cpu_edge_transfers": {
+        "before_reads": 1,
+        "before_writes": 1,
+        "after_reads": 0,
+        "after_writes": 0
+      },
+      "copy_owned_intervals": [
+        {
+          "start": 70517606.125,
+          "end": 70544072.375,
+          "elapsed_ms": 14.923616289740744,
+          "charged_cpu_ms": 11.621502750997704,
+          "off_cpu_ms": 0.7328240616088155,
+          "interrupt_ms": 2.569289477134226
+        }
+      ],
+      "typed_interior_calls": 1,
+      "entry_ms": {
+        "before": 15.204072858091372,
+        "after": 14.13250180791932
+      },
+      "completion_ms": {
+        "before": 140.1118443032568,
+        "after": 120.03061832955304,
+        "before_bracket": [
+          122.43271932211131,
+          140.1118443032568
+        ],
+        "after_bracket": [
+          104.29854844871359,
+          120.03061832955304
+        ]
+      },
+      "pixel_sha256": "4fdc87a1afe5ee0ffe608fdf1716161dda9dc1b32b49f6aeeb8f70cb8d712278",
+      "frame_cpu_ms": 14.3467737274433
+    },
+    {
+      "action": "up",
+      "before": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 35.69988680240041,
+          "charged_cpu_ms": 28.08287248424326,
+          "off_cpu_ms": 1.46938378497249,
+          "interrupt_ms": 6.1476305331846595
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 135.3289285417245,
+          "charged_cpu_ms": 98.0437114715829,
+          "off_cpu_ms": 15.723400326200805,
+          "interrupt_ms": 21.561816743940827
+        },
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.98682509631664,
+          "charged_cpu_ms": 19.105795350581285,
+          "off_cpu_ms": 0.7337403560015169,
+          "interrupt_ms": 4.147289389733837
+        },
+        "wind_update": {
+          "calls": 1,
+          "elapsed_ms": 17.382245597910284,
+          "charged_cpu_ms": 6.2431366025777475,
+          "off_cpu_ms": 9.680932195624624,
+          "interrupt_ms": 1.4581767997079134
+        }
+      },
+      "after": {
+        "vro_cpyfm": {
+          "calls": 1,
+          "elapsed_ms": 16.837543823541438,
+          "charged_cpu_ms": 13.227978273955106,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 2.876530035425351
+        },
+        "set_shift": {
+          "calls": 1,
+          "elapsed_ms": 113.15545004856361,
+          "charged_cpu_ms": 82.50279469789774,
+          "off_cpu_ms": 12.67009595716817,
+          "interrupt_ms": 17.98255939349769
+        },
+        "_my_draw": {
+          "calls": 1,
+          "elapsed_ms": 23.77614787017941,
+          "charged_cpu_ms": 18.99358452956741,
+          "off_cpu_ms": 0.6838375536913273,
+          "interrupt_ms": 4.098725786920673
+        },
+        "wind_update": {
+          "calls": 1,
+          "elapsed_ms": 15.810095872587151,
+          "charged_cpu_ms": 5.612091702742822,
+          "off_cpu_ms": 9.053129568256178,
+          "interrupt_ms": 1.1448746015881497
+        }
+      },
+      "copy_grants": {
+        "before": 2,
+        "after": 1
+      },
+      "copy_fences": {
+        "before": 12,
+        "after": 8
+      },
+      "cpu_edge_transfers": {
+        "before_reads": 1,
+        "before_writes": 1,
+        "after_reads": 0,
+        "after_writes": 0
+      },
+      "copy_owned_intervals": [
+        {
+          "start": 70985046.0,
+          "end": 71010528.0,
+          "elapsed_ms": 14.368623824500022,
+          "charged_cpu_ms": 11.153699221431703,
+          "off_cpu_ms": 0.7330355141609775,
+          "interrupt_ms": 2.48188908890734
+        }
+      ],
+      "typed_interior_calls": 1,
+      "entry_ms": {
+        "before": 14.124889516041495,
+        "after": 20.572218799823506
+      },
+      "completion_ms": {
+        "before": 140.3390853126467,
+        "after": 140.30807227166295,
+        "before_bracket": [
+          122.0047393565358,
+          140.3390853126467
+        ],
+        "after_bracket": [
+          122.35039379513631,
+          140.30807227166295
+        ]
+      },
+      "pixel_sha256": "ef7528994252289e47e4e0566b586e85974d4c0e13e98bdb3734339259d14403",
+      "frame_cpu_ms": 14.378209673531357
+    }
+  ],
+  "full_window_comparison": {
+    "before_capture": {
+      "path": "build/gem-mask-height/scroll/current.bgra",
+      "sha256": "21d3437945658efeded22510fdcdc0d0422ba03c317d2ef22e02bace74f1cc48"
+    },
+    "after_capture": {
+      "path": "build/gem-copy-grant/scroll/current.bgra",
+      "sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4"
+    },
+    "rectangle": [
+      0,
+      11,
+      633,
+      222
+    ],
+    "pixels": 140526,
+    "scanout": [
+      672,
+      240
+    ],
+    "stride": 2688,
+    "horizontal_border": 16,
+    "exact": true,
+    "before_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c",
+    "after_sha256": "3ffb0bd89ae83f02870d0497803781f362da3af92b135d0afbc3dcc503598c6c"
+  },
+  "runtime": {
+    "status": 0,
+    "guards": "intact",
+    "process_lifetimes": 3,
+    "live_tasks_after": 0,
+    "stack_observations": [
+      {
+        "slot": 0,
+        "reserved_bytes": 1536,
+        "touched_bytes": 449,
+        "untouched_above_floor": 831
+      },
+      {
+        "slot": 1,
+        "reserved_bytes": 1312,
+        "touched_bytes": 354,
+        "untouched_above_floor": 702
+      },
+      {
+        "slot": 2,
+        "reserved_bytes": 1312,
+        "touched_bytes": 142,
+        "untouched_above_floor": 914
+      },
+      {
+        "slot": 3,
+        "reserved_bytes": 1312,
+        "touched_bytes": 311,
+        "untouched_above_floor": 745
+      },
+      {
+        "slot": 4,
+        "reserved_bytes": 1312,
+        "touched_bytes": 149,
+        "untouched_above_floor": 907
+      },
+      {
+        "slot": 5,
+        "reserved_bytes": 1312,
+        "touched_bytes": 18,
+        "untouched_above_floor": 1038
+      },
+      {
+        "slot": 6,
+        "reserved_bytes": 2560,
+        "touched_bytes": 698,
+        "untouched_above_floor": 1606
+      },
+      {
+        "slot": 7,
+        "reserved_bytes": 2560,
+        "touched_bytes": 1302,
+        "untouched_above_floor": 1002
+      },
+      {
+        "slot": 8,
+        "reserved_bytes": 512,
+        "touched_bytes": 70,
+        "untouched_above_floor": 186
+      }
+    ]
+  },
+  "reserved_bank_zero_delta": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "includes_guards_alignment_unused": true,
+    "matched_budget_reservations_pools": true
+  },
+  "memory": {
+    "new_buffers": 0,
+    "new_vram_bytes": 0,
+    "new_tasks": 0,
+    "new_signals": 0,
+    "workstation_layout_changed": false,
+    "existing_raster_buffer_bytes": 642
+  },
+  "build_scope": {
+    "recompiled_provider_sources": [
+      "ports/gem4xe/adapter/gem-vbxe.c",
+      "c/calypsi/vdi.c",
+      "ports/gem4xe/raster/client.c"
+    ],
+    "changed_internal_header": "ports/gem4xe/adapter/gem-drawing.h",
+    "reused_provider_objects": 54,
+    "reused_apps": [
+      "MGVIEW"
+    ],
+    "rebuilt_native_loader": true,
+    "table_change": false,
+    "qed": false,
+    "counter": false,
+    "catalog": false,
+    "demo": false
+  },
+  "host": {
+    "status": "pass",
+    "tests": 724,
+    "skipped": 4,
+    "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "display_observation_hooks": "checked against current source"
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "clean": true,
+    "local_override": false
+  },
+  "source_sha256": {
+    "ports/gem4xe/adapter/gem-vbxe.c": "d5dd7e162e1b3b00b7b6e14a0d77586d22fb90321d7fd7c81fd4fc07c2c07a0e",
+    "ports/gem4xe/adapter/gem-drawing.h": "226e3c849a4a509eed4281ed1457fdae1ea1e331f09d5afcb0d81b7e858240f7",
+    "c/calypsi/vdi.c": "58ba7c39f40df3f1660c4fe63f59b23753faf37b455d8013631f3b3c58e52ef4",
+    "ports/gem4xe/raster/client.c": "08fe80a0eb00e00ce6bcfc34ec87a0d33d7071d202d05f1ba27a1d0d2655836f",
+    "tests/programs/screen_copy.c": "7723b4ceba4bc909c5de2b655559914dc4234f29ab1a553485bfcb4005f734bb",
+    "tools/test_screen_copy.py": "1fa0eaa39e7e16a1024b363aa865753a10cd384926117e19c06fb1ec98fef4c5",
+    "tests/programs/vdi_copy_abi.c": "cbf70a25de104d9ab45162f8eb963478f3e74aa2b77ad790e27e2bd146fd3616",
+    "tests/test_vdi_copy.py": "a674adbe5de2a89994112e181ffa1b54e75e03d0051ededd661e4cfb52686c74",
+    "tools/test_display_borrow.py": "b2b09edd32357f082255606b6da1a85111e7c9db18100d1e24029ce527a03c66",
+    "tests/programs/display_borrow.c": "094d2ed4436234ccdb20d2a58f07ec1fe37c4c5cc21d87beb27b35a3abddd410"
+  },
+  "source_comparison": {
+    "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+    "magic_binding": "AESOBJ.S:599-613 vro_cpyfm single VDI trap",
+    "gem4xe_raster_revision": "2bf10f6788372dcfa94f6d9416e4b957eb4ce394",
+    "gem4xe_raster": "src/vdi/dev_vbxe.c:1880 dev_copy_form edge/interior separation"
+  }
+}

@@ -83,15 +83,14 @@ UWORD GemDrawingBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
 UWORD GemSolidRows(UWORD left,UWORD right);
 UWORD GemDrawingSolidBorrow(struct DisplayGrant *grant,UWORD left,UWORD top,
     UWORD right,UWORD bottom,UWORD pen);
-/* Settled screen-to-screen translation, even horizontal displacement. Packed
- * edges are staged before any write. Caller owns 480 upper bytes until return;
- * no DMA or transient scratch survives a physical-access release. */
 UWORD GemDrawingTransferBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy);
 UWORD GemDrawingTextClipBorrow(struct DisplayGrant *grant,UWORD x,UWORD y,
     const UBYTE *text,UWORD count,UWORD fg,UWORD bg,
     UWORD left,UWORD top,UWORD right,UWORD bottom);
-UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
-    UBYTE *edges);
+/* Settled screen-to-screen translation, even horizontal displacement. Packed
+ * source edges stay in VRAM scratch under one grant through interior copying,
+ * masked restoration and the final fence. Normal Task preemption continues. */
+UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy);
 /* Trusted, nonempty screen/redirected-strip geometry; append to the current
  * batch and split at its existing work limit, without submitting each fill. */
 void GemSolidFill(UWORD left,UWORD top,UWORD right,UWORD bottom,UWORD pen);

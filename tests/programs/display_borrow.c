@@ -15,7 +15,6 @@ volatile UWORD DisplayIterations[2];
 volatile UWORD DisplayFaultVariant;
 volatile UWORD DisplayCopyProbe,DisplayCopySteps;
 static struct VbxeCopy copy;
-static UBYTE copyEdges[480];
 static struct DisplayGrant grants[2];
 static struct Task *peers[2];
 static volatile UWORD released;
@@ -99,7 +98,7 @@ static void worker(UWORD who)
                 copy.sourceX=563; copy.sourceY=181;
                 copy.destinationX=565; copy.destinationY=183;
                 copy.width=33; copy.height=48;
-                status=GemDrawingCopyBorrow(&grants[who],&copy,copyEdges);
+                status=GemDrawingCopyBorrow(&grants[who],&copy);
             } else {
                 if (DisplayFaultVariant) ConsoleFaultMode=DisplayFaultVariant;
                 status=GemDrawingSolidBorrow(&grants[who],563,181,597,231,4);

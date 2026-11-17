@@ -34,11 +34,10 @@ extern void DisplayCopyStep(void);''')
     source=source[:start]+body+source[end:]
     start=source.index('UWORD GemDrawingCopyBorrow(')
     body=source[start:]
-    for indent in ('        ','    '):
-        needle=indent+'if (status!=DISPLAY_OK) return status;\n'+indent+'pointer_erase('
-        require(body.count(needle)==1,'Copy admission hook changed')
-        body=body.replace(needle,indent+'if (status!=DISPLAY_OK) return status;\n'+
-            indent+'DisplayBorrowBegin(grant);\n'+indent+'pointer_erase(')
+    needle='    if (status!=DISPLAY_OK) return status;\n    pointer_erase('
+    require(body.count(needle)==1,'Copy admission hook changed')
+    body=body.replace(needle,'    if (status!=DISPLAY_OK) return status;\n'+
+        '    DisplayBorrowBegin(grant);\n    pointer_erase(')
     needle='        latch(VbxeOwnerCopyRect(&display,copy));'
     require(body.count(needle)==1,'Copy completion hook changed')
     body=body.replace(needle,needle+'\n        DisplayCopyStep();')

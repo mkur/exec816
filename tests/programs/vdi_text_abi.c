@@ -17,9 +17,9 @@ volatile UWORD CopyChecks;
 struct ExecAESContext *ExecAESContext(void) { return &context; }
 void ExecAESChanged(struct ExecAESContext *c,LONG l,LONG t,LONG r,LONG b)
 { (void)c;(void)l;(void)t;(void)r;(void)b;++changes; }
-UWORD GemDrawingCopyBorrow(struct DisplayGrant *g,struct VbxeCopy *p,UBYTE *scratch)
+UWORD GemDrawingCopyBorrow(struct DisplayGrant *g,struct VbxeCopy *p)
 {
-    (void)g;(void)scratch;++calls;
+    (void)g;++calls;
     observed[0]=p->sourceX;observed[1]=p->sourceY;
     observed[2]=p->destinationX;observed[3]=p->destinationY;
     observed[4]=p->width;observed[5]=p->height;

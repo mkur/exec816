@@ -5,15 +5,22 @@ static struct ExecAESContext context;
 static struct ExecVDIWorkstation station;
 static struct AESWindowView view;
 static WORD attached=1;
-static UWORD calls,status,changes;
+static UWORD calls,status,changes,unexpected;
 volatile UWORD CopyChecks;
+/* Optimized VDI sections can retain lifecycle helpers. Resolve their external
+ * bindings, and fail if this copy-only fixture ever calls them. */
+UWORD DisplayGrantClose(struct DisplayGrant *g)
+{ (void)g;++unexpected;return DISPLAY_INVALID_OWNER; }
+void EXEC_CALL FreeSignal(BYTE number) { (void)number;++unexpected; }
+void EXEC_CALL FreeMem(APTR memory,ULONG bytes)
+{ (void)memory;(void)bytes;++unexpected; }
 struct ExecAESContext *ExecAESContext(void) { return attached ? &context:NULL; }
 void ExecAESChanged(struct ExecAESContext *c,LONG l,LONG t,LONG r,LONG b)
 { (void)c;(void)l;(void)t;(void)r;(void)b;++changes; }
-UWORD GemDrawingCopyBorrow(struct DisplayGrant *g,struct VbxeCopy *copy,UBYTE *edges)
+UWORD GemDrawingCopyBorrow(struct DisplayGrant *g,struct VbxeCopy *copy)
 {
     ++calls;
-    if (g!=&station.grant || edges!=station.copyEdges || copy!=&station.copy ||
+    if (g!=&station.grant || copy!=&station.copy ||
         copy->source.pitch!=320 || copy->destination.height!=240 ||
         copy->sourceX!=30 || copy->sourceY!=40 || copy->destinationX!=38 ||
         copy->destinationY!=32 || copy->width!=80 || copy->height!=48) return DISPLAY_BAD_ARGUMENT;
@@ -53,6 +60,7 @@ LONG CopyProbe(void)
     status=DISPLAY_DEVICE_FAULT;
     CHECK(ExecVDICopyRect(2,30,40,80,48,8,-8)==EXEC_VDI_COPY_ERROR);
     CHECK(context.request.paintFailed && context.diagnostic==AES_DISPLAY_ERROR && calls==2 && changes==2 && !context.busy);
+    CHECK(!unexpected);
     return 0;
 }
 int main(void) { return 0; }

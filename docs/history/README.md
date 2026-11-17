@@ -1,5 +1,9 @@
 # Historical records
 
+- [One grant for packed-edge screen copies](gem-copy-grant.md): retain source
+  edges in VRAM throughout the copy, remove CPU readback/reload and reduce
+  matched MGVIEW copy CPU from 27–28 to 13–14 ms.
+
 - [Full-height GEM mask records](gem-mask-height.md): work-bounded record
   heights replace the sixteen-row cap, with emitted boundary/pixel checks
   and lower MGVIEW copy, scrollbar CPU and observed completion latency.

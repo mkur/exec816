@@ -2,8 +2,8 @@
 """Emitted screen-copy descriptors against an independent snapshot oracle.
 
 The real typed driver and renderer routines execute on the 65816. Substitute
-only admission, overlay and hardware I/O boundaries; replay captured BCBs and
-edge transfers against host VRAM. MGVIEW supplies the real ownership check.
+only admission, overlay and hardware I/O boundaries; replay captured BCBs
+against host VRAM. MGVIEW supplies the real ownership check.
 """
 import argparse
 import json
@@ -63,9 +63,9 @@ def corpus():
         ('two-edge-pixels',(1,0,1,8,2,232)),('last-pixel',(639,238,637,239,1,1)),
         ('full-height-odd',(1,0,3,0,636,240)),('odd-same',(1,0,1,0,638,240))):
         add(name,xy)
-    add('busy-after-edge-capture',(1,22,1,30,616,192),entry=2,status=1)
-    for name,fail in [('edge-capture-submit',1),('edge-read',3),('edge-write',6),
-                      ('interior-submit',7),('edge-restore-submit',8),('final-fence',9)]:
+    add('busy-odd-before-admission',(1,22,1,30,616,192),entry=1,status=1)
+    for name,fail in [('edge-capture-submit',1),('edge-capture-fence',2),
+                      ('interior-submit',3),('edge-restore-submit',4),('final-fence',5)]:
         add('fault-'+name,(1,22,1,30,616,192),fail=fail,status=5)
     # Exercise the shared mask producer directly, including the height byte's
     # 256-row encoding, compact frame pitches and multi-bank chunk advances.
@@ -147,17 +147,16 @@ def replay(case, raw):
     require(status == case['status'] and not unexpected, 'Status/descriptor mutation: '+case['name'])
     sx,sy,dx,dy,width,height = case['xy']
     edges=(sx&1)+((sx+width)&1)
-    admitted=0 if case['direct'] or not height else 1+bool(edges)
+    admitted=0 if case['direct'] or not height else 1
     if case['entry']:admitted=case['entry']
-    if case['fail'] and case['fail']<=4:admitted=1
     require(enters==admitted and leaves==enters-bool(case['entry']),
             'Admission/retirement count: '+case['name'])
-    expected_count = 0 if case['entry'] or status==6 or not width or not height or (sx==dx and sy==dy) or width==edges or (case['fail'] and case['fail']<7) else 3 if case['direct'] else 1
+    expected_count = 0 if case['entry'] or status==6 or not width or not height or (sx==dx and sy==dy) or width==edges or (case['fail'] and case['fail']<3) else 3 if case['direct'] else 1
     require(submits == expected_count, 'Unexpected hardware unit count: '+case['name'])
     facts=dict(name=case['name'],status=status,enters=enters,leaves=leaves,
                typed_submissions=submits,raw_lists=lists,edge_reads=reads,edge_writes=writes)
+    require(reads==writes==0,'Unexpected CPU edge transfer: '+case['name'])
     if status:return facts
-    require(reads==writes==bool(edges and height),'Unexpected edge transfer count: '+case['name'])
     require(lists==2*bool(edges and height),'Unexpected mask-list count: '+case['name'])
     before = bytes((i*37+i//97)&255 for i in range(0x80000))
     wanted = bytearray(before)
@@ -169,20 +168,12 @@ def replay(case, raw):
             shift=0 if (dx+x)&1 else 4
             wanted[dest]=(wanted[dest]&~(15<<shift))|(pixel<<shift)
     actual = bytearray(before)
-    saved=b''
     for n in range(count):
         kind=struct.unpack_from('<H',raw,18+n*26)[0]
         payload=raw[20+n*26:44+n*26]
         if kind==5:
             # Every release permits another renderer to replace scratch.
             actual[0x36000:0x36000+480]=bytes([0x9b])*480
-            continue
-        if kind in (3,4):
-            address,length,offset=struct.unpack_from('<IHH',payload)
-            if kind==3:saved=bytes(actual[address:address+length])
-            else:
-                require(offset+length<=len(saved),'Write exceeds captured source edges')
-                actual[address:address+length]=saved[offset:offset+length]
             continue
         require(kind in (1,2),'Unexpected hardware event')
         bcb=payload[:21]

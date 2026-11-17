@@ -141,7 +141,7 @@ static WORD copy_rect(struct ExecAESContext *c,WORD h,WORD x,WORD y,
     copy->sourceX=x; copy->sourceY=y;
     copy->destinationX=dl; copy->destinationY=dt;
     copy->width=width; copy->height=height;
-    status=GemDrawingCopyBorrow(&w->grant,copy,w->copyEdges);
+    status=GemDrawingCopyBorrow(&w->grant,copy);
     ExecAESChanged(c,dl,dt,dr,db);
     if (status!=DISPLAY_OK) {
         c->request.paintFailed=1; c->diagnostic=AES_DISPLAY_ERROR;

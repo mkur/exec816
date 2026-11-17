@@ -148,7 +148,7 @@ static void check(UWORD sx,UWORD sy,UWORD w,UWORD h,int dx,int dy,unsigned fail)
     {struct GemRasterCopy p={{0,320,640,240},{0,320,640,240},{sx,sy,sx+dx,sy+dy,w,h},rasterMode};
     result=GemDrawingRasterBorrow(&g,&p,edges);}
 #else
-    result=GemDrawingCopyBorrow(&g,&c,edges);
+    result=GemDrawingCopyBorrow(&g,&c);
 #endif
     assert(!g.active && enters==leaves && edges[642]==0xab && edges[643]==0xcd);
     assert(!memcmp(&c,&saved,sizeof(c)));

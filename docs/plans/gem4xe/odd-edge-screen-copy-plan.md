@@ -6,6 +6,11 @@ Implemented on 2026-11-17 as one executable slice. The
 [execution record](../../history/gem-odd-edge-copy.md) retains focused checks
 and the matched measurement. MGVIEW alone is the application target.
 
+The later user-approved [single-grant follow-up](../../history/gem-copy-grant.md)
+replaces this slice's two-admission/CPU-backup flow. This page retains the
+original implementation plan; the linked record and current raster contract
+describe its completed successor.
+
 The WG6 [capture](../../development/magic-window-geometry.json) supplies the
 matched baseline: work `(1,22,616,200)`, one semantic 616×192 copy per line
 scroll, 15 `VbxeOwnerCopyRect` calls and 16 display entry/leave pairs. Copy Task

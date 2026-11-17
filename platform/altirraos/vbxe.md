@@ -67,6 +67,13 @@ synchronous upload, fences, timeout and recovery, with no completion IRQ or
 new asynchronous state. [Development evidence](../../docs/history/gem-screen-copy.md)
 separates emitted descriptor checks from the real loaded viewer.
 
+The private GEM same-parity screen-copy adapter retains one delegated display
+grant through source-edge capture, the typed interior copy, masked restoration
+and the final fence. Captured columns remain in the existing transient VRAM
+scratch at `$36000`; no CPU readback/reload or intermediate handoff is needed.
+Task preemption continues while the grant prevents competing scratch use.
+See the [single-grant copy record](../../docs/history/gem-copy-grant.md).
+
 The [asynchronous scroll contract](../../docs/reference/display.md#asynchronous-screen-scrolling)
 adds one active operation to the same owner. Start validates and uploads a copy
 and fill together; Poll reads BUSY once and uses the original sixteen-tick

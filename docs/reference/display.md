@@ -197,17 +197,18 @@ The typed even-pixel screen-to-screen copy in `GemDrawingCopyBorrow` retains
 one grant for the complete rectangle, at most 640×240. It uses the driver's
 overlap-safe BCB encoder, synchronous completion and ordinary timeout recovery.
 The maximum is one record and 153,600 source/destination bus accesses. It needs
-no staging. Same-parity masked-edge copies capture their source columns in one
-grant, then use a second grant for the full aligned interior and edge
-restoration. The mask producer uses the existing count/work bounds with heights
+no staging. Same-parity masked-edge copies retain one grant for source-column
+capture, the full aligned interior and masked edge restoration. Captured edges
+stay in the existing VRAM scratch; no CPU readback/reload is needed. The mask
+producer uses the existing count/work bounds with heights
 up to 256 rows; those record boundaries do not split the interior copy
-or require a new admission. Its existing upper buffer preserves source edges
-across the first handoff, including horizontal/diagonal overlap.
+or require a new admission. All source edges are captured before interior writes,
+preserving horizontal/diagonal overlap.
 Other Tasks can preempt the drawing owner while its grant remains held.
 This operation-specific bound does not change raw-list, generic callback,
 text, object, fill or native presenter limits. See the
 [screen-copy record](../history/gem-screen-copy.md) and
-[odd-edge follow-up](../history/gem-odd-edge-copy.md) for development evidence.
+[single-grant edge follow-up](../history/gem-copy-grant.md) for development evidence.
 
 `Revoke(grant)` belongs to the lifetime owner. It removes a queued grant and wakes
 its Task, or revokes an idle grant; an active borrower returns BUSY unchanged.
@@ -249,12 +250,11 @@ the [mouse-call contract](aes.md) and [raw VDI contract](gem-vdi.md#mouse-device
 
 `VbxeCopyRect(display, copy)` is an ordinary synchronous C driver operation.
 The GEM adapter's `GemDrawingCopyBorrow` uses this driver under a delegated
-display grant. It stages all packed source edges before writes and divides
-the same-parity screen operation into source-edge capture and one retained
-interior/edge-restoration grant, as described above. Each grant restores
-intersecting overlays and fences before releasing physical access. Its caller
-retains the descriptor and 480-byte upper edge buffer until completion or proven
-quiescence; reset-required faults
+display grant. It captures all packed source edges before screen writes and
+retains that grant through the interior and edge restoration, as described
+above. It restores intersecting overlays before capture and fences before
+releasing physical access. Its caller retains the descriptor until completion
+or proven quiescence; reset-required faults
 retain unsafe ownership through the existing display failure path. Scratch at
 `$36000` is borrowed only within physical access, with no new persistent VRAM.
 The generated [descriptor](../../abi/bitmap.json) contains two 10-byte surfaces

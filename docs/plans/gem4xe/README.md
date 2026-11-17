@@ -23,6 +23,11 @@ hoisting-only optimization: narrow operations now use their complete height
 within the existing raw-list work budget, reducing scrollbar records from
 101 to 36 and measured paint CPU from 31–32 to about 14 ms.
 
+The completed [single-grant copy slice](../../history/gem-copy-grant.md) keeps
+captured source edges in VRAM through the aligned interior and restoration.
+It removes CPU edge transfers and the intermediate physical handoff, reducing
+matched MGVIEW copy CPU from 27–28 to 13–14 ms with unchanged application bytes.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

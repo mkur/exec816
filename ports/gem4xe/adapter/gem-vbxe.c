@@ -1501,8 +1501,7 @@ UWORD GemDrawingTextClipBorrow(struct DisplayGrant *grant,UWORD x,UWORD y,
     return status==DISPLAY_OK ? completed:status;
 }
 
-UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
-    UBYTE *edges)
+UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy)
 {
     const ULONG scratch=0x36000UL; /* Existing transient CICON scratch. */
     UWORD sx=copy->sourceX,sy=copy->sourceY,dx=copy->destinationX,dy=copy->destinationY;
@@ -1512,37 +1511,23 @@ UWORD GemDrawingCopyBorrow(struct DisplayGrant *grant,struct VbxeCopy *copy,
     if (fault) return DISPLAY_DEVICE_FAULT;
     if (!height) return DISPLAY_OK;
 
-    /* Stage ALL source edge bytes before interior or edge writes. Horizontal
-     * overlap could otherwise destroy a later source edge. Scratch is private
-     * only during this grant; the upper-RAM copy survives intervening owners. */
-    if (leftEdge || rightEdge) {
-        status=DisplayEnter(grant);
-        if (status!=DISPLAY_OK) return status;
-        pointer_erase(sx,sy,sx+width,sy+height);
-        if (!fault) {
-            source=GemScreenRows[sy]+(sx>>1);
-            if (leftEdge) blit_mask(source,320,scratch,2,1,height,255,0,0);
-            if (rightEdge) blit_mask(GemScreenRows[sy]+((sx+width)>>1),320,
-                scratch+1,2,1,height,255,0,0);
-            if (fence_owner()==DISPLAY_OK)
-                latch(VbxeOwnerRead(&display,scratch,edges,height*2));
-        }
-        status=borrow_leave(grant);
-        if (status!=DISPLAY_OK) return status;
-    }
-
-    /* GEM4XE dev_copy_form separates the byte-aligned middle from its edge
-     * columns. Use the existing typed whole-screen copy for that middle.
-     * Source edges are already safe even when the rectangles overlap. Keep
-     * this grant through edge restoration; blit_mask still bounds every raw
-     * record/list, without splitting the interior or readmitting each band. */
     status=DisplayEnter(grant);
     if (status!=DISPLAY_OK) return status;
     pointer_erase(sx,sy,sx+width,sy+height);
     pointer_erase(dx,dy,dx+width,dy+height);
-    status=fence_owner();
-    if (status==DISPLAY_OK && (leftEdge || rightEdge))
-        latch(VbxeOwnerWrite(&display,scratch,edges,height*2));
+    /* Snapshot all source edges before screen writes, including horizontal
+     * overlap. One grant protects these VRAM bytes through the complete copy;
+     * Task preemption cannot admit another scratch user. */
+    if (!fault && (leftEdge || rightEdge)) {
+        source=GemScreenRows[sy]+(sx>>1);
+        if (leftEdge) blit_mask(source,320,scratch,2,1,height,255,0,0);
+        if (rightEdge) blit_mask(GemScreenRows[sy]+((sx+width)>>1),320,
+            scratch+1,2,1,height,255,0,0);
+    }
+    fence_owner();
+    /* GEM4XE dev_copy_form separates the byte-aligned middle from its edges.
+     * The existing typed encoder preserves overlap; neither it nor masked
+     * restoration needs a CPU backup of the captured VRAM columns. */
     if (!fault && interior) {
         copy->sourceX=sx+leftEdge; copy->destinationX=dx+leftEdge;
         copy->width=interior;

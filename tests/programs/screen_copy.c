@@ -20,7 +20,6 @@ static UWORD fault,entryAt,submitStatus,failAt,ioCount,active,dirty,direct;
 static UWORD commandCount,commandWork,stripRedirect;
 static ULONG stripOffset;
 static UBYTE commands[VBXE_BCB_BYTES],*commandNext;
-static UBYTE edges[482];
 
 static struct Event *capture(UWORD kind)
 {
@@ -31,12 +30,6 @@ static struct Event *capture(UWORD kind)
 }
 static UWORD boundary(void)
 { return ++ioCount==failAt ? DISPLAY_DEVICE_FAULT:DISPLAY_OK; }
-static void transfer_event(UWORD kind,ULONG address,UWORD count,UWORD offset)
-{
-    struct Event *e=capture(kind);
-    if (e) { memcpy(e->bytes,&address,4);memcpy(e->bytes+4,&count,2);memcpy(e->bytes+6,&offset,2); }
-}
-
 UWORD DisplayEnter(struct DisplayGrant *g)
 {
     (void)g;
@@ -55,23 +48,13 @@ static void latch(UWORD status) { if (status && !fault) fault=status; }
 UWORD VbxeOwnerFence(struct VbxeDisplay *d) { (void)d;return boundary(); }
 UWORD VbxeOwnerRead(struct VbxeDisplay *d,ULONG a,void *p,UWORD n)
 {
-    UWORD i,status=boundary();(void)d;++result->reads;
-    if (!active || p!=edges || n>480) { ++result->unexpected;return DISPLAY_BAD_ARGUMENT; }
-    if (status) return status;
-    transfer_event(READ,a,n,0);
-    /* Values are opaque to the adapter: the host replays the corresponding
-     * VRAM read/write. A pattern checks CPU-buffer preservation in between. */
-    for (i=0;i<n;++i) edges[i]=(UBYTE)(i*7);
-    return DISPLAY_OK;
+    (void)d;(void)a;(void)p;(void)n;++result->reads;++result->unexpected;
+    return DISPLAY_BAD_ARGUMENT;
 }
 UWORD VbxeOwnerWrite(struct VbxeDisplay *d,ULONG a,const void *p,UWORD n)
 {
-    UWORD i,offset=(UWORD)((const UBYTE *)p-edges),status=boundary();
-    (void)d;++result->writes;
-    if (!active || offset>480 || n>480-offset) { ++result->unexpected;return DISPLAY_BAD_ARGUMENT; }
-    if (status) return status;
-    for (i=0;i<n;++i) if (((const UBYTE *)p)[i]!=(UBYTE)((offset+i)*7)) ++result->unexpected;
-    transfer_event(WRITE,a,n,offset);return DISPLAY_OK;
+    (void)d;(void)a;(void)p;(void)n;++result->writes;++result->unexpected;
+    return DISPLAY_BAD_ARGUMENT;
 }
 UWORD VbxeOwnerSubmit(struct VbxeDisplay *d,const UBYTE *p,UWORD n)
 {
@@ -121,7 +104,6 @@ LONG EXEC_CALL ScreenCopyProbe(ULONG value)
     entryAt=screenCases[i].entryAt;submitStatus=screenCases[i].submitStatus;
     failAt=screenCases[i].failAt;
     direct=screenCases[i].direct;
-    edges[480]=0xab;edges[481]=0xcd;
     if (direct==2) {
         mask=&screenCases[i].mask;
         result->status=DisplayEnter(&grant);
@@ -131,10 +113,9 @@ LONG EXEC_CALL ScreenCopyProbe(ULONG value)
         result->status=borrow_leave(&grant);
     } else {
         result->status=direct ? VbxeOwnerCopyRect(&display,&request)
-            : GemDrawingCopyBorrow(&grant,&request,edges);
+            : GemDrawingCopyBorrow(&grant,&request);
     }
-    if (memcmp(&request,screenCases[i].packet,sizeof(request)) || active ||
-        edges[480]!=0xab || edges[481]!=0xcd) ++result->unexpected;
+    if (memcmp(&request,screenCases[i].packet,sizeof(request)) || active) ++result->unexpected;
     return 0;
 }
 int main(void) { return 0; }

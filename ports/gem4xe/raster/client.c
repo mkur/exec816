@@ -36,7 +36,7 @@ static UWORD copy(struct ExecVDIWorkstation *w,struct GemRasterCopy *p)
         v->sourceX=r->sx; v->sourceY=r->sy;
         v->destinationX=r->dx; v->destinationY=r->dy;
         v->width=r->width; v->height=r->height;
-        return GemDrawingCopyBorrow(&w->grant,v,w->copyEdges);
+        return GemDrawingCopyBorrow(&w->grant,v);
     }
     return GemDrawingRasterBorrow(&w->grant,p,w->copyEdges);
 }

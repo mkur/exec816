@@ -151,16 +151,16 @@ screen-to-screen S_ONLY fragment uses one overlap-safe hardware rectangle, bound
 the 640×240 screen. One physical grant covers source/destination overlay erasure,
 the complete synchronous copy, its fence and overlay restoration. Normal Task
 preemption continues while competing drawing waits for that grant.
-Same-parity copies with masked edge bytes retain whole-source edge capture,
-at most 480 bytes, in an initial physical grant. The existing upper buffer
-preserves those bytes across release. A second grant covers one overlap-safe
-typed copy of the aligned interior plus masked edge restoration, final fence
-and overlay repair. Edge records still use the sixteen-row mask-list producer;
-the interior is independent of those record boundaries. No additional grant is
-acquired for each edge band. The caller's descriptor is restored on failure too.
+Same-parity copies with masked edge bytes retain one physical grant for
+whole-source edge capture, at most 480 bytes, one overlap-safe typed interior
+copy, masked edge restoration and the final fence. The captured columns stay
+in existing VRAM scratch; no CPU readback or reload is required. Source and
+destination overlays are erased before capture. Edge records use up to 256
+rows within the existing raw-list count/work bounds; the interior is independent
+of those record boundaries. The caller's descriptor is restored on failure too.
 The typed whole-screen bound does not enlarge raw command lists, other raster
 modes or memory-copy units. See the
-[odd-edge copy record](../history/gem-odd-edge-copy.md) for focused evidence.
+[single-grant copy record](../history/gem-copy-grant.md) for focused evidence.
 
 Different-parity screen-to-screen S_ONLY captures each complete band into the
 shared 16 KiB VRAM workspace at `$4C000–$4FFFF`. Source and disjoint output
