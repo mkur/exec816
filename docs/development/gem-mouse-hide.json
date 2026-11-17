@@ -1,0 +1,473 @@
+{
+  "status": "pass",
+  "date": "2026-11-17",
+  "tier": "development",
+  "qualification": false,
+  "scope": "Direct AES M_OFF and visible-to-hidden device transitions avoid recipient/form work; form applies while already hidden retain installation; synchronous restore and captured revision completion remain",
+  "commands": {
+    "policy": "python3 tools/test_aes_cursor_policy.py --mode opt --output build/gem-mouse-hide/policy",
+    "device": "python3 tools/test_mouse_hide.py --output build/gem-mouse-hide/device",
+    "scroll": "python3 tools/measure_mgview.py --cache build/gem-mouse-hide/viewer --output build/gem-mouse-hide/scroll --mouse-detail --expect-copy-units 1"
+  },
+  "captures": {
+    "before": {
+      "path": "build/gem-mouse-hide-audit/scroll/results.json",
+      "sha256": "e331fb33b5687cc30fa970f81f421774f25ec12e3fa95a35e87f5e6a87366c2a"
+    },
+    "after": {
+      "path": "build/gem-mouse-hide/scroll/results.json",
+      "sha256": "ca44ba905aedf84da388035f669c8de29b37f63a3af104835594999e3a19516a"
+    },
+    "definition": {
+      "path": "build/gem-mouse-hide/scroll/definition.json",
+      "sha256": "6dcfd8eca47ad5bcb056e5b708915b23a72575c3be37a6de05ac4d84ad521192"
+    },
+    "policy": {
+      "path": "build/gem-mouse-hide/policy/results.json",
+      "sha256": "a3e9584a4330909029a547d3720317a623ac57bf78ad2d0187927636dc5c8310"
+    },
+    "device": {
+      "path": "build/gem-mouse-hide/device/results.json",
+      "sha256": "67bc9636be334d031e5493bfd79d3ace9551a5f9cd9a0c99294cecda5172d141"
+    },
+    "native_build": {
+      "path": "build/gem-mouse-hide/viewer/program/build.json",
+      "sha256": "f7786e44e6a63cc9d97cdf6589fac95d604e40b2ee103c3ed74aa1b0556dd177"
+    },
+    "provider": {
+      "path": "build/gem-mouse-hide/viewer/c-image.json",
+      "sha256": "dc85d39b30252b546a11b73eb3e093def1cd36dfceafb6126805a5eb852df1a7"
+    },
+    "objects": {
+      "path": "build/gem-mouse-hide/objects.json",
+      "sha256": "e2dd864111c41ce80fcee18bfd0306654cd282512ee557ccfd2239b34f98d2dc"
+    }
+  },
+  "inputs": {
+    "native_sha256": "873bc67eaba0a2a1efa54318a77213c7f5601455fcd4a7dccad84186e72b85e6",
+    "app_sha256": {
+      "mgview": "586196d460f56dc5dcc6ccd9012d67a1b87ee755caea6f243ebbe8bc122a100e"
+    },
+    "rom_sha256": "85a6e927038f401f05f0056fd41a062986cbf7e104c1ac135c248764c132c9a7",
+    "emulator_sha256": "4a2c094e2ea747b158afed61637bce691d8b1786a1a95d0e75e6888e3b8a7338",
+    "document_sha256": "02230472cd9d7a55b977b91c63da82fe57db3141242e0898455d7e39654d880a",
+    "work": [
+      1,
+      22,
+      616,
+      200
+    ],
+    "app_abi": 48,
+    "aes_abi": 28,
+    "base_clock_hz": 1773447.5,
+    "machine": {
+      "ok": true,
+      "basic": false,
+      "machine": "800XL",
+      "memory": "64K",
+      "video": "pal",
+      "selftest": false,
+      "fastboot": false,
+      "fppatch": false,
+      "stereo": false,
+      "stereomono": false,
+      "siopatch": "off",
+      "burstio": false,
+      "accuratedisk": true,
+      "casautoboot": true,
+      "casautobasicboot": false,
+      "artifact": "none",
+      "axlonmemsize": "none",
+      "highbanks": 63,
+      "highbanks_overridden": false,
+      "randmem": false,
+      "randdelay": false,
+      "diskemu": "generic56k",
+      "vbxe": true,
+      "covox": false,
+      "soundboard": false,
+      "rapidus": false,
+      "slightsid": false,
+      "addons": "custom",
+      "exeloadmode": "default",
+      "kernel_id": "$c017f1e4033f056f",
+      "actual_kernel_id": "$c017f1e4033f056f",
+      "basic_id": "$0000000000000000",
+      "actual_basic_id": "$0000000000000005",
+      "debugbrkrun": true
+    }
+  },
+  "compiler": {
+    "revision": "05c01f39ff3beef97af0e65b0a16666f5a1bd805",
+    "changes": [],
+    "override": false,
+    "build_profile": "release",
+    "binary_sha256": "f7affedcfcef541d44b120d56954681547a4f19ba94bf10c6cd58d674b23ac16"
+  },
+  "magic_revision": "28cfdd29aa16fef692cc287bad3046b44ddcce3d",
+  "mgview_builds": {
+    "native": 2,
+    "c_sources_recompiled": [
+      "ports/gem4xe/adapter/gem-vbxe.c"
+    ],
+    "c_objects_reused": 46,
+    "layout_probes_reused": 10,
+    "app_builds": 0,
+    "c_source_compilations": 2
+  },
+  "samples": [
+    {
+      "action": "down",
+      "mode": "M_OFF",
+      "before": {
+        "elapsed_ms": 8.033716814284043,
+        "charged_cpu_ms": 5.9276493947523115,
+        "off_cpu_ms": 0.6820754490899787,
+        "interrupt_ms": 1.4239919704417527
+      },
+      "after": {
+        "elapsed_ms": 3.960435817806842,
+        "charged_cpu_ms": 3.3039461275284436,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 0.6564896902783984
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2853495804076525,
+          "charged_cpu_ms": 1.0674124833128693,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2179370970947829
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.282571093872246,
+          "charged_cpu_ms": 0.23851847883853342,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044052615033712585
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.08577925199364514,
+          "charged_cpu_ms": 0.08577925199364514,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 1.7220695848058654,
+          "charged_cpu_ms": 1.4144061214104167,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.3076634633954487
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.5846663067274335,
+          "charged_cpu_ms": 0.49782979197297916,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08683651475445425
+        }
+      ],
+      "before_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "AESCURSOR_SELECT": 0,
+        "memcpy": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "submission_records": [
+        1
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "down",
+      "mode": "M_ON",
+      "before": {
+        "elapsed_ms": 6.43781391893473,
+        "charged_cpu_ms": 5.294137548475498,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1436763704592328
+      },
+      "after": {
+        "elapsed_ms": 6.398131323312362,
+        "charged_cpu_ms": 5.29702740002171,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.101103923290653
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.286759264088731,
+          "charged_cpu_ms": 1.066637157288276,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22012210680045505
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.9790958006932824,
+          "charged_cpu_ms": 0.8041540558714031,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.17494174482187944
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.0857087678095912,
+          "charged_cpu_ms": 0.0857087678095912,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.0
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 3.461760215625216,
+          "charged_cpu_ms": 2.8437548898402687,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.6180053257849472
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.5848072750955413,
+          "charged_cpu_ms": 0.4967725292121701,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.08803474588337122
+        }
+      ],
+      "before_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "submission_records": [
+        3
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "up",
+      "mode": "M_OFF",
+      "before": {
+        "elapsed_ms": 8.016236736638666,
+        "charged_cpu_ms": 5.903543803805864,
+        "off_cpu_ms": 0.7321192197682762,
+        "interrupt_ms": 1.3805737130645253
+      },
+      "after": {
+        "elapsed_ms": 6.0262567682437735,
+        "charged_cpu_ms": 4.33766717086353,
+        "off_cpu_ms": 0.7328945457928695,
+        "interrupt_ms": 0.9556950515873743
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.2876755584814323,
+          "charged_cpu_ms": 1.065650378711521,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.22202517976991143
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.2827120622403539,
+          "charged_cpu_ms": 0.23858896302258736,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.044123099217766526
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.13582302267194263,
+          "charged_cpu_ms": 0.09162943927012218,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.04419358340182047
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 3.684983626524044,
+          "charged_cpu_ms": 2.4382593789779508,
+          "off_cpu_ms": 0.7328945457928695,
+          "interrupt_ms": 0.5138297017532236
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.6350624983260006,
+          "charged_cpu_ms": 0.5035390108813483,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1315234874446523
+        }
+      ],
+      "before_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "AESCURSOR_SELECT": 0,
+        "memcpy": 0,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 6,
+        "tasks_permit": 6
+      },
+      "submission_records": [
+        1
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    },
+    {
+      "action": "up",
+      "mode": "M_ON",
+      "before": {
+        "elapsed_ms": 6.436897624542029,
+        "charged_cpu_ms": 5.294419485211714,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1424781393303156
+      },
+      "after": {
+        "elapsed_ms": 6.443805074579315,
+        "charged_cpu_ms": 5.301044998512784,
+        "off_cpu_ms": 0.0,
+        "interrupt_ms": 1.1427600760665313
+      },
+      "after_stages": [
+        {
+          "kind": "binding_and_dispatch",
+          "elapsed_ms": 1.3381422342640534,
+          "charged_cpu_ms": 1.071571050172052,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.2665711840920016
+        },
+        {
+          "kind": "cursor_policy",
+          "elapsed_ms": 0.9291929983830928,
+          "charged_cpu_ms": 0.7974580583862787,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.1317349399968141
+        },
+        {
+          "kind": "policy_to_device",
+          "elapsed_ms": 0.13547060175167294,
+          "charged_cpu_ms": 0.0921933127425537,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.043277289009119244
+        },
+        {
+          "kind": "device_apply",
+          "elapsed_ms": 3.4069235204312505,
+          "charged_cpu_ms": 2.8362130821464975,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.5707104382847533
+        },
+        {
+          "kind": "completion_and_return",
+          "elapsed_ms": 0.6340757197492455,
+          "charged_cpu_ms": 0.5036094950654023,
+          "off_cpu_ms": 0.0,
+          "interrupt_ms": 0.13046622468384317
+        }
+      ],
+      "before_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "after_counts": {
+        "AESCURSOR_SELECT": 1,
+        "memcpy": 1,
+        "Forbid": 4,
+        "Permit": 4,
+        "tasks_forbid": 9,
+        "tasks_permit": 9
+      },
+      "submission_records": [
+        3
+      ],
+      "fence_calls": 2,
+      "public_return_a": 1
+    }
+  ],
+  "checks": {
+    "policy_assertions": 55,
+    "device_assertions": 25,
+    "viewport_pixels": "pass",
+    "settled_scanout_sha256": "7149c539cadeb39a3f1542fc11599d020cf822538306a4255fada7d0d1f60ef4",
+    "viewport_copies_per_action": 1,
+    "exposed_row_draws_per_action": 1,
+    "fallback_redraws": 0,
+    "process_lifetimes": 3,
+    "ownership_and_heap": "restored",
+    "guards": "intact",
+    "pointer_start": [
+      639,
+      0
+    ],
+    "pointer_end": [
+      639,
+      0
+    ],
+    "copy_grants_and_submission_counts_unchanged": true,
+    "observed_complete_ms": [
+      120.62606871644071,
+      120.41630778469619
+    ],
+    "host_tests": {
+      "run": 740,
+      "skipped": 4,
+      "status": "pass",
+      "log": {
+        "path": "build/gem-mouse-hide/host-tests.log",
+        "sha256": "45923c8cc31cee59839da95c572e2fffd646007d5d4ea38101120e2d5ba2b1f7"
+      }
+    },
+    "hidden_form_installation": "Retained while already hidden; 25 device assertions"
+  },
+  "bank_zero_reserved_delta_bytes": {
+    "fixed": 0,
+    "root": 0,
+    "kernel": 0,
+    "idle": 0,
+    "per_public_task": 0,
+    "guards_alignment_spare_included": true
+  },
+  "production_static_storage_delta_bytes": 0,
+  "source_hashes": {
+    "lib/aes/aescursor.act": "b68e90df4b6d29590911284d357565186e1427a492e0596a623f00407fa07b54",
+    "ports/gem4xe/adapter/gem-vbxe.c": "2e9b8fb5cc549a75eb71ab509cd5e89682c7fb151ed4ae92f79c79338ec4f880",
+    "tests/programs/aes_cursor_policy.act": "7fc27a8dd8054404a6d9933a6eb9e31d5429f520d33f20754e43c1c7b1151fe0",
+    "tests/programs/mouse_hide.c": "a12a8b6e63860c826f1f73348e77ce360bfd2985498518debde9066043fbf2fb",
+    "tools/test_aes_cursor_policy.py": "bf0028e5b95d6dcfc2e08aa19dbcddf115184f01038922f4d4ffc287f82f91e0",
+    "tools/test_mouse_hide.py": "4fcab2c43b24f812d9bbe0621dc2b6c3ff26032fc000170ce94229d63937993e"
+  },
+  "limits": [
+    "Two PAL scroll actions with one clipped pointer position do not establish end-to-end latency or a distribution",
+    "Device fixture executes production body with cursor/flush hardware substituted; loaded MGVIEW checks actual ownership and pixels",
+    "No QED, Counter, application catalog, geometry run, demo refresh or release qualification"
+  ]
+}

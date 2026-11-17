@@ -66,6 +66,13 @@ nested coordination and completion checks dominate. It proposes a direct
 M_OFF visibility path following MagiC, retaining synchronous completion and
 normal Task preemption; runtime behavior is unchanged in the audit.
 
+The [direct hide slice](../../history/gem-mouse-hide.md) now implements that
+M_OFF path. It preserves pending selection and skips form work when becoming
+hidden; form applies while already hidden retain their installation path.
+Measured hide CPU falls
+from about 5.9 to 3.3/4.3 ms, with one synchronous restore BCB and unchanged
+pixels. General guard/wake work remains a separate follow-up.
+
 The [governing direction](../../contributing/README.md#gem-architecture-guidance)
 is to port MagiC's GUI structure and flow onto Exec's platform services and use
 GEM4XE as the primary graphics code quarry. Follow MagiC beyond ownership alone:

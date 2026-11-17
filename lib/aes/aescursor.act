@@ -132,10 +132,14 @@ PUBLIC CARD FUNC Call(AESSTATE.Service POINTER service
   status=AESTYPES.OK
   EXEC.Forbid()
   depth=service.directory.mouse.depth
-  status=Select(service)
-  IF status<>AESTYPES.OK THEN
-    EXEC.Permit()
-    RETURN(status)
+  ; MagiC's M_OFF changes visibility without selecting a recipient/form.
+  ; Preserve pending selection for input service or a later show/form call.
+  IF request.intin(1)<>0 OR mode<>AESTYPES.M_OFF THEN
+    status=Select(service)
+    IF status<>AESTYPES.OK THEN
+      EXEC.Permit()
+      RETURN(status)
+    FI
   FI
   IF request.intin(1)=0 THEN
     IF mode=AESTYPES.M_OFF THEN

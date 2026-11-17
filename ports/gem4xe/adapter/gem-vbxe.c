@@ -680,10 +680,12 @@ static UWORD draw_Mouse(struct AESMouseState *mouse)
     Forbid();
     x=mouse->x; y=mouse->y; visible=mouse->visible;
     revision=mouse->revision;
-    memcpy(target,&mouse->form,sizeof(*target));
+    /* A visible-to-hidden transition only restores the saved background.
+     * Form updates while already hidden retain their installation path. */
+    if (visible || !cursorVisible) memcpy(target,&mouse->form,sizeof(*target));
     Permit();
-    if (cursorForm.kind!=target->kind || (target->kind==AES_USER_DEF &&
-        memcmp(cursorForm.words,target->words,sizeof(target->words)))) {
+    if ((visible || !cursorVisible) && (cursorForm.kind!=target->kind || (target->kind==AES_USER_DEF &&
+        memcmp(cursorForm.words,target->words,sizeof(target->words))))) {
         cursor_hide();
         if (fault) return DISPLAY_DEVICE_FAULT;
         memcpy(&cursorForm,target,sizeof(cursorForm));

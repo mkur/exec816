@@ -1,5 +1,9 @@
 # Historical records
 
+- [Direct mouse hiding](gem-mouse-hide.md): M_OFF skips recipient selection
+  and invisible form copies while retaining synchronous restoration, with
+  focused policy/device checks and a loaded MGVIEW comparison.
+
 - [MGVIEW mouse hide/show audit](gem-mouse-hide-audit.md): passive policy,
   form-copy, coordination and cursor restoration costs, compared with MagiC's
   direct hide path; no runtime change.

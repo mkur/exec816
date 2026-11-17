@@ -4,7 +4,7 @@ USE AESSTATE
 USE AESTYPES
 USE AESCURSOR
 USE HEAPCORE
-CARD checks
+CARD checks,clientBytes,serviceBytes
 AESTYPES.Request request
 
 PROC Require(BYTE okay)
@@ -25,12 +25,22 @@ PROC Main()
   LET first=@service.clients(0)
   LET second=@service.clients(1)
   LET mouse=@service.directory.mouse
+  clientBytes=SIZEOF(AESSTATE.Client)
+  serviceBytes=SIZEOF(AESSTATE.Service)
   Require(SIZEOF(AESTYPES.MouseState)=100)
-  Require(SIZEOF(AESTYPES.Request)=418)
-  Require(SIZEOF(AESSTATE.Client)=374 AND SIZEOF(AESSTATE.Service)=2328)
+  Require(SIZEOF(AESTYPES.Request)=190)
+  Require(SIZEOF(AESSTATE.Client)=370 AND SIZEOF(AESSTATE.Service)=2492)
   Require(mouse.x=320 AND mouse.y=120 AND mouse.visible=1)
+  service.cursorOwner=42
+  mouse.form.kind=AESTYPES.TEXT_CRSR
+  AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY
   request.intin(0)=AESTYPES.M_OFF
   Require(AESCURSOR.Call(service,first,@request)=AESTYPES.OK)
+  Require(service.cursorOwner=42 AND mouse.form.kind=AESTYPES.TEXT_CRSR)
+  Require(AESSTATE.mouseDirty=AESSTATE.MOUSE_DIRTY)
+  Require(request.mouseWait=mouse.revision AND request.intout(0)=1)
+  service.cursorOwner=0
+  mouse.form.kind=AESTYPES.ARROW
   Require(first.mouseHides=1 AND service.cursorHides=1 AND mouse.depth=1)
   Require(mouse.visible=0 AND mouse.revision=1)
   Require(AESCURSOR.Call(service,second,@request)=AESTYPES.OK)

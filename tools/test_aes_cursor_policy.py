@@ -24,10 +24,13 @@ def run(out,mode,routing=False):
             runtime,_=execute(bridge,program,frame_limit=600,timeout=60)
         except Exception:
             print('Cursor policy checks before fault:',data(bridge,program['image'],'checks',True)[0],flush=True)
+            if not routing:
+                print('Client/service bytes:',data(bridge,program['image'],'clientBytes',True)[0],
+                      data(bridge,program['image'],'serviceBytes',True)[0],flush=True)
             raise
         ownership(bridge,program,program['output'])
         checks=data(bridge,program['image'],'checks',True)[0]
-        require(checks==(31 if routing else 52),'Incomplete cursor policy checks: '+str(checks))
+        require(checks==(31 if routing else 55),'Incomplete cursor policy checks: '+str(checks))
     report=dict(status='pass',tier='development',qualification=False,mode=mode,
         checks=checks,machine=machine,runtime=runtime,build=program['build'])
     (out/'results.json').write_text(json.dumps(report,indent=2)+'\n')
