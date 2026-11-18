@@ -21,9 +21,6 @@
 #define RMODE_RD 0
 #define MGVIEW_FILE_LIMIT 65519L
 #define MGVIEW_LINE_LIMIT 16380L
-typedef struct {
-    WORD mwhich,mx,my,mb,kstate,key,mclicks,msg[8];
-} EVNT;
 void open_work(void);
 WORD top_whdl(void);
 void form_xerr(LONG error,const char *path);

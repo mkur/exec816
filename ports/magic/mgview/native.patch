@@ -109,7 +109,7 @@
 -			  &w_ev.mclicks
 -			  );
 +        w_ev.mwhich = evnt_multi_moblk(MU_KEYBD|MU_MESAG,2,1,1,
-+            NULL,NULL,w_ev.msg,0,0,&w_ev.mx,&w_ev.my,&w_ev.mb,
++            NULL,NULL,w_ev.msg,0,0,&w_ev.mx,&w_ev.my,&w_ev.mbutton,
 +            &w_ev.kstate,&w_ev.key,&w_ev.mclicks);
 +        if (!w_ev.mwhich) {
 +            if (ExecAESDiagnostic() == AES_INPUT_LOST)
