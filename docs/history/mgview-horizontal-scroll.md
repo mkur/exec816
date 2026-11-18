@@ -103,3 +103,25 @@ python3 tools/measure_mgview_horizontal.py "$demo" "$out/after-timing" --app "$o
 python3 tools/measure_mgview_horizontal.py "$demo" "$out/after-list-trace" --app "$out/final-app" --trace
 python3 tools/measure_mgview_horizontal.py "$demo" "$out/after-fixture" --app "$out/final-app" --fixture
 ```
+
+## Sustained right-key input
+
+A saved Altirra session showed Exec's normal exit with status zero and the
+retired viewer window at document row 41 and column 17. The demo startup
+script executes `EXIT` when MGVIEW returns, which restores the Atari screen.
+The saved state ends after cleanup. A separate replay of sustained right-key
+input traced `ExecAESInputRecover`, a zero return from `evnt_multi_moblk`,
+and MGVIEW immediately taking its exit branch.
+
+MGVIEW now re-enters its event wait after `AES_INPUT_LOST`. AES has already
+acknowledged the lost input at that point, so the next wait accepts new
+input. The focused regression starts at the bottom of the sample, sends
+100 right-key pulses, observes the keyboard epoch advance from 1 to 4, and
+checks that the viewer accepts another key and renders the exact viewport.
+The refresh reuses the native and OF816 images. Added reserved bank-zero
+bytes are **0 fixed and 0 per Task**, including guards, alignment, and
+unused capacity.
+
+```sh
+python3 tools/measure_mgview_horizontal.py build/mgview-right-repeat/demo build/mgview-right-repeat/keyboard-burst-replay --keyboard-burst
+```

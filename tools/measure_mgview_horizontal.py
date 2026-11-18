@@ -16,6 +16,7 @@ from filesystem_audit import Audit
 from g4bench_trace import calls
 from gem_applications import MODELS, instances
 from gem_render_oracle import font_bytes
+from generate_aes_server import ABI as AES, layout
 from make_data_disk import make
 from measure_mgview import definition, expected
 from mgview_frame_trace import geometry
@@ -161,7 +162,7 @@ def trace_definition(cache, program, foreign, app):
     return markers
 
 
-def run(bundle, output, app_directory=None, *, trace=False, fixture=False):
+def run(bundle, output, app_directory=None, *, trace=False, fixture=False, keyboard_burst=False):
     output.mkdir(parents=True, exist_ok=True)
     cache = bundle/'bitmap-console'
     if app_directory:
@@ -303,6 +304,54 @@ def run(bundle, output, app_directory=None, *, trace=False, fixture=False):
                 bridge._cmd_ok('KEY CTRL up')
             session.frames(60)
 
+        def check_keyboard_burst():
+            types = layout()
+            request = types['Request']['fields']
+            endpoint = types['Endpoint']['fields']
+            inbox_fields = types['InputInbox']['fields']
+            app_id = session.number(symbols['ap_id'], 2)
+            pointers = bridge.memdump(session.provider['contexts'], 4*AES['constants']['CONTEXTS'])
+            contexts = [int.from_bytes(pointers[i:i+4], 'little')
+                        for i in range(0, len(pointers), 4)]
+            context = next(c for c in contexts if c and
+                           session.number(c+request['global']+4, 2) == app_id)
+            directory = session.number(context+request['directory'], 3)
+            first = directory+types['Directory']['fields']['endpoints']
+            client = next(first+i*types['Endpoint']['size'] for i in range(AES['constants']['CLIENTS'])
+                          if session.number(first+i*types['Endpoint']['size']+endpoint['gemId'], 2) == app_id)
+            inbox = session.number(client+endpoint['input'], 3)
+            epoch = inbox+inbox_fields['keyEpoch']
+            initial = session.number(epoch)
+
+            tx, ty, tw, th = gadget(frame()['objects'], 9)
+            target = (tx, ty+th-8, tw, 8)
+            bottom = session.number(window+286)
+            page = work[3]//8
+            for row in range(page, bottom+page, page):
+                shift('vertical-page', 8, 0, min(row, bottom), False, target=target)
+            bridge._cmd_ok('KEY CTRL down')
+            for _ in range(100):
+                bridge._cmd_ok('KEY ASTERISK down')
+                session.frames(2)
+                bridge._cmd_ok('KEY ASTERISK up')
+                session.frames(1)
+            bridge._cmd_ok('KEY CTRL up')
+            session.frames(100)
+            recovered = session.number(epoch)
+            require(recovered > initial, 'Keyboard burst did not reach an input loss boundary')
+            require(session.number(inbox+inbox_fields['loss'], 2) & AES['constants']['INPUT_KEY'] == 0,
+                    'MGVIEW did not acknowledge keyboard loss')
+            require(session.number(symbols['nwindows'], 2) == 1, 'MGVIEW closed on input loss')
+            require(session.number(window+304) > 0, 'Burst did not scroll the viewer')
+            key('MINUS', ctrl=True)
+            require(session.number(window+280) == bottom-1, 'MGVIEW stopped accepting keys after loss')
+            column = session.number(window+304)
+            actual, _ = screen(bridge, output/'after-loss.bgra', work, work)
+            require(actual == expected(font, work, content, bottom-1, column=column),
+                    'Wrong viewport after input recovery')
+            report['keyboard_burst'] = dict(key_epoch_before=initial, key_epoch_after=recovered,
+                                            shift=[column, bottom-1], pulses=100)
+
         def check_fixture():
             cover = session.number(symbols['windows']+4)
             require(cover and session.number(window+300) == 272, 'Fixture needs the capped document')
@@ -360,6 +409,8 @@ def run(bundle, output, app_directory=None, *, trace=False, fixture=False):
         report['stack_ready'] = stack_usage(bridge, program['build']['memory'])
         if fixture:
             check_fixture()
+        elif keyboard_burst:
+            check_keyboard_burst()
         else:
             if trace:
                 bridge.profile_start()
@@ -406,8 +457,11 @@ if __name__ == '__main__':
     modes.add_argument('--fixture', action='store_true',
                        help='check cover windows, literal tabs and page scrolls')
     modes.add_argument('--trace', action='store_true', help='observe one detailed arrow pair')
+    modes.add_argument('--keyboard-burst', action='store_true',
+                       help='verify continued scrolling after an overflowing right-key burst')
     args = parser.parse_args()
     if args.fixture and not args.app:
         parser.error('--fixture needs an APP build')
     run(args.bundle.resolve(), args.output.resolve(),
-        args.app.resolve() if args.app else None, trace=args.trace, fixture=args.fixture)
+        args.app.resolve() if args.app else None, trace=args.trace, fixture=args.fixture,
+        keyboard_burst=args.keyboard_burst)

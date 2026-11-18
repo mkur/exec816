@@ -92,7 +92,7 @@
  
  /*	Mrsrc_load("mgview.rsc", global);	*/
  
-@@ -91,23 +78,16 @@
+@@ -91,23 +78,20 @@
  
  	while(nwindows)
  		{
@@ -111,7 +111,11 @@
 +        w_ev.mwhich = evnt_multi_moblk(MU_KEYBD|MU_MESAG,2,1,1,
 +            NULL,NULL,w_ev.msg,0,0,&w_ev.mx,&w_ev.my,&w_ev.mb,
 +            &w_ev.kstate,&w_ev.key,&w_ev.mclicks);
-+        if (!w_ev.mwhich) break;
++        if (!w_ev.mwhich) {
++            if (ExecAESDiagnostic() == AES_INPUT_LOST)
++                continue;
++            break;
++        }
 +
  
  
@@ -122,7 +126,7 @@
  
  			if	(w_ev.key == 0x1011)
  				break;		/* ^Q */
-@@ -115,9 +95,9 @@
+@@ -115,9 +99,9 @@
  			else
  			if	((w_ev.key == 0x1117) && (w))
  				{
@@ -134,7 +138,7 @@
  				i = wnr;
  				do	{
  					i++;
-@@ -167,72 +147,6 @@
+@@ -167,72 +151,6 @@
  					case PA_EXIT:
  						goto ende;
  
@@ -207,7 +211,7 @@
  					}	/* end switch */
  				w_ev.mwhich &= ~MU_MESAG;
  				}
-@@ -240,6 +154,7 @@
+@@ -240,6 +158,7 @@
  		}
  
  ende:
