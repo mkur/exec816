@@ -230,31 +230,100 @@
  #include "globals.h"
  #include "windows.h"
  #include "mgwind.h"
-@@ -34,12 +30,12 @@
- *
- *****************************************************************/
+@@ -23,59 +19,39 @@
+ 				LFARROW+RTARROW+HSLIDE
  
+ 
+-/*****************************************************************
+-*
+-* Expandiert eine Zeile mit Tabulatoren. Die Zeilenlnge
+-* im Text ist <len>, ohne crlf.
+-* Die neue Zeilenlnge wird zurckgegeben.
+-* Ist die Zeile zu breit, wird abgebrochen.
+-* Ist <tabsize> = 0, werden Tabs wrtlich angezeigt (als Kuller)
+-* Ist <buf> = NULL, wird nix kopiert.
+-*
+-*****************************************************************/
+-
 -static long expand_line( unsigned char *text, long len, int tabsize,
-+static long expand_line( unsigned char *text, long len, WORD tabsize,
- 					unsigned char *buf, long bufsize )
- {
- 	unsigned char *end = text+len;
- 	long newlen;
+-					unsigned char *buf, long bufsize )
+-{
+-	unsigned char *end = text+len;
+-	long newlen;
 -	int ntabs;
-+	WORD ntabs;
- 
- 
- 	newlen = 0L;
-@@ -48,7 +44,7 @@
- 			/* Tab expandieren */
- 		if	((*text == '\t') && (tabsize))
- 			{
+-
+-
+-	newlen = 0L;
+-	while((text < end) && (bufsize))
+-		{
+-			/* Tab expandieren */
+-		if	((*text == '\t') && (tabsize))
+-			{
 -			ntabs = (int) (tabsize - (newlen % tabsize));
-+			ntabs = (WORD) (tabsize - (newlen % tabsize));
- 			if	(!ntabs)
- 				ntabs += tabsize;
- 			while(ntabs && bufsize)
-@@ -96,7 +92,7 @@
+-			if	(!ntabs)
+-				ntabs += tabsize;
+-			while(ntabs && bufsize)
+-				{
+-				if	(buf)
+-					{
+-					*buf++ = ' ';
+-					bufsize--;
+-					}
+-				newlen++;
+-				ntabs--;
+-				}
+-			}
+-			/* normal: ein Zeichen kopieren */
+-		else	{
+-			if	(buf)
+-				{
+-				if	(*text)
+-					*buf++ = *text;
+-				else	*buf++ = ' ';		/* Nullbyte! */
+-				bufsize--;
+-				}
+-			newlen++;
+-			}
+-		text++;
+-		}
+-	return(newlen);
++/* Expand tabs from document column zero. Copy only [first, limit), or
++ * count columns up to limit when measuring the document width. */
++static WORD expand_line(unsigned char *text, long len, WORD tabsize,
++                        unsigned char *buf, WORD first, WORD limit)
++{
++    unsigned char *end = text + len;
++    WORD column = 0;
++    WORD count = 0;
++
++    while (text < end && column < limit)
++        {
++        unsigned char ch = *text++;
++        if (ch == '\t' && tabsize)
++            {
++            WORD stop = column + tabsize - column % tabsize;
++            if (stop > limit)
++                stop = limit;
++            if (buf)
++                {
++                WORD start = column > first ? column : first;
++                for (; start < stop; ++start)
++                    buf[count++] = ' ';
++                }
++            column = stop;
++            }
++        else
++            {
++            if (buf && column >= first)
++                buf[count++] = ch ? ch : ' ';
++            ++column;
++            }
++        }
++    return buf ? count : column;
+ }
+ 
+ 
+@@ -96,7 +72,7 @@
  *****************************************************************/
  
  static void get_line_column_count( unsigned char *text, long len,
@@ -263,7 +332,7 @@
  {
  	unsigned char *ende = text+len;
  	unsigned char *eol,*eol2;
-@@ -117,7 +113,7 @@
+@@ -117,7 +93,7 @@
  		if	(eol)
  			{
  			eol2 = eol+1;		/* nchstes Zeichen */
@@ -272,7 +341,19 @@
  				eol2++;
  			}
  
-@@ -162,7 +158,7 @@
+@@ -125,10 +101,7 @@
+ 
+ 		else	eol = eol2 = ende;
+ 
+-		w = expand_line( text, eol-text, tabsize,
+-						NULL, 1L );
+-		if	(w > MAXWIDTH)
+-			w = MAXWIDTH;
++		w = expand_line(text, eol-text, tabsize, NULL, 0, MAXWIDTH);
+ 
+ 		if	(w > *cc)
+ 			*cc = w;
+@@ -162,7 +135,7 @@
  			break;
  
  		text = eol+1;		/* aufs nchste Zeichen */
@@ -281,7 +362,7 @@
  			text++;
  		}
  }
-@@ -211,22 +207,21 @@
+@@ -211,22 +184,21 @@
  *
  ****************************************************************/
  
@@ -319,7 +400,7 @@
  }
  
  
-@@ -238,7 +233,7 @@
+@@ -238,7 +210,7 @@
  *
  ****************************************************************/
  
@@ -328,46 +409,124 @@
  {
  	long old_hshift,old_vshift;
  
-@@ -268,12 +263,12 @@
+@@ -267,68 +239,54 @@
+ 
  static void _my_draw(WINDOW *w, GRECT *g)
  {
- 	unsigned char *line;
+-	unsigned char *line;
 -	int i;
-+	WORD i;
- 	long l;
- 	long lw;
+-	long l;
+-	long lw;
 -	int x,y;
 -	int pxy[4];
 -	unsigned char textbuf[MAXWIDTH+1];
-+	WORD x,y;
-+	WORD pxy[4];
-+	static unsigned char textbuf[MAXWIDTH+1]; /* Per-image upper scratch. */
- 
- 
- 	pxy[0] = g->g_x;
-@@ -281,10 +276,11 @@
- 	pxy[2] = g->g_x + g->g_w - 1;
- 	pxy[3] = g->g_y + g->g_h - 1;
- 	vs_clip(vdi_handle, TRUE, pxy);
-+	vr_recfl(vdi_handle,pxy);
- 
- 	/* Fr jede sichtbare Zeile */
- 
+-
+-
+-	pxy[0] = g->g_x;
+-	pxy[1] = g->g_y;
+-	pxy[2] = g->g_x + g->g_w - 1;
+-	pxy[3] = g->g_y + g->g_h - 1;
+-	vs_clip(vdi_handle, TRUE, pxy);
+-
+-	/* Fr jede sichtbare Zeile */
+-
 -	x = w->in.g_x - (int) (w->hscroll.shift*w->hscroll.pixelsize);
-+	x = w->in.g_x - (WORD) (w->hscroll.shift*w->hscroll.pixelsize);
- 	y = w->in.g_y;
- 	l = w->vscroll.shift;
- 
-@@ -315,7 +311,7 @@
- 
- 			if	(x+lw < w->in.g_x+w->in.g_w)
- 				{
+-	y = w->in.g_y;
+-	l = w->vscroll.shift;
+-
+-	for	(i = 0; i < w->vscroll.nvis; i++)
+-		{
+-		if	((y+w->vscroll.pixelsize > g->g_y) &&
+-			 (y < g->g_y+g->g_h))
+-			{
+-			line = get_line(w, l, &lw);
+-
+-			/* TABs expandieren */
+-
+-			if	(line)
+-				lw = expand_line( line, lw, w->user_tabsize,
+-								textbuf, MAXWIDTH );
+-
+-			/* erst den Text ausgeben */
+-
+-			if	(line)
+-				{
+-				textbuf[lw] = '\0';
+-				v_gtext(vdi_handle, x, y, (char *) textbuf);
+-				}
+-
+-			lw *= w->hscroll.pixelsize;	/* ausgegebene Pixel */
+-
+-			/* dann ggf. ein weies Rechteck dahinter */
+-
+-			if	(x+lw < w->in.g_x+w->in.g_w)
+-				{
 -				pxy[0] = x + (int) lw;
-+				pxy[0] = x + (WORD) lw;
- 				pxy[1] = y;
- 				pxy[2] = w->in.g_x + w->in.g_w - 1;
- 				pxy[3] = y + w->vscroll.pixelsize - 1;
-@@ -338,16 +334,15 @@
+-				pxy[1] = y;
+-				pxy[2] = w->in.g_x + w->in.g_w - 1;
+-				pxy[3] = y + w->vscroll.pixelsize - 1;
+-				vr_recfl(vdi_handle, pxy);
+-				}
+-
+-			}
+-
+-		/* nchste Zeile */
+-
+-		y += w->vscroll.pixelsize;
+-		l++;
+-		}
++    WORD i, y;
++    WORD pxy[4];
++    WORD width = w->hscroll.pixelsize;
++    WORD origin = w->in.g_x - (WORD)(w->hscroll.shift * width);
++    WORD first, limit, x;
++    long row = w->vscroll.shift;
++    static unsigned char textbuf[MAXWIDTH+1]; /* Per-image upper scratch. */
++
++    pxy[0] = g->g_x;
++    pxy[1] = g->g_y;
++    pxy[2] = g->g_x + g->g_w - 1;
++    pxy[3] = g->g_y + g->g_h - 1;
++    vs_clip(vdi_handle, TRUE, pxy);
++    vr_recfl(vdi_handle, pxy);
++
++    if (pxy[2] < origin)
++        return;
++
++    /* Include cells cut by either edge. VDI clips their pixels. */
++    first = pxy[0] > origin ? (pxy[0] - origin) / width : 0;
++    limit = (pxy[2] - origin) / width + 1;
++    if (limit > MAXWIDTH)
++        limit = MAXWIDTH;
++    if (first >= limit)
++        return;
++    x = origin + first * width;
++
++    y = w->in.g_y;
++    for (i = 0; i < w->vscroll.nvis; ++i, y += w->vscroll.pixelsize, ++row)
++        {
++        unsigned char *line;
++        long length;
++        WORD count;
++
++        if (y > pxy[3])
++            break;
++        if (y + w->vscroll.pixelsize <= pxy[1])
++            continue;
++        line = get_line(w, row, &length);
++        if (!line)
++            continue;
++        count = expand_line(line, length, w->user_tabsize, textbuf, first, limit);
++        if (count)
++            {
++            textbuf[count] = '\0';
++            v_gtext(vdi_handle, x, y, (char *)textbuf);
++            }
++        }
+ }
+ 
+ 
+@@ -338,16 +296,15 @@
  *
  *****************************************************************/
  
@@ -391,7 +550,7 @@
  	wind_close(w->handle);
  	wind_delete(w->handle);
  	Mfree(w->user_file);
-@@ -355,6 +350,7 @@
+@@ -355,6 +312,7 @@
  	sl = find_slot_window(w);
  	*sl = NULL;
  	nwindows--;
@@ -399,7 +558,7 @@
  }
  
  
-@@ -365,11 +361,11 @@
+@@ -365,11 +323,11 @@
  *****************************************************************/
  
  
@@ -416,7 +575,7 @@
  
  	/* Tabulator umschalten */
  
-@@ -379,11 +375,12 @@
+@@ -379,11 +337,12 @@
  		newtab = ascii-'0';
  		if	(newtab != w->user_tabsize)
  			{
@@ -434,7 +593,7 @@
  			update_window(w);
  			}
  		}
-@@ -433,7 +430,6 @@
+@@ -433,7 +392,6 @@
  					break;
  		}
  }
@@ -442,7 +601,7 @@
  
  
  /*****************************************************************
-@@ -448,7 +444,7 @@
+@@ -448,7 +406,7 @@
  	WINDOW *w;
  	XATTR xa;
  	long err;
@@ -451,7 +610,7 @@
  	GRECT full;		/* berechne maximale Fenstergre */
  
  
-@@ -456,7 +452,7 @@
+@@ -456,7 +414,7 @@
  	/* ------------------------------------------------ */
  
  	if	(strlen(path) > 127)
@@ -460,7 +619,7 @@
  	new_slot = new_window();
  	if	(!new_slot)
  		{
-@@ -471,19 +467,21 @@
+@@ -471,19 +429,21 @@
  		return;
  		}
  
@@ -486,7 +645,7 @@
  	if	(w->handle <= 0)
  		{
  		Mfree(w);
-@@ -502,15 +500,16 @@
+@@ -502,15 +462,16 @@
  		form_xerr(err, path);
  		return;
  		}
@@ -505,7 +664,7 @@
  	w->user_fsize = xa.size;
  	w->user_file = Malloc(xa.size + 1);	/* Platz fr EOS */
  	if	(!w->user_file)
-@@ -529,9 +528,10 @@
+@@ -529,9 +490,10 @@
  		goto err3;
  		}
  
@@ -519,7 +678,7 @@
  
  	/* Default-Einstellungen */
  
-@@ -543,7 +543,8 @@
+@@ -543,7 +505,8 @@
  	get_line_column_count(w->user_file, w->user_fsize,
  					&(w->vscroll.n), &(w->hscroll.n),
  					w->user_tabsize);
@@ -529,7 +688,7 @@
  	if	(!w->user_lines)
  		{
  		err = ENSMEM;
-@@ -565,12 +566,12 @@
+@@ -565,12 +528,12 @@
  	err = (long) w->hscroll.n * (long) text_attrib[8];
  	if	(err > scrg.g_w)
  		err = scrg.g_w;
@@ -545,7 +704,7 @@
  
  	if	(w->out.g_y < scrg.g_y)
  		w->out.g_y = scrg.g_y;
-@@ -580,11 +581,13 @@
+@@ -580,11 +543,13 @@
  		w->out.g_h = scrg.g_h;
  
  	/* Fenster staffeln */
