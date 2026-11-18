@@ -120,3 +120,50 @@ for three 1,600-byte slots and one 2,848-byte slot.
 Run `python3 tools/test_mgedit_object.py --output build/mgedit/me3b` to build
 and exercise the physical release case, then run the same command with
 `--reuse --loss` to inject a dropped button record during the drag.
+
+## ME4 — Named documents
+
+The native patch builds the named-document code from the pinned `MGEDIT.C`
+and `MGEDWIND.C`. Startup opens APP arguments through GEMDOS, the editor
+maintains each document's `G_EDIT` and window, and the donor's Ctrl+S, Ctrl+U
+and Ctrl+Q branches remain available before its menu is ported. Keyboard,
+mouse and window messages use their delivered window identities.
+
+The document reserves its file length plus 65,536 bytes through public
+`AllocMem` with `MEMF_LINEAR`. The reserve includes the terminator. Load
+requires the complete size observed by FSTAT, a successful close and a
+document with no embedded NUL. A full write and successful close are both
+required to clear the dirty flag. Save retains MagiC's create/truncate
+sequence. On a failed write, the live buffer remains available for retry.
+Explicit document close, cooperative stop and application return free the
+linear allocation. Abrupt Task retirement still has no general raw-allocation
+reclamation service.
+
+MagiC holds its recursive UPDATE through its modified-close alert. The
+approved Exec mapping keeps the document live and calls `form_alert` outside
+UPDATE/MCTRL. Save and teardown then enter UPDATE. The native form borrows the
+editor window. The port keeps user-requested sizes at or above 248×104 outer
+pixels to leave room for the three-button prompt with the system face.
+
+The optimized loaded scenario opened two editor documents beside MGVIEW.
+Physical input cancelled with Escape and exercised Save and Discard choices.
+Reopening found the saved edit in memory. Independent ATR decoding matched
+all 70,001 edited bytes and the untouched second file, including mixed line
+endings and high bytes. A second run verified 312 exposure pixels after
+switching from MGVIEW and injected a one-byte short write. The document
+stayed dirty and open, and the next Save and reopen matched the expected
+bytes. Each run passed 16 native lifecycle checks with intact guards and
+equal free memory after both editor lifetimes. The C816
+provider and APP ABI 51 are unchanged. `program.app` is 22,302 bytes with
+the existing 2,560-byte minimum stack pool. That pool kept at least 837 bytes
+above its measured watermark and interrupt floor in the coexistence fixture.
+
+Each document adds a 267-byte window record with the 16-byte C runtime prefix
+rounded to 288 bytes. The linear allocation rounds up to an eight-byte
+boundary. The shared editor state retains the ME3 allocation sizes. Fixed,
+root, kernel, idle and per-public-Task reserved bank-zero deltas are zero.
+The fixture reuses ME3b's 12-Task configuration.
+
+Run `python3 tools/test_mgedit_document.py --output build/mgedit/me4` for the
+focused coexistence fixture. Add `--reuse --short-save` to relink the editor
+with the test-only short-write injection and exercise the smaller document.

@@ -11,6 +11,15 @@ The test client uses its own resource and `wdlg_*` host and calls the older
 `edit_evnt` signature. The native fixture uses a compiled `G_EDIT` object in
 an ordinary window. `MT_EDIT.H` is the reference for the event binding.
 
+`python3 tools/build_mgedit.py --output build/mgedit/app` prepares the pinned
+sources, applies `native.patch` and builds the disk-loadable `program.app`.
+Install that file as `MGEDIT.APP` and pass one or more native text paths as
+arguments. Use a writable volume for documents you intend to save. Ctrl+S
+saves the current path, Ctrl+U closes its window, and Ctrl+Q closes the open
+documents in order. Closing a modified document offers Save, Discard and
+Cancel. The window stays open after Cancel or a failed save. The first build
+covers named documents with the system face and native window controls.
+
 | MagiC AES function | Operations |
 | --- | --- |
 | 210 | Create an `XEDITINFO`. |

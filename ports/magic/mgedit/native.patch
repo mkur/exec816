@@ -1,0 +1,2143 @@
+--- a/globals.h
++++ b/globals.h
+@@ -1,98 +1,39 @@
++/* Native interface for the named-document portions of MagiC MGEDIT. */
++#ifndef MGEDIT_GLOBALS_H
++#define MGEDIT_GLOBALS_H
++#include <gem.h>
++#include <compat/gem-rect.h>
++#include <compat/gemdos.h>
++#include <exec816/aes.h>
++#include <proto/dos.h>
++#include <proto/exec.h>
++#include <string.h>
++
+ #define NWINDOWS 64
++#define EDITFELD 0
++#define EDIT_RESERVE 65536L
++#define EDITOR_W_KIND (NAME|CLOSER|FULLER|MOVER|SIZER|UPARROW|DNARROW|VSLIDE|HSLIDE|LFARROW|RTARROW)
+ 
+-#define WFLAG_ICONIFIED	1
+-#define WFLAG_SHADED	2
+-
+-#define EDITFELD 0
+-
+-typedef struct _window
+-{
+-	int		handle;			/* Handle oder 0 */
+-	int		flags;			/* Bit 0: Ikonifiziert */
+-	int		save_active;		/* Dateiauswahl offen: NurLesen */
+-	char		title[128];		/* Titelzeile */
+-	GRECT 	out;				/* Fenster- Gesamtmae */
+-	GRECT	in;				/* Fenster- Innenmae */
+-	char		path[128];
+-	char		*buf;
+-	long		nlines;
+-	long		yscroll;
+-	WORD		yvis;
+-	long		ncols;
+-	long		xscroll;
+-	WORD		xvis;
+-	long		bufsize;
+-	int		dirty;			/* Text wurde gendert */
+-	OBJECT	tree;			/* nur ein Objekt */
+-	XEDITINFO *xedit;
+-	int		fontID;
+-	int		fontH;
+-	int		fontprop;			/* proportionaler Zeichensatz */
+-	int		tcolour;			/* Textfarbe */
+-	int		bcolour;			/* Hintergrundfarbe */
+-	int		tabwidth;			/* Tabulatorlnge */
++typedef struct _window {
++    WORD handle, dirty;
++    char title[65];
++    GRECT out, in;
++    char path[128];
++    char *buf;
++    LONG nlines,yscroll,bufsize;
++    WORD yvis,yval,ncols,xscroll,xvis;
++    OBJECT tree;
++    XEDITINFO *xedit;
+ } WINDOW;
+ 
+-typedef union _wmesag 
+-{
+-	int		message[8];
+-	struct	{
+-		int	code;
+-		int	dest_apid;
+-		int	is_zero;
+-		int	whdl;
+-		GRECT g;
+-		}
+-		msg;
+-} WMESAG;
+-
+-extern int close_file( WINDOW *w );
+-
+-/* Fr Fenster */
+-extern int	top_whdl( void );
+ extern WINDOW *windows[NWINDOWS];
+-extern WINDOW **new_window( void );
+-extern WINDOW *whdl2window(int whdl);
+-extern WINDOW **find_slot_window( WINDOW *myw );
+-extern WINDOW *open_new_window( char *path );
+-extern WINDOW *whdl2window(int whdl);
+-extern void window_message(WINDOW *w, int kstate, int message[16]);
+-extern void window_set_slider(WINDOW *w);
+-extern void close_window( WINDOW *w );
+-
+-/***/
+-
+-extern int update_window(WINDOW *w, GRECT *g);
+-
+-
+-extern void subobj_wdraw(void *d, int obj, int startob, int depth);
+-extern void options_dial_init_rsc( void );
+-extern WORD cdecl hdl_options( DIALOG *d, EVNT *events, WORD exitbutton,
+-				WORD clicks, void *data );
+-extern void prefs_were_changed( void );
+-extern int ncolours;
+-extern OBJECT *adr_options;
+-extern OBJECT *adr_colour;
+-extern void *d_options;
+ extern GRECT scrg;
+-
+-extern struct prefs {
+-	long bufsize;
+-	int fontID;
+-	int fontH;
+-	int fontprop;
+-	char fontname[128];
+-	int tcolour;
+-	int bcolour;
+-	int tabwidth;
+-	GRECT prefs_win;
+-} prefs;
+-
+-/* Notiz-Fenster */
+-
+-#define MAXWIDTH 40		/* Maximale Textbreite in Zeichen */
+-#define MOVER_HEIGHT 3	/* Hhe des MOVERs in Pixeln */
+-#define MOVER_COLOUR LWHITE	/* Farbe des MOVERs */
+-#define EDITOR_W_KIND (NAME+CLOSER+FULLER+MOVER+SIZER+UPARROW+DNARROW+VSLIDE+HSLIDE+LFARROW+RTARROW/*+SMALLER*/)
+-extern void save_options( void );
+-extern int dial_font( long *id, long *pt, int *mono, char *name );
++WINDOW *whdl2window(WORD whdl);
++WINDOW **new_window(void);
++WINDOW **find_slot_window(WINDOW *w);
++WINDOW *open_new_window(const char *path);
++void close_window(WINDOW *w);
++void window_message(WINDOW *w,const WORD *message);
++void window_set_slider(WINDOW *w);
++void document_title(WINDOW *w);
++#endif
+--- a/mgedit.c
++++ b/mgedit.c
+@@ -1,1137 +1,161 @@
+-/****************************************************************
+-*
+-*             MGEDIT.APP                             03.11.97
+-*             ==========
+-*                                 letzte nderung:
+-*
+-* geschrieben mit Pure C V1.1
+-* Projektdatei: MGEDIT.PRJ
+-*
+-* Einfacher Editor, basierend auf "EDITOBJC.SLB".
+-*
+-****************************************************************/
++/* Named-document branches of the Atari MagiC MGEDIT application. */
++#include "globals.h"
+ 
+-#define DEBUG 0
++WINDOW *windows[NWINDOWS];
++GRECT scrg;
+ 
+-#include <mgx_dos.h>
+-#include <mt_aes.h>
+-#include <vdi.h>
+-#include <string.h>
+-#include <stdlib.h>
+-#include "globals.h"
+-#include "mgedit.h"
+-#include "gemut_mt.h"
+-#if DEBUG
+-#include <stdio.h>
+-#endif
+-
+-int	gl_hhbox, gl_hwbox, gl_hhchar, gl_hwchar;
+-int	ap_id;
+-int	ncolours;
+-GRECT scrg;
+-int aes_handle;		/* Screen-Workstation des AES */
+-int terminate = FALSE;
+-
+-/* fr die SharedLib */
+-SLB_EXEC	slbexec;
+-SHARED_LIB  slb;
+-
+-/* globale Einstellungen */
+-
+-struct prefs prefs;
+-
+-/* Dialoge */
+-
+-OBJECT *adr_menu;
+-OBJECT *adr_about;
+-OBJECT *adr_options;
+-OBJECT *adr_colour;
+-void *d_options = NULL;
+-
+-/* Dateiauswahl-Dialog */
+-
+-typedef enum { fxopen, fxsaveas } fslx_modet;
+-static fslx_modet fslx_mode;
+-static FSLX_DIALOG fslx_dialog = NULL;
+-static WORD fslx_whdl;
+-static char fslx_path[258];
+-static char fslx_fname[66];
+-static WORD fslx_button,fslx_nfiles;	/* Ergebnis */
+-static WINDOW *fslx_saveas_w;			/* zu speicherndes Fenster */
+-static char *fslx_bsel,*fslx_esel;		/* zu speichernder Bereich */
+-
+-/* Fenster */
+-WINDOW *windows[NWINDOWS];
+-
+-
+-/****************************************************************
+-*
+-* Rechnet Koordinaten linear um. Der Wert <wert> wurde bei
+-* Bildschirmgre <old> abgespeichert, jetzt ist die
+-* Bildschirmgre <new>.
+-*
+-* Liegt das Fenster links aus dem Bildschirm heraus, wird
+-* nichts umgerechnet. Hier sollte aber sichergestellt werden,
+-* da man an das Fenster noch herankommt, d.h.:
+-*	x+w > k > 0.
+-*
+-****************************************************************/
+-
+-static void recalc(int *wert, int old, int new)
++/* The published title has room for one dirty marker and its terminator. */
++void document_title(WINDOW *w)
+ {
+-	unsigned long tmp;
+-
+-	if	(*wert > 0)
+-		{
+-		tmp    = (unsigned long) *wert;
+-		tmp   *= new;
+-		tmp   /= old;
+-		*wert  = (int) tmp;
+-		}
++    const char *path=w->path;
++    size_t length=strlen(path),offset=w->dirty!=0;
++    if (length>sizeof(w->title)-2) {
++        path+=length-(sizeof(w->title)-2);
++        length=sizeof(w->title)-2;
++    }
++    if (offset) w->title[0]='*';
++    memcpy(w->title+offset,path,length);
++    w->title[length+offset]=0;
++    wind_set_str(w->handle,WF_NAME,w->title);
+ }
+ 
++static WORD save_window(WINDOW *w)
++{
++    char *buf;
++    LONG buflen,actsize,ret,closed;
++    WORD file;
+ 
+-/****************************************************************
+-*
+-* Lese INF-Datei
+-*
+-****************************************************************/
++    if (!edit_get_buf(&w->tree,EDITFELD,&buf,&buflen,&actsize)) return 0;
++    ret=Fcreate(w->path,0);
++    if (ret<0) return 0;
++    file=(WORD)ret;
++    ret=Fwrite(file,actsize,buf);
++    closed=Fclose(file);
++    if (ret!=actsize || closed) return 0;
+ 
+-static char infpath[128];
+-
+-void read_inf( void )
+-{
+-	char buf[512];
+-	long len;
+-	int hdl;
+-	char *s,*t;
+-	int oldwh[2];
+-	int font[3];
+-
+-
+-	prefs.fontID = 1;
+-	prefs.fontH = 10;
+-	prefs.fontprop = FALSE;
+-	strcpy(prefs.fontname, "System Font");
+-	prefs.tcolour = 1;
+-	prefs.bcolour = 0;
+-	prefs.tabwidth = 64;
+-	prefs.bufsize = 65536L;		/* freier Platz in Puffer */
+-	prefs.prefs_win.g_x = prefs.prefs_win.g_y = -1;
+-
+-	s = getenv("HOME");
+-	if	(s)
+-		{
+-		strcpy(infpath, s);
+-		t = infpath+strlen(s);
+-		if	(t[-1] != '\\')
+-			*t++ = '\\';
+-		}
+-	else	t = infpath;
+-	strcpy(t, "MGEDIT.INF");
+-
+-	if	((s) || (shel_find(infpath)))
+-		{
+-		hdl = (int) Fopen(infpath, RMODE_RD);
+-		if	(hdl < 0)
+-			return;
+-		len = Fread(hdl, 511L, buf);
+-		Fclose(hdl);
+-		if	(len < E_OK)
+-			return;
+-		buf[len] = EOS;
+-
+-		/* erste Zeile berlesen */
+-
+-		for	(s = buf; (*s) && (*s != '\n'); s++)
+-			;
+-
+-		if	(*s == '\n')
+-			s++;
+-
+-		/* andere Zeilen auswerten */
+-
+-		while(*s)
+-			{
+-			if	(!strncmp(s, "SCREENSIZE ", 11))
+-				{
+-				s += 11;
+-				scan_values(&s, 2, oldwh);
+-				goto weiter;
+-				}
+-
+-			if	(!strncmp(s, "WINDOW PREFS ", 12))
+-				{
+-				s += 13;
+-				scan_values(&s, 4, (int *) &prefs.prefs_win);
+-				}
+-
+-			if	(!strncmp(s, "FONT ", 5))
+-				{
+-				s += 5;
+-				scan_values(&s, 3, font);
+-				prefs.fontID = font[0];
+-				prefs.fontprop = font[1];
+-				prefs.fontH = font[2];
+-				}
+-
+-			if	(!strncmp(s, "FONTNAME ", 9))
+-				{
+-				s += 9;
+-				t = prefs.fontname;
+-				while((*s) && (*s != '\r'))
+-					*t++ = *s++;
+-				*t = EOS;
+-				}
+-
+-			if	(!strncmp(s, "TCOLOUR ", 8))
+-				{
+-				s += 7;
+-				scan_values(&s, 1, &prefs.tcolour);
+-				}
+-
+-			if	(!strncmp(s, "BCOLOUR ", 8))
+-				{
+-				s += 7;
+-				scan_values(&s, 1, &prefs.bcolour);
+-				}
+-
+-			if	(!strncmp(s, "TABWIDTH ", 9))
+-				{
+-				s += 8;
+-				scan_values(&s, 1, &prefs.tabwidth);
+-				}
+-
+-			weiter:
+-
+-			while((*s) && (*s != '\n'))
+-				s++;
+-
+-			if	(*s == '\n')
+-				s++;
+-			}
+-
+-
+-		if	(oldwh[0] != scrg.g_w)
+-			{
+-			recalc(&(prefs.prefs_win.g_x), oldwh[0], scrg.g_w);
+-			recalc(&(prefs.prefs_win.g_w), oldwh[0], scrg.g_w);
+-			}
+-		if	(oldwh[1] != scrg.g_h)
+-			{
+-			recalc(&(prefs.prefs_win.g_y), oldwh[1], scrg.g_h);
+-			recalc(&(prefs.prefs_win.g_h), oldwh[1], scrg.g_h);
+-			}
+-		prefs.prefs_win.g_x += scrg.g_x;
+-		prefs.prefs_win.g_y += scrg.g_y;
+-
+-		}
++    if (w->dirty) {
++        edit_set_dirty(&w->tree,EDITFELD,0);
++        w->dirty=0;
++        document_title(w);
++    }
++    return 1;
+ }
+ 
+-
+-/****************************************************************
+-*
+-* Schreibe Fensterposition auflsungsunabhngig in
+-* Zeichenkette.
+-*
+-****************************************************************/
+-
+-static void print_winpos(char *s, GRECT *g, int n)
++/* The named document remains live while the existing AES form runs. */
++static WORD close_file(WINDOW *w)
+ {
+-	g->g_x -= scrg.g_x;
+-	g->g_y -= scrg.g_y;
+-	print_values(s, n, (int *) g);
+-	g->g_x += scrg.g_x;
+-	g->g_y += scrg.g_y;
++    WORD choice=2,okay=1;
++    if (w->dirty) {
++        if (!wind_get_grect(w->handle,WF_WORKXYWH,&w->in)) return 0;
++        choice=form_alert(1,"[2][Save changes?][Save|Discard|Cancel]");
++        if (choice!=1 && choice!=2) return 0;
++    }
++    if (!wind_update(BEG_UPDATE)) return 0;
++    if (choice==1) okay=save_window(w);
++    if (okay) close_window(w);
++    wind_update(END_UPDATE);
++    if (!okay) form_alert(1,"[3][Cannot save this file.][OK]");
++    return okay;
+ }
+ 
+-
+-/****************************************************************
+-*
+-* Schreibe INF-Datei
+-*
+-****************************************************************/
+-
+-void save_options( void )
++static WORD do_key(EVNT *event,WINDOW *w)
+ {
+-	int hdl;
+-	char buf[512];
+-	int scrwh[2];
+-	int font[3];
+-
+-
+-
+-	if	(d_options)
+-		{
+-		prefs.prefs_win.g_x = adr_options->ob_x;
+-		prefs.prefs_win.g_y = adr_options->ob_y;
+-		}
+-
+-	hdl = (int) Fcreate(infpath, 0);
+-	if	(hdl < 0)
+-		return;
+-	strcpy(buf, "[MGEDIT Header V 1.0]\r\n"
+-					"SCREENSIZE ");
+-	scrwh[0] = scrg.g_w;
+-	scrwh[1] = scrg.g_h;
+-	print_values(buf+strlen(buf), 2, scrwh);
+-
+-	strcat(buf, "\r\nWINDOW PREFS ");
+-	print_winpos(buf + strlen(buf), &prefs.prefs_win, 4);
+-
+-	strcat(buf, "\r\nFONT ");
+-	font[0] = prefs.fontID;
+-	font[1] = prefs.fontprop;
+-	font[2] = prefs.fontH;
+-	print_values(buf + strlen(buf), 3, font);
+-
+-	strcat(buf, "\r\nFONTNAME ");
+-	strcat(buf, prefs.fontname);
+-
+-	strcat(buf, "\r\nTCOLOUR ");
+-	print_values(buf + strlen(buf), 1, &(prefs.tcolour));
+-
+-	strcat(buf, "\r\nBCOLOUR ");
+-	print_values(buf + strlen(buf), 1, &(prefs.bcolour));
+-
+-	strcat(buf, "\r\nTABWIDTH ");
+-	print_values(buf + strlen(buf), 1, &(prefs.tabwidth));
+-
+-	Fwrite(hdl, strlen(buf), buf);
+-	Fclose(hdl);
++    if (!w || !(event->mwhich&MU_KEYBD) || !(event->kstate&4)) return 0;
++    switch ((UWORD)event->key) {
++    case 0x1f13:
++        if (wind_update(BEG_UPDATE)) {
++            WORD okay=save_window(w);
++            wind_update(END_UPDATE);
++            if (!okay) form_alert(1,"[3][Cannot save this file.][OK]");
++        }
++        break;
++    case 0x1615:
++        close_file(w);
++        break;
++    case 0x1011:
++        for (WORD i=0;i<NWINDOWS;++i) {
++            if (windows[i] && !close_file(windows[i])) break;
++        }
++        break;
++    default: return 0;
++    }
++    return 1;
+ }
+ 
+-
+-/****************************************************************
+-*
+-* Whlt einen Zeichensatz aus.
+-*
+-****************************************************************/
+-
+-#define	FONT_FLAGS	( FNTS_BTMP + FNTS_OUTL + FNTS_MONO + FNTS_PROP )
+-#define	BUTTON_FLAGS ( FNTS_SNAME + FNTS_SSTYLE + FNTS_SSIZE )
+-
+-int dial_font( long *id, long *pt, int *mono, char *name )
++static void edit_event(WINDOW *w,EVNT *event)
+ {
+-	int work_out[57],work_in [12];	 /* VDI- Felder fr v_opnvwk() */
+-	int	handle;
+-	register int i;
+-	FNT_DIALOG *fnt_dialog;
+-	int button,check_boxes;
+-	long ratio;
+-	int dummy;
+-
+-
+-	for( i = 1; i < 10 ; i++ )											/* work_in initialisieren */
+-		work_in[i] = 1;
+-	work_in[10] = 2;		/* Rasterkoordinaten benutzen */
+-	handle = aes_handle;
+-	v_opnvwk( work_in, &handle, work_out );
+-
+-	ratio = (1L<<16L);
+-	fnt_dialog = fnts_create( handle, 0, FONT_FLAGS, FNTS_3D,
+-				  "Was Shumway Your favourite Gordon?", 0L );
+-	if	(!fnt_dialog )
+-		return(0);
+-	button = fnts_do( fnt_dialog, BUTTON_FLAGS, *id, *pt, ratio,
+-			&check_boxes, id, pt, &ratio );
+-	if	(button == FNTS_OK)
+-		{
+-/*
+-		char s[100];
+-		Cconws("\x1b" "Hid=");
+-		ltoa(id, s, 16);
+-		Cconws(s);
+-		Cconws("        pt=");
+-		ltoa(pt, s, 16);
+-		Cconws(s);
+-		Cconws("        ratio=");
+-		ltoa(ratio, s, 16);
+-		Cconws(s);
+-		Cconws("        ");
+-		Cnecin();
+-*/
+-		if	(!fnts_get_info(fnt_dialog, *id, mono, &dummy ))
+-			*mono = FALSE;
+-		if	(name)
+-			{
+-			fnts_get_name(fnt_dialog, *id, name, NULL, NULL);
+-			}
+-		}
+-	fnts_delete( fnt_dialog, handle );
+-	v_clsvwk(handle);
+-	return(button == FNTS_OK);
++    LONG error;
++    edit_evnt(&w->tree,EDITFELD,w->handle,event,&error);
++    if (!w->dirty && edit_get_dirty(&w->tree,EDITFELD)) {
++        w->dirty=1;
++        document_title(w);
++    }
++    window_set_slider(w);
+ }
+ 
++int main(int argc,char **argv)
++{
++    WORD vdi_handle,unused,index,status=0;
++    WORD work_in[11]={1,1,1,1,1,1,1,1,1,1,2},work_out[57];
++    memset(windows,0,sizeof(windows));
++    if (argc<2) return 20;
++    if (appl_init()<0) return 20;
++    vdi_handle=graf_handle(&unused,&unused,&unused,&unused);
++    v_opnvwk(work_in,&vdi_handle,work_out);
++    if (!vdi_handle || !wind_get_grect(0,WF_WORKXYWH,&scrg)) {
++        appl_exit();
++        return 20;
++    }
+ 
+-/****************************************************************
+-*
+-* Das Dateiauswahl-Fenster wurde mit OK verlassen.
+-* Ldt eine Datei per Dateiauswahl in ein neues Fenster
+-*
+-****************************************************************/
+-
+-void open_file_close( void )
+-{
+-	if	(fslx_button)
+-		{
+-		strcat(fslx_path, fslx_fname);
+-		open_new_window( fslx_path );
+-		}
++    for (index=1;index<argc;++index) {
++        if (!open_new_window(argv[index])) {
++            form_alert(1,"[3][Cannot open this document.][OK]");
++            status=20;
++        }
++    }
++    for (;;) {
++        EVNT event;
++        WINDOW *keyboard,*pointer,*target;
++        for (index=0;index<NWINDOWS && !windows[index];++index) {}
++        if (index==NWINDOWS) break;
++        event.mwhich=evnt_multi_moblk(MU_KEYBD|MU_BUTTON|MU_MESAG,2,1,1,
++            NULL,NULL,event.msg,0,0,&event.mx,&event.my,&event.mbutton,
++            &event.kstate,&event.key,&event.mclicks);
++        if (!event.mwhich) {
++            if (ExecAESDiagnostic()==AES_INPUT_LOST) continue;
++            status=20;
++            break;
++        }
++        keyboard=event.mwhich&MU_KEYBD ? whdl2window(ExecAESInputWindow(MU_KEYBD)):NULL;
++        if (do_key(&event,keyboard)) {
++            event.mwhich&=~MU_KEYBD;
++            keyboard=NULL;
++        }
++        pointer=event.mwhich&MU_BUTTON ? whdl2window(ExecAESInputWindow(MU_BUTTON)):NULL;
++        target=event.mwhich&MU_MESAG ? whdl2window(event.msg[3]):NULL;
++        if (keyboard || pointer || (target && event.msg[0]!=WM_CLOSED)) {
++            if (!wind_update(BEG_UPDATE)) { status=20; break; }
++            if (keyboard && keyboard==pointer) edit_event(keyboard,&event);
++            else {
++                WORD flags=event.mwhich;
++                if (keyboard) {
++                    event.mwhich=MU_KEYBD;
++                    edit_event(keyboard,&event);
++                }
++                if (pointer) {
++                    event.mwhich=MU_BUTTON;
++                    edit_event(pointer,&event);
++                }
++                event.mwhich=flags;
++            }
++            if (target && event.msg[0]!=WM_CLOSED) window_message(target,event.msg);
++            wind_update(END_UPDATE);
++        }
++        if (target && event.msg[0]==WM_CLOSED) close_file(target);
++    }
++    for (index=0;index<NWINDOWS;++index)
++        if (windows[index]) close_window(windows[index]);
++    v_clsvwk(vdi_handle);
++    appl_exit();
++    return status;
+ }
+-
+-
+-/****************************************************************
+-*
+-* Speichert ein Fenster
+-*
+-****************************************************************/
+-
+-int save_window( WINDOW *w, char *path,
+-				char *bsel, char *esel )
+-{
+-	char *buf;
+-	LONG buflen,actsize;
+-	long ret;
+-	int ret2,file;
+-
+-
+-	ret = Fcreate(path, 0);
+-	if	(ret < 0)
+-		{
+-		form_xerr(ret, path);
+-		return(0);
+-		}
+-
+-	file = (int) ret;
+-	if	(bsel)
+-		{
+-		buf = bsel;
+-		actsize = esel-bsel;
+-		}
+-	else	edit_get_buf(&w->tree, EDITFELD, &buf, &buflen, &actsize);
+-
+-	ret = Fwrite(file, actsize, buf);
+-	Fclose(file);
+-	if	((ret >= 0) && (ret != actsize))
+-		ret = ERROR;
+-	if	(ret < 0)
+-		{
+-		form_xerr(ret, path);
+-		return(0);
+-		}
+-
+-	if	(!bsel)
+-		{
+-		ret2 = strcmp(w->path, path);
+-
+-		if	(w->dirty)
+-			{
+-			edit_set_dirty( &w->tree, EDITFELD, FALSE );
+-			w->dirty = FALSE;
+-			ret2 = TRUE;
+-			}
+-
+-		if	(ret2)
+-			{
+-			strcpy(w->path, path);
+-			strcpy(w->title, path);
+-			wind_set_string(w->handle, WF_NAME, w->title);
+-			}
+-		}
+-
+-	return(1);
+-}
+-
+-
+-/****************************************************************
+-*
+-* ffnet den Fensterdialog "Datei speichern als..."
+-*
+-****************************************************************/
+-
+-void saveas_file_open( WINDOW *w )
+-{
+-	char *s;
+-
+-
+-
+-	edit_get_sel(&w->tree, EDITFELD, &fslx_bsel, &fslx_esel);
+-	strcpy(fslx_path, w->path);
+-
+-	s = get_name(fslx_path);
+-	if	(fslx_bsel)
+-		fslx_fname[0] = '\0';
+-	else	strcpy(fslx_fname, s);
+-	*s = EOS;
+-
+-	fslx_mode = fxsaveas;
+-	fslx_dialog = fslx_open(
+-				Rgetstring((fslx_bsel) ? STR_SAVEBLOCK : STR_SAVEFILE,
+-					NULL),
+-				-1,-1,
+-				&fslx_whdl,
+-				fslx_path, 256,
+-				fslx_fname, 64,
+-				NULL,
+-				0L,
+-				NULL,
+-				SORTDEFAULT,
+-				0);
+-	fslx_saveas_w = w;
+-	w->save_active = TRUE;
+-}
+-
+-
+-/****************************************************************
+-*
+-* Das Dateiauswahl-Fenster wurde mit OK verlassen.
+-* Speichert ein Fenster per Dateiauswahl in eine Datei
+-*
+-****************************************************************/
+-
+-void saveas_file_close( void )
+-{
+-	if	(fslx_button)
+-		{
+-		strcat(fslx_path, fslx_fname);
+-		save_window( fslx_saveas_w, fslx_path,
+-				fslx_bsel, fslx_esel );
+-		}
+-	if	(fslx_saveas_w)
+-		{
+-		fslx_saveas_w->save_active = FALSE;
+-		fslx_saveas_w = NULL;
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* Schliet eine Datei.
+-* Rckgabe 0: geschlossen 1: noch nicht geschlossen.
+-*
+-****************************************************************/
+-
+-int close_file( WINDOW *w )
+-{
+-	int ret;
+-	char *fname;
+-
+-
+-	if	(!w->dirty)
+-		goto erledigt;
+-		
+-	fname = get_name(w->path);
+-	if	(!(*fname))
+-		{
+-		fname = w->title;
+-		if	(*fname == '*')
+-			fname++;
+-		}
+-	ret = Rxform_alert(1, ALRT_SAVEFILE, 0, fname, NULL );
+-	if	(ret == 3)
+-		{
+-		if	(terminate)
+-			{
+-			menu_ienable( adr_menu, MT_DESK, TRUE );
+-			menu_ienable( adr_menu, MT_FILE, TRUE );
+-			menu_ienable( adr_menu, MT_OPTIONS, TRUE );
+-			menu_bar(adr_menu, TRUE);
+-			terminate = FALSE;
+-			}
+-		return(1);	/* Abbruch, nicht erledigt */
+-		}
+-	if	(ret == 1)
+-		{
+-		if	(w->path[0])
+-			{
+-			if	(!save_window(w, w->path, NULL, NULL))
+-				return(1);	/* Abbruch == Fehler */
+-			}
+-		else	{
+-			saveas_file_open(w);
+-			return(1);
+-			}
+-		}
+-
+-erledigt:
+-	close_window(w);
+-	return(0);
+-}
+-
+-
+-/****************************************************************
+-*
+-* Schliet alle Dateien, allerdings nacheinander.
+-* Die Routine mu solange aufgerufen werden, bis alle
+-* Dateien geschlossen sind.
+-*
+-****************************************************************/
+-
+-void close_all_files( void )
+-{
+-	register int i;
+-	register WINDOW **pw;
+-
+-
+-	for	(i = 0,pw = windows; i < NWINDOWS; i++,pw++)
+-		{
+-		if	(*pw)
+-			{
+-			if	(close_file(*pw))	/* noch nicht geschlossen */
+-				break;
+-			}
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* ndert alle Fenster
+-*
+-****************************************************************/
+-
+-void prefs_were_changed( void )
+-{
+-	register int i;
+-	register WINDOW *w,**pw;
+-
+-	for	(i = 0,pw = windows; i < NWINDOWS; i++,pw++)
+-		{
+-		w = *pw;
+-		if	(w)
+-			{
+-			wind_update(BEG_UPDATE);
+-			if	((prefs.fontID != w->fontID) ||
+-				 (prefs.fontH != w->fontH))
+-				{
+-				w->fontID = prefs.fontID;
+-				w->fontH = prefs.fontH;
+-				w->fontprop = prefs.fontprop;
+-				edit_set_font( &w->tree, EDITFELD,
+-					w->fontID, w->fontH, FALSE, !w->fontprop);
+-				}
+-
+-			if	((prefs.tcolour != w->tcolour) ||
+-				 (prefs.bcolour != w->bcolour))
+-				{
+-				w->tcolour = prefs.tcolour;
+-				w->bcolour = prefs.bcolour;
+-				edit_set_colour( &w->tree, EDITFELD,
+-					w->tcolour, w->bcolour);
+-				}
+-
+-			if	(prefs.tabwidth != w->tabwidth)
+-				{
+-				w->tabwidth = prefs.tabwidth;
+-				w->bcolour = prefs.bcolour;
+-				edit_set_format( &w->tree, EDITFELD,
+-					w->tabwidth, FALSE);
+-				}
+-			update_window(w, NULL);
+-			wind_update(END_UPDATE);
+-			}
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* ffnet den "Voreinstllungen" Dialog
+-*
+-****************************************************************/
+-
+-void open_options( void )
+-{
+-	int whdl;
+-
+-
+-	if	(d_options)	/* ist schon geffnet */
+-		{
+-		}
+-	else	{
+-		d_options = wdlg_create(
+-			hdl_options,
+-			adr_options,
+-			NULL,
+-			0,
+-			NULL,
+-			0);
+-		if	(d_options)
+-			{
+-			whdl =
+-				wdlg_open(
+-					d_options,
+-					Rgetstring(
+-						STR_OPTIONTITLE,
+-						NULL),
+-					NAME+
+-					CLOSER+
+-					MOVER/*+
+-					SMALLER*/,
+-					prefs.prefs_win.g_x,
+-					prefs.prefs_win.g_y,
+-					0,
+-					NULL );
+-			if	(whdl <= 0)
+-				{
+-				wdlg_delete(d_options);
+-				d_options = NULL;
+-				Rform_alert(1,
+-						ALRT_ERROPENWIND,
+-						NULL);
+-				}
+-			}
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* Bearbeitet die Menbefehle
+-*
+-****************************************************************/
+-
+-static int do_menu( int title, int entry, WINDOW *w)
+-{
+-	int state;
+-	int ret = 0;
+-
+-
+-	/* Sonderfall fr Tastaturbedienung: */
+-	/* --------------------------------- */
+-
+-	state = adr_menu[title].ob_state;
+-	if	(state & DISABLED)
+-		return(0);	/* Eintrag ungltig */
+-	if	(!(state & SELECTED))
+-		menu_tnormal(adr_menu, title, 0);
+-
+-	switch( entry )
+-		{
+-		/* -- Datei -- */
+-		case MEN_ABOUT:
+-			do_dialog(adr_about);
+-			break;
+-		case MEN_NEW:
+-			open_new_window( NULL );
+-			break;
+-		case MEN_OPEN:
+-			if	(fslx_dialog && (fslx_mode != fxopen))
+-				break;
+-			if	(fslx_dialog)
+-				{
+-				wind_set(fslx_whdl,
+-						WF_TOP, 0, 0, 0, 0);
+-				}
+-			else	{
+-				fslx_mode = fxopen;
+-				fslx_path[0] = fslx_fname[0] = EOS;
+-				fslx_dialog = fslx_open(
+-							Rgetstring(STR_LOADFILE,NULL),
+-							-1,-1,
+-							&fslx_whdl,
+-							fslx_path, 256,
+-							fslx_fname, 64,
+-							NULL,
+-							0L,
+-							NULL,
+-							SORTDEFAULT,
+-							0);
+-				}
+-			break;
+-		case MEN_CLOSE:
+-			if	(w)
+-				if	(w->save_active)
+-					Bconout(2,7);
+-				else close_file(w);
+-			break;
+-		case MEN_SAVE:
+-			if	(w)
+-				{
+-				if	(w->save_active)
+-					{
+-					Bconout(2,7);
+-					break;
+-					}
+-				if	(w->path[0])
+-					{
+-					save_window(w, w->path, NULL, NULL);
+-					break;
+-					}
+-				/* fall through */
+-				}
+-		case MEN_SAVEAS:
+-			if	((!w) || fslx_dialog)
+-				break;
+-			saveas_file_open(w);
+-			break;
+-		case MEN_QUIT:
+-			ret = 1;
+-			break;
+-		/* -- Optionen -- */
+-		case MEN_PREFS:
+-			open_options();
+-			break;
+-		}
+-     menu_tnormal(adr_menu, title, 1);
+-	return(ret);
+-}
+-
+-
+-/****************************************************************
+-*
+-* Bearbeitet die Tastatur-Kommandos
+-*
+-****************************************************************/
+-
+-static int do_key( EVNT *w_ev, WINDOW *w )
+-
+-{
+-	int i,wnr;
+-
+-
+-	switch(w_ev->key)
+-		{
+-		case 0x310e:	/* ^N */
+-			do_menu(MT_FILE, MEN_NEW, w);
+-			break;
+-
+-		case 0x180f:	/* ^O */
+-			do_menu(MT_FILE, MEN_OPEN, w);
+-			break;
+-
+-		case 0x1615:	/* ^U */
+-			do_menu(MT_FILE, MEN_CLOSE, w);
+-			break;
+-
+-		case 0x1f13:	/* ^S */
+-			do_menu(MT_FILE, MEN_SAVE, w);
+-			break;
+-
+-		case 0x320d:	/* ^M */
+-			do_menu(MT_FILE, MEN_SAVEAS, w);
+-			break;
+-
+-		case 0x1011:	/* ^Q */
+-			w_ev->mwhich &= ~MU_KEYBD;	/* bearbeitet */
+-			return(1);	/* Ende */
+-
+-		case	0x1200:	/* Alt-E */
+-			do_menu(MT_OPTIONS, MEN_PREFS, w);
+-			break;
+-
+-		case	0x1117:	/* ^W */
+-			if	(!w)
+-				break;
+-
+-			wnr = (int) (find_slot_window(w) - windows);
+-			i = wnr;
+-			do	{
+-				i++;
+-				if	(i >= NWINDOWS)
+-					i = 0;
+-				if	(windows[i])
+-					{
+-					wind_set(windows[i]->handle,
+-							WF_TOP, 0, 0, 0, 0);
+-					break;
+-					}
+-				}
+-			while(i != wnr);
+-			break;
+-		default:
+-			return(0);
+-		}
+-	w_ev->mwhich &= ~MU_KEYBD;	/* bearbeitet */
+-	return(0);
+-}
+-
+-
+-/*************************************************/
+-/**************** HAUPTPROGRAMM ******************/
+-/*************************************************/
+-
+-int main( int argc, char *argv[] )
+-{
+-	WINDOW *w;
+-	EVNT w_ev;
+-	int i;
+-	LONG err;
+-	int update = FALSE;
+-
+-
+-
+-	/* SharedLib laden */
+-	/* --------------- */
+-
+-	Pdomain(1);
+-	err = Slbopen("EDITOBJC.SLB", NULL, 6L, &slb, &slbexec, 0L);
+-	if	(err < 0)
+-		Pterm((WORD) err);
+-
+-	/* Initialisierung */
+-	/* --------------- */
+-
+-	if   ((ap_id = appl_init()) < 0)
+-		Pterm(-1);
+-	i = _GemParBlk.global[10];
+-	ncolours = (i > 8) ? 32767 : (1 << i);
+-	wind_get_grect(SCREEN, WF_WORKXYWH, &scrg);
+-
+-	if	(!rsrc_load("mgedit.rsc"))
+-		{
+-		form_xerr(EFILNF, "mgedit.rsc");
+-		appl_exit();
+-		Pterm((int) EFILNF);
+-		}
+-
+-	aes_handle = graf_handle(&gl_hwchar, &gl_hhchar, &gl_hwbox, &gl_hhbox);
+-	rsrc_gaddr(0, T_MENU, &adr_menu);
+-	rsrc_gaddr(0, T_ABOUT, &adr_about);
+-	rsrc_gaddr(0, T_OPTIONS, &adr_options);
+-	rsrc_gaddr(0, T_COLOUR, &adr_colour);
+-
+-	/* Voreinstellungen */
+-	/* ---------------- */
+-
+-	read_inf();
+-
+-	options_dial_init_rsc();
+-
+-	menu_bar(adr_menu, TRUE);
+-
+-	/* Alle bergebenen Dateien ffnen */
+-	/* ------------------------------- */
+-
+-	for	(argc--,argv++; argc; argc--,argv++)
+-		{
+-		open_new_window(*argv);
+-		}
+-
+-	while((!terminate) || (fslx_dialog))
+-		{
+-		w_ev.mwhich = evnt_multi(MU_KEYBD+MU_BUTTON+MU_MESAG,
+-			  2,			/* Doppelklicks erkennen 	*/
+-			  1,			/* nur linke Maustaste		*/
+-			  1,			/* linke Maustaste gedrckt	*/
+-			  0,NULL,		/* kein 1. Rechteck			*/
+-			  0,NULL,		/* kein 2. Rechteck			*/
+-			  w_ev.msg,
+-			  0L,	/* ms */
+-			  (EVNTDATA*) &(w_ev.mx),
+-			  &w_ev.key,
+-			  &w_ev.mclicks
+-			  );
+-
+-		wind_update(BEG_UPDATE);
+-		update = TRUE;
+-
+-		/* Fensterdialoge */
+-		/* -------------- */
+-
+-		if	(d_options && !wdlg_evnt(d_options, &w_ev))
+-			{
+-			wdlg_close(d_options, NULL, NULL);
+-			wdlg_delete(d_options);
+-			d_options = NULL;
+-			/* Fensterposition merken */
+-			prefs.prefs_win.g_x = adr_options->ob_x;
+-			prefs.prefs_win.g_y = adr_options->ob_y;
+-			}
+-
+-		if	(fslx_dialog && !fslx_evnt(
+-								fslx_dialog,
+-								&w_ev,
+-								fslx_path,
+-								fslx_fname,
+-								&fslx_button,
+-								&fslx_nfiles,
+-								NULL,
+-								NULL))
+-			{
+-			switch(fslx_mode)
+-				{
+-				case fxopen:
+-					open_file_close();
+-					break;
+-				case fxsaveas:
+-					saveas_file_close();
+-					break;
+-				}
+-			fslx_close(fslx_dialog);
+-			fslx_dialog = NULL;
+-			}
+-
+-		/* Tastatur */
+-		/* -------- */
+-
+-		w = whdl2window(top_whdl());
+-		if	((w_ev.mwhich & MU_KEYBD) &&
+-			 (w_ev.kstate & (K_CTRL+K_ALT))
+-			)
+-			if	(do_key(&w_ev, w))
+-				goto ende;
+-
+-		/* Editorfenster */
+-		/* ------------- */
+-
+-		if	((w) && (terminate || w->save_active))
+-			{
+-			if	(w_ev.mwhich & MU_KEYBD)
+-				{
+-				Bconout(2,7);
+-				w_ev.mwhich &= ~MU_KEYBD;
+-				}
+-			}
+-
+-		if	(w && !(w->flags & WFLAG_SHADED))
+-			{
+-			edit_evnt( &w->tree, EDITFELD, w->handle, &w_ev, &err );
+-			if	(!w->dirty)
+-				{
+-				w->dirty = edit_get_dirty( &w->tree, EDITFELD );
+-				if	(w->dirty)
+-					{
+-					memcpy(w->title+1, w->title,
+-							strlen(w->title)+1);
+-					w->title[0] = '*';
+-					wind_set_string(w->handle, WF_NAME, w->title);
+-					}
+-				}
+-			window_set_slider(w);
+-			}
+-
+-
+-		/* Nachricht */
+-		/* --------- */
+-
+-		if	(w_ev.mwhich & MU_MESAG)
+-			{
+-			if	((w_ev.msg[0] == MN_SELECTED) && (!terminate))
+-				{
+-				if	(do_menu(w_ev.msg[3], w_ev.msg[4], w))
+-					goto ende;
+-				}
+-				
+-			else
+-			if	(w_ev.msg[0] == AP_TERM)
+-				{
+-				ende:
+-				if	(!terminate)
+-					{
+-					menu_ienable( adr_menu, MT_DESK, FALSE );
+-					menu_ienable( adr_menu, MT_FILE, FALSE );
+-					menu_ienable( adr_menu, MT_OPTIONS, FALSE );
+-					menu_bar(adr_menu, TRUE);
+-					if	(fslx_dialog && (fslx_mode == fxopen))
+-						{
+-						fslx_close(fslx_dialog);
+-						fslx_dialog = NULL;
+-						}
+-					terminate = TRUE;
+-					}
+-				}
+-
+-			else
+-			if	(w_ev.msg[0] == VA_START)
+-				{
+-				register char *s;
+-				register char *p,*p2;
+-				char path[256];
+-
+-				s = *((char **)(w_ev.msg+3));
+-				while((s) && (*s))
+-					{
+-					p = path;
+-					p2 = p+255;
+-					while(*s == ' ')
+-						s++;		/* leading blanks */
+-					if	(*s == '\'')
+-						{
+-						s++;
+-						while((*s) && (p < p2))
+-							{
+-							if	(*s == '\'')
+-								{
+-								if	(s[1] != '\'')
+-									break;
+-								s++;		/* Doppelte ' entfernen */
+-								}
+-							*p++ = *s++;
+-							}
+-						if	(*s)
+-							s++;
+-						}
+-					else	{
+-						while(*s && (*s != ' ') && (p < p2))
+-							*p++ = *s++;
+-						}
+-					*p = '\0';
+-					if	(*s)
+-						s++;
+-					if	(path[0])
+-						open_new_window(path);
+-					}
+-
+-				i = w_ev.msg[1];		/* Absender */
+-
+-				w_ev.msg[0] = AV_STARTED;
+-				w_ev.msg[1] = ap_id;
+-				w_ev.msg[2] = 0;		/* keine berlnge */
+-				/* Wort 3 und 4 unverndert */
+-				w_ev.msg[5] =
+-				w_ev.msg[6] =
+-				w_ev.msg[7] = 0;
+-
+-				appl_write(i, 16, w_ev.msg);
+-				}
+-			else
+-
+-			/* Fenster-Nachricht empfangen */
+-			/* --------------------------- */
+-	
+-			if	(((w_ev.msg[0] >= 20) &&
+-						(w_ev.msg[0] < 40)) ||		/* WM_XX */
+-				 		(w_ev.msg[0] >= 1040))
+-				{
+-				w = whdl2window(w_ev.msg[3]);
+-				if	(w)
+-					{
+-					window_message(w, w_ev.kstate, w_ev.msg);
+-					w_ev.mwhich &= ~MU_MESAG;	/* bearbeitet */
+-					}
+-				}
+-			}
+-		wind_update(END_UPDATE);
+-		if	((terminate) && (!fslx_dialog))
+-			close_all_files();
+-		}
+-
+-	rsrc_free();
+-	if	(slb)
+-		Slbclose( slb );
+-	if	(update)
+-		wind_update(END_UPDATE);
+-	appl_exit();
+-	return(0);
+-}
+-
+-
+-/****************************************************************
+-*
+-* Malt ein Unterobjekt eines Fensters
+-*
+-****************************************************************/
+-
+-void subobj_wdraw(void *d, int obj, int startob, int depth)
+-{
+-	OBJECT *tree;
+-	GRECT g;
+-
+-
+-	wdlg_get_tree( d, &tree, &g );
+-	objc_grect(tree, obj, &g);
+-	wdlg_redraw( d, &g, startob, depth );
+-}
+--- a/mgedwind.c
++++ b/mgedwind.c
+@@ -1,17 +1,4 @@
+-/*
+-*
+-* Enthlt die Routinen fr die Editorfenster
+-*
+-*/
+-
+-#include <mgx_dos.h>
+-#include <mt_aes.h>
+-#include <vdi.h>
+-#include <string.h>
+-#include <stdlib.h>
+-#include "gemut_mt.h"
+ #include "globals.h"
+-#include "mgedit.h"
+ 
+ /****************************************************************
+ *
+@@ -19,7 +6,7 @@
+ *
+ ****************************************************************/
+ 
+-WINDOW *whdl2window(int whdl)
++WINDOW *whdl2window(WORD whdl)
+ {
+ 	register int i;
+ 	register WINDOW **w;
+@@ -78,505 +65,201 @@
+ }
+ 
+ 
+-/****************************************************************
+-*
+-* ffnet ein neues Fenster.
+-* Wenn <path> == NULL ist, wird ein leeres Dokument erzeugt.
+-*
+-****************************************************************/
+-
+-void close_window( WINDOW *w )
+-{
+-	WINDOW **pw;
+-
+-	pw = find_slot_window(w);
+-	if	(pw)
+-		{
+-		edit_close(&w->tree, EDITFELD);
+-		edit_delete( w->xedit );
+-		Mfree(w->buf);
+-		wind_close(w->handle);
+-		wind_delete(w->handle);
+-		Mfree(w);
+-		*pw = NULL;
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* ffnet ein neues Fenster.
+-* Wenn <path> == NULL ist, wird ein leeres Dokument erzeugt.
+-*
+-****************************************************************/
+-
+-WINDOW *open_new_window( char *path )
+-{
+-	WINDOW *w = NULL;
+-	WINDOW **pw;
+-	int file = 0;
+-	int success = FALSE;
+-	long ret = E_OK;
+-	XATTR xa;
+-	int wnr;
+-
+-
+-	pw = new_window();
+-	if	(!pw)
+-		{
+-		ret = ENSMEM;
+-		goto fehler;
+-		}
+-
+-	wnr = (int) (pw-windows);
+-	w = Malloc(sizeof(WINDOW));
+-	if	(!w)
+-		{
+-		ret = ENSMEM;
+-		goto fehler;
+-		}
+-
+-	w->buf = NULL;
+-
+-	w->out.g_x = -1 + wnr * 8;
+-	w->out.g_y = scrg.g_y + wnr * 8;
+-	w->out.g_w = 640;
+-	w->out.g_h = scrg.g_h-16;
+-
+-	w->handle = wind_create(EDITOR_W_KIND, &scrg);
+-	if	(w->handle < 0)
+-		{
+-		ret = ENSMEM;
+-		goto fehler;
+-		}
+-
+-	/* Allgemeine Einstellungen */
+-	/* ------------------------ */
+-
+-	w->dirty = FALSE;
+-	w->save_active = FALSE;
+-	w->flags = 0;
+-	w->fontID = prefs.fontID;
+-	w->fontH = prefs.fontH;
+-	w->fontprop = prefs.fontprop;
+-	w->tcolour = prefs.tcolour;
+-	w->bcolour = prefs.bcolour;
+-	w->tabwidth = prefs.tabwidth;
+-
+-	/* ggf. Dateilnge ermitteln */
+-	/* ------------------------- */
+-
+-	if	(path)
+-		{
+-		strcpy(w->path, path);
+-		strcpy(w->title, path);
+-		ret = Fopen(path, RMODE_RD);
+-		if	(ret < 0)
+-			goto fehler;
+-
+-		file = (int) ret;
+-
+-		ret = Fcntl(file, (long) (&xa), FSTAT);
+-		if	(ret < 0)
+-			goto fehler;
+-		}
+-	else	{
+-		w->path[0] = '\0';
+-		strcpy(w->title, Rgetstring(STR_NONAME, NULL));
+-		itoa(wnr+1, w->title+strlen(w->title), 10);
+-		xa.size = 0L;
+-		}
+-
+-	w->bufsize = xa.size + prefs.bufsize;
+-	w->buf = Malloc(w->bufsize);
+-	if	(!w->buf)
+-		{
+-		ret = ENSMEM;
+-		goto fehler;
+-		}
+-
+-	if	(file)
+-		{
+-		ret = Fread(file, xa.size, w->buf);
+-		Fclose(file);
+-		file = 0;
+-		if	(ret != xa.size)
+-			{
+-			ret = ERROR;
+-			goto fehler;
+-			}
+-		}
+-
+-	w->buf[xa.size] = '\0';
+-
+-	w->xedit = edit_create();
+-	if	(!w->xedit)
+-		{
+-		ret = ENSMEM;
+-		goto fehler;
+-		}
+-	w->tree.ob_next = w->tree.ob_head = w->tree.ob_tail = -1;
+-	w->tree.ob_flags = LASTOB;
+-	w->tree.ob_state = 0;
+-	w->tree.ob_type = G_EDIT;
+-	w->tree.ob_spec.index = (long) w->xedit;
+-	edit_set_buf( &w->tree, EDITFELD,	w->buf, w->bufsize );
+-	edit_set_font( &w->tree, EDITFELD,
+-				w->fontID, w->fontH, FALSE, !w->fontprop);
+-	edit_set_colour( &w->tree, EDITFELD,
+-				w->tcolour, w->bcolour);
+-	edit_set_format( &w->tree, EDITFELD,
+-				w->tabwidth, FALSE);
+-	wind_set_string(w->handle, WF_NAME, w->title);
+-	success = TRUE;
+-
+-
+-	fehler:
+-	if	(!success)
+-		{
+-		if	(w)
+-			{
+-			if	(w->handle > 0)
+-				wind_delete(w->handle);
+-			if	(w->buf)
+-				Mfree(w->buf);
+-			Mfree(w);
+-			}
+-		if	(file)
+-			Fclose(file);
+-		form_xerr(ret, path);
+-		}
+-	else	{
+-		*pw = w;
+-		wind_open(w->handle, &(w->out));
+-		wind_get_grect(w->handle, WF_WORKXYWH, &(w->in));
+-		*((GRECT *) &(w->tree.ob_x)) = w->in;
+-		edit_open( &w->tree, EDITFELD );
+-		w->nlines = w->yscroll = w->xscroll = w->ncols = -1L;
+-		window_set_slider(w);
+-		}
+-	return(w);
+-}
+-
+-
+-/****************************************************************
+-*
+-* Zeichnet das Fenster <w> neu.
+-*
+-****************************************************************/
+-
+-int update_window(WINDOW *w, GRECT *g)
+-{
+-	WMESAG mesag;
+-
+-	/* Der Redraw wird nicht direkt ausgefhrt, sondern schickt */
+-	/* eine Nachricht an die Applikation, um Kollisionen mit    */
+-	/* von AES erzeugten Redraws zu vermeiden                   */
+-	/* -------------------------------------------------------- */
+-
+-	mesag.msg.code		= WM_REDRAW;
+-	mesag.msg.dest_apid	= ap_id;
+-	mesag.msg.is_zero	= 0;
+-	mesag.msg.whdl		= w->handle;
+-	mesag.msg.g		= (g) ? *g : w->out;
+-	return(appl_write(ap_id, 16, mesag.message));
+-}
+-
+-
+-/****************************************************************
+-*
+-* Fenster <w> in Gre und/oder Position ndern
+-*
+-****************************************************************/
+-
+-static void change_g(WINDOW *w, GRECT *g, int resized)
+-{
+-	WORD oldrh,newrh;
+-	GRECT rg;
+-
+-	if	(w->flags & WFLAG_ICONIFIED)
+-		return;
+-	w->out = *g;
+-	wind_set_grect(w->handle, WF_CURRXYWH, &(w->out));
+-	wind_get_grect(w->handle, WF_WORKXYWH, &(w->in));
+-	*((GRECT *) &(w->tree.ob_x)) = w->in;
+-	if	(resized)
+-		{
+-		edit_resized(&w->tree, EDITFELD, &oldrh, &newrh);
+-
+-		/* weien Rand nachbessern */
+-		/* ----------------------- */
+-
+-		if	(newrh != oldrh)
+-			{
+-			if	(newrh < oldrh)
+-				oldrh = newrh;
+-			rg.g_x = w->tree.ob_x;
+-			rg.g_y = w->tree.ob_y + oldrh;
+-			rg.g_w = w->tree.ob_width;
+-			rg.g_h = w->tree.ob_height - oldrh;
+-			if	((rg.g_h > 0) && (rg.g_w > 0))
+-				{
+-				objc_wdraw(&w->tree,0,0, &rg,	w->handle);
+-				/*
+-				update_window(w, &rg);
+-				*/
+-				}
+-			}
+-		window_set_slider(w);
+-		}
+-}
+-
+-
+-/****************************************************************
+-*
+-* Das Fenster <w> wird auf Maximalgre gebracht.
+-*
+-****************************************************************/
++void close_window(WINDOW *w)
++{
++    WINDOW **pw=find_slot_window(w);
++    edit_close(&w->tree,EDITFELD);
++    edit_delete(w->xedit);
++    FreeMem(w->buf,(ULONG)w->bufsize);
++    wind_close(w->handle);
++    wind_delete(w->handle);
++    Mfree(w);
++    *pw=NULL;
++}
++
++WINDOW *open_new_window(const char *path)
++{
++    WINDOW **pw=new_window();
++    WINDOW *w;
++    LONG ret,got,closed,length,capacity;
++    char *buffer;
++    WORD file=-1,shown=0,offset;
++    XATTR xa;
++
++    if (!pw || strlen(path)>=sizeof(w->path)) return NULL;
++    w=Malloc(sizeof(*w));
++    if (!w) return NULL;
++    memset(w,0,sizeof(*w));
++    offset=(WORD)(pw-windows)*8;
++    w->out=scrg;
++    w->out.g_x+=offset;
++    w->out.g_y+=offset;
++    w->out.g_w-=offset;
++    w->out.g_h-=offset+16;
++    w->handle=wind_create_grect(EDITOR_W_KIND,&scrg);
++    if (w->handle<=0) goto failure;
++
++    strcpy(w->path,path);
++    ret=Fopen(path,0);
++    if (ret<0) goto failure;
++    file=(WORD)ret;
++    if (Fcntl(file,(LONG)&xa,FSTAT) || xa.size<0 || xa.size>0x7fffffffL-EDIT_RESERVE)
++        goto failure;
++    w->bufsize=xa.size+EDIT_RESERVE;
++    w->buf=AllocMem((ULONG)w->bufsize,MEMF_PUBLIC|MEMF_LINEAR);
++    if (!w->buf) goto failure;
++    got=Fread(file,xa.size,w->buf);
++    closed=Fclose(file);
++    file=-1;
++    if (got!=xa.size || closed) goto failure;
++    w->buf[xa.size]=0;
++
++    w->xedit=edit_create();
++    if (!w->xedit) goto failure;
++    w->tree.ob_next=w->tree.ob_head=w->tree.ob_tail=-1;
++    w->tree.ob_flags=LASTOB;
++    w->tree.ob_type=G_EDIT;
++    w->tree.ob_spec=(ULONG)w->xedit;
++    edit_set_buf(&w->tree,EDITFELD,w->buf,w->bufsize);
++    document_title(w);
++    if (!wind_open_grect(w->handle,&w->out)) goto failure;
++    shown=1;
++    if (!wind_get_grect(w->handle,WF_WORKXYWH,&w->in)) goto failure;
++    w->tree.ob_x=w->in.g_x;
++    w->tree.ob_y=w->in.g_y;
++    w->tree.ob_width=w->in.g_w;
++    w->tree.ob_height=w->in.g_h;
++    if (!edit_open(&w->tree,EDITFELD) ||
++        !edit_get_buf(&w->tree,EDITFELD,&buffer,&capacity,&length) ||
++        length!=xa.size) goto failure;
++    w->nlines=w->yscroll=w->xscroll=w->ncols=-1;
++    *pw=w;
++    if (wind_update(BEG_UPDATE)) {
++        window_set_slider(w);
++        objc_draw(&w->tree,EDITFELD,0,w->in.g_x,w->in.g_y,w->in.g_w,w->in.g_h);
++        wind_update(END_UPDATE);
++    }
++    return w;
++failure:
++    if (file>=0) Fclose(file);
++    if (w->xedit) edit_delete(w->xedit);
++    if (w->buf) FreeMem(w->buf,(ULONG)w->bufsize);
++    if (shown) wind_close(w->handle);
++    if (w->handle>0) wind_delete(w->handle);
++    Mfree(w);
++    return NULL;
++}
++
++/* Preserve the donor's width/height update before layout and scrollbar repair. */
++static void change_g(WINDOW *w,const GRECT *g,WORD resized)
++{
++    WORD oldHeight,newHeight;
++    GRECT requested=*g;
++    if (resized) {
++        if (requested.g_w<248) requested.g_w=248;
++        if (requested.g_h<104) requested.g_h=104;
++    }
++    if (!wind_set_grect(w->handle,WF_CURRXYWH,&requested) ||
++        !wind_get_grect(w->handle,WF_CURRXYWH,&w->out) ||
++        !wind_get_grect(w->handle,WF_WORKXYWH,&w->in)) return;
++    w->tree.ob_x=w->in.g_x;
++    w->tree.ob_y=w->in.g_y;
++    w->tree.ob_width=w->in.g_w;
++    w->tree.ob_height=w->in.g_h;
++    if (resized && edit_resized(&w->tree,EDITFELD,&oldHeight,&newHeight))
++        window_set_slider(w);
++}
+ 
+ static void fulled(WINDOW *w)
+ {
+-	GRECT   prev, full;
+-	register GRECT *out;
+-	GRECT *newg;
+-
+-
+-	if	(w->flags & WFLAG_ICONIFIED)
+-		return;
+-	out = &(w->out);				/* out = Auenmae */
+-	wind_get(w->handle, WF_PREVXYWH, &prev.g_x, &prev.g_y, &prev.g_w, &prev.g_h);
+-	wind_get(w->handle, WF_FULLXYWH, &full.g_x, &full.g_y, &full.g_w, &full.g_h);
+- 
+-	/* 1. Fall: Das Fenster hat bereits Maximalgre	  */
+-	/*		  Also mu das Fenster verkleinert werden */
+-	/* ------------------------------------------------ */
+-
+-	if	((out->g_x == full.g_x) && (out->g_y == full.g_y) &&
+-		 (out->g_w == full.g_w) && (out->g_h == full.g_h)) {
+-		graf_shrinkbox(&prev, &full);
+-		newg = &prev;
+-		}
+-
+-	/* 2. Fall: Das Fenster hat nicht Maximalgre	  */
+-	/*		  Also Gre auf Maximum 			  */
+-	/* ------------------------------------------------ */
+-
+-	else {
+-		graf_growbox(out, &full);
+-		newg = &full;
+-		}
+-
+-	change_g(w, newg, TRUE);
+-}
+-
+-
+-/****************************************************************
+-*
+-* Fensternachricht verarbeiten
+-*
+-****************************************************************/
+-
+-#pragma warn -par
+-void window_message(WINDOW *w, int kstate, int message[16])
+-{
+-	EVNT w_ev;
+-	int key = 0;
+-	long line;
+-	long ldummy;
+-	WORD dummy;
+-	WORD yvis,xvis;
+-	LONG h_offs;
+-	LONG err;
+-
+-
+-	switch(message[0])
+-		{
+-		case WM_REDRAW:
+-			objc_wdraw(&w->tree,0,0,(GRECT *) (message+4),
+-					w->handle);
+-			break;
+-		case WM_TOPPED:
+-			wind_set_int(w->handle, WF_TOP, 0);
+-			break;
+-		case WM_CLOSED:
+-			if	(w->save_active)
+-				Bconout(2,7);
+-			else	close_file(w);
+-			break;
+-		case WM_ALLICONIFY:
+-			break;
+-		case WM_ICONIFY:
+-			break;
+-		case WM_UNICONIFY:
+-			break;
+-		case WM_FULLED:
+-			fulled(w);
+-			break;
+-		case WM_ARROWED:
+-
+-			switch(message[4])
+-				{
+-				case WA_LFLINE:
+-					h_offs = -8;
+-					goto hscroll;
+-				case WA_RTLINE:
+-					h_offs = 8;
+-					goto hscroll;
+-				case WA_LFPAGE:
+-					h_offs = -w->xvis;
+-					goto hscroll;
+-				case WA_RTPAGE:
+-					h_offs = w->xvis;
+-					hscroll:
+-					h_offs += w->xscroll;
+-					if	(h_offs >= w->ncols)
+-						h_offs = w->ncols - 1;
+-					if	(h_offs < 0)
+-						h_offs = 0;
+-					if	(w->xscroll != h_offs)
+-						{
+-						if	(edit_scroll( &w->tree, EDITFELD, w->handle, -1L, (WORD) h_offs ))
+-							window_set_slider(w);
+-						}
+-					break;
+-
+-				case WA_UPLINE:
+-					key = 0x4800;
+-					w_ev.kstate = K_CTRL;
+-					break;
+-				case WA_DNLINE:
+-					key = 0x5000;
+-					w_ev.kstate = K_CTRL;
+-					break;
+-				case WA_UPPAGE:
+-					key = 0x4900;
+-					w_ev.kstate = K_LSHIFT;
+-					break;
+-				case WA_DNPAGE:
+-					key = 0x5100;
+-					w_ev.kstate = K_RSHIFT;
+-					break;
+-				default: key = 0;
+-					break;
+-				}
+-
+-			if	(key)
+-				{
+-				w_ev.mwhich = MU_KEYBD;
+-				w_ev.key = key;
+-				edit_evnt( &w->tree, EDITFELD, w->handle, &w_ev, &err );
+-				window_set_slider(w);
+-				}
+-			break;
+-
+-		case WM_HSLID:
+-			edit_get_scrollinfo(&w->tree, EDITFELD,
+-				&ldummy, &ldummy, &dummy, &dummy,
+-				&dummy, &dummy, &xvis);
+-
+-			line = (message[4] * (w->ncols - xvis + 1L))/1000L;
+-			if	(edit_scroll( &w->tree, EDITFELD, w->handle, -1L, (WORD) line ))
+-				window_set_slider(w);
+-			break;
+-
+-		case WM_VSLID:
+-
+-			edit_get_scrollinfo(&w->tree, EDITFELD,
+-				&ldummy, &ldummy, &yvis, &dummy,
+-				&dummy, &dummy, &dummy);
+-
+-			line = (message[4] * (w->nlines - yvis + 1L))/1000L;
+-			if	(edit_scroll( &w->tree, EDITFELD, w->handle, line, -1 ))
+-				window_set_slider(w);
+-			break;
+-		case WM_SIZED:
+-			change_g(w, ((GRECT *) (message+4)), TRUE);
+-			break;
+-		case WM_MOVED:
+-			change_g(w, ((GRECT *) (message+4)), FALSE);
+-			break;
+-		case WM_SHADED:
+-			w->flags |= WFLAG_SHADED;
+-			break;
+-		case WM_UNSHADED:
+-			w->flags &= ~WFLAG_SHADED;
+-			break;
+-		}
+-}
+-#pragma warn +par
+-
+-
+-/****************************************************************
+-*
+-* Fenster-Slider ggf. ndern
+-*
+-****************************************************************/
+-
+-#pragma warn -par
++    GRECT prev,full;
++    if (wind_get_grect(w->handle,WF_PREVXYWH,&prev) &&
++        wind_get_grect(w->handle,WF_FULLXYWH,&full))
++        change_g(w,memcmp(&w->out,&full,sizeof(full)) ? &full:&prev,1);
++}
++
++void window_message(WINDOW *w,const WORD *message)
++{
++    GRECT area={message[4],message[5],message[6],message[7]};
++    LONG limit,position;
++    WORD field=message[0];
++    /* Selecting the work view also identifies it to objc_draw. */
++    if (!wind_get_grect(w->handle,WF_WORKXYWH,&w->in)) return;
++    switch (field) {
++    case WM_REDRAW:
++        if (rc_intersect(&w->in,&area))
++            objc_draw(&w->tree,EDITFELD,0,area.g_x,area.g_y,area.g_w,area.g_h);
++        break;
++    case WM_TOPPED:
++        wind_set(w->handle,WF_TOP,0,0,0,0);
++        break;
++    case WM_MOVED:
++    case WM_SIZED:
++        change_g(w,&area,field==WM_SIZED);
++        break;
++    case WM_FULLED:
++        fulled(w);
++        break;
++    case WM_ARROWED:
++        switch (message[4]) {
++        case WA_LFLINE: position=w->xscroll-8L; break;
++        case WA_RTLINE: position=w->xscroll+8L; break;
++        case WA_LFPAGE: position=w->xscroll-(LONG)w->xvis; break;
++        case WA_RTPAGE: position=w->xscroll+(LONG)w->xvis; break;
++        case WA_UPLINE: position=w->yscroll-1; goto vertical;
++        case WA_DNLINE: position=w->yscroll+1; goto vertical;
++        case WA_UPPAGE: position=w->yscroll-w->yvis; goto vertical;
++        case WA_DNPAGE: position=w->yscroll+w->yvis; goto vertical;
++        default: return;
++        }
++        goto horizontal;
++    case WM_HSLID:
++        limit=(LONG)w->ncols-w->xvis+1;
++        position=limit>0 ? message[4]*limit/1000:0;
++horizontal:
++        limit=(LONG)w->ncols-w->xvis+1;
++        if (position>limit) position=limit;
++        if (position<0) position=0;
++        if (edit_scroll(&w->tree,EDITFELD,w->handle,-1,(WORD)position))
++            window_set_slider(w);
++        break;
++    case WM_VSLID:
++        limit=w->nlines-w->yvis;
++        position=limit>0 ? (ULONG)message[4]*(ULONG)limit/1000:0;
++vertical:
++        if (edit_scroll(&w->tree,EDITFELD,w->handle,position<0 ? 0:position,-1))
++            window_set_slider(w);
++        break;
++    }
++}
++
+ void window_set_slider(WINDOW *w)
+ {
+-	LONG nlines,yscroll;
+-	WORD ncols,xscroll;
+-	WORD yvis,yval,xvis;
+-	LONG size;
+-
+-
+-	edit_get_scrollinfo(&w->tree, EDITFELD,
+-				&nlines, &yscroll, &yvis, &yval,
+-				&ncols, &xscroll, &xvis);
+-
+-	if	(ncols < 0)
+-		ncols = 256*8;			/* Textbreite erraten */
+-
+-	if	((w->nlines != nlines) || (w->yvis != yvis))
+-		{
+-		w->nlines = nlines;
+-		w->yvis = yvis;
+-		if	(nlines)
+-			{
+-			size = yval;
+-			size *= 1000;
+-			size /= nlines;
+-			}
+-		else	size = 1000;
+-		wind_set_int(w->handle, WF_VSLSIZE, (int) size);
+-		}
+-	if	(w->yscroll != yscroll)
+-		{
+-		w->yscroll = yscroll;
+-		if	(nlines)
+-			{
+-			nlines -= yval;
+-			yscroll *= 1000;
+-			yscroll /= nlines;
+-			}
+-		else	yscroll = 1;
+-		wind_set_int(w->handle, WF_VSLIDE, (int) yscroll);
+-		}
+-	if	((w->ncols != ncols) || (w->xvis != xvis))
+-		{
+-		w->ncols = ncols;
+-		w->xvis = xvis;
+-		if	(ncols)
+-			{
+-			size = xvis;
+-			size *= 1000;
+-			size /= ncols;
+-			}
+-		else	size = 1000;
+-		wind_set_int(w->handle, WF_HSLSIZE, (int) size);
+-		}
+-	if	(w->xscroll != xscroll)
+-		{
+-		w->xscroll = xscroll;
+-		if	(ncols)
+-			{
+-			ncols -= xvis;
+-			size = xscroll;
+-			size *= 1000;
+-			size /= ncols;
+-			}
+-		else	size = 1;
+-		wind_set_int(w->handle, WF_HSLIDE, (int) size);
+-		}
+-}
++    LONG nlines,yscroll,range;
++    WORD ncols,xscroll,yvis,yval,xvis,changed;
++    if (!edit_get_scrollinfo(&w->tree,EDITFELD,
++        &nlines,&yscroll,&yvis,&yval,&ncols,&xscroll,&xvis)) return;
++
++    changed=w->nlines!=nlines || w->yvis!=yvis || w->yval!=yval;
++    if (changed)
++        wind_set(w->handle,WF_VSLSIZE,nlines ? (ULONG)yval*1000/(ULONG)nlines:1000,0,0,0);
++    if (changed || w->yscroll!=yscroll) {
++        range=nlines-yvis;
++        wind_set(w->handle,WF_VSLIDE,range>0 ? (ULONG)yscroll*1000/(ULONG)range:0,0,0,0);
++    }
++    w->nlines=nlines;
++    w->yscroll=yscroll;
++    w->yvis=yvis;
++    w->yval=yval;
++
++    changed=w->ncols!=ncols || w->xvis!=xvis;
++    if (changed)
++        wind_set(w->handle,WF_HSLSIZE,ncols>xvis ? (LONG)xvis*1000/ncols:1000,0,0,0);
++    if (changed || w->xscroll!=xscroll) {
++        range=(LONG)ncols-xvis+1;
++        wind_set(w->handle,WF_HSLIDE,range>0 ? (LONG)xscroll*1000/range:0,0,0,0);
++    }
++    w->ncols=ncols;
++    w->xscroll=xscroll;
++    w->xvis=xvis;
++}

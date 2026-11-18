@@ -4,8 +4,8 @@
 [GEM architecture guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing policy](../../contributing/testing.md)
 
-**Status** — ME0–ME3 implemented at development scope. ME4 ports the named
-document workflow after review of its buffer and alert ownership choices.
+**Status** — ME0–ME4 implemented at development scope. ME5 covers the menu,
+New and Quit after review of the resource and windowless menu choices.
 Commit each passing slice.
 [Execution record](../../history/mgedit-migration.md)
 
@@ -34,8 +34,8 @@ reuse the current native GEMDOS, loader, memory and C lifetime services.
 | Before | Proposed choice for review | Alternative and consequence |
 | --- | --- | --- |
 | ME1 | Put the reusable `edit_*` contract in the existing C816 AES provider, with native C bindings and `G_EDIT` type 37 in the object dispatcher. Run its paint routine inside AES's admitted drawing context. Keep the document buffer in the APP and editor state in upper memory, owned by its AES registration and released on detach before the buffer is swept. | Link the engine from source in each APP and add a drawing boundary through which AES calls the APP. That duplicates engine code, requires a callback lifetime contract, and needs a way to paint within the existing grant. The current public AES and VDI calls reject reentry from an active object draw. |
-| ME4 | Use an explicit single-bank buffer capacity with edit headroom and a NUL byte. Keep MagiC's contiguous caller-owned buffer and verify the 16-bit line and pixel calculations independently of capacity. | Preserve the donor's 65,536-byte growth reserve with `MEMF_LINEAR`. This needs cross-bank compiler and library checks, allocator lifetime integration, and adequate contiguous upper RAM. Exec already provides that allocation mechanism. |
-| ME4 | Use the existing `form_alert` outside UPDATE/MCTRL for the modified-close prompt. Keep the document live and resume its close operation after the result. | Match MagiC's prompt inside the handler's UPDATE scope. Exec's alert currently rejects held locks, so this would require a reusable form ownership change and checks on manager and input progress. |
+| ME4 | **Approved.** Preserve the donor's 65,536-byte reserve with `MEMF_LINEAR`. Verify cross-bank transfers and edits, and free the buffer through the document's lifetime. | A smaller single-bank buffer can use tracked GEMDOS `Malloc`, whose 65,520-byte cap includes both the document and the reserve. |
+| ME4 | **Approved.** Use the existing `form_alert` outside UPDATE/MCTRL for the modified-close prompt. Keep the document live and resume its close operation after the result. | Running a prompt inside UPDATE requires a reusable AES form ownership change and checks on manager and input progress. |
 | ME5 | Convert a stock RSC variant reproducibly, preserving tree and item indices, text and actions. Use a supported representation for the About bitmap and translate the visual flags/states. | Implement generic BITBLK/`G_IMAGE`, 3D flags and relevant object states so stock resources load with their visuals. This widens resource admission and painting and needs its own pixel checks. |
 | ME5 | Keep the first app workflow tied to a shown document. Resolve windowless New/Open before accepting no-argument launch and last-document close. | Follow MagiC's menu-only flow with a desktop policy that can select an app menu without a shown window. Starting with an untitled document and returning to a launcher after last close would be a smaller visible adaptation. |
 | ME6 | Preserve MagiC's modeless `fslx_*` lifecycle using the reusable native selector internals and paths. | A modal `fsel_exinput` bridge can deliver Open and Save As sooner. It changes the event flow, requires entry outside UPDATE/MCTRL, and prevents interaction with the same app's documents while the selector runs. |
@@ -124,6 +124,18 @@ considered before proposing a general change.
 
 ## ME4 — Load and save a named document in MGEDIT
 
+MagiC reads a named file before entering the main event loop. The existing-path
+Save and `WM_CLOSED` handlers run inside the event loop's UPDATE section.
+MagiC's `form_alert` takes its own recursive UPDATE level and `_form_xdo` takes
+MCTRL while it waits. Exec's `form_alert` rejects either held lock. It also
+requires the alert to fit inside the selected window's work area when borrowing
+that window. A zero result means the close remains pending or is cancelled.
+[Pinned AES alert and form source](https://gitlab.com/AndreasK/Atari-Mac-MagiC-Sources/-/blob/28cfdd29aa16fef692cc287bad3046b44ddcce3d/MagiC/KERNEL/AES/SRC/AESFRM.S) ·
+[Exec form contract](../../reference/aes.md#application-object-trees-and-forms)
+
+- Keep the donor's Ctrl+S and Ctrl+U shortcuts and `WM_CLOSED` route so the
+  named workflow is accessible before the resource menu arrives. Route each
+  event to its delivered window and keep the donor's per-window document state.
 - Port the donor's `MGEDIT.C` and `MGEDWIND.C` document branches and native
   startup. Reuse GRECT adapters, APP arguments, `Fopen`/`Fcntl(FSTAT)`/`Fread`
   and `Fcreate`/`Fwrite`/`Fclose`. Use the approved buffer policy, checked size

@@ -1,0 +1,78 @@
+MODULE CMGEDITDOCUMENT
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE HEAPCORE
+
+CARD checks,phase,proceed
+LONGCARD base,viewerBase
+LONGINT primary
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fbe0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Collect(LONGCARD child)
+  PROCESS.Result outcome
+
+  Require(PROCESS.Wait(child,@outcome)<>0)
+  primary=outcome.primary
+  Require(primary=0)
+
+RETURN
+
+PROC Main()
+  LONGCARD viewer,editor,baseline
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  DOS.SelectInput(input)
+  DOS.SelectOutput(output)
+  LET viewImage=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MGVIEW.APP"))
+  Require(viewImage<>NULL)
+  viewerBase=LONGCARD(viewImage.text)
+  viewer=PROCESS.StartBackgroundLoaded(BYTE POINTER(viewImage),
+      BYTE POINTER(c"SYS:VIEW.TXT"),12)
+  Require(viewer<>0)
+  phase=1
+  WHILE proceed<>1 DO
+    EXEC.Yield()
+  OD
+
+  LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:MGEDIT.APP"))
+  Require(image<>NULL)
+  base=LONGCARD(image.text)
+  editor=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),
+      BYTE POINTER(c"SYS:BIG.TXT SYS:SMALL.TXT"),25)
+  Require(editor<>0)
+  phase=2
+  Collect(editor)
+  baseline=EXEC.AvailMem(0)
+  editor=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),
+      BYTE POINTER(c"SYS:BIG.TXT"),11)
+  Require(editor<>0)
+  phase=3
+  Collect(editor)
+  Require(EXEC.AvailMem(0)=baseline)
+  PROGRAM.Unload(image)
+  phase=4
+  Require(PROCESS.RequestStop(viewer)<>0)
+  Collect(viewer)
+  PROGRAM.Unload(viewImage)
+
+  DOS.SelectInput(NULL)
+  DOS.SelectOutput(NULL)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE
