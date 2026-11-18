@@ -362,7 +362,58 @@
  			text++;
  		}
  }
-@@ -211,22 +184,21 @@
+@@ -175,30 +148,26 @@
+ *
+ *****************************************************************/
+ 
+-static unsigned char *get_line( WINDOW *w, long n, long *lw )
+-{
+-	unsigned char *line;
+-	unsigned char *ende;
+-	unsigned char *eol;
+-
+-
+-	if	(n >= w->vscroll.n)
+-		{
+-		*lw = 0;
+-		return(NULL);
+-		}
+-
+-	ende = w->user_file + w->user_fsize;
+-	line = w->user_lines[n];
+-	eol = memchr2(line, ende-line);
+-
+-	/* Letzte Zeile: */
+-
+-	if	(!eol)
+-		eol = ende;
+-
+-	*lw = eol - line;
+-	return(line);
++static unsigned char *get_line(WINDOW *w, long row, long *length)
++{
++    unsigned char *line;
++    unsigned char *end;
++
++    if (row >= w->vscroll.n)
++        {
++        *length = 0;
++        return NULL;
++        }
++
++    line = w->user_lines[row];
++    end = row + 1 < w->vscroll.n ? w->user_lines[row + 1]
++                               : w->user_file + w->user_fsize;
++    if (end > line && end[-1] == '\n')
++        --end;
++    if (end > line && end[-1] == '\r')
++        --end;
++    *length = end - line;
++    return line;
+ }
+ 
+ 
+@@ -211,22 +180,21 @@
  *
  ****************************************************************/
  
@@ -400,7 +451,7 @@
  }
  
  
-@@ -238,7 +210,7 @@
+@@ -238,7 +206,7 @@
  *
  ****************************************************************/
  
@@ -409,7 +460,7 @@
  {
  	long old_hshift,old_vshift;
  
-@@ -267,68 +239,54 @@
+@@ -267,68 +235,54 @@
  
  static void _my_draw(WINDOW *w, GRECT *g)
  {
@@ -526,7 +577,7 @@
  }
  
  
-@@ -338,16 +296,15 @@
+@@ -338,16 +292,15 @@
  *
  *****************************************************************/
  
@@ -550,7 +601,7 @@
  	wind_close(w->handle);
  	wind_delete(w->handle);
  	Mfree(w->user_file);
-@@ -355,6 +312,7 @@
+@@ -355,6 +308,7 @@
  	sl = find_slot_window(w);
  	*sl = NULL;
  	nwindows--;
@@ -558,7 +609,7 @@
  }
  
  
-@@ -365,11 +323,11 @@
+@@ -365,11 +319,11 @@
  *****************************************************************/
  
  
@@ -575,7 +626,7 @@
  
  	/* Tabulator umschalten */
  
-@@ -379,11 +337,12 @@
+@@ -379,11 +333,12 @@
  		newtab = ascii-'0';
  		if	(newtab != w->user_tabsize)
  			{
@@ -593,7 +644,7 @@
  			update_window(w);
  			}
  		}
-@@ -433,7 +392,6 @@
+@@ -433,7 +388,6 @@
  					break;
  		}
  }
@@ -601,7 +652,7 @@
  
  
  /*****************************************************************
-@@ -448,7 +406,7 @@
+@@ -448,7 +402,7 @@
  	WINDOW *w;
  	XATTR xa;
  	long err;
@@ -610,7 +661,7 @@
  	GRECT full;		/* berechne maximale Fenstergre */
  
  
-@@ -456,7 +414,7 @@
+@@ -456,7 +410,7 @@
  	/* ------------------------------------------------ */
  
  	if	(strlen(path) > 127)
@@ -619,7 +670,7 @@
  	new_slot = new_window();
  	if	(!new_slot)
  		{
-@@ -471,19 +429,21 @@
+@@ -471,19 +425,21 @@
  		return;
  		}
  
@@ -645,7 +696,7 @@
  	if	(w->handle <= 0)
  		{
  		Mfree(w);
-@@ -502,15 +462,16 @@
+@@ -502,15 +458,16 @@
  		form_xerr(err, path);
  		return;
  		}
@@ -664,7 +715,7 @@
  	w->user_fsize = xa.size;
  	w->user_file = Malloc(xa.size + 1);	/* Platz fr EOS */
  	if	(!w->user_file)
-@@ -529,9 +490,10 @@
+@@ -529,9 +486,10 @@
  		goto err3;
  		}
  
@@ -678,7 +729,7 @@
  
  	/* Default-Einstellungen */
  
-@@ -543,7 +505,8 @@
+@@ -543,7 +501,8 @@
  	get_line_column_count(w->user_file, w->user_fsize,
  					&(w->vscroll.n), &(w->hscroll.n),
  					w->user_tabsize);
@@ -688,7 +739,7 @@
  	if	(!w->user_lines)
  		{
  		err = ENSMEM;
-@@ -565,12 +528,12 @@
+@@ -565,12 +524,12 @@
  	err = (long) w->hscroll.n * (long) text_attrib[8];
  	if	(err > scrg.g_w)
  		err = scrg.g_w;
@@ -704,7 +755,7 @@
  
  	if	(w->out.g_y < scrg.g_y)
  		w->out.g_y = scrg.g_y;
-@@ -580,11 +543,13 @@
+@@ -580,11 +539,13 @@
  		w->out.g_h = scrg.g_h;
  
  	/* Fenster staffeln */
