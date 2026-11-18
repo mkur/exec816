@@ -1,5 +1,8 @@
 # Historical records
 
+- [Atari MagiC MGEDIT port audit](mgedit-port-audit.md) maps the editor engine,
+  resources, document storage and application features to current Exec services.
+
 - [Cached built-in cursor shows](gem-mouse-show.md): unchanged built-ins skip
   the full mouse-form snapshot while changed/custom forms retain their path;
   focused device and loaded MGVIEW evidence.
