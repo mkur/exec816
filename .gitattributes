@@ -13,4 +13,5 @@
 *.atr binary
 # Immutable donor bytes; normalization happens only in prepared build copies.
 ports/magic/mgview/upstream/* binary
+ports/magic/mgedit/upstream/** binary
 ports/magic/mgview/sample.txt binary

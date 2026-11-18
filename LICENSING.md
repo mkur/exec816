@@ -107,6 +107,9 @@ emulators or patches to upstream projects.
   retain the upstream GPLv3 licence and Andreas Kromke's source notices.
   The immutable originals, adaptation patch and native glue are distributed
   together; the MIT interface grant does not relicense the viewer.
+- The original MagiC MGEDIT and EDITOBJC sources and resources selected by
+  `ports/magic/mgedit/inputs.json` retain the same upstream GPLv3 licence and
+  source notices.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, text-origin arithmetic pinned by
   `ports/gem4xe/text/inputs.json`, mouse artwork pinned by
