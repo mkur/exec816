@@ -3,8 +3,10 @@
 [GEM plans](README.md) · [MGVIEW port](mgview-port-plan.md) ·
 [Content-first scroll evidence](../../history/mgview-content-first.md)
 
-**Status** — proposed. Measure one bounded workload and commit each passing
-slice separately. MGVIEW is the application under test.
+**Status** — implemented. MGVIEW prepares the glyphs intersecting each damage
+rectangle and bounds line lookup using its existing index. The matched arrow
+runs, vertical control and covered-window checks are recorded in the
+[development comparison](../../history/mgview-horizontal-scroll.md).
 
 ## Scope
 

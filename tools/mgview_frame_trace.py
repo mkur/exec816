@@ -88,7 +88,7 @@ def analyze(rows,timeline):
     return result
 
 
-def geometry(bridge,program,app_window):
+def geometry(bridge,program,app_window,objects=(0,9,10,13,14)):
     """Read the complete stored frame at the ready checkpoint, before tracing."""
     from generate_desktop import layout as desktop_layout
     from generate_gem_objects import layout as gem_layout
@@ -103,10 +103,10 @@ def geometry(bridge,program,app_window):
             record=candidate;break
     require(record,'Missing ready window frame')
     frame=bridge.memdump(record+d['Window']['fields']['frame'],g['Frame']['size'])
-    fields=g['Frame']['fields'];objects={}
-    for obj in (0,9,10,13,14):
+    fields=g['Frame']['fields'];rectangles={}
+    for obj in objects:
         raw=frame[fields['tree']+obj*24:fields['tree']+(obj+1)*24]
-        objects[str(obj)]=dict(zip(('next','head','tail','type','flags','state','spec','x','y','width','height'),struct.unpack('<3h3HI4h',raw)))
-    return dict(handle=handle,objects=objects,
+        rectangles[str(obj)]=dict(zip(('next','head','tail','type','flags','state','spec','x','y','width','height'),struct.unpack('<3h3HI4h',raw)))
+    return dict(handle=handle,objects=rectangles,
         rectangles={n:list(struct.unpack_from('<4h',frame,fields[n])) for n in ('current','work')},
         sliders={n:struct.unpack_from('<h',frame,fields[n])[0] for n in ('hslide','vslide','hsize','vsize')})

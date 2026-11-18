@@ -48,6 +48,10 @@
   ahead of the thumb and shows text one to two PAL frames earlier in the
   matched capture.
 
+- [MGVIEW horizontal strip repaint](mgview-horizontal-scroll.md) measures the
+  glyph and line-lookup changes, separate viewport and thumb scanout, and
+  partial-cell redraws under a covering window.
+
 - [MGVIEW on standalone GEM4XE](gem4xe-mgview-benchmark.md) compares the same
   odd-edge scroll on both native stacks and traces the packed-edge copy cost.
 

@@ -76,14 +76,16 @@ def definition(cache,p,foreign,app,extra_app=()):
         timeline=dict(points=clock,spans={},task_dps=[r['dp'] for r in p['build']['memory']['task_pools']]))
 
 
-def expected(font,work,content,shift):
+def expected(font,work,content,shift,*,column=0,tabs=8):
     x,y,w,h=work;model=Raster(font);model.clip=(x,y,x+w-1,y+h-1)
     model.fill=0;model.apply(11,[x,y,x+w-1,y+h-1]);model.text=1
     text=content.replace(b'\r\n',b'\n').replace(b'\r',b'\n')
     lines=text.split(b'\n') if text else []
     if text.endswith(b'\n'):lines.pop()
     for row,line in enumerate(lines[shift:shift+h//8]):
-        model.apply(8,[x,y+row*8+6],list(line.replace(b'\0',b' ').expandtabs(8)[:272]))
+        line=line.replace(b'\0',b' ')
+        if tabs:line=line.expandtabs(tabs)
+        model.apply(8,[x-column*8,y+row*8+6],list(line[:272]))
     colours=[None]*16
     for pen,hardware in enumerate(PENS):colours[hardware]=bytes((v&254)+(v>>7) for v in DESKTOP_PALETTE[pen*3:pen*3+3])[::-1]
     return b''.join(colours[model.pixels[yy*640+xx]] for yy in range(y,y+h) for xx in range(x,x+w))
