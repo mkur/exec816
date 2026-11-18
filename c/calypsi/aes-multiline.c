@@ -2,8 +2,8 @@
 /* Multiline layout, key handling and drawing adapted from Andreas Kromke's EDITOB.C. */
 #include "aes-private.h"
 #include "aes-paint-private.h"
-#include "application-hosted.h"
 #include "vdi-private.h"
+#include "application-hosted.h"
 #include "../../ports/gem4xe/raster/client.h"
 #include <proto/exec.h>
 
@@ -591,32 +591,24 @@ WORD edit_scroll(OBJECT *tree,WORD object,WORD window,LONG top,WORD left)
     return scroll_edit(c,tree,object,edit,top,left);
 }
 
-WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
+static WORD edit_key(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    XEDITINFO *edit,const EVNT *event,LONG *error)
 {
-    XEDITINFO *edit=editor(&tree[object]);
-    struct ExecAESContext *c;
     LONG first,shift,selectedStart,selectedEnd,cursor;
-    WORD oldRow,top,bottom;
+    WORD oldRow,top,bottom,page=0;
     BOOL changed=FALSE;
-    *error=0;
-    if (!(event->mwhich&MU_KEYBD)) return 1;
-    event->mwhich&=~MU_KEYBD;
-    c=ExecAESContext();
-    if (!edit->lines || !select_edit_window(c,window)) { *error=-1;return 0; }
-    {
-        WORD page=0;
-        switch ((UWORD)event->key) {
-        case 0x4800: if (event->kstate&4) page=-1; break;
-        case 0x5000: if (event->kstate&4) page=1; break;
-        case 0x4900: case 0x4838: page=-edit->rows; break;
-        case 0x5100: case 0x5032: page=edit->rows; break;
-        }
-        if (page) {
-            LONG target=edit->firstRow+page;
-            if (scroll_edit(c,tree,object,edit,target<0 ? 0:target,-1)) return 1;
-            *error=-1;
-            return 0;
-        }
+
+    switch ((UWORD)event->key) {
+    case 0x4800: if (event->kstate&4) page=-1; break;
+    case 0x5000: if (event->kstate&4) page=1; break;
+    case 0x4900: case 0x4838: page=-edit->rows; break;
+    case 0x5100: case 0x5032: page=edit->rows; break;
+    }
+    if (page) {
+        LONG target=edit->firstRow+page;
+        if (scroll_edit(c,tree,object,edit,target<0 ? 0:target,-1)) return 1;
+        *error=-1;
+        return 0;
     }
     first=edit->first;
     shift=edit->shift;
@@ -639,6 +631,183 @@ WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
         bottom=edit->rows-1;
     }
     if (redraw_rows(c,tree,object,top,bottom)) return 1;
+    *error=-1;
+    return 0;
+}
+
+static void place_cursor(XEDITINFO *edit,LONG at)
+{
+    WORD row=visible_row(edit,at);
+    edit->cursor=at;
+    edit->cursorRow=row;
+    if (row>=0) {
+        LONG start=edit->lines[row].start;
+        edit->cursorX=edit->cursorGoal=text_width(edit->buffer+start,at-start);
+    }
+}
+
+static LONG point_offset(const XEDITINFO *edit,const GRECT *bounds,WORD x,WORD y)
+{
+    WORD row;
+    if (y<bounds->g_y) return edit->first;
+    row=(y-bounds->g_y)/CELL;
+    if (row>=edit->drawnRows) return edit->lines[edit->drawnRows-1].end;
+    return position_at_x(edit,&edit->lines[row],(LONG)x-bounds->g_x+edit->shift);
+}
+
+static WORD row_near(const XEDITINFO *edit,LONG at)
+{
+    WORD row;
+    for (row=0;row<edit->drawnRows-1;++row)
+        if (at<edit->lines[row].next) return row;
+    return row;
+}
+
+static WORD select_range(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    XEDITINFO *edit,LONG anchor,LONG at)
+{
+    LONG start=anchor<at ? anchor:at,end=anchor<at ? at:anchor;
+    LONG lo,hi,oldStart=edit->selectedStart,oldEnd=edit->selectedEnd;
+    if (oldStart==oldEnd) oldStart=oldEnd=edit->cursor;
+    if (start==oldStart && end==oldEnd) {
+        if (edit->cursor!=at) place_cursor(edit,at);
+        return 1;
+    }
+    if (start==oldStart) {
+        lo=end<oldEnd ? end:oldEnd;
+        hi=end>oldEnd ? end:oldEnd;
+    } else if (end==oldEnd) {
+        lo=start<oldStart ? start:oldStart;
+        hi=start>oldStart ? start:oldStart;
+    } else {
+        lo=start<oldStart ? start:oldStart;
+        hi=end>oldEnd ? end:oldEnd;
+    }
+    edit->selectedStart=start;
+    edit->selectedEnd=end;
+    place_cursor(edit,at);
+    return redraw_rows(c,tree,object,row_near(edit,lo),row_near(edit,hi));
+}
+
+static BOOL word_separator(char ch)
+{
+    return strchr(" !.+-*/:?[\\]{|}()~\366\367\370\371\372\t",ch)!=NULL;
+}
+
+static WORD select_word(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    XEDITINFO *edit,LONG at)
+{
+    WORD row=visible_row(edit,at);
+    const struct EditLine *line=&edit->lines[row];
+    LONG start=at,end=at;
+    if (start==line->end && start>line->start) --start;
+    while (start>line->start && word_separator(edit->buffer[start])) --start;
+    while (start>line->start && !word_separator(edit->buffer[start-1])) --start;
+    while (end<line->end && !word_separator(edit->buffer[end])) ++end;
+    return select_range(c,tree,object,edit,start,end);
+}
+
+/* MagiC's timer accelerates as the pointer moves further outside the object.
+ * A blocked edge waits for motion or release with no timer. */
+static WORD drag_step(XEDITINFO *edit,const GRECT *bounds,WORD x,WORD y,
+    LONG *top,LONG *left)
+{
+    WORD distance,vertical=0;
+    *top=edit->firstRow;
+    *left=edit->shift;
+    document_metrics(edit);
+    if (x<bounds->g_x && *left>0) {
+        --*left;
+        distance=bounds->g_x-x;
+    } else if (x>=bounds->g_x+bounds->g_w &&
+            *left<edit->maxWidth-bounds->g_w+1) {
+        ++*left;
+        distance=x-bounds->g_x-bounds->g_w+1;
+    } else if (y<bounds->g_y && *top>0) {
+        --*top;
+        distance=bounds->g_y-y;
+        vertical=1;
+    } else if (y>=bounds->g_y+bounds->g_h &&
+            *top<edit->lineCount-edit->rows) {
+        ++*top;
+        distance=y-bounds->g_y-bounds->g_h+1;
+        vertical=1;
+    } else return -1;
+    if (distance>16) distance=16;
+    return vertical ? (16-distance)*200/16+20:16-distance;
+}
+
+static WORD edit_button(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    XEDITINFO *edit,WORD window,const EVNT *event,const GRECT *bounds)
+{
+    LONG initialTop=edit->firstRow,initialLeft=edit->shift,initialCursor=edit->cursor;
+    LONG initialStart=edit->selectedStart,initialEnd=edit->selectedEnd,initialGoal=edit->cursorGoal;
+    LONG at=point_offset(edit,bounds,event->mx,event->my),anchor=at;
+    ULONG epoch=c->view->epoch;
+    WORD x,y,buttons,modifiers,clicks,key,ready,delay;
+    UWORD status;
+    MOBLK point={1,0,0,1,1};
+    LONG top,left;
+
+    if (event->mclicks==2) return select_word(c,tree,object,edit,at);
+    if (event->kstate&3)
+        anchor=initialStart!=initialEnd ? initialStart:initialCursor;
+    if (!select_range(c,tree,object,edit,anchor,at)) return 0;
+    if (!ExecAESMouseState(c,&x,&y,&buttons,&modifiers)) return 0;
+    while (buttons&1) {
+        delay=drag_step(edit,bounds,x,y,&top,&left);
+        point.m_x=x;
+        point.m_y=y;
+        /* Every paint and copy retired its DISPLAY borrow before this wait. */
+        ready=evnt_multi_moblk(MU_BUTTON|MU_M1|(delay>=0 ? MU_TIMER:0),1,1,0,
+            &point,NULL,NULL,delay>=0 ? (UWORD)delay:0,0,&x,&y,&buttons,&modifiers,&key,&clicks);
+        if (!ready) break;
+        if (!ExecAESWindowEpoch(c,window,epoch) ||
+                ((ready&(MU_BUTTON|MU_M1)) && c->eventWindow!=window)) {
+            c->diagnostic=AES_INPUT_LOST;
+            break;
+        }
+        if (ready&MU_BUTTON) return 1;
+        if (drag_step(edit,bounds,x,y,&top,&left)>=0 &&
+                !scroll_edit(c,tree,object,edit,top,left)) return 0;
+        at=point_offset(edit,bounds,x,y);
+        if (!select_range(c,tree,object,edit,anchor,at)) return 0;
+    }
+    if (buttons&1 || c->diagnostic!=AES_OK) {
+        status=c->diagnostic;
+        set_top(edit,initialTop);
+        edit->shift=initialLeft;
+        edit->selectedStart=initialStart;
+        edit->selectedEnd=initialEnd;
+        place_cursor(edit,initialCursor);
+        edit->cursorGoal=initialGoal;
+        if (ExecAESWindowEpoch(c,window,epoch)) redraw_rect(c,tree,object,bounds);
+        c->diagnostic=status;
+        return 0;
+    }
+    return 1;
+}
+
+WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
+{
+    XEDITINFO *edit=editor(&tree[object]);
+    struct ExecAESContext *c;
+    GRECT bounds;
+    *error=0;
+    if (!(event->mwhich&(MU_KEYBD|MU_BUTTON))) return 1;
+    c=ExecAESContext();
+    if (!edit->lines || !select_edit_window(c,window)) { *error=-1;return 0; }
+    if (event->mwhich&MU_KEYBD) {
+        event->mwhich&=~MU_KEYBD;
+        if (!edit_key(c,tree,object,edit,event,error)) return 0;
+    }
+    if (!(event->mwhich&MU_BUTTON) || !(event->mbutton&1) ||
+            c->eventWindow!=window) return 1;
+    object_rect(tree,object,&bounds);
+    if (event->mx<bounds.g_x || event->mx>=bounds.g_x+bounds.g_w ||
+        event->my<bounds.g_y || event->my>=bounds.g_y+bounds.g_h) return 1;
+    event->mwhich&=~MU_BUTTON;
+    if (edit_button(c,tree,object,edit,window,event,&bounds)) return 1;
     *error=-1;
     return 0;
 }

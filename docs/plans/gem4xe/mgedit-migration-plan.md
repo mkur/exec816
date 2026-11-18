@@ -4,9 +4,9 @@
 [GEM architecture guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing policy](../../contributing/testing.md)
 
-**Status** — ME0–ME2 and ME3a implemented at development scope. ME3a delivers
-scroll and resize. ME3b adds pointer selection. The original document workflow and desktop
-features follow in separate executable slices. Commit each passing slice.
+**Status** — ME0–ME3 implemented at development scope. ME4 ports the named
+document workflow after review of its buffer and alert ownership choices.
+Commit each passing slice.
 [Execution record](../../history/mgedit-migration.md)
 
 ## Target workflow

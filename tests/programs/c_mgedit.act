@@ -8,7 +8,7 @@ USE PROCESS
 USE HEAPCORE
 
 CARD checks,round
-LONGCARD base
+LONGCARD base,peerBase
 
 PROC Require(BYTE okay)
 
@@ -20,7 +20,7 @@ PROC Require(BYTE okay)
 RETURN
 
 PROC Main()
-  LONGCARD child,baseline
+  LONGCARD child,baseline,peer
   PROCESS.Result outcome
 
   LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
@@ -28,6 +28,11 @@ PROC Main()
   Require(input<>NULL AND output<>NULL)
   DOS.SelectInput(input)
   DOS.SelectOutput(output)
+  LET peerImage=PROGRAMFILE.Load(BYTE POINTER(c"SYS:PEER.APP"))
+  Require(peerImage<>NULL)
+  peerBase=LONGCARD(peerImage.text)
+  peer=PROCESS.StartBackgroundLoaded(BYTE POINTER(peerImage),NULL,0)
+  Require(peer<>0)
   FOR round=1 TO 2 DO
     BEGIN
       LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:EDITOBJ.APP"))
@@ -45,6 +50,9 @@ PROC Main()
       FI
     END
   OD
+  Require(PROCESS.Wait(peer,@outcome)<>0)
+  Require(outcome.primary=0)
+  PROGRAM.Unload(peerImage)
   DOS.SelectInput(NULL)
   DOS.SelectOutput(NULL)
   Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)

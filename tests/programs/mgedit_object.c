@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include <gem.h>
+#include <exec816/aes.h>
 #include <string.h>
 
 #define DOCUMENT "A\tB\r\nSecond\n\rThird\rFourth\n"
@@ -15,6 +16,8 @@ GRECT work,coverBounds,coverWork;
 volatile WORD phase,proceed;
 LONG scrollTop;
 WORD scrollLeft;
+volatile WORD dragActive,dragDone,dragMode;
+UWORD dragStatus;
 
 static WORD geometry(WORD window)
 {
@@ -71,6 +74,29 @@ static WORD scroll(WORD window,LONG top,WORD left)
     return wind_update(END_UPDATE) && result;
 }
 
+static WORD drag(WORD window,WORD stage,WORD loss)
+{
+    EVNT event;
+    LONG error;
+    WORD okay;
+    phase=stage;
+    do {
+        event.mwhich=evnt_multi_moblk(MU_BUTTON,1,1,1,NULL,NULL,NULL,0,0,
+            &event.mx,&event.my,&event.mbutton,&event.kstate,&event.key,&event.mclicks);
+        dragStatus=ExecAESDiagnostic();
+        if (!event.mwhich && dragStatus!=AES_INPUT_LOST) return 0;
+    } while (!(event.mwhich&MU_BUTTON) || ExecAESInputWindow(MU_BUTTON)!=window);
+    if (!wind_update(BEG_UPDATE)) return 0;
+    dragActive=stage;
+    okay=edit_evnt(&tree,0,window,&event,&error);
+    dragStatus=ExecAESDiagnostic();
+    dragActive=0;
+    dragDone=stage;
+    if (!loss && stage==11) show(13);
+    return wind_update(END_UPDATE) && !event.mwhich &&
+        (loss ? !okay && error==-1 && dragStatus==AES_INPUT_LOST:okay && !error);
+}
+
 int main(void)
 {
     WORD window,cover,handle,unused;
@@ -78,7 +104,7 @@ int main(void)
     LONG capacity,length;
     char *buffer,*cursor,*start,*end;
     XEDITINFO *edit;
-    phase=proceed=0;
+    phase=proceed=dragActive=dragDone=0;
     if (appl_init()<0) return 1;
     handle=graf_handle(&unused,&unused,&unused,&unused);
     v_opnvwk(input,&handle,output);
@@ -159,6 +185,22 @@ int main(void)
         newHeight!=64 || !wind_update(END_UPDATE) || !draw(window) ||
         !scroll_info(7,0)) return 29;
     show(10);
+    if (dragMode && (ExecAESMouseProfile(0)!=0 ||
+        !wind_set(window,WF_CURRXYWH,280,70,164,83) || !draw(window) ||
+        !key(window,0x1e01,0))) return 34;
+    edit_get_sel(&tree,0,&start,&end);
+    if (dragMode==2) {
+        char *savedStart=start,*savedEnd=end;
+        if (!drag(window,11,1)) return 32;
+        edit_get_sel(&tree,0,&start,&end);
+        if (start!=savedStart || end!=savedEnd || !scroll_info(7,0)) return 33;
+    } else if (dragMode==1) {
+        if (!drag(window,11,0)) return 30;
+        edit_get_sel(&tree,0,&start,&end);
+        if (!start || end<=start || start==scrollDocument || !scroll_info(9,0)) return 31;
+        if (!drag(window,14,0)) return 35;
+    }
+    show(12);
     edit_close(&tree,0);
     edit_delete(edit);
     /* Leave another open editor for automatic AES retirement. */

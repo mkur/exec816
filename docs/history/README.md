@@ -1,7 +1,8 @@
 # Historical records
 
 - [MGEDIT migration record](mgedit-migration.md) records the pinned sources,
-  native edit-object lifecycle, keyboard editing and clipped XOR rendering.
+  native edit-object lifecycle, keyboard and pointer editing, and viewport
+  scrolling.
 
 - [Atari MagiC MGEDIT port audit](mgedit-port-audit.md) maps the editor engine,
   resources, document storage and application features to current Exec services.

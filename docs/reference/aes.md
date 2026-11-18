@@ -958,7 +958,18 @@ and Control+Down scroll one line, and Page Up and Page Down scroll one
 viewport. Resize updates the caller's viewport storage and returns its
 previous and new whole-row heights. After resize, redraw the new bounds.
 
-Pointer selection and resource-file admission are future slices.
+`edit_evnt` also handles a delivered left-button press within the edit object.
+The caller uses `ExecAESInputWindow(MU_BUTTON)` for the captured window and
+`ExecAESInputWindow(MU_KEYBD)` for the keyboard recipient. Click positions
+use the same character and tab extents as drawing.
+Shift extends the selection and a double click selects a word. A held click
+waits for release or motion, with a timer for autoscroll when the pointer
+leaves the object. UPDATE stays with the caller while DISPLAY is borrowed
+only for synchronous painting and copying. Input loss cancels the drag and
+restores its initial viewport, caret and selection. The failed event returns
+zero and preserves the AES input diagnostic.
+
+Resource-file admission is a future slice.
 
 ## File selector
 

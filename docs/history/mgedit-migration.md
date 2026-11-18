@@ -86,3 +86,37 @@ initialized bytes plus 18,871 zero-fill bytes. The 70-byte editor state
 rounds to 72 upper bytes, with 12 bytes per visible row before rounding.
 Reserved bank-zero bytes stayed unchanged, guards were intact, and the APP
 pool retained 1,167 bytes above its observed watermark and interrupt floor.
+
+## ME3b — Pointer selection and drag autoscroll
+
+The caller passes the captured press to `edit_evnt` under UPDATE. The edit
+object places the caret or changes the selection, then waits for release,
+movement and the autoscroll timer in MagiC's event order. It repaints affected
+rows and uses the ME3a copy and exposed-strip path to scroll. Each DISPLAY
+borrow ends before the next wait. A lost input record restores the viewport,
+caret and selection from drag entry and returns the diagnostic.
+
+The optimized Altirra fixture passed physical drag, autoscroll and release,
+then repeated capture in the same boot. The peer timer advanced 20 and 17
+ticks during the two drags. After the first release, the fixture held UPDATE
+until uncaptured motion queued SCRENMGR on the native semaphore. A physical
+key arrived in the editor inbox during that wait. A second run injected
+button input loss during a physical drag. The viewport and selection returned
+to their entry state, with 20 peer ticks observed during the hold. Each run
+passed 20 pixel comparisons and 16 native lifecycle checks with intact guards.
+
+The editor fixture APP is 17,064 bytes and the peer is 11,069 bytes. The
+provider has 234,967 initialized bytes and 18,871 zero-fill bytes. The editor
+stack retained at least 1,097 bytes above the measured watermark and
+interrupt floor.
+
+The production editor state and AES registration keep their ME3a sizes and
+APP ABI 51. Reserved bank-zero growth is zero for fixed, root, kernel, idle
+and per-public-Task storage. The fixture uses the existing 12-Task profile
+for the additional loaded peer. Compared with ME3a's 8-Task fixture this
+reserves 7,648 more bank-zero bytes, including direct pages and stack guards
+for three 1,600-byte slots and one 2,848-byte slot.
+
+Run `python3 tools/test_mgedit_object.py --output build/mgedit/me3b` to build
+and exercise the physical release case, then run the same command with
+`--reuse --loss` to inject a dropped button record during the drag.
