@@ -42,6 +42,10 @@ The proposed horizontal-scroll plan measures left/right, then limits MGVIEW's
 text preparation to the exposed columns within the existing copy/strip flow.
 [MGVIEW horizontal scroll repaint](mgview-horizontal-scroll-plan.md)
 
+The [resident C runtime design](../resident-c-runtime-design.md) compares
+MGVIEW with other APPs and proposes sharing the runtime phase dispatcher
+through C816, followed by the shared GEM rectangle helpers.
+
 The [END_UPDATE audit](../../history/gem-end-update-audit.md) separates the
 6.23 ms viewer CPU from a 9.06 ms scheduling interval after native release.
 An unconditional painting-release wake drives 6.81 ms of SCRENMGR input/mouse
