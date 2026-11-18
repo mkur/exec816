@@ -538,11 +538,12 @@ list is ARMED. Its bounded check reads the VBI deadline, not blitter BUSY.
 Each acknowledged edge advances an armed alarm at
 most once; serial RX/TX receive bounded service opportunities around sampling.
 SIO retains timer 2 and its watchdog, transfer and recovery policy. Timer 1 uses
-divisor 15 normally (3,958.6 Hz on PAL). SIO requests divisor 7 for COMMAND
+divisor 31 normally (1,979.3 Hz on PAL). SIO requests divisor 7 for COMMAND
 setup/transmission/hold and write turnaround, retaining its fine-alarm units.
-Pointer capture uses every normal edge and every second fine edge. Changing
-AUDF1 does not reset the timer; the first interval can retain the old reload.
-The capture divider resets at rate changes and pointer acquisition/release.
+Pointer capture uses every normal edge and every fourth fine edge. Changing
+AUDF1 preserves the current countdown, which can retain the old reload. On
+entry to fine mode, capture uses the second edge before resuming the divider
+of four. Pointer acquisition and release clear the capture divider phase.
 SIO transaction setup still resets STIMER before serial transmission; joining
 an existing timing owner does not reset it. A new owned timer
 edge arriving during keyboard capture remains latched for the next native IRQ;

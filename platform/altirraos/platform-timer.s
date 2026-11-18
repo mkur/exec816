@@ -99,7 +99,9 @@ timer_release_mask:
 ; may record a tick but cannot switch through half-published cadence state.
 ; AUDF1 changes reload only: never reset STIMER here (it also clocks serial).
 ; A partial old period may survive the write. Reset the capture divider, skip
-; the first fine edge, then sample every second edge. Normal edges all sample.
+; the first fine edge, sample the second, then use TIMER_POINTER_DIVIDER.
+; This bounds the first gap even if a complete old normal period survives.
+; Normal edges all sample.
 ; No synthetic/catch-up samples are taken. Joining timer owners changes no rate.
 timer_fine_start:
     lda #1
@@ -115,7 +117,7 @@ timer_rate:
     beq timer_rate_done
     sta f:TM_AUDF1
     sta f:$d200
-    lda #0
+    lda #TIMER_POINTER_DIVIDER-2
     sta f:TM_SAMPLE_PHASE
 timer_rate_done:
     rts

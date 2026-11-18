@@ -16,6 +16,7 @@ from test_mouse_observe import BRIDGE, ROM, PIN
 from gem_mouse_observe import timing
 from sio_transaction_trace import BASE_HZ
 from mouse_timer_trace import require_normal_cadence
+from generate_platform_timer import ABI as TIMER
 
 
 def run(out, program, unobserved=False, phase_offset=0):
@@ -143,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument('--program', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--unobserved', action='store_true')
-    parser.add_argument('--phase-offset', type=int, choices=range(448), default=0,
+    parser.add_argument('--phase-offset', type=int, choices=range((TIMER['divisor']+1)*28), default=0,
                         help='Shift electrical stimuli across one normal timer period (base cycles)')
     args = parser.parse_args()
     run(args.output.resolve(), args.program, args.unobserved, args.phase_offset)

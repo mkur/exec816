@@ -135,6 +135,8 @@ def run(out, mode, order, emulation=False, unobserved=False, capture=False, repl
                               if r['name'].startswith(('M_TIMERPROBE_START_', 'M_TIMERPROBE_STOP_'))]
         capture_pcs = ','+','.join(f'{v:x}' for v in capture_boundaries) if capture else ''
         baseline = current_task_memory()
+        from task_capacity import configure
+        configure(baseline, p['build']['memory']['task_capacity'])
         for key in ('bank_zero_budget', 'task_pools', 'runtime_reservations', 'phase_reservations'):
             require(p['build']['memory'][key] == baseline[key], 'Bank-zero change: '+key)
         disk_image(out/'disk.atr')

@@ -14,8 +14,10 @@ def assembly():
     a = ABI
     require(a['schema_version'] == 1 and a['state_bytes'] == 32,
             'Invalid shared timer state')
-    require(a['divisor'] + 1 == (a['fine_divisor'] + 1) * a['pointer_divider']
-            and a['pointer_divider'] == 2, 'Invalid shared timer cadence')
+    require(0 <= a['fine_divisor'] <= a['divisor'] <= 255
+            and 2 <= a['pointer_divider'] <= 255
+            and a['divisor'] + 1 == (a['fine_divisor'] + 1) * a['pointer_divider'],
+            'Invalid shared timer cadence')
     require(len(set(a['fields'].values())) == len(a['fields'])
             and all(0 <= v < a['state_bytes'] for v in a['fields'].values()),
             'Invalid shared timer offsets')

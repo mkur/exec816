@@ -2,9 +2,9 @@
   "schema_version": 1,
   "state_offset": 3888,
   "state_bytes": 32,
-  "divisor": 15,
+  "divisor": 31,
   "fine_divisor": 7,
-  "pointer_divider": 2,
+  "pointer_divider": 4,
   "audctl": 40,
   "fields": {
     "TM_USERS": 0,

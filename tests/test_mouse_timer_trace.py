@@ -92,7 +92,25 @@ class MouseTimerTraceTests(unittest.TestCase):
                                result['15']['sample_period']['mean_us'])
 
     def test_decimation_alone_does_not_satisfy_normal_rate(self):
-        observation = dict(cadence=dict(au_df1={'15': dict(physical_edges=200,
-                                                   median_physical_period_cycles=224)}))
-        with self.assertRaisesRegex(RuntimeError, 'physically run'):
-            require_normal_cadence(observation)
+        for divisor, wrong_period in ((15,224), (31,448)):
+            observation = dict(cadence=dict(au_df1={str(divisor): dict(
+                physical_edges=200, median_physical_period_cycles=wrong_period)}))
+            with self.subTest(divisor=divisor), self.assertRaisesRegex(RuntimeError, 'physically run'):
+                require_normal_cadence(observation, normal_divisor=divisor)
+
+    def test_two_khz_physical_clock_and_fine_capture(self):
+        events = [(0, ['register', '0', '0', '31'])]
+        for index in range(120):
+            cycle = 400+index*896
+            events += [(cycle, ['timer', str(cycle), '0']),
+                       (cycle+20, ['cpu', str(cycle+20), '0', '8', '003456'])]
+        events.append((108000, ['register', '108000', '0', '7']))
+        for index in range(80):
+            cycle = 108400+index*224
+            events.append((cycle, ['timer', str(cycle), '0']))
+            if index % 4 == 3:
+                events.append((cycle+20, ['cpu', str(cycle+20), '0', '8', '003456']))
+        result = dict(cadence=cadence(events,self.labels))
+        require_normal_cadence(result, fine=True, normal_divisor=31, fine_divisor=7)
+        self.assertEqual(result['cadence']['au_df1']['31']['median_physical_period_cycles'],896)
+        self.assertEqual(result['cadence']['au_df1']['7']['median_sample_period_cycles'],896)

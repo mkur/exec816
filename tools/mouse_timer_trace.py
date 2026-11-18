@@ -2,6 +2,7 @@
 from os_boundary import require
 from sio_transaction_trace import read_events, stats, BASE_HZ
 from statistics import median
+from generate_platform_timer import ABI as TIMER
 
 
 def cadence(events, labels):
@@ -27,7 +28,9 @@ def cadence(events, labels):
             elif event[0] == 'cpu' and int(event[4], 16) == labels['timer_sample']:
                 current['samples'].append(cycle)
     modes = {}
-    for divisor in (15, 7):
+    divisors = {TIMER['divisor'], TIMER['fine_divisor']}
+    divisors.update(s['divisor'] for s in segments)
+    for divisor in sorted(divisors, reverse=True):
         selected = [s for s in segments if s['divisor'] == divisor]
         periods = [b-a for s in selected for a, b in zip(s['edges'][1:], s['edges'][2:])]
         gaps = [b-a for s in selected for a, b in zip(s['samples'], s['samples'][1:])]
@@ -41,22 +44,28 @@ def cadence(events, labels):
     return dict(au_df1=modes,
         transitions=[dict(begin=s['start'], end=s['end'], divisor=s['divisor'],
                           physical_edges=len(s['edges']), pointer_samples=len(s['samples']))
-                     for s in segments if s['divisor'] in (7, 15)])
+                     for s in segments])
 
 
-def require_normal_cadence(observation, fine=False):
-    """Reject an 8 kHz interrupt stream with merely decimated captures."""
+def require_normal_cadence(observation, fine=False, normal_divisor=None,
+                           fine_divisor=None):
+    """Check physical timer periods independently of pointer decimation."""
+    normal_divisor = TIMER['divisor'] if normal_divisor is None else normal_divisor
+    fine_divisor = TIMER['fine_divisor'] if fine_divisor is None else fine_divisor
+    period = (normal_divisor+1)*28
     modes = observation['cadence']['au_df1']
-    require(modes['15']['physical_edges'] > 100 and
-            modes['15']['median_physical_period_cycles'] == 448,
-            'Normal timer did not physically run at about 4 kHz')
+    normal_mode = modes.get(str(normal_divisor), {})
+    require(normal_mode.get('physical_edges', 0) > 100 and
+            normal_mode.get('median_physical_period_cycles') == period,
+            'Normal timer did not physically run at the configured rate')
     if fine:
-        require(modes['7']['physical_edges'] > 10 and
-                modes['7']['median_physical_period_cycles'] == 224,
+        fine_mode = modes.get(str(fine_divisor), {})
+        require(fine_mode.get('physical_edges', 0) > 10 and
+                fine_mode.get('median_physical_period_cycles') == (fine_divisor+1)*28,
                 'Fine SIO timer did not run at about 8 kHz')
-        if modes['7']['sample_period']['count'] >= 10:
-            require(350 < modes['7']['median_sample_period_cycles'] < 550,
-                    'Fine SIO interrupts did not preserve about 4 kHz capture')
+        if fine_mode['sample_period']['count'] >= 10:
+            require(period-100 < fine_mode['median_sample_period_cycles'] < period+102,
+                    'Fine SIO interrupts did not preserve the normal capture cadence')
 
 
 def accounting(path, labels, events=None):
