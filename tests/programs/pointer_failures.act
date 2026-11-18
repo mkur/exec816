@@ -116,7 +116,11 @@ PROC Main()
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.x=198)
   ; Opposite state is observable hardware loss; held input cannot manufacture
   ; a missing edge. The next baseline carries the held level without motion.
+  LET hardwareEpoch=hardware.epoch
   Sample(12+256)
+  Sample(15+256)
+  Sample(12+256)
+  Require(hardware.epoch=hardwareEpoch+1)
   Loss(INPUT.LOSS_HARDWARE)
   Sample(12+256)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
@@ -137,14 +141,27 @@ PROC Main()
   Require(hardware.xCount=0)
   Sample(12)
   Require(INPUT.Take(@mouse,@event)=INPUT.OK)
-  ; Full ring uses durable storage; all pre-loss entries become obsolete.
+  ; Full ring reports one loss even across repeated failed polls and after
+  ; acknowledgement. The fresh baseline uses the latest physical button.
+  hardware.epoch=$fffc
   FOR index=0 TO INPUTNATIVE.POINTER_SLOTS DO
     Sample(12+((index+1) AND 1)*256)
   OD
   Require(BYTE(hardware.head-hardware.tail)=INPUTNATIVE.POINTER_SLOTS)
-  Loss(INPUT.LOSS_RAW)
+  FOR index=1 TO 128 DO
+    Sample(12+256)
+  OD
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_LOSS
+      AND event.code=INPUT.LOSS_RAW AND event.flags=0 AND event.tick=0)
   Sample(12)
-  Require(INPUT.Take(@mouse,@event)=INPUT.OK)
+  Require(hardware.epoch=$fffd AND hardware.disabled=0 AND hardware.buttons=0)
+  Require(INPUT.Take(@mouse,@event)=INPUT.EMPTY)
+  Sample(12)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
+      AND event.buttons=0 AND hardware.resyncPending=0)
+  Sample(14)
+  Require(INPUT.Take(@mouse,@event)=INPUT.OK AND event.kind=INPUT.EVENT_POINTER
+      AND event.x=199)
   ; Three hidden positive edges alias one negative; four alias unchanged.
   ; These deliberately unsupported observations must not claim detection.
   hardware.phase=15

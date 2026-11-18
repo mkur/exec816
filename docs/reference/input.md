@@ -176,10 +176,10 @@ Normal capture is about 1,979.3 Hz on the pinned PAL machine (AUDF1 = 31).
 Short SIO COMMAND and write-turnaround phases use AUDF1 = 7 for their fine
 alarms, with capture on every fourth edge after the first capture on the
 second edge. Ordinary disk data transfer returns to the normal rate. Rate
-changes and the existing SIO transaction-start
-reset can perturb individual gaps; the supported envelope still requires every
-measured gap below 1 ms. See the [timing protocol](platform.md#native-sio-ownership)
-and [current measurements](../history/mouse-performance.md).
+changes and the SIO transaction-start reset can perturb individual gaps. The
+supported envelope requires every measured gap below 1 ms. See the
+[timing protocol](platform.md#native-sio-ownership) and the
+[earlier 4 kHz measurements](../history/mouse-performance.md).
 It does not program PIA direction, POTGO, trigger latching or SKCTL. Native and
 ROM emulation interrupt paths use the same decoder; keyboard and SIO ownership
 remain independent. Route zero continues tracking electrical phase and counters
@@ -216,21 +216,24 @@ public VBI tick remains separate. Capture selects no GUI gain and never waits
 for a run to fill. Relative consumers apply their own transform before coalescing
 events with different classes. See the [desktop acceleration design](../plans/gem4xe/mouse-acceleration-design.md).
 
-Opposite quadrature phases and signed counter overflow produce HARDWARE loss;
-a full raw ring produces RAW loss. A per-route notice epoch prevents older
-samples or pending output from restoring a gesture after its loss. Loss retains
-the first unacknowledged cause and the latest counter baseline. Epoch exhaustion
-disables addressed capture until reacquisition, with durable loss and no wrapping
-identity. Three or four transitions hidden between samples can alias legal or
-unchanged phase values and cannot be detected from PORTA alone. M5 checks phases
-spaced at least 1 ms apart, with a maximum sample gap below 276 µs in the selected
-workloads. The existing controller's fastest qualifying quantization is
-16 scanlines, about 972 transitions/second/axis; exactly 1 kHz was not directly
-generated. Arbitrary host bursts are not guaranteed.
+Opposite quadrature phases and signed counter overflow produce HARDWARE loss.
+A full raw ring produces RAW loss. A per-route notice epoch prevents older
+samples or pending output from restoring a gesture after its loss. Capture
+reports the first fault in a gap once. It keeps sampling phase, counters and
+button level while the reader acknowledges the notice and retires stale
+records. Once there is room, the next valid poll queues a fresh baseline using
+the current counters and button level. Taking the notice alone leaves recovery
+pending. Discard establishes an explicit loss boundary for its route. At epoch
+exhaustion, addressed capture disables until reacquisition and retains the loss
+notice. Three or four transitions hidden between samples can alias legal or
+unchanged phase values. Earlier M5 checks at 4 kHz used phases spaced at least
+1 ms apart and measured gaps below 276 µs. The existing controller's fastest
+qualifying quantization was 16 scanlines, about 972 transitions per second per
+axis. Faster host bursts fall outside that measured envelope.
 
 | Shared fields | Writers and serialization |
 | --- | --- |
-| Phase, button level, cumulative counters, epoch, disabled/baseline flags | Timer IRQ; claim, publication and Discard transactions save/set I. |
+| Phase, button level, cumulative counters, epoch and capture recovery flags | Timer IRQ; claim, publication and Discard transactions save/set I. |
 | Ring head, last motion counts, interval age and direction history | Timer IRQ. Take copies a complete sample and advances tail under saved I; no masked ring walk. |
 | Route, acquisition and binding activation | Admitted Task/kernel publication under Forbid or SWITCHING plus saved I. IRQ reads fixed resident storage. |
 | Notice payloads and loss mask | IRQ or Discard under saved I; Take copies and acknowledges one notice atomically. Notice identity/epoch remain after acknowledgement. |

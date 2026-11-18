@@ -583,7 +583,7 @@
           66
         ],
         [
-          "pad2",
+          "resyncPending",
           "BYTE",
           67
         ],

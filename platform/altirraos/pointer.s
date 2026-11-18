@@ -18,6 +18,7 @@ PI_FLAGS = PI+9
 PI_SLOT = PI+10
 PI_LOSS_TAG = PI+36
 PI_LOSS_CODE = PI+40
+PI_RESYNC_PENDING = PI+IN_POINTERCAPTURE_RESYNCPENDING
 PI_AGE = PI+IN_POINTERCAPTURE_MOTIONAGE
 PI_BEAM = PI+IN_POINTERCAPTURE_MOTIONBEAM
 PI_LAST_X = PI+IN_POINTERCAPTURE_MOTIONX
@@ -61,7 +62,7 @@ pointer_claim:
     sta f:PI+56
     sta f:PI+58
     sta f:PI+64                ; seeded/baseline
-    sta f:PI+66                ; disabled
+    sta f:PI+66                ; disabled/resync pending
     sta f:PI+68                ; coalescing directions
     sta f:PI+74
     sta f:PI+84                ; consumed epoch
@@ -121,6 +122,7 @@ pointer_release_unchecked:
     sta f:PI
     sta f:PI_BINDING+IN_BINDING_ACTIVE
     sta f:PI+86
+    sta f:PI_RESYNC_PENDING
     lda f:PI+1
     sta f:PI+2
     rep #$20
@@ -145,6 +147,8 @@ pointer_publish:
     lda 7,s
     sta f:PI_ROUTE+2
     sep #$20
+    lda #0
+    sta f:PI_RESYNC_PENDING
     lda #1
     sta f:PI+65
     jsr pointer_history_reset
@@ -302,7 +306,7 @@ pointer_bad_phase:
     lda f:PI_NEW_BUTTONS
     sta f:PI+63
     lda #INPUT_LOSS_HARDWARE
-    jmp pointer_loss
+    jmp pointer_capture_loss
 
 pointer_qualifiers:
     ; Capture qualifiers with the edge/baseline, never during the idle path.
@@ -552,7 +556,7 @@ pointer_append:
     cmp #IN_POINTER_SLOTS
     bcc :+
     lda #INPUT_LOSS_RAW
-    jmp pointer_loss
+    jmp pointer_capture_loss
 :
     lda f:PI+1
     jsr pointer_slot
@@ -585,6 +589,7 @@ pointer_append:
     jsr pointer_store_counts
     lda #0
     sta f:PI+65
+    sta f:PI_RESYNC_PENDING
     lda f:PI+1
     inc
     sta f:PI+1
@@ -600,6 +605,20 @@ pointer_store_counts:
     lda f:PI+58
     sta f:PI_EVENTS+18,x
     sep #$20
+    rts
+
+; One loss covers the gap until a fresh baseline can be queued. Repeated
+; attempts must let Take get past the notice and retire the old samples.
+pointer_capture_loss:
+    pha
+    lda f:PI_RESYNC_PENDING
+    bne pointer_capture_loss_pending
+    lda #1
+    sta f:PI_RESYNC_PENDING
+    pla
+    bra pointer_loss
+pointer_capture_loss_pending:
+    pla
     rts
 
 pointer_loss:
