@@ -1,5 +1,8 @@
 # Implementation plans
 
+- Measure left/right scrolling and limit MGVIEW's text preparation to the
+  glyphs intersecting the exposed strip. [MGVIEW horizontal scroll repaint](gem4xe/mgview-horizontal-scroll-plan.md)
+
 - [MagiC-led END_UPDATE and SCRENMGR completion](gem4xe/end-update-implementation-plan.md):
   EU1–EU5 implemented: caller cursor completion, demand-driven release wakes,
   input/mouse service, standard GEM painting without the application cache

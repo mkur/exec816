@@ -38,6 +38,10 @@ source/output pointer walk for byte strings. Conversion CPU falls from 2.72 to
 about 1.28 ms; the measured net text-call saving is 0.43/0.82 ms, with unchanged
 viewport pixels and no established completion-latency improvement.
 
+The proposed horizontal-scroll plan measures left/right, then limits MGVIEW's
+text preparation to the exposed columns within the existing copy/strip flow.
+[MGVIEW horizontal scroll repaint](mgview-horizontal-scroll-plan.md)
+
 The [END_UPDATE audit](../../history/gem-end-update-audit.md) separates the
 6.23 ms viewer CPU from a 9.06 ms scheduling interval after native release.
 An unconditional painting-release wake drives 6.81 ms of SCRENMGR input/mouse
