@@ -1,5 +1,9 @@
 # Implementation plans
 
+- [MagiC MGEDIT migration](gem4xe/mgedit-migration-plan.md) proposes a native
+  edit-object fixture, the original document workflow, and separate slices
+  for modeless dialogs, clipboard, preferences and fonts.
+
 - Measure left/right scrolling and limit MGVIEW's text preparation to the
   glyphs intersecting the exposed strip. [MGVIEW horizontal scroll repaint](gem4xe/mgview-horizontal-scroll-plan.md)
 

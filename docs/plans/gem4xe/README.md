@@ -11,6 +11,11 @@ cutovers have focused checks and separate commits. See the
 [execution record](../../history/magic-window-geometry.md) for MGVIEW acceptance
 and the two-sample cost observation.
 
+The proposed [MGEDIT migration](mgedit-migration-plan.md) starts with MagiC's
+multiline edit object in a small native APP, then brings up MGEDIT's document
+workflow and desktop features. The [port audit](../../history/mgedit-port-audit.md)
+records the required native services and binding gaps.
+
 The completed [odd-edge screen-copy slice](odd-edge-screen-copy-plan.md)
 separates one aligned interior copy from bounded edge preservation. Its
 [matched MGVIEW record](../../history/gem-odd-edge-copy.md) keeps geometry and
