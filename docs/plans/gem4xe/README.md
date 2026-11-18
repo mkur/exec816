@@ -1189,3 +1189,19 @@ loaded MGVIEW pair with unchanged APP and C provider where possible. Verify
 pixels, lifetime/guard behavior and normal public results; record skip frequency,
 actual CPU cost and reserved bank-zero delta. Follow the development tier, with
 no QED, catalog, demo refresh or release matrix. Commit the passing slice.
+
+### GEM-B2 — Counter-based mouse capture
+
+**Deferred on 2026-11-18.** Pointer acceleration is important to the desktop
+experience and is a requirement for revisiting this idea. [Acceleration design](mouse-acceleration-design.md)
+
+Investigate using cumulative X/Y counts as the primary motion source in
+`input.device`. Keep ordered button edges with counter snapshots so each click
+uses its own position. AES consumes the latest normalized screen position.
+The baseline for comparison is the current 2 kHz capture and overflow recovery.
+[GEM4XE motion handling](https://github.com/slaapliedje/gem4xe/blob/2bf10f6788372dcfa94f6d9416e4b957eb4ce394/src/vdi/pointer.c#L236-L252) · [Exec input contract](../../reference/input.md#st-mouse-capture)
+
+If resumed, measure IRQ CPU and queue occupancy during fast reversals, motion
+against screen edges and clicks while scrolling. A fixed-gain run can isolate
+capture costs. Adoption requires enough motion timing and direction history to
+preserve predictable acceleration when the input Task runs late.
