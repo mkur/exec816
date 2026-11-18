@@ -62,4 +62,27 @@ Fixed, root, kernel, idle and per-public-Task reserved bank-zero deltas were
 zero.
 
 Run `python3 tools/test_mgedit_object.py --output build/mgedit/me2` for the
-current focused check. It builds the matching provider and test APP.
+ME2 fixture at its revision.
+
+## ME3a — Scroll and resize
+
+The edit object now reports its scroll metrics, retains the first visible
+line and applies absolute line and pixel offsets. It clips each copy to source
+and destination pixels in one visible rectangle. The existing GEM raster copy
+handles aligned and odd pixel displacements. The newly exposed strip is drawn
+through the object dispatch. Page-sized shifts redraw their viewport. Resize
+allocates replacement visible-row storage before releasing the old storage.
+
+The first development build exposed an incorrect Calypsi stack read when
+constructing the points array from earlier array entries. The corrected
+construction derives all eight points from the rectangle. The emitted listing
+and independent pixel comparison verified the correction.
+
+The optimized loaded fixture passed 20 pixel comparisons and 12 lifecycle
+checks across two loads. It covered line and page movement, repeated
+horizontal movement in both directions including odd offsets, and resize.
+The fixture's APP is 16,129 bytes at ABI 51. The provider is 230,941
+initialized bytes plus 18,871 zero-fill bytes. The 70-byte editor state
+rounds to 72 upper bytes, with 12 bytes per visible row before rounding.
+Reserved bank-zero bytes stayed unchanged, guards were intact, and the APP
+pool retained 1,167 bytes above its observed watermark and interrupt floor.

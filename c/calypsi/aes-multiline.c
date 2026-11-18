@@ -3,6 +3,8 @@
 #include "aes-private.h"
 #include "aes-paint-private.h"
 #include "application-hosted.h"
+#include "vdi-private.h"
+#include "../../ports/gem4xe/raster/client.h"
 #include <proto/exec.h>
 
 enum { CELL = 8, DEFAULT_TAB = 64 };
@@ -18,7 +20,8 @@ struct XEDITINFO {
     struct EditLine *lines;
     WORD rows, drawnRows;
     LONG first, shift, cursor, selectedStart, selectedEnd;
-    LONG cursorX;
+    LONG cursorX, cursorGoal;
+    LONG firstRow, lineCount, maxWidth;
     WORD cursorRow, cursorHides, dirty;
 };
 
@@ -26,6 +29,8 @@ static XEDITINFO *editor(const OBJECT *object)
 {
     return (XEDITINFO *)(ULONG)object->ob_spec;
 }
+
+static void document_metrics(XEDITINFO *edit);
 
 /* MagiC admits CR, LF, CRLF and LFCR. A final separator starts an empty row. */
 static WORD line_break(char c)
@@ -104,10 +109,13 @@ WORD edit_open(OBJECT *tree,WORD object)
     edit->rows=rows;
     edit->length=length;
     edit->first=edit->shift=edit->cursor=0;
+    edit->firstRow=0;
+    edit->lineCount=0;
     edit->selectedStart=edit->selectedEnd=0;
-    edit->cursorX=0;
+    edit->cursorX=edit->cursorGoal=0;
     edit->cursorRow=0;
     layout(edit);
+    document_metrics(edit);
     return 1;
 }
 
@@ -199,11 +207,31 @@ static WORD visible_row(const XEDITINFO *edit,LONG at)
     return -1;
 }
 
-static void line_at(const XEDITINFO *edit,LONG start,LONG at,struct EditLine *line)
+static LONG line_at(const XEDITINFO *edit,LONG start,LONG at,struct EditLine *line)
 {
+    LONG number=0;
     read_line(edit,start,line);
-    while (at>=line->next && line->end!=edit->length)
+    while (at>=line->next && line->end!=edit->length) {
         read_line(edit,line->next,line);
+        ++number;
+    }
+    return number;
+}
+
+static void document_metrics(XEDITINFO *edit)
+{
+    struct EditLine line;
+    LONG width;
+    if (edit->lineCount) return;
+    edit->maxWidth=0;
+    read_line(edit,0,&line);
+    for (;;) {
+        width=text_width(edit->buffer+line.start,line.end-line.start);
+        if (width>edit->maxWidth) edit->maxWidth=width;
+        ++edit->lineCount;
+        if (line.end==edit->length) break;
+        read_line(edit,line.next,&line);
+    }
 }
 
 /* Only move the viewport when the caret leaves the retained visible rows. */
@@ -212,16 +240,18 @@ static void reveal_cursor(XEDITINFO *edit,WORD width)
     WORD row=visible_row(edit,edit->cursor);
     if (row<0) {
         struct EditLine last,first,at;
-        line_at(edit,edit->cursor<edit->first ? 0:edit->first,edit->cursor,&at);
+        LONG number=line_at(edit,edit->cursor<edit->first ? 0:edit->first,edit->cursor,&at);
         if (edit->cursor>at.end) edit->cursor=at.next;
         if (edit->cursor<edit->first) {
             edit->first=at.start;
+            edit->firstRow=number;
         } else {
             last=edit->lines[edit->drawnRows-1];
             read_line(edit,edit->first,&first);
             while (edit->cursor>last.end && last.end<edit->length) {
                 read_line(edit,last.next,&last);
                 read_line(edit,first.next,&first);
+                ++edit->firstRow;
             }
             edit->first=first.start;
         }
@@ -264,9 +294,10 @@ static BOOL replace_text(XEDITINFO *edit,LONG first,LONG last,const char *text,W
     edit->cursor=first+count;
     edit->selectedStart=edit->selectedEnd=0;
     edit->dirty=1;
+    edit->lineCount=0;
     if (first<=edit->first) {
         struct EditLine line;
-        line_at(edit,0,first,&line);
+        edit->firstRow=line_at(edit,0,first,&line);
         edit->first=line.start;
     }
     layout(edit);
@@ -286,6 +317,8 @@ static LONG next_position(const struct EditLine *line,LONG at)
 {
     return at<line->end ? at+1:line->next;
 }
+
+static LONG position_at_x(const XEDITINFO *edit,const struct EditLine *line,LONG x);
 
 static LONG key_edit(XEDITINFO *edit,UWORD key,BOOL *changed)
 {
@@ -318,6 +351,21 @@ static LONG key_edit(XEDITINFO *edit,UWORD key,BOOL *changed)
     case 0x4d36:
         edit->cursor=line->end;
         break;
+    case 0x4800: case 0x5000:
+        if (selected) edit->cursor=key==0x4800 ? edit->selectedStart:edit->selectedEnd;
+        else {
+            struct EditLine target;
+            if (key==0x4800) {
+                if (!line->start) break;
+                if (edit->cursorRow>0) target=edit->lines[edit->cursorRow-1];
+                else line_at(edit,0,line->start-1,&target);
+            } else {
+                if (line->end==edit->length) break;
+                read_line(edit,line->next,&target);
+            }
+            edit->cursor=position_at_x(edit,&target,edit->cursorGoal);
+        }
+        break;
     default:
         if (selected) { first=edit->selectedStart;last=edit->selectedEnd; }
         if (ch==8) {
@@ -349,11 +397,198 @@ static BOOL select_edit_window(struct ExecAESContext *c,WORD window)
     return TRUE;
 }
 
+static void object_rect(OBJECT *tree,WORD object,GRECT *bounds)
+{
+    objc_offset(tree,object,&bounds->g_x,&bounds->g_y);
+    bounds->g_w=tree[object].ob_width;
+    bounds->g_h=tree[object].ob_height;
+}
+
+static WORD redraw_rect(struct ExecAESContext *c,OBJECT *tree,WORD object,const GRECT *area)
+{
+    return ExecAESDraw(c,tree,object,0,area->g_x,area->g_y,area->g_w,area->g_h);
+}
+
 static WORD redraw_rows(struct ExecAESContext *c,OBJECT *tree,WORD object,WORD first,WORD last)
 {
     WORD x,y;
     objc_offset(tree,object,&x,&y);
     return ExecAESDraw(c,tree,object,0,x,y+first*CELL,tree[object].ob_width,(last-first+1)*CELL);
+}
+
+static LONG position_at_x(const XEDITINFO *edit,const struct EditLine *line,LONG x)
+{
+    LONG at=line->start,pixel=0;
+    while (at<line->end) {
+        LONG next=edit->buffer[at]=='\t' ? tab_stop(pixel):pixel+CELL;
+        if (x<pixel+(next-pixel+1)/2) break;
+        pixel=next;
+        ++at;
+    }
+    return at;
+}
+
+static void set_top(XEDITINFO *edit,LONG top)
+{
+    LONG row=edit->firstRow,start=edit->first;
+    struct EditLine line;
+    if (top==row) return;
+    if (top<row) row=start=0;
+    while (row<top) {
+        read_line(edit,start,&line);
+        start=line.next;
+        ++row;
+    }
+    edit->first=start;
+    edit->firstRow=top;
+    layout(edit);
+}
+
+WORD edit_resized(OBJECT *tree,WORD object,WORD *oldHeight,WORD *newHeight)
+{
+    XEDITINFO *edit=editor(&tree[object]);
+    WORD rows=tree[object].ob_height/CELL;
+    struct EditLine *lines;
+    *oldHeight=*newHeight=edit->rows*CELL;
+    if (!edit->lines || rows<=0) return 0;
+    if (rows!=edit->rows) {
+        lines=AllocMem((ULONG)rows*sizeof(*lines),MEMF_PUBLIC);
+        if (!lines) return 0;
+        FreeMem(edit->lines,(ULONG)edit->rows*sizeof(*edit->lines));
+        edit->lines=lines;
+        edit->rows=rows;
+        *newHeight=rows*CELL;
+        layout(edit);
+    }
+    reveal_cursor(edit,tree[object].ob_width);
+    return 1;
+}
+
+WORD edit_get_scrollinfo(OBJECT *tree,WORD object,LONG *lines,LONG *top,
+    WORD *rows,WORD *drawnRows,WORD *width,WORD *left,WORD *visibleWidth)
+{
+    XEDITINFO *edit=editor(&tree[object]);
+    if (!edit->lines) return 0;
+    document_metrics(edit);
+    *lines=edit->lineCount;
+    *top=edit->firstRow;
+    *rows=edit->rows;
+    *drawnRows=edit->drawnRows;
+    *width=edit->maxWidth>32767 ? 32767:(WORD)edit->maxWidth;
+    *left=edit->shift>32767 ? 32767:(WORD)edit->shift;
+    *visibleWidth=tree[object].ob_width;
+    return 1;
+}
+
+static WORD repaint_caret(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    const XEDITINFO *edit,const GRECT *bounds)
+{
+    LONG x=edit->cursorX-edit->shift;
+    GRECT line;
+    if (edit->cursorRow<0 || x<0 || x>=bounds->g_w) return 1;
+    r_set(&line,bounds->g_x+(WORD)x,bounds->g_y+edit->cursorRow*CELL,1,CELL);
+    return redraw_rect(c,tree,object,&line);
+}
+
+/* The same visible clip contains the source and destination. The raster
+ * primitive also handles odd packed-pixel edges and overlap. */
+static BOOL copy_fragment(struct ExecAESContext *c,const GRECT *dest,WORD dx,WORD dy)
+{
+    WORD x=dest->g_x,y=dest->g_y,w=dest->g_w-1,h=dest->g_h-1;
+    WORD p[8]={x-dx,y-dy,x+w-dx,y+h-dy,x,y,x+w,y+h};
+    UBYTE clipped=c->workstation->clipped;
+    c->diagnostic=AES_OK;
+    c->busy=1;
+    c->workstation->clipped=0;
+    ExecGemRasterCopy(c,S_ONLY,p,NULL,NULL);
+    c->workstation->clipped=clipped;
+    c->busy=0;
+    return c->diagnostic==AES_OK;
+}
+
+static WORD scroll_pixels(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    const GRECT *bounds,LONG dx,LONG dy)
+{
+    LONG ax=dx<0 ? -dx:dx,ay=dy<0 ? -dy:dy;
+    UWORD i;
+    if ((dx && dy) || ax>=bounds->g_w || ay>=bounds->g_h)
+        return redraw_rect(c,tree,object,bounds);
+    for (i=0;i<c->view->visibleCount;++i) {
+        const struct AESRect *visible=&c->view->visible[i];
+        WORD l=bounds->g_x,t=bounds->g_y,r=l+bounds->g_w,b=t+bounds->g_h;
+        GRECT area,dest;
+        if (l<visible->left) l=visible->left;
+        if (t<visible->top) t=visible->top;
+        if (r>visible->right) r=visible->right;
+        if (b>visible->bottom) b=visible->bottom;
+        if (l>=r || t>=b) continue;
+        r_set(&area,l,t,r-l,b-t);
+        if (ax<area.g_w && ay<area.g_h) {
+            r_set(&dest,l+(dx>0 ? (WORD)dx:0),t+(dy>0 ? (WORD)dy:0),
+                area.g_w-(WORD)ax,area.g_h-(WORD)ay);
+            if (copy_fragment(c,&dest,(WORD)dx,(WORD)dy)) {
+                if (dx) {
+                    if (dx<0) area.g_x+=dest.g_w;
+                    area.g_w=(WORD)ax;
+                } else {
+                    if (dy<0) area.g_y+=dest.g_h;
+                    area.g_h=(WORD)ay;
+                }
+            }
+        }
+        if (!redraw_rect(c,tree,object,&area)) return 0;
+    }
+    return 1;
+}
+
+static WORD scroll_edit(struct ExecAESContext *c,OBJECT *tree,WORD object,
+    XEDITINFO *edit,LONG top,LONG left)
+{
+    GRECT bounds;
+    LONG maxTop,dx,dy,oldShift=edit->shift,oldTop=edit->firstRow;
+    WORD result,oldHides=edit->cursorHides;
+    BOOL caret=!oldHides && edit->selectedStart==edit->selectedEnd;
+    object_rect(tree,object,&bounds);
+    document_metrics(edit);
+    maxTop=edit->lineCount-edit->rows;
+    if (maxTop<0) maxTop=0;
+    if (top>=0 && top>maxTop) top=maxTop;
+    if (top<0) top=oldTop;
+    if (left<0) left=oldShift;
+    dx=oldShift-left;
+    dy=(oldTop-top)*CELL;
+    if (!dx && !dy) return 1;
+    if (caret) {
+        edit->cursorHides=1;
+        if (!repaint_caret(c,tree,object,edit,&bounds)) {
+            edit->cursorHides=oldHides;
+            return 0;
+        }
+    }
+    edit->shift=left;
+    if (dy) {
+        WORD row=edit->cursorRow;
+        const struct EditLine *line;
+        set_top(edit,top);
+        if (row>=edit->drawnRows) row=edit->drawnRows-1;
+        if (row<0) row=0;
+        line=&edit->lines[row];
+        edit->cursor=position_at_x(edit,line,edit->cursorGoal);
+        edit->cursorRow=row;
+        edit->cursorX=text_width(edit->buffer+line->start,edit->cursor-line->start);
+        bounds.g_h=edit->rows*CELL;
+    }
+    result=scroll_pixels(c,tree,object,&bounds,dx,dy);
+    edit->cursorHides=oldHides;
+    return (!caret || repaint_caret(c,tree,object,edit,&bounds)) && result;
+}
+
+WORD edit_scroll(OBJECT *tree,WORD object,WORD window,LONG top,WORD left)
+{
+    struct ExecAESContext *c=ExecAESContext();
+    XEDITINFO *edit=editor(&tree[object]);
+    if (!edit->lines || !select_edit_window(c,window)) return 0;
+    return scroll_edit(c,tree,object,edit,top,left);
 }
 
 WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
@@ -368,6 +603,21 @@ WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
     event->mwhich&=~MU_KEYBD;
     c=ExecAESContext();
     if (!edit->lines || !select_edit_window(c,window)) { *error=-1;return 0; }
+    {
+        WORD page=0;
+        switch ((UWORD)event->key) {
+        case 0x4800: if (event->kstate&4) page=-1; break;
+        case 0x5000: if (event->kstate&4) page=1; break;
+        case 0x4900: case 0x4838: page=-edit->rows; break;
+        case 0x5100: case 0x5032: page=edit->rows; break;
+        }
+        if (page) {
+            LONG target=edit->firstRow+page;
+            if (scroll_edit(c,tree,object,edit,target<0 ? 0:target,-1)) return 1;
+            *error=-1;
+            return 0;
+        }
+    }
     first=edit->first;
     shift=edit->shift;
     selectedStart=edit->selectedStart;
@@ -379,6 +629,7 @@ WORD edit_evnt(OBJECT *tree,WORD object,WORD window,EVNT *event,LONG *error)
     if (!changed && cursor==edit->cursor && selectedStart==edit->selectedStart &&
             selectedEnd==edit->selectedEnd) return 1;
     reveal_cursor(edit,tree[object].ob_width);
+    if (event->key!=0x4800 && event->key!=0x5000) edit->cursorGoal=edit->cursorX;
     top=oldRow<edit->cursorRow ? oldRow:edit->cursorRow;
     bottom=oldRow>edit->cursorRow ? oldRow:edit->cursorRow;
     if (changed) bottom=edit->rows-1;

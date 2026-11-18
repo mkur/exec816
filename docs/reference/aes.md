@@ -930,7 +930,7 @@ selection are reconstructed together during redraw.
 APP ABI 50 adds `edit_evnt` for a returned GEM key while the caller owns
 UPDATE. The call consumes `MU_KEYBD` from its `EVNT` and leaves the other
 event bits available for dispatch. It accepts printable bytes, Tab, Return
-(inserts CRLF), Backspace, Delete, horizontal movement, Home, End and Ctrl+A.
+(inserts CRLF), Backspace, Delete, arrow movement, Home, End and Ctrl+A.
 Movement and deletion treat paired line endings as one boundary. The view
 follows the caret as it leaves the visible rows or columns. A replacement
 that exceeds the capacity returns zero with `EDITERR_BUFFER_FULL` and leaves
@@ -944,8 +944,21 @@ pointers, or two null pointers for an empty selection. `edit_get_cursor`,
 queries) and requires UPDATE when changing that count. Drawing clips XOR
 caret and selection pixels to the same visible regions as the text.
 
-Pointer selection, explicit scrollbar and page operations, and resource-file
-admission are future slices.
+ABI 51 adds `edit_get_scrollinfo`, `edit_scroll` and `edit_resized`.
+Scroll queries give total lines, the first visible line, visible row capacity,
+effective drawn rows, maximum text width, horizontal offset and object width.
+Line positions are zero-based. Horizontal units are pixels. The count and
+maximum width are cached and refreshed on the first query or scroll after
+text changes. Width values exposed as WORDs saturate at 32,767 pixels.
+
+Set either scroll position to `-1` to leave that axis unchanged.
+`edit_scroll` requires UPDATE. It copies within each visible clip and
+redraws the exposed strip. Shifts that cover the clip redraw it. Control+Up
+and Control+Down scroll one line, and Page Up and Page Down scroll one
+viewport. Resize updates the caller's viewport storage and returns its
+previous and new whole-row heights. After resize, redraw the new bounds.
+
+Pointer selection and resource-file admission are future slices.
 
 ## File selector
 

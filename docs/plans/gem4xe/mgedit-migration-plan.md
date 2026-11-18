@@ -4,8 +4,8 @@
 [GEM architecture guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing policy](../../contributing/testing.md)
 
-**Status** — ME0–ME2 implemented at development scope. ME3 adds scrollbar
-operations and pointer selection. The original document workflow and desktop
+**Status** — ME0–ME2 and ME3a implemented at development scope. ME3a delivers
+scroll and resize. ME3b adds pointer selection. The original document workflow and desktop
 features follow in separate executable slices. Commit each passing slice.
 [Execution record](../../history/mgedit-migration.md)
 

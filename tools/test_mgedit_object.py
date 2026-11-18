@@ -7,7 +7,7 @@ from pathlib import Path
 from build_c_program import build as application
 from build_gem_desktop import build_desktop
 from c_program import ABI
-from gem_render_oracle import DESKTOP_PALETTE, font_bytes
+from gem_render_oracle import DESKTOP_PALETTE, PENS, Raster, font_bytes
 from make_data_disk import make
 from measure_mgview import expected
 from native_program import ROOT, read_build, require, sha256, verify_machine
@@ -35,7 +35,10 @@ def run(out, reuse=False):
          binary_names={'EDITOBJ.APP'})
 
     font = font_bytes(out/'selected/src/vdi/font8x8.c')
-    fill = bytes((b&254)+(b>>7) for b in DESKTOP_PALETTE[6:9])[::-1]
+    colours = [None]*16
+    for pen,hardware in enumerate(PENS):
+        colours[hardware] = bytes((b&254)+(b>>7) for b in DESKTOP_PALETTE[pen*3:pen*3+3])[::-1]
+    white,black,fill = (colours[PENS[pen]] for pen in (0,1,2))
     cells = {name: next(d['address'] for d in program['image']['data']
                         if f'_CMGEDITTEST_{name.upper()}_' in d['name'])
              for name in ('round','base','checks')}
@@ -85,7 +88,19 @@ def run(out, reuse=False):
                 x,y,width,height = work
                 content = (b'Ax\n\tB\nSecond\nThird\nFourth\n' if phase==2
                            else b'A\tB\nSecond\nThird\nFourth\n')
-                expected_pixels = expected(font,work,content,0)
+                if phase<6:
+                    expected_pixels = expected(font,work,content,0)
+                else:
+                    lines = [f'{i:02d} abcdefghijklmnopqrstuvwxyz-0123456789'.encode()
+                             for i in range(16)]
+                    top = number(addr('scrollTop'),4)
+                    left = number(addr('scrollLeft'))
+                    model = Raster(font)
+                    model.clip=(x,y,x+width-1,y+height-1)
+                    for row,line in enumerate(lines[top:top+height//8]):
+                        model.apply(8,[x-left,y+row*8+6],list(line))
+                    expected_pixels = b''.join(colours[model.pixels[row*640+col]]
+                        for row in range(y,y+height) for col in range(x,x+width))
                 covered = phase==3
                 if covered:
                     ox,oy,ow,oh = rect('coverBounds')
@@ -97,8 +112,6 @@ def run(out, reuse=False):
                 frame = bridge.rawscreen(str(path))
                 pixels = path.read_bytes()
                 checked = 0
-                white,black = (bytes((b&254)+(b>>7) for b in DESKTOP_PALETTE[p:p+3])[::-1]
-                               for p in (0,3))
                 for row in range(height):
                     for column in range(width):
                         px,py = x+column,y+row
@@ -107,9 +120,11 @@ def run(out, reuse=False):
                         wanted = expected_pixels[source:source+3]
                         if phase in (3,4):
                             inverted = row<32
-                        else:
+                        elif phase<6:
                             top = 8 if phase==2 else 0
                             inverted = column==0 and top<=row<top+8
+                        else:
+                            inverted = False
                         if inverted:
                             wanted = black if wanted==white else white
                         if covered and ox<=px<ox+ow and oy<=py<oy+oh:
@@ -129,7 +144,7 @@ def run(out, reuse=False):
                     def addr(name):
                         return base+app['image']['symbols'][name]
 
-                    for phase in (1,2,3,4,5):
+                    for phase in range(1,11):
                         reach(f'(dw(${cells["round"]:x})={cycle})&(dw(${addr("phase"):x})={phase})')
                         reach(f'@frame>={bridge.eval_expr("@frame")+2}')
                         picture(addr,f'{cycle}-{phase}',phase)

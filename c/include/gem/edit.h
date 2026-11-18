@@ -27,4 +27,8 @@ WORD edit_get_buf(OBJECT *tree, WORD object, char **buffer, LONG *capacity, LONG
 WORD edit_get_dirty(OBJECT *tree, WORD object);
 void edit_set_dirty(OBJECT *tree, WORD object, WORD dirty);
 void edit_get_sel(OBJECT *tree, WORD object, char **start, char **end);
+WORD edit_resized(OBJECT *tree, WORD object, WORD *oldHeight, WORD *newHeight);
+WORD edit_get_scrollinfo(OBJECT *tree, WORD object, LONG *lines, LONG *top,
+    WORD *rows, WORD *drawnRows, WORD *width, WORD *left, WORD *visibleWidth);
+WORD edit_scroll(OBJECT *tree, WORD object, WORD window, LONG top, WORD left);
 #endif

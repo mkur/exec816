@@ -4,22 +4,33 @@
 
 #define DOCUMENT "A\tB\r\nSecond\n\rThird\rFourth\n"
 static char document[sizeof(DOCUMENT)+3]=DOCUMENT;
+#define ROW(n) n " abcdefghijklmnopqrstuvwxyz-0123456789\r\n"
+static char scrollDocument[]=
+    ROW("00") ROW("01") ROW("02") ROW("03") ROW("04") ROW("05") ROW("06") ROW("07")
+    ROW("08") ROW("09") ROW("10") ROW("11") ROW("12") ROW("13") ROW("14") ROW("15");
 static char invalid[]={'x'};
 static WORD input[11]={1,1,1,1,1,1,1,1,1,1,2},output[57];
 static OBJECT tree={-1,-1,-1,G_EDIT,LASTOB,0,0,0,0,0,0};
 GRECT work,coverBounds,coverWork;
 volatile WORD phase,proceed;
+LONG scrollTop;
+WORD scrollLeft;
+
+static WORD geometry(WORD window)
+{
+    if (!wind_get(window,WF_WORKXYWH,&work.g_x,&work.g_y,&work.g_w,&work.g_h)) return 0;
+    tree.ob_x=work.g_x;
+    tree.ob_y=work.g_y;
+    tree.ob_width=work.g_w;
+    tree.ob_height=work.g_h;
+    return 1;
+}
 
 static WORD draw(WORD window)
 {
     WORD okay;
     if (!wind_update(BEG_UPDATE)) return 0;
-    okay=wind_get(window,WF_WORKXYWH,&work.g_x,&work.g_y,&work.g_w,&work.g_h);
-    tree.ob_x=work.g_x;
-    tree.ob_y=work.g_y;
-    tree.ob_width=work.g_w;
-    tree.ob_height=work.g_h;
-    if (okay) okay=objc_draw(&tree,0,0,work.g_x,work.g_y,work.g_w,work.g_h);
+    okay=geometry(window) && objc_draw(&tree,0,0,work.g_x,work.g_y,work.g_w,work.g_h);
     return wind_update(END_UPDATE) && okay;
 }
 
@@ -43,10 +54,27 @@ static WORD key(WORD window,WORD code,LONG expectedError)
         error==expectedError && event.mwhich==MU_MESAG;
 }
 
+static WORD scroll_info(LONG top,WORD left)
+{
+    LONG lines;
+    WORD rows,shown,width,visibleWidth;
+    return edit_get_scrollinfo(&tree,0,&lines,&scrollTop,&rows,&shown,&width,
+        &scrollLeft,&visibleWidth) && lines==17 && scrollTop==top && scrollLeft==left &&
+        rows==work.g_h/8 && shown==rows && width==320 && visibleWidth==work.g_w;
+}
+
+static WORD scroll(WORD window,LONG top,WORD left)
+{
+    WORD result;
+    if (!wind_update(BEG_UPDATE)) return 0;
+    result=edit_scroll(&tree,0,window,top,left);
+    return wind_update(END_UPDATE) && result;
+}
+
 int main(void)
 {
     WORD window,cover,handle,unused;
-    WORD points[4];
+    WORD points[4],oldHeight,newHeight;
     LONG capacity,length;
     char *buffer,*cursor,*start,*end;
     XEDITINFO *edit;
@@ -111,6 +139,26 @@ int main(void)
     if (!wind_set(window,WF_CURRXYWH,33,40,240,112) ||
         !edit_open(&tree,0) || !draw(window)) return 13;
     show(5);
+    edit_close(&tree,0);
+    edit_set_buf(&tree,0,scrollDocument,sizeof(scrollDocument));
+    if (!wind_set(window,WF_CURRXYWH,33,40,156,67) || !geometry(window) ||
+        !edit_open(&tree,0) || !wind_update(BEG_UPDATE)) return 23;
+    if (edit_cursor(&tree,0,window,0)!=1 || !wind_update(END_UPDATE) ||
+        !draw(window) || !scroll_info(0,0)) return 24;
+    show(6);
+    if (!scroll(window,1,-1) || !scroll_info(1,0)) return 25;
+    show(7);
+    if (!scroll(window,-1,3) || !scroll(window,-1,6) || !scroll(window,-1,1) ||
+        !scroll(window,-1,9) || !scroll_info(1,9)) return 26;
+    show(8);
+    if (!key(window,0x5100,0) || !scroll_info(1+work.g_h/8,9)) return 27;
+    show(9);
+    if (!wind_update(BEG_UPDATE)) return 28;
+    if (!wind_set(window,WF_CURRXYWH,33,40,164,83) || !geometry(window) ||
+        !edit_resized(&tree,0,&oldHeight,&newHeight) || oldHeight!=48 ||
+        newHeight!=64 || !wind_update(END_UPDATE) || !draw(window) ||
+        !scroll_info(7,0)) return 29;
+    show(10);
     edit_close(&tree,0);
     edit_delete(edit);
     /* Leave another open editor for automatic AES retirement. */
