@@ -26,7 +26,7 @@ repository root; directory entries include all files below them.
 | `lib/dos/fbabi.act`, `lib/dos/fbinterpabi.act`, `ports/fastbasic/target/helpers.asm`, `ports/fastbasic/target/callbacks.asm`, `ports/fastbasic/target/fp_snapshot.asm`, `ports/fastbasic/target/fastbasic.inc`, `ports/fastbasic/target/source-run.asm`, `ports/fastbasic/target/source-run.inc` | Exec-authored FastBasic runtime bindings, source bootstrap and generated constants |
 | `ports/gem4xe/apps/qed/native/*.c` and `*.h`, except `qed-gem-extra.h` | Exec-authored QED native adapters; the generated GEM header retains LGPL-2.1-or-later |
 | `ports/gem4xe/apps/gemarc/native/` | Exec-authored GemARC file, path and timestamp adapters |
-| `c/`, except `c/include/setjmp.h` | Public C headers, Calypsi bindings, startup support and C examples |
+| `c/`, except `c/include/setjmp.h` and `c/calypsi/aes-multiline.c` | Public C headers, Calypsi bindings, startup support and C examples |
 | `examples/`, except `examples/shell/` | Standalone examples, disk commands and sample data |
 | `tests/reference/atari-st/` | Exec-authored Atari ST startup and GEM/file adapters for shared examples |
 | `lib/exec/exec.act`, `lib/exec/execos.act`, `lib/exec/execproducer.act` | Action! interface declarations |
@@ -109,7 +109,7 @@ emulators or patches to upstream projects.
   together; the MIT interface grant does not relicense the viewer.
 - The original MagiC MGEDIT and EDITOBJC sources and resources selected by
   `ports/magic/mgedit/inputs.json` retain the same upstream GPLv3 licence and
-  source notices.
+  source notices. The EDITOBJC adaptation in `c/calypsi/aes-multiline.c` is GPLv3.
 - GEM4XE source selected by `ports/gem4xe/selection.json` and
   `ports/gem4xe/aes/selection.json`, text-origin arithmetic pinned by
   `ports/gem4xe/text/inputs.json`, mouse artwork pinned by

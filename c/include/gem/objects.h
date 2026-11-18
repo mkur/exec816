@@ -32,6 +32,7 @@ typedef struct { ICONBLK monoblk; ULONG mainlist; } CICONBLK;
 #define CHECKED 4
 #define G_TITLE 32
 #define G_CICON 33
+#define G_EDIT 37
 #define SELECTABLE 1
 #define DEFAULT 2
 #define EXIT 4

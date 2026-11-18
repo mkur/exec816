@@ -10,6 +10,7 @@ BOOL ExecAESWindowEpoch(struct ExecAESContext *, WORD, ULONG);
 BOOL ExecAESDisplayEnsure(struct ExecAESContext *c);
 BOOL ExecAESDisplayClose(struct ExecAESContext *);
 void ExecAESResourceFree(struct ExecAESContext *);
+void ExecAESMultilineFree(struct ExecAESContext *);
 BOOL ExecAESResources(struct ExecAESContext *,AESPB *);
 /* Private entry points reuse the public caller's established context.
  * These perform their own admission; callers have not set busy yet. */

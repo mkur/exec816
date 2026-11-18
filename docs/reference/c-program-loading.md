@@ -5,7 +5,9 @@ using the large-code/huge-data ABI. It is separate from the
 [native o65 contract](program-loading.md). Its constants and import ordinals
 are defined in [abi/c-program.json](../../abi/c-program.json).
 
-Current APP ABI 46 adds the four native [semaphore calls](semaphores.md).
+Current APP ABI 49 adds the [multiline edit object](aes.md#multiline-edit-objects)
+creation, buffer and lifetime bindings. The ABI also exposes the four native
+[semaphore calls](semaphores.md).
 The shared cursor policy retains owned custom mouse forms, `vsc_form`,
 graf_mouse, v_hide_c, v_show_c and vq_mouse with a 678-byte caller context.
 Rebuild C providers and APPs together; earlier APP ABI versions are
@@ -88,7 +90,7 @@ The header's file length must match exactly.
 | --- | --- | --- |
 | 0 | 4 | `C816` |
 | 4 | 2 | Container version, 1 |
-| 6 | 2 | APP ABI version, 46 |
+| 6 | 2 | APP ABI version, 49 |
 | 8 | 1 | Reference link bank, 12 |
 | 9 | 1 | Bank address limit, 64 |
 | 10 | 2 | Segment count |

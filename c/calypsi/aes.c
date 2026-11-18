@@ -211,6 +211,7 @@ static WORD exit_application(struct ExecAESContext *c)
     result = ExecAESServiceCall(c, AES_OP_DETACH);
     if (result) {
         c->busy = 1;
+        ExecAESMultilineFree(c);
         ExecAESResourceFree(c);
         c->messagePending=0;
         c->repairEpoch=0;

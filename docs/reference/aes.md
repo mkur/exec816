@@ -906,6 +906,27 @@ borrows an admitted tree only for its bounded drawing operation. No additional
 bank-zero reservation is needed.
 
 
+## Multiline edit objects
+
+APP ABI 49 admits type 37 (`G_EDIT`) in native application-owned trees.
+`edit_create()` returns an opaque editor state owned by the AES registration.
+Store its huge pointer in `ob_spec`. Attach a writable NUL-terminated buffer
+with `edit_set_buf(tree, object, buffer, capacity)` while the editor is closed.
+Capacity includes NUL. The caller owns the buffer through close and is
+responsible for all tree and state references.
+
+`edit_open` prepares the visible rows and returns one on success. A missing
+terminator within capacity, insufficient height or unavailable row storage
+returns zero and leaves the editor closed. `edit_close` releases the row storage
+so the editor can be reopened. `edit_delete` closes and releases the state.
+Successful `appl_exit` releases outstanding editor allocations before APP
+backing is reclaimed.
+
+`objc_draw` draws the object in the selected window under UPDATE using the
+existing visible clips and display grant. The first subset displays the fixed
+8×8 face, 64-pixel tabs and CR, LF, CRLF and LFCR line breaks. Resource-file
+admission, text changes, caret, selection and scrolling are pending.
+
 ## File selector
 
 `fsel_input(path, file, &button)` and

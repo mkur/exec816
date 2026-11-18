@@ -8,8 +8,8 @@ build/mgedit/source` verifies the selection and prepares lowercase UTF-8 source
 copies with host newlines. The 68000 assembly is the reference for the C port.
 
 The test client uses its own resource and `wdlg_*` host and calls the older
-`edit_evnt` signature. The native fixture will use a compiled `G_EDIT` object
-and ordinary window, with the event contract in the pinned `MT_EDIT.H`.
+`edit_evnt` signature. The native fixture uses a compiled `G_EDIT` object in
+an ordinary window. `MT_EDIT.H` is the reference for the event binding.
 
 | MagiC AES function | Operations |
 | --- | --- |

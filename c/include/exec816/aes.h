@@ -12,6 +12,7 @@ struct ExecAESTimer {
 };
 struct ExecVDIWorkstation;
 struct ExecAESForm;
+struct XEDITINFO;
 
 /* Runtime hooks, separate from GEM application entry points. The startup
  * controller retains the service until every attached Task has detached. */
@@ -50,6 +51,7 @@ struct ExecAESContext {
     struct AESWindowView *views[AES_WINDOWS];
     WORD eventWindow,keyWindow;
     APTR objectPaint; /* Private caller-owned decoded object/layout storage. */
+    struct XEDITINFO *multiline;
 };
 
 BOOL ExecAESAttach(struct MsgPort *service);

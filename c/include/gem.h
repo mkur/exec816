@@ -4,6 +4,7 @@
 #define EXEC816_GEM_H
 #include <exec/types.h>
 #include <gem/objects.h>
+#include <gem/edit.h>
 #include <gem/raster.h>
 #include <exec816/gem-constants.h>
 #define FAR

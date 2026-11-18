@@ -164,4 +164,5 @@ const UWORD AESLayout[] = {
     offsetof(struct ExecAESContext, eventWindow),
     offsetof(struct ExecAESContext, keyWindow),
     offsetof(struct ExecAESContext, objectPaint),
+    offsetof(struct ExecAESContext, multiline),
 };

@@ -25,7 +25,7 @@ void WidgetText(WORD x,WORD y,const WORD *glyphs,WORD count,WORD mode,WORD colou
                   gl_clip.g_x+gl_clip.g_w,gl_clip.g_y+gl_clip.g_h);
 }
 
-enum { PAINT_OBJECT,PAINT_ICON,PAINT_EDIT };
+enum { PAINT_OBJECT,PAINT_ICON,PAINT_EDIT,PAINT_MULTILINE };
 struct ObjectPaint {
     struct ExecAESContext *context;
     struct ExecObjectPaint *prepared;
@@ -104,6 +104,8 @@ static void prepare_object(struct ObjectPaint *p)
     const OBJECT *object=&p->tree[p->object];
     if (object->ob_type==G_ICON || object->ob_type==G_CICON) {
         p->kind=PAINT_ICON;prepare_icon(p);
+    } else if (object->ob_type==G_EDIT) {
+        p->kind=PAINT_MULTILINE;
     } else if ((object->ob_flags&EDITABLE) || object->ob_type==G_FTEXT ||
                object->ob_type==G_FBOXTEXT) {
         p->kind=PAINT_EDIT;
@@ -120,6 +122,8 @@ static void draw(void *data)
     gl_clip=p->clip;
     if (p->kind==PAINT_ICON) draw_icon(p);
     else if (p->kind==PAINT_EDIT) ExecAESPaintEdit(p->prepared);
+    else if (p->kind==PAINT_MULTILINE)
+        ExecAESPaintMultiline(&p->tree[p->object],p->x,p->y,&p->clip,p->prepared->object.glyphs);
     else draw_prepared(&p->prepared->object);
 }
 

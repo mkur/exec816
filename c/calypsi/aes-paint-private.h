@@ -27,4 +27,5 @@ struct ExecAESContext;
 void ExecAESPrepareEdit(struct ExecAESContext *,OBJECT *,WORD,WORD,WORD,
                         struct ExecObjectPaint *);
 void ExecAESPaintEdit(const struct ExecObjectPaint *);
+void ExecAESPaintMultiline(const OBJECT *, WORD, WORD, const GRECT *, WORD *);
 #endif

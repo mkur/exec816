@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 48,
+  "version": 49,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -150,7 +150,12 @@
     "InitSemaphore",
     "ObtainSemaphore",
     "AttemptSemaphore",
-    "ReleaseSemaphore"
+    "ReleaseSemaphore",
+    "edit_create",
+    "edit_set_buf",
+    "edit_open",
+    "edit_close",
+    "edit_delete"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

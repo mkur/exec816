@@ -1,0 +1,54 @@
+MODULE CMGEDITTEST
+USE EXEC
+USE DOS
+USE PROGRAMFILE
+USE PROGRAM
+USE PROGRAMIMAGE
+USE PROCESS
+USE HEAPCORE
+
+CARD checks,round
+LONGCARD base
+
+PROC Require(BYTE okay)
+
+  IF okay=0 THEN
+    HEAPCORE.Abort($fbc0+checks)
+  FI
+  checks==+1
+
+RETURN
+
+PROC Main()
+  LONGCARD child,baseline
+  PROCESS.Result outcome
+
+  LET input=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_OLDFILE)
+  LET output=DOS.Open(BYTE POINTER(c"NIL:"),DOS.MODE_NEWFILE)
+  Require(input<>NULL AND output<>NULL)
+  DOS.SelectInput(input)
+  DOS.SelectOutput(output)
+  FOR round=1 TO 2 DO
+    BEGIN
+      LET image=PROGRAMFILE.Load(BYTE POINTER(c"SYS:EDITOBJ.APP"))
+      Require(image<>NULL)
+      base=LONGCARD(image.text)
+      child=PROCESS.StartBackgroundLoaded(BYTE POINTER(image),NULL,0)
+      Require(child<>0)
+      Require(PROCESS.Wait(child,@outcome)<>0)
+      Require(outcome.primary=0)
+      PROGRAM.Unload(image)
+      IF round=1 THEN
+        baseline=EXEC.AvailMem(0)
+      ELSE
+        Require(EXEC.AvailMem(0)=baseline)
+      FI
+    END
+  OD
+  DOS.SelectInput(NULL)
+  DOS.SelectOutput(NULL)
+  Require(DOS.Close(input)<>0 AND DOS.Close(output)<>0)
+  Require(DOS.ReleaseContext()<>0)
+
+RETURN
+ENDMODULE

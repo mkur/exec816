@@ -70,7 +70,11 @@ def drawing(out,optimize,probe=False,fault=False,desktop_style=False,
             sources.append(path)
         graf=out/'app-objects'/'app-graf.c'
         graf.write_text((object_port/'object-graf.c').read_text().replace('"aes-hosted.h"','"application-hosted.h"'))
-        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',ROOT/'c/calypsi/aes-form.c',ROOT/'c/calypsi/aes-alert.c',ROOT/'c/calypsi/aes-fsel.c',ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/aes-resource.c',ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
+        sources += [graf,ROOT/'c/calypsi/aes-objects.c',ROOT/'c/calypsi/aes-edit.c',
+                    ROOT/'c/calypsi/aes-multiline.c',ROOT/'c/calypsi/aes-form.c',
+                    ROOT/'c/calypsi/aes-alert.c',ROOT/'c/calypsi/aes-fsel.c',
+                    ROOT/'c/calypsi/file-list.c',ROOT/'c/calypsi/aes-resource.c',
+                    ROOT/'c/calypsi/aes-menu.c',ROOT/'c/calypsi/dos.c']
         assembly.append(ROOT/'c/calypsi/dos.s')
         extra_includes.append(object_port)
         extra_probes.append((ROOT/'tests/programs/aes_prepared_layout.c',[
