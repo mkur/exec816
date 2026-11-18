@@ -3,6 +3,9 @@
 [Plan index](README.md) · [Hosted C runtime](../reference/c-runtime.md) ·
 [C816 loader](../reference/c-program-loading.md)
 
+**Status** — deferred on 2026-11-18 under
+[GEM-B3](gem4xe/README.md#gem-b3-resident-c-runtime-code).
+
 Move reusable C runtime code into the existing C816 provider and keep mutable
 runtime state with each execution. Start with `ExecCRuntimePhase`. It already
 takes the caller's state and callbacks explicitly, and every sampled APP carries

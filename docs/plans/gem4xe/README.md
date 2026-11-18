@@ -42,9 +42,8 @@ The proposed horizontal-scroll plan measures left/right, then limits MGVIEW's
 text preparation to the exposed columns within the existing copy/strip flow.
 [MGVIEW horizontal scroll repaint](mgview-horizontal-scroll-plan.md)
 
-The [resident C runtime design](../resident-c-runtime-design.md) compares
-MGVIEW with other APPs and proposes sharing the runtime phase dispatcher
-through C816, followed by the shared GEM rectangle helpers.
+The [resident C runtime work](#gem-b3-resident-c-runtime-code) is on the
+backlog. Its design records the duplicated code in MGVIEW and other APPs.
 
 The [END_UPDATE audit](../../history/gem-end-update-audit.md) separates the
 6.23 ms viewer CPU from a 9.06 ms scheduling interval after native release.
@@ -1213,3 +1212,13 @@ If resumed, measure IRQ CPU and queue occupancy during fast reversals, motion
 against screen edges and clicks while scrolling. A fixed-gain run can isolate
 capture costs. Adoption requires enough motion timing and direction history to
 preserve predictable acceleration when the input Task runs late.
+
+### GEM-B3 Resident C runtime code
+
+**Deferred on 2026-11-18.** The first candidate is `ExecCRuntimePhase`, which
+each sampled APP links separately. The proposed slice binds it through the
+existing C816 provider and keeps state and callbacks with the calling
+execution. [Resident C runtime design](../resident-c-runtime-design.md)
+
+When resumed, verify the size tradeoff and lifecycle with MGVIEW and Counter
+before taking up the GEM rectangle helpers or stateful runtime routines.

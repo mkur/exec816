@@ -698,9 +698,9 @@ assuming work is pending. Current behavior belongs in the
   selected exact-package walks. The
   [current contract](../reference/c-runtime.md) records zero added reserved
   bank-zero bytes; [development evidence](../development/c-runtime-cr3.json).
-- [Resident C runtime code](resident-c-runtime-design.md) proposes moving the
-  common phase dispatcher into the C816 provider first, with later candidates
-  measured from MGVIEW and peer APP linker maps.
+- [Resident C runtime code](resident-c-runtime-design.md) is deferred under
+  [GEM-B3](gem4xe/README.md#gem-b3-resident-c-runtime-code). The first proposed
+  slice shares the common phase dispatcher through the C816 provider.
 - [Native pointer loops: implementation plan](compiler-pointer-loops-plan.md)
 - [Direct-page partition implementation plan](direct-page-partition-implementation-plan.md)
 
