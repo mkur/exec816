@@ -908,7 +908,7 @@ bank-zero reservation is needed.
 
 ## Multiline edit objects
 
-APP ABI 49 admits type 37 (`G_EDIT`) in native application-owned trees.
+Type 37 (`G_EDIT`) is available in native application-owned trees.
 `edit_create()` returns an opaque editor state owned by the AES registration.
 Store its huge pointer in `ob_spec`. Attach a writable NUL-terminated buffer
 with `edit_set_buf(tree, object, buffer, capacity)` while the editor is closed.
@@ -923,9 +923,29 @@ Successful `appl_exit` releases outstanding editor allocations before APP
 backing is reclaimed.
 
 `objc_draw` draws the object in the selected window under UPDATE using the
-existing visible clips and display grant. The first subset displays the fixed
-8×8 face, 64-pixel tabs and CR, LF, CRLF and LFCR line breaks. Resource-file
-admission, text changes, caret, selection and scrolling are pending.
+existing visible clips and display grant. It uses the fixed 8×8 face,
+64-pixel tabs and CR, LF, CRLF and LFCR line breaks. Visible text, caret and
+selection are reconstructed together during redraw.
+
+APP ABI 50 adds `edit_evnt` for a returned GEM key while the caller owns
+UPDATE. The call consumes `MU_KEYBD` from its `EVNT` and leaves the other
+event bits available for dispatch. It accepts printable bytes, Tab, Return
+(inserts CRLF), Backspace, Delete, horizontal movement, Home, End and Ctrl+A.
+Movement and deletion treat paired line endings as one boundary. The view
+follows the caret as it leaves the visible rows or columns. A replacement
+that exceeds the capacity returns zero with `EDITERR_BUFFER_FULL` and leaves
+the buffer, caret and selection intact.
+
+`edit_get_buf` returns the borrowed buffer, capacity and current byte length
+excluding NUL. `edit_get_sel` returns the half-open range as two borrowed
+pointers, or two null pointers for an empty selection. `edit_get_cursor`,
+`edit_get_dirty` and `edit_set_dirty` expose the caret position and dirty flag.
+`edit_cursor` uses the MagiC hide count convention (0 hides, 1 shows, −1
+queries) and requires UPDATE when changing that count. Drawing clips XOR
+caret and selection pixels to the same visible regions as the text.
+
+Pointer selection, explicit scrollbar and page operations, and resource-file
+admission are future slices.
 
 ## File selector
 

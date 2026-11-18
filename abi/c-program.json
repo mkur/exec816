@@ -1,6 +1,6 @@
 {
   "abi": "exec816.c-program",
-  "version": 49,
+  "version": 50,
   "magic": "C816",
   "link_bank": 12,
   "max_banks": 64,
@@ -155,7 +155,14 @@
     "edit_set_buf",
     "edit_open",
     "edit_close",
-    "edit_delete"
+    "edit_delete",
+    "edit_evnt",
+    "edit_cursor",
+    "edit_get_cursor",
+    "edit_get_buf",
+    "edit_get_dirty",
+    "edit_set_dirty",
+    "edit_get_sel"
   ],
   "stack_requirement": {
     "workspace_mask": 255,

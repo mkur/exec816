@@ -4,10 +4,10 @@
 [GEM architecture guidance](../../contributing/README.md#gem-architecture-guidance) ·
 [Development testing policy](../../contributing/testing.md)
 
-**Status** — ME0 and ME1 implemented at development scope. ME2 adds typing,
-caret and selection to the loaded edit-object fixture. The original document
-workflow and desktop features follow in separate executable slices. Commit
-each passing slice. [Execution record](../../history/mgedit-migration.md)
+**Status** — ME0–ME2 implemented at development scope. ME3 adds scrollbar
+operations and pointer selection. The original document workflow and desktop
+features follow in separate executable slices. Commit each passing slice.
+[Execution record](../../history/mgedit-migration.md)
 
 ## Target workflow
 

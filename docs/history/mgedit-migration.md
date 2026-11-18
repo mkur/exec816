@@ -34,4 +34,32 @@ watermark and interrupt floor. Fixed, root, kernel, idle and per-public-Task
 reserved bank-zero deltas were zero.
 
 Run `python3 tools/test_mgedit_object.py --output build/mgedit/me1` for the
-focused check. This fixture builds only the native provider and test APP.
+focused fixture at ME1's revision.
+
+## ME2 — Keyboard editing, caret and selection
+
+The editor consumes key records under caller-owned UPDATE. It keeps the
+MagiC CRLF insertion convention and treats each parsed line separator as a
+unit for movement and deletion. The capacity check precedes an overlapping
+suffix move, so a refused insertion preserves the prior edit state. Visible
+text is painted before applying caret or selection XOR through the existing
+display-owned fill path. Caret-only movement repaints its affected rows.
+
+Two optimized loaded lifetimes passed typing, split/join, Delete, dirty
+state, capacity refusal and nested caret hide/show. Ten pixel comparisons
+covered both caret X parities, selection behind an overlapping window,
+exposure repair and reopening. The fixture supplies synthetic GEM key
+records to isolate the editor. Twelve native lifecycle checks passed with
+intact guards. Raw and optimized layout probes agreed on a 64-byte event,
+with the key at offset 10 and the message array at offset 32.
+
+ABI 50 builds the fixture at 14,067 bytes. The fixture's provider contains
+225,578 initialized bytes and 18,871 zero-fill bytes. Editor state uses
+54 live upper bytes, rounded to 56, plus 12 bytes per visible row before
+rounding. AES registration storage stays at its ME1 size. The APP pool kept
+at least 1,175 bytes above the measured watermark and interrupt floor.
+Fixed, root, kernel, idle and per-public-Task reserved bank-zero deltas were
+zero.
+
+Run `python3 tools/test_mgedit_object.py --output build/mgedit/me2` for the
+current focused check. It builds the matching provider and test APP.

@@ -10,7 +10,7 @@ from c_program import ABI
 from gem_render_oracle import DESKTOP_PALETTE, font_bytes
 from make_data_disk import make
 from measure_mgview import expected
-from native_program import ROOT, read_build, require, verify_machine
+from native_program import ROOT, read_build, require, sha256, verify_machine
 from os_boundary import emulator, run_to
 from test_dos_stack import execute, ownership
 from test_mouse_observe import BRIDGE, PIN, ROM
@@ -21,6 +21,7 @@ def run(out, reuse=False):
         program = read_build(out/'program')
         app = json.loads((out/'app/app.json').read_text())
         require(app['abi']==ABI, 'Stale edit object fixture ABI')
+        require(sha256(out/'app/program.app')==app['sha256'], 'Changed edit object APP')
     else:
         app = application(out/'app',[ROOT/'tests/programs/mgedit_object.c'],minimum_stack=2560)
         program = build_desktop(out,source=ROOT/'tests/programs/c_mgedit.act',
@@ -76,13 +77,16 @@ def run(out, reuse=False):
             def number(address, size=2):
                 return int.from_bytes(bridge.memdump(address,size),'little')
 
-            def picture(addr, label, covered):
+            def picture(addr, label, phase):
                 def rect(name):
                     return [number(addr(name)+i*2) for i in range(4)]
 
                 work = rect('work')
                 x,y,width,height = work
-                expected_pixels = expected(font,work,b'A\tB\nSecond\nThird\nFourth\n',0)
+                content = (b'Ax\n\tB\nSecond\nThird\nFourth\n' if phase==2
+                           else b'A\tB\nSecond\nThird\nFourth\n')
+                expected_pixels = expected(font,work,content,0)
+                covered = phase==3
                 if covered:
                     ox,oy,ow,oh = rect('coverBounds')
                     cx,cy,cw,ch = rect('coverWork')
@@ -93,12 +97,21 @@ def run(out, reuse=False):
                 frame = bridge.rawscreen(str(path))
                 pixels = path.read_bytes()
                 checked = 0
+                white,black = (bytes((b&254)+(b>>7) for b in DESKTOP_PALETTE[p:p+3])[::-1]
+                               for p in (0,3))
                 for row in range(height):
                     for column in range(width):
                         px,py = x+column,y+row
                         dest = (px+16)*4+py*frame.stride
                         source = (column+row*width)*3
                         wanted = expected_pixels[source:source+3]
+                        if phase in (3,4):
+                            inverted = row<32
+                        else:
+                            top = 8 if phase==2 else 0
+                            inverted = column==0 and top<=row<top+8
+                        if inverted:
+                            wanted = black if wanted==white else white
                         if covered and ox<=px<ox+ow and oy<=py<oy+oh:
                             if not (cx<=px<cx+cw and cy<=py<cy+ch):
                                 continue
@@ -116,10 +129,10 @@ def run(out, reuse=False):
                     def addr(name):
                         return base+app['image']['symbols'][name]
 
-                    for phase in (1,2,3):
+                    for phase in (1,2,3,4,5):
                         reach(f'(dw(${cells["round"]:x})={cycle})&(dw(${addr("phase"):x})={phase})')
                         reach(f'@frame>={bridge.eval_expr("@frame")+2}')
-                        picture(addr,f'{cycle}-{phase}',phase==2)
+                        picture(addr,f'{cycle}-{phase}',phase)
                         bridge.poke16(addr('proceed'),phase)
                 bridge.bp_clear_all()
 
